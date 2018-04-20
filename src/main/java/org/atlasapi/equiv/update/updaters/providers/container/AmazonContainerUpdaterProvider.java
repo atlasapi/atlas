@@ -69,13 +69,6 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2)
-//                                new ContainerHierarchyMatchingScorer(
-//                                        dependencies.getContentResolver(),
-//                                        Score.negativeOne(),
-//                                        new SubscriptionCatchupBrandDetector(
-//                                                dependencies.getContentResolver()
-//                                        )
-//                                )
                         )
                 )
                 .withCombiner(
@@ -87,7 +80,7 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(2),
+                                new MinimumScoreFilter<>(1.99999),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 ExclusionListFilter.create(

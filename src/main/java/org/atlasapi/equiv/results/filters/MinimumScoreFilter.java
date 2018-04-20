@@ -21,7 +21,7 @@ public class MinimumScoreFilter<T extends Content>  extends AbstractEquivalenceF
             EquivToTelescopeResults equivToTelescopeResults
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
-        filterComponent.setComponentName("Minimum Score Filter");
+        filterComponent.setComponentName("Minimum Score Filter "+minimum);
 
         boolean result = candidate.score().isRealScore() && candidate.score().asDouble() > minimum;
         if (!result) {

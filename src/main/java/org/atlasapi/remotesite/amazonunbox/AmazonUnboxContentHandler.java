@@ -1,9 +1,7 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.metabroadcast.common.stream.MoreCollectors;

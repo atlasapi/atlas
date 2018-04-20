@@ -68,14 +68,14 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingContainerScorer(2),
-                                new ContainerHierarchyMatchingScorer(
-                                        dependencies.getContentResolver(),
-                                        Score.negativeOne(),
-                                        new SubscriptionCatchupBrandDetector(
-                                                dependencies.getContentResolver()
-                                        )
-                                )
+                                new TitleMatchingContainerScorer(2)
+//                                new ContainerHierarchyMatchingScorer(
+//                                        dependencies.getContentResolver(),
+//                                        Score.negativeOne(),
+//                                        new SubscriptionCatchupBrandDetector(
+//                                                dependencies.getContentResolver()
+//                                        )
+//                                )
                         )
                 )
                 .withCombiner(
@@ -87,14 +87,13 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(0.25),
+                                new MinimumScoreFilter<>(2),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),
-                                new FilmFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()
                         ))
@@ -102,11 +101,7 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                 .withExtractors(
                         ImmutableList.of(
                                 // Get all amazon items with the same score that scored at least
-                                // perfect for title. This ensures that if there is hierarchy those
-                                // items will be picked with a score of 3, but if there isn't items
-                                // with 2 will be selected. In either case this should equiv all
-                                // amazon versions of the same content together.
-                                // Then let it equate with other stuff as well.
+                                // perfect for title. Then let it equate with other stuff as well.
                                 RemoveAndCombineExtractor.create(
                                         AllWithTheSameHighscoreAndPublisherExtractor.create(2.00),
                                         PercentThresholdAboveNextBestMatchEquivalenceExtractor

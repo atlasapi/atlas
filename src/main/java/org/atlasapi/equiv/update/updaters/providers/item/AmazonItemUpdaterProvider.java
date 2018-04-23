@@ -14,8 +14,8 @@ import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
+import org.atlasapi.equiv.results.extractors.ExcludePublisherThenExtractExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
-import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -102,11 +102,12 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 )
                 .withExtractors(
                         ImmutableList.of(
-                                ////get all items that scored perfectly everywhere.
+                                //get all items that scored perfectly everywhere.
                                 //this should equiv all amazon versions of the same content together
                                 //then let it equate with other stuff as well.
-                                RemoveAndCombineExtractor.create(
-                                        AllOverOrEqThresholdExtractor.create(4.00),
+                                AllOverOrEqThresholdExtractor.create(4.00),
+                                ExcludePublisherThenExtractExtractor.create(
+                                        Publisher.AMAZON_UNBOX, //we don't want to equiv with other amazon items
                                         PercentThresholdEquivalenceExtractor.moreThanPercent(90)
                                 )
 

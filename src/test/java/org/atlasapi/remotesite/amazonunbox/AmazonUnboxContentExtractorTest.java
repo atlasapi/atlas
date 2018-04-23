@@ -155,19 +155,6 @@ public class AmazonUnboxContentExtractorTest {
         assertFalse("The HD encoding was created, but it should not have.", foundHd);
         assertTrue("The UHD encoding was not created, but it should.", foundUhd);
     }
-
-    //the test is meaningless since there is nothing on the feed and thus we (now) do nothing, and
-    //this checks the nothingness of it all.
-    @Ignore
-    @Test
-    public void testExtractionOfLanguages() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE).build();
-
-        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
-
-        //amazon feed does not contain languages, so no languages is extracted.
-        assertEquals(ImmutableSet.of(), film.getLanguages());
-    }
     
     @Test
     public void testExtractionOfGenres() {
@@ -349,7 +336,7 @@ public class AmazonUnboxContentExtractorTest {
     }
 
     @Test
-    @Ignore
+    @Ignore //no longer required behaviour, but that might change thus left the test.
     public void testEpisodeTitleDoesNotContainBrandTitle() {
         AmazonUnboxItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
                 .withEpisodeNumber(5)

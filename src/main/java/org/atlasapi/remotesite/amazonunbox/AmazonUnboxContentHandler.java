@@ -25,6 +25,8 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     
     private static final Splitter SPLIT_ON_COMMA =
             Splitter.on(',').trimResults().omitEmptyStrings();
+    //names that should not be allowed through as actor/director names, in lowercase.
+    private static final ImmutableSet<String> KNOWN_NON_REAL_NAMES = ImmutableSet.of("unavailable");
     private static final Pattern TWO_ALPHA_CHARS = Pattern.compile(".*[a-zA-Z].*[a-zA-Z].*");
     
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentHandler.class);
@@ -332,6 +334,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
         return StreamSupport.stream(SPLIT_ON_COMMA.split(stringList)
                 .spliterator(), false)
                 .filter(i -> TWO_ALPHA_CHARS.matcher(i).matches())
+                .filter(i -> !KNOWN_NON_REAL_NAMES.contains(i.toLowerCase()))
                 .collect(MoreCollectors.toImmutableSet());
     }
 

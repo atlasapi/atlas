@@ -179,4 +179,41 @@
         <!--To tag this URL please append '?tag=INSERT_TAG_HERE'-->
         <URL>http://www.amazon.co.uk/gp/product/B01BXJ5S12/ref=atv_feed_catalog</URL>
     </Item>
+    <Item>
+        <AMAZONRATINGS>0.0</AMAZONRATINGS>
+        <AMAZONRATINGSCOUNT>0</AMAZONRATINGSCOUNT>
+        <ASIN>B01BXJ6QGGG</ASIN>
+        <CANONICAL_MATURITY_RATING>bbfc_rating|to_be_announced</CANONICAL_MATURITY_RATING>
+        <CONTENTTYPE>TVEpisode</CONTENTTYPE>
+        <EPISODENUMBER>0</EPISODENUMBER>
+        <GENRE_ANIMATION>Y</GENRE_ANIMATION>
+        <HASIMAGE>Y</HASIMAGE>
+        <IMAGE_URL_LARGE>http://ecx.images-amazon.com/images/I/51wXqxCFvjL._SX320_SY240_.jpg</IMAGE_URL_LARGE>
+        <IMAGE_URL_SMALL>http://ecx.images-amazon.com/images/I/51wXqxCFvjL._SX160_SY120_.jpg</IMAGE_URL_SMALL>
+        <QUALITY>SD</QUALITY>
+        <ISPREORDER>N</ISPREORDER>
+        <ISRENTAL>N</ISRENTAL>
+        <ISSEASONPASS>N</ISSEASONPASS>
+        <ISSTREAMABLE>Y</ISSTREAMABLE>
+        <LONGSYNOPSIS>When Stewie misbehaves while visiting his grandparents in Palm Springs, Brian offers to go get him and bring him home.  But when Stewie loses their return plane tickets, the two embark on a memorable road trip across country.</LONGSYNOPSIS>
+        <PRICE>1.89</PRICE>
+        <UNBOX_SD_PURCHASE_ASIN>B01BXJ6QYA</UNBOX_SD_PURCHASE_ASIN>
+        <UNBOX_SD_PURCHASE_URL>http://www.amazon.co.uk/gp/product/B01BXJ6QYA/ref=atv_feed_catalog</UNBOX_SD_PURCHASE_URL>
+        <UNBOX_SD_PURCHASE_PRICE>1.89</UNBOX_SD_PURCHASE_PRICE>
+        <RELEASEDATE>2000-05-30T00:00:00</RELEASEDATE>
+        <RUNTIME>22</RUNTIME>
+        <SEASONASIN>B01BXJ5WNG</SEASONASIN>
+        <SEASONNUMBER>1</SEASONNUMBER>
+        <SERIESASIN>B01BXG7TNK</SERIESASIN>
+        <SERIESTITLE>Family Guy Six Packs</SERIESTITLE>
+        <RELATED_PRODUCTS>
+            <!--DO NOT USE RELATED_PRODUCT URLs. These URLs are deprecated. Please use the item URL to access all purchase options on one detail page-->
+        </RELATED_PRODUCTS>
+        <STUDIO>FOX</STUDIO>
+        <SYNOPSIS>When the episode number is zero, we should not ingest stuff.</SYNOPSIS>
+        <TITLE>Road To Rhode Island</TITLE>
+        <TIVOENABLED>N</TIVOENABLED>
+        <!--To tag this URL please append '?tag=INSERT_TAG_HERE'-->
+        <URL>http://www.amazon.co.uk/gp/product/B01BXJ6QYA/ref=atv_feed_catalog</URL>
+    </Item>
 </UnboxCatalog>

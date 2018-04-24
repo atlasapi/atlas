@@ -515,6 +515,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                         notSeenContent.getId(),
                         notSeenContent.getAliases(),
                         notSeenContent,
+                        notSeenContent.getCanonicalUri(),
                         UNPUBLISH_NO_PAYLOAD_STRING);
 
             } else if (notSeenContent instanceof Container) {
@@ -523,6 +524,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                         notSeenContent.getId(),
                         notSeenContent.getAliases(),
                         notSeenContent,
+                        notSeenContent.getCanonicalUri(),
                         UNPUBLISH_NO_PAYLOAD_STRING);
 
             } else {

@@ -426,6 +426,7 @@ public class AmazonUnboxContentExtractorTest {
         AmazonUnboxItem amazonUnboxItem =
                 createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
                         .withLargeImageUrl(null)
+                        .withMetabroadcastImageUrl(null)
                         .build();
 
         Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonUnboxItem));
@@ -438,6 +439,7 @@ public class AmazonUnboxContentExtractorTest {
         AmazonUnboxItem amazonUnboxItem =
                 createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
                         .withLargeImageUrl("")
+                        .withMetabroadcastImageUrl("")
                         .build();
 
         Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonUnboxItem));

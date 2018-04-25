@@ -2,7 +2,6 @@ package org.atlasapi.remotesite.amazonunbox;
 
 import java.util.Currency;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,8 +35,6 @@ import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 
-import com.metabroadcast.common.collect.ImmutableOptionalMap;
-import com.metabroadcast.common.collect.OptionalMap;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
@@ -45,7 +42,6 @@ import com.metabroadcast.common.media.MimeType;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -117,7 +113,12 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         else if (TVEPISODE.equals(source.getContentType())) {
             // Brands are not in the Unbox feed, so we must
             // create them from the data we have for an episode
-            return ImmutableSet.of(extractEpisode(source), extractBrand(source));                
+            Brand brand = extractBrand(source);
+            if (brand == null) {
+                return ImmutableSet.of(extractEpisode(source));
+            } else {
+                return ImmutableSet.of(extractEpisode(source), brand);
+            }
         }
         return ImmutableSet.of();
     }
@@ -159,10 +160,12 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return series;
     }
 
-    private Content extractBrand(AmazonUnboxItem source) {
-        //TODO: This is probably what creates a /null uri in the db, which is a problem that needs
-        //solving.
+    @Nullable
+    private Brand extractBrand(AmazonUnboxItem source) {
         String brandAsin = source.getSeriesAsin();
+        if(brandAsin == null || brandAsin.equals("")){
+            return null;
+        }
 
         Brand brand = new Brand();
         brand.setSpecialization(Specialization.TV);

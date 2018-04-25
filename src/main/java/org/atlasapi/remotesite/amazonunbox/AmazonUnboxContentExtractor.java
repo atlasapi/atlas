@@ -188,7 +188,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             //and for the same reason, the image will be assigned later by using one from the series
         } else {
             brand.setDescription(StringEscapeUtils.unescapeXml(source.getSynopsis()));
-            brand.setImage(source.getLargeImageUrl());
+            brand.setImage(source.getMetabroadcastImageUrl());
         }
         return brand;
 
@@ -428,7 +428,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         } else { //but if that is blank, use the episode title (YV requires a synopsis)
             content.setShortDescription(source.getTitle());
         }
-        content.setImage(source.getLargeImageUrl());
+        content.setImage(source.getMetabroadcastImageUrl());
         content.setImages(generateImages(source));
         //Amazon sends some items with date 2049-12-20. This invalid, and we suppress" it.
         if (source.getReleaseDate() != null && source.getReleaseDate().getYear() != 2049) {
@@ -519,10 +519,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private List<Image> generateImages(AmazonUnboxItem item) {
-        if (Strings.isNullOrEmpty(item.getLargeImageUrl())) {
+        if (Strings.isNullOrEmpty(item.getMetabroadcastImageUrl())) {
             return ImmutableList.of();
         }
-        Image image = new Image(item.getLargeImageUrl());
+        Image image = new Image(item.getMetabroadcastImageUrl());
         image.setType(ImageType.PRIMARY);
         image.setWidth(320);
         image.setHeight(240);
@@ -538,5 +538,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         } else {
             return ImmutableSet.of();
         }
+    }
+
+    public static String getMetabroadcastImageUrl(String amazonImageUrl){
+        return amazonImageUrl;
     }
 }

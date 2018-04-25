@@ -23,6 +23,7 @@ public class AmazonUnboxItem {
     // TODO how to parse genres
     private final Set<AmazonUnboxGenre> genres;
     private final String largeImageUrl;
+    private final String metabroadcastImageUrl;
     private final Quality quality;
     private final Boolean isPreOrder;
     private final Boolean isRental;
@@ -48,10 +49,10 @@ public class AmazonUnboxItem {
     private final String unboxSdPurchaseUrl;
     private final String unboxHdPurchasePrice;
     private final String unboxHdPurchaseUrl;
-    private String unboxSdRentalPrice;
-    private String unboxSdRentalUrl;
-    private String unboxHdRentalPrice;
-    private String unboxHdRentalUrl;
+    private final String unboxSdRentalPrice;
+    private final String unboxSdRentalUrl;
+    private final String unboxHdRentalPrice;
+    private final String unboxHdRentalUrl;
     
     public static Builder builder() {
         return new Builder();
@@ -91,7 +92,8 @@ public class AmazonUnboxItem {
         this.isTrident = builder.isTrident;
         this.starring = ImmutableSet.copyOf(builder.starring);
         this.genres = ImmutableSet.copyOf(builder.genres);
-        this.largeImageUrl = builder.largeImageUrl;
+        this.largeImageUrl = builder.largeImageUrl; //this is retained cause we want it in telescope.
+        this.metabroadcastImageUrl = builder.metabroadcastImageUrl;
         this.quality = builder.quality;
         this.isPreOrder = builder.isPreOrder;
         this.isRental = builder.isRental;
@@ -140,9 +142,13 @@ public class AmazonUnboxItem {
     public Set<AmazonUnboxGenre> getGenres() {
         return genres;
     }
-    
+
     public String getLargeImageUrl() {
         return largeImageUrl;
+    }
+
+    public String getMetabroadcastImageUrl() {
+        return metabroadcastImageUrl;
     }
     
     public Quality getQuality() {
@@ -285,39 +291,40 @@ public class AmazonUnboxItem {
         
         return false;
     }
-    
+
     @Override
     public String toString() {
         return Objects.toStringHelper(AmazonUnboxItem.class)
                 .add("amazonRating", amazonRating)
-        .add("amazonRatingsCount", amazonRatingsCount)
-        .add("asin", asin)
-        .add("contentType", contentType)
-        .add("directors", directors)
-        .add("episodeNumber", episodeNumber)
-        .add("genres", genres)
-        .add("largeImageUrl", largeImageUrl)
-        .add("quality", quality)
-        .add("isPreOrder", isPreOrder)
-        .add("isRental", isRental)
-        .add("isSeasonPass", isSeasonPass)
-        .add("isStreamable", isStreamable)
-        .add("synopsis", synopsis)
-        .add("rating", rating)
-        .add("price", price)
-        .add("releaseDate", releaseDate)
-        .add("duration", duration)
-        .add("starring", starring)
-        .add("seasonAsin", seasonAsin)
-        .add("seasonNumber", seasonNumber)
-        .add("seriesAsin", seriesAsin)
-        .add("seriesTitle", seriesTitle)
-        .add("studio", studio)
-        .add("tConst", tConst)
-        .add("title", title)
-        .add("isTivoEnabled", isTivoEnabled)
-        .add("url", url)
-        .toString();
+                .add("amazonRatingsCount", amazonRatingsCount)
+                .add("asin", asin)
+                .add("contentType", contentType)
+                .add("directors", directors)
+                .add("episodeNumber", episodeNumber)
+                .add("genres", genres)
+                .add("largeImageUrl", largeImageUrl)
+                .add("metabroadcastImageUrl", metabroadcastImageUrl)
+                .add("quality", quality)
+                .add("isPreOrder", isPreOrder)
+                .add("isRental", isRental)
+                .add("isSeasonPass", isSeasonPass)
+                .add("isStreamable", isStreamable)
+                .add("synopsis", synopsis)
+                .add("rating", rating)
+                .add("price", price)
+                .add("releaseDate", releaseDate)
+                .add("duration", duration)
+                .add("starring", starring)
+                .add("seasonAsin", seasonAsin)
+                .add("seasonNumber", seasonNumber)
+                .add("seriesAsin", seriesAsin)
+                .add("seriesTitle", seriesTitle)
+                .add("studio", studio)
+                .add("tConst", tConst)
+                .add("title", title)
+                .add("isTivoEnabled", isTivoEnabled)
+                .add("url", url)
+                .toString();
     }
     
     public static class Builder {
@@ -331,6 +338,7 @@ public class AmazonUnboxItem {
         private Integer episodeNumber;
         private Set<AmazonUnboxGenre> genres = Sets.newHashSet();
         private String largeImageUrl;
+        private String metabroadcastImageUrl;
         private Quality quality;
         private Boolean isPreOrder;
         private Boolean isRental;
@@ -413,9 +421,14 @@ public class AmazonUnboxItem {
             this.genres.add(genre);
             return this;
         }
-        
+
         public Builder withLargeImageUrl(String largeImageUrl) {
             this.largeImageUrl = largeImageUrl;
+            return this;
+        }
+
+        public Builder withMetabroadcastImageUrl(String metabroadcastImageUrl) {
+            this.metabroadcastImageUrl = metabroadcastImageUrl;
             return this;
         }
         

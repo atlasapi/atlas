@@ -50,6 +50,7 @@ public class AmazonUnboxItemExtractionTest {
         assertEquals(ImmutableSet.of("Liz Adams","Superman"), item.getDirectors());
         assertEquals(ImmutableSet.of(ACTION, ADVENTURE, THRILLER), item.getGenres());
         assertEquals("http://ecx.images-amazon.com/images/I/51LG6PC6P1L._SX320_SY240_.jpg", item.getLargeImageUrl());
+        assertEquals("http://ecx.images-amazon.com/images/I/51LG6PC6P1L._SX320_SY240_.jpg", item.getMetabroadcastImageUrl());
         assertEquals(Quality.SD, item.getQuality());
         assertEquals(Boolean.FALSE, item.isPreOrder());
         assertEquals(Boolean.FALSE, item.isRental());

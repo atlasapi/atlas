@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-
+import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxContentExtractor.getMetabroadcastImageUrl;
 
 public class AmazonUnboxContentHandler extends DefaultHandler {
     
@@ -196,6 +196,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 break;
             case IMAGE_URL_LARGE:
                 item.withLargeImageUrl(buffer.toString());
+                item.withMetabroadcastImageUrl(getMetabroadcastImageUrl(buffer.toString()));
                 break;
             case IMAGE_URL_SMALL:
                 break;

@@ -25,6 +25,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -177,17 +178,30 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private boolean shouldDiscard(ModelWithPayload<Content> contentWithPayload) {
         if(contentWithPayload.getModel() instanceof Episode){
-            Integer episodeNumber =
-                    contentWithPayload.asModelType(Episode.class).getModel().getEpisodeNumber();
-            //YV has requested we do not sent trailers. According to amazon trailers are
-            //identified with episodeNumbers 000 or 101.
+            Episode episode = contentWithPayload.asModelType(Episode.class).getModel();
+            Integer episodeNumber = episode.getEpisodeNumber();
+            // YV has requested we do not sent trailers, and we don't want to keep trailers either.
+            // According to amazon trailers are identified with episodeNumbers 000 or 101.
             if( episodeNumber == 0 || episodeNumber == 101){
                 telescope.reportFailedEvent(
                         "Episode was discarded because it was a trailer (index 0 or 101)",
                         EntityType.EPISODE,
-                        contentWithPayload.getPayload());
+                        contentWithPayload.getPayload()
+                );
                 return true;
             }
+
+            //We also discard Clips. ECOTEST-429
+            if (episode.getTitle() != null && !episode.getVersions().isEmpty()) {
+                if (episode.getTitle().toLowerCase().startsWith("clips:")) {
+                    //check duration
+                    Version version = episode.getVersions().iterator().next();
+                    if (version.getDuration() != null && version.getDuration() <= 180) { //seconds
+                        return true;
+                    }
+                }
+            }
+
         }
         return false;
     }

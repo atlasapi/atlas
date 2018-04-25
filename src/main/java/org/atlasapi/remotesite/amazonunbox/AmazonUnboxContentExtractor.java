@@ -74,9 +74,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
 
-    //because they need dates in order to generate onDemands.
-    private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse("2100-01-10T01:11:11"));
-    private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2000-01-10T01:11:11"));
+    //because the YV code requires dates in order to pick up which ondemands to generate, but amazon sends nothing.
+    private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2018-01-01T00:00:00Z")); //<- specific date requested by YV (ECOTEST-435)
+    private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse("2100-01-10T00:00:00Z"));
 
     //You can use grep TITLE  GBAmazonUnboxCatalog-2017-12-12.xml | g -o "\[.*\]" | sort | uniq
     //to search the xml file and see if any new tags have been added.

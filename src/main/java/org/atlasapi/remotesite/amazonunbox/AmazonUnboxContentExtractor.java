@@ -50,6 +50,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +82,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     //to search the xml file and see if any new tags have been added.
     private static final Pattern UHD_PATTERN =
             Pattern.compile("\\[Ultra HD\\]|\\[ULTRA HD\\]|\\[UHD\\]|\\[4K\\/Ultra HD\\]|\\[4K\\/UHD\\]|\\[4K\\]");
-    
+    private static final Duration DEFAULT_DURATION = Duration.standardMinutes(45);
+    private static final Duration DEFAULT_MOVIE_DURATION = Duration.standardMinutes(120);
+
     public static String createBrandUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
@@ -310,6 +313,13 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         version.setCanonicalUri(cleanUri(url));
         if (source.getDuration() != null) {
             version.setDuration(source.getDuration());
+        } else{
+            //add defaults (ECOTEST-428)
+            if (MOVIE.equals(source.getContentType())) {
+                version.setDuration(DEFAULT_MOVIE_DURATION);
+            } else {
+                version.setDuration(DEFAULT_DURATION);
+            }
         }
         version.setManifestedAs(encodings);
         return version;

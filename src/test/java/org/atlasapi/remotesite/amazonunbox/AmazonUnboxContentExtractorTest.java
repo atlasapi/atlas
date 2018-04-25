@@ -461,6 +461,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withUrl("http://www.amazon.com/gp/product/B007FUIBHM/ref=atv_feed_catalog")
                 .withSynopsis("Synopsis of the item")
                 .withLargeImageUrl("Large Image")
+                .withMetabroadcastImageUrl("Large Image")
                 .withContentType(type)
                 .withReleaseDate(new DateTime(2012, 6, 6, 0, 0, 0))
                 .withQuality(Quality.SD)

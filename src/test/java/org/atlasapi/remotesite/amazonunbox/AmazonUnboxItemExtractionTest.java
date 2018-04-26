@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.amazonunbox;
 
+import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxContentExtractor.MBST_BASE_IMAGE_URL;
 import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxGenre.ACTION;
 import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxGenre.ADVENTURE;
 import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxGenre.THRILLER;
@@ -50,7 +51,7 @@ public class AmazonUnboxItemExtractionTest {
         assertEquals(ImmutableSet.of("Liz Adams","Superman"), item.getDirectors());
         assertEquals(ImmutableSet.of(ACTION, ADVENTURE, THRILLER), item.getGenres());
         assertEquals("http://ecx.images-amazon.com/images/I/51LG6PC6P1L._SX320_SY240_.jpg", item.getLargeImageUrl());
-        assertEquals("https://users-images-atlas.metabroadcast.com/?source=http%3A%2F%2Fecx.images-amazon.com%2Fimages%2FI%2F51LG6PC6P1L.jpg", item.getMetabroadcastImageUrl());
+        assertEquals("https://users-images-atlas.metabroadcast.com/?profile=sixteen-nine-blur&source=http%3A%2F%2Fecx.images-amazon.com%2Fimages%2FI%2F51LG6PC6P1L.jpg", item.getMetabroadcastImageUrl());
         assertEquals(Quality.SD, item.getQuality());
         assertEquals(Boolean.FALSE, item.isPreOrder());
         assertEquals(Boolean.FALSE, item.isRental());

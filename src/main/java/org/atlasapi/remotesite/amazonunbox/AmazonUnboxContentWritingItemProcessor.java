@@ -193,7 +193,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
             //We also discard Clips. ECOTEST-429
             if (episode.getTitle() != null && !episode.getVersions().isEmpty()) {
-                if (episode.getTitle().toLowerCase().startsWith("clips:")) {
+                if (episode.getTitle().toLowerCase().startsWith("clip")) {
                     //check duration
                     Version version = episode.getVersions().iterator().next();
                     if (version.getDuration() != null && version.getDuration() <= 180) { //seconds

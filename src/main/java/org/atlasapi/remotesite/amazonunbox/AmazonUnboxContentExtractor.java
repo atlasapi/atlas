@@ -72,7 +72,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
 
-    private static final String MBST_BASE_IMAGE_URL = "https://users-images-atlas.metabroadcast.com/?source=";
+    private static final String MBST_BASE_IMAGE_URL = "https://users-images-atlas.metabroadcast.com/?profile=sixteen-nine-blur&source=";
 
     //because the YV code requires dates in order to pick up which ondemands to generate, but amazon sends nothing.
     private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2018-01-01T00:00:00Z")); //<- specific date requested by YV (ECOTEST-435)

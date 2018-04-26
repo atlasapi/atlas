@@ -1,6 +1,5 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxContentExtractor.MBST_BASE_IMAGE_URL;
 import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxGenre.ACTION;
 import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxGenre.ADVENTURE;
 import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxGenre.THRILLER;

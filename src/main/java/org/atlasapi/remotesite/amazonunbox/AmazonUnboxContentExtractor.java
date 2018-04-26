@@ -548,22 +548,22 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     public static String getMetabroadcastImageUrl(String amazonUrl) {
-        int lastDot = amazonUrl.lastIndexOf('.');
-        int preLastDot = amazonUrl.lastIndexOf('.', lastDot - 1);
-        String amazonRawUrl;
-        if (lastDot <= 0 || preLastDot <= 0) {
-            amazonRawUrl = amazonUrl;
-        } else {
-            amazonRawUrl = amazonUrl.substring(0, preLastDot)
-                           + amazonUrl.substring(lastDot, amazonUrl.length());
-        }
+//        int lastDot = amazonUrl.lastIndexOf('.');
+//        int preLastDot = amazonUrl.lastIndexOf('.', lastDot - 1);
+//        String amazonRawUrl;
+//        if (lastDot <= 0 || preLastDot <= 0) {
+//            amazonRawUrl = amazonUrl;
+//        } else {
+//            amazonRawUrl = amazonUrl.substring(0, preLastDot)
+//                           + amazonUrl.substring(lastDot, amazonUrl.length());
+//        }
 
         try {
-            return MBST_BASE_IMAGE_URL + URLEncoder.encode(amazonRawUrl, "UTF-8");
+            return MBST_BASE_IMAGE_URL + URLEncoder.encode(amazonUrl, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             log.error("", e);
         }
 
-        return amazonRawUrl;
+        return amazonUrl;
     }
 }

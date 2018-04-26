@@ -23,7 +23,6 @@ public class AmazonUnboxItem {
     // TODO how to parse genres
     private final Set<AmazonUnboxGenre> genres;
     private final String largeImageUrl;
-    private final String metabroadcastImageUrl;
     private final Quality quality;
     private final Boolean isPreOrder;
     private final Boolean isRental;
@@ -92,8 +91,7 @@ public class AmazonUnboxItem {
         this.isTrident = builder.isTrident;
         this.starring = ImmutableSet.copyOf(builder.starring);
         this.genres = ImmutableSet.copyOf(builder.genres);
-        this.largeImageUrl = builder.largeImageUrl; //this is retained cause we want it in telescope.
-        this.metabroadcastImageUrl = builder.metabroadcastImageUrl;
+        this.largeImageUrl = builder.largeImageUrl;
         this.quality = builder.quality;
         this.isPreOrder = builder.isPreOrder;
         this.isRental = builder.isRental;
@@ -145,10 +143,6 @@ public class AmazonUnboxItem {
 
     public String getLargeImageUrl() {
         return largeImageUrl;
-    }
-
-    public String getMetabroadcastImageUrl() {
-        return metabroadcastImageUrl;
     }
     
     public Quality getQuality() {
@@ -303,7 +297,6 @@ public class AmazonUnboxItem {
                 .add("episodeNumber", episodeNumber)
                 .add("genres", genres)
                 .add("largeImageUrl", largeImageUrl)
-                .add("metabroadcastImageUrl", metabroadcastImageUrl)
                 .add("quality", quality)
                 .add("isPreOrder", isPreOrder)
                 .add("isRental", isRental)
@@ -338,7 +331,6 @@ public class AmazonUnboxItem {
         private Integer episodeNumber;
         private Set<AmazonUnboxGenre> genres = Sets.newHashSet();
         private String largeImageUrl;
-        private String metabroadcastImageUrl;
         private Quality quality;
         private Boolean isPreOrder;
         private Boolean isRental;
@@ -424,11 +416,6 @@ public class AmazonUnboxItem {
 
         public Builder withLargeImageUrl(String largeImageUrl) {
             this.largeImageUrl = largeImageUrl;
-            return this;
-        }
-
-        public Builder withMetabroadcastImageUrl(String metabroadcastImageUrl) {
-            this.metabroadcastImageUrl = metabroadcastImageUrl;
             return this;
         }
         

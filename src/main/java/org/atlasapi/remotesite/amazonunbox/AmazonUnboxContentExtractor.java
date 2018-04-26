@@ -72,8 +72,6 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
 
-    private static final String MBST_BASE_IMAGE_URL = "https://users-images-atlas.metabroadcast.com/?profile=sixteen-nine-blur&source=";
-
     //because the YV code requires dates in order to pick up which ondemands to generate, but amazon sends nothing.
     private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2018-01-01T00:00:00Z")); //<- specific date requested by YV (ECOTEST-435)
     private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse("2100-01-10T00:00:00Z"));
@@ -195,7 +193,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             //and for the same reason, the image will be assigned later by using one from the series
         } else {
             brand.setDescription(StringEscapeUtils.unescapeXml(source.getSynopsis()));
-            brand.setImage(source.getMetabroadcastImageUrl());
+            brand.setImage(source.getLargeImageUrl());
         }
         return brand;
 
@@ -435,7 +433,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         } else { //but if that is blank, use the episode title (YV requires a synopsis)
             content.setShortDescription(source.getTitle());
         }
-        content.setImage(source.getMetabroadcastImageUrl());
+        content.setImage(source.getLargeImageUrl());
         content.setImages(generateImages(source));
         //Amazon sends some items with date 2049-12-20. This invalid, and we suppress" it.
         if (source.getReleaseDate() != null && source.getReleaseDate().getYear() != 2049) {
@@ -526,10 +524,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private List<Image> generateImages(AmazonUnboxItem item) {
-        if (Strings.isNullOrEmpty(item.getMetabroadcastImageUrl())) {
+        if (Strings.isNullOrEmpty(item.getLargeImageUrl())) {
             return ImmutableList.of();
         }
-        Image image = new Image(item.getMetabroadcastImageUrl());
+        Image image = new Image(item.getLargeImageUrl());
         image.setType(ImageType.PRIMARY);
         image.setWidth(320);
         image.setHeight(240);
@@ -545,25 +543,5 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         } else {
             return ImmutableSet.of();
         }
-    }
-
-    public static String getMetabroadcastImageUrl(String amazonUrl) {
-//        int lastDot = amazonUrl.lastIndexOf('.');
-//        int preLastDot = amazonUrl.lastIndexOf('.', lastDot - 1);
-//        String amazonRawUrl;
-//        if (lastDot <= 0 || preLastDot <= 0) {
-//            amazonRawUrl = amazonUrl;
-//        } else {
-//            amazonRawUrl = amazonUrl.substring(0, preLastDot)
-//                           + amazonUrl.substring(lastDot, amazonUrl.length());
-//        }
-
-        try {
-            return MBST_BASE_IMAGE_URL + URLEncoder.encode(amazonUrl, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.error("", e);
-        }
-
-        return amazonUrl;
     }
 }

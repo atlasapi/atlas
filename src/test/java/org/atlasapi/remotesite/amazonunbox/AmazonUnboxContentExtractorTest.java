@@ -426,7 +426,6 @@ public class AmazonUnboxContentExtractorTest {
         AmazonUnboxItem amazonUnboxItem =
                 createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
                         .withLargeImageUrl(null)
-                        .withMetabroadcastImageUrl(null)
                         .build();
 
         Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonUnboxItem));
@@ -439,7 +438,6 @@ public class AmazonUnboxContentExtractorTest {
         AmazonUnboxItem amazonUnboxItem =
                 createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
                         .withLargeImageUrl("")
-                        .withMetabroadcastImageUrl("")
                         .build();
 
         Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonUnboxItem));
@@ -463,7 +461,6 @@ public class AmazonUnboxContentExtractorTest {
                 .withUrl("http://www.amazon.com/gp/product/B007FUIBHM/ref=atv_feed_catalog")
                 .withSynopsis("Synopsis of the item")
                 .withLargeImageUrl("Large Image")
-                .withMetabroadcastImageUrl("Large Image")
                 .withContentType(type)
                 .withReleaseDate(new DateTime(2012, 6, 6, 0, 0, 0))
                 .withQuality(Quality.SD)

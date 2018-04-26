@@ -154,7 +154,7 @@ public class EquivTaskModule {
     private static final RepetitionRule BT_VOD_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(3, 0));
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(3, 0));
+            RepetitionRules.daily(new LocalTime(8, 0));
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(20, 0));
     private static final RepetitionRule WIKIPEDIA_EQUIVALENCE_REPETITION =

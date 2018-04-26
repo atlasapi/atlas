@@ -1,7 +1,6 @@
 package org.atlasapi.remotesite.amazonunbox;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -103,8 +102,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final BiMap<String, ModelWithPayload<Content>> seenContent = HashBiMap.create();
     private final Set<String> seriesUris = new HashSet<>();
     private final Set<String> episodeUris = new HashSet<>();
-
-    private Set<String> seenImages = new HashSet<>();
     private OwlTelescopeReporter telescope;
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
@@ -151,7 +148,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         seenContent.clear();
         seriesUris.clear();
         episodeUris.clear();
-        seenImages.clear();
 
         this.telescope = telescope;
     }
@@ -160,7 +156,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     public void process(AmazonUnboxItem item) {
         for (Content content : extract(item)) {
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
-            cleanImage(contentWithPayload.getModel());
             if (shouldDiscard(contentWithPayload)) {
                 continue;
             }
@@ -197,6 +192,11 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                     //check duration
                     Version version = episode.getVersions().iterator().next();
                     if (version.getDuration() != null && version.getDuration() <= 180) { //seconds
+                        telescope.reportFailedEvent(
+                                "Episode was discarded because it was a clip",
+                                EntityType.EPISODE,
+                                contentWithPayload.getPayload()
+                        );
                         return true;
                     }
                 }
@@ -216,20 +216,14 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         processStandAloneEpisodes(telescope);
 
         if (!cached.isEmpty()) {
-            log.warn("{} pieces of amazon content have been extracted but not written", cached.values().size());
-            for (Entry<String, Collection<ModelWithPayload<? extends Content>>>
-                    mapping : cached.asMap().entrySet()) {
-
-                for (ModelWithPayload<? extends Content> contentWithPayload : mapping.getValue()) {
-                    telescope.reportFailedEvent(
-                            contentWithPayload.getModel().getId(),
-                            "Content has been extracted but not written",
-                            contentWithPayload.getModel(),
-                            contentWithPayload.getPayload()
-                            );
-                    log.warn("Not written: {} - {} ", mapping.getKey(), contentWithPayload.getModel() );
-                }
-            }
+            log.warn(
+                    "{} pieces of amazon content have been referenced but not seen",
+                    cached.keys().size()
+            );
+            telescope.reportFailedEvent(
+                    "The following content has been referenced, but was seen itself in the feed",
+                    cached.asMap().keySet()
+            );
         }
 
         seenContainer.clear();
@@ -242,18 +236,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         seenContent.clear();
         seriesUris.clear();
         episodeUris.clear();
-        seenImages.clear();
 
         telescope = null;
-    }
-
-    //Because YV has their own image fill-in rules, we'll only retain each image once.
-    private void cleanImage(Content content) {
-        if(seenImages.contains(content.getImage())){
-            content.setImage("");
-        } else {
-            seenImages.add(content.getImage());
-        }
     }
 
     private void assignImagesToBrands() {

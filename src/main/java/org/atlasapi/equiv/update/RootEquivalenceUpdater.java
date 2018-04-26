@@ -1,13 +1,18 @@
 package org.atlasapi.equiv.update;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.base.Maybe;
+import org.atlasapi.equiv.handlers.ContainerSummaryRequiredException;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.RootEquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -65,7 +70,28 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
 
     private boolean updateContentEquivalence(Content content, OwlTelescopeReporter telescope) {
         log.trace("equiv update {}", content);
-        return updater.updateEquivalences(content, telescope);
+        try {
+            return updater.updateEquivalences(content, telescope);
+        } catch (ContainerSummaryRequiredException e) {
+            Optional<Identified> maybeContainer = contentResolver.findByCanonicalUris(ImmutableSet.of(e.getItem().getContainer().getUri()))
+                    .getFirstValue()
+                    .toOptional();
+
+            if (maybeContainer.isPresent()) {
+                // Try rerunning container equiv
+                log.warn(
+                        "Trying to rerun container {} equiv for item {}",
+                        e.getItem().getContainer().getId(),
+                        content.getId()
+                );
+                updater.updateEquivalences((Container) maybeContainer.get(), telescope);
+                // Retry the failed content
+                return updater.updateEquivalences(content, telescope);
+            } else {
+                log.error("Container {} not found", e.getItem().getContainer().getId(), e);
+                return false;
+            }
+        }
     }
 
     private boolean updateContainer(Container container, OwlTelescopeReporter telescope) {

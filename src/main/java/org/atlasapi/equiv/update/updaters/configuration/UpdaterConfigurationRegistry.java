@@ -776,15 +776,15 @@ public class UpdaterConfigurationRegistry {
                 .withSource(ITV_CPS)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, BARB_TRANSMISSIONS, BARB_MASTER, UKTV)
+                        ImmutableSet.of(PA, BBC_NITRO, BARB_TRANSMISSIONS, BARB_MASTER, UKTV)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        ImmutableSet.of(PA, BBC_NITRO, UKTV)
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_SERIES,
+                        ImmutableSet.of(PA, BBC_NITRO, UKTV)
                 )
                 .build();
     }
@@ -794,15 +794,15 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BBC_NITRO)
                 .withItemEquivalenceUpdater(
                         STANDARD_ITEM,
-                        ImmutableSet.of(PA)
+                        ImmutableSet.of(PA, BARB_TRANSMISSIONS, BARB_MASTER, UKTV)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
-                        ImmutableSet.of(PA)
+                        ImmutableSet.of(PA, UKTV)
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,
-                        ImmutableSet.of(PA)
+                        ImmutableSet.of(PA, UKTV)
                 )
                 .build();
     }

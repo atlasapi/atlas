@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.amazonunbox;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Currency;
 import java.util.List;
 import java.util.Set;
@@ -69,6 +71,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String URL_SUFFIX_TO_REMOVE = "ref=atv_feed_catalog";
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
+
+    private static final String MBST_BASE_IMAGE_URL = "https://users-images-atlas.metabroadcast.com/?source=";
 
     //because the YV code requires dates in order to pick up which ondemands to generate, but amazon sends nothing.
     private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2018-01-01T00:00:00Z")); //<- specific date requested by YV (ECOTEST-435)
@@ -543,7 +547,23 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         }
     }
 
-    public static String getMetabroadcastImageUrl(String amazonImageUrl){
-        return amazonImageUrl;
+    public static String getMetabroadcastImageUrl(String amazonUrl) {
+        int lastDot = amazonUrl.lastIndexOf('.');
+        int preLastDot = amazonUrl.lastIndexOf('.', lastDot - 1);
+        String amazonRawUrl;
+        if (lastDot <= 0 || preLastDot <= 0) {
+            amazonRawUrl = amazonUrl;
+        } else {
+            amazonRawUrl = amazonUrl.substring(0, preLastDot)
+                           + amazonUrl.substring(lastDot, amazonUrl.length());
+        }
+
+        try {
+            return MBST_BASE_IMAGE_URL + URLEncoder.encode(amazonRawUrl, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            log.error("", e);
+        }
+
+        return amazonRawUrl;
     }
 }

@@ -221,7 +221,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                     cached.keys().size()
             );
             telescope.reportFailedEvent(
-                    "The following content has been referenced, but was seen itself in the feed",
+                    "The following content has been referenced, but was not seen itself in the feed",
                     cached.asMap().keySet()
             );
         }

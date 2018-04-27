@@ -163,7 +163,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 continue;
             }
             if(contentWithPayload.getModel().getCanonicalUri().equals("http://unbox.amazon.co.uk/B076T6V23Y")){
-                log.warn("AMAZON DEBUG. addinggm "deb it to seen content B076T6V23Y.");
+                log.warn("AMAZON DEBUG. adding B076T6V23Y it to seen content.");
             }
             seenContent.put(content.getCanonicalUri(), contentWithPayload);
 

@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Currency;
 import java.util.List;
 import java.util.Set;
@@ -420,6 +418,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         content.setGenres(generateGenres(source));
         content.setLanguages(generateLanguages(source));
         String desc = StringEscapeUtils.unescapeXml(source.getSynopsis());
+        if (desc != null) {
+            desc = desc.trim();
+        }
         if(!Strings.isNullOrEmpty(desc)){
             content.setDescription(desc);
         } else {

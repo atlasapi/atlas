@@ -321,6 +321,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             if (MOVIE.equals(source.getContentType())) {
                 version.setDuration(DEFAULT_MOVIE_DURATION);
             } else {
+                log.warn("AMAZON DEBUG: content with no duration {}", source.getAsin());
                 version.setDuration(DEFAULT_DURATION);
             }
         }

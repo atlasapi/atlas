@@ -156,10 +156,15 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     public void process(AmazonUnboxItem item) {
         for (Content content : extract(item)) {
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
+            if(contentWithPayload.getModel().getCanonicalUri().equals("http://unbox.amazon.co.uk/B076T6V23Y")){
+                log.warn("AMAZON DEBUG. extracted B076T6V23Y.");
+            }
             if (shouldDiscard(contentWithPayload)) {
                 continue;
             }
-
+            if(contentWithPayload.getModel().getCanonicalUri().equals("http://unbox.amazon.co.uk/B076T6V23Y")){
+                log.warn("AMAZON DEBUG. addinggm "deb it to seen content B076T6V23Y.");
+            }
             seenContent.put(content.getCanonicalUri(), contentWithPayload);
 
             //Keep a note of all series and episodes
@@ -493,7 +498,13 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         while(allAmazonContent.hasNext()){
             allAmazonContentSize++;
             Content examinedContent = allAmazonContent.next();
+            if(examinedContent.getCanonicalUri().equals("http://unbox.amazon.co.uk/B076T6V23Y")){
+                log.warn("AMAZON DEBUG. checking if B076T6V23Y exists in seen content.");
+            }
             if(!seenContent.containsKey(examinedContent.getCanonicalUri())){
+                if(examinedContent.getCanonicalUri().equals("http://unbox.amazon.co.uk/B076T6V23Y")){
+                    log.warn("AMAZON DEBUG. not in seen content.");
+                }
                 notSeen.add(examinedContent);
             }
         }

@@ -373,7 +373,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             ModelWithPayload<Content> contentModelWithPayload = series.get(i);
             checkAndWriteSeenContent(contentModelWithPayload, telescope);
         }
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1000 && i < notContainers.size(); i++) {
             ModelWithPayload<Content> c = notContainers.get(i);
             checkAndWriteSeenContent(c, telescope);
         }

@@ -365,9 +365,18 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         }
 
         //Process Brands first, Series next and everything else last.
-        brands.forEach(c -> checkAndWriteSeenContent(c, telescope));
-        series.forEach(c -> checkAndWriteSeenContent(c, telescope));
-        notContainers.forEach(c -> checkAndWriteSeenContent(c, telescope));
+        for (int i = 0; i < brands.size(); i++) {
+            ModelWithPayload<Content> brand = brands.get(i);
+            checkAndWriteSeenContent(brand, telescope);
+        }
+        for (int i = 0; i < series.size(); i++) {
+            ModelWithPayload<Content> contentModelWithPayload = series.get(i);
+            checkAndWriteSeenContent(contentModelWithPayload, telescope);
+        }
+        for (int i = 0; i < 1000; i++) {
+            ModelWithPayload<Content> c = notContainers.get(i);
+            checkAndWriteSeenContent(c, telescope);
+        }
     }
 
     private void checkAndWriteSeenContent(

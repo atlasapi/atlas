@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Currency;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +55,7 @@ import static org.atlasapi.remotesite.amazonunbox.ContentType.TVEPISODE;
 import static org.atlasapi.remotesite.amazonunbox.ContentType.TVSEASON;
 
 public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem,
-                                                    Iterable<Content>> {
+        Iterable<Content>> {
 
     private static final Logger log = LoggerFactory.getLogger(AmazonUnboxContentExtractor.class);
 
@@ -73,46 +71,48 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
 
     //because the YV code requires dates in order to pick up which ondemands to generate, but amazon sends nothing.
-    private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2018-01-01T00:00:00Z")); //<- specific date requested by YV (ECOTEST-435)
-    private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse("2100-01-10T00:00:00Z"));
+    private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse(
+            "2018-01-01T00:00:00Z")); //<- specific date requested by YV (ECOTEST-435)
+    private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse(
+            "2100-01-10T00:00:00Z"));
 
     //You can use grep TITLE  GBAmazonUnboxCatalog-2017-12-12.xml | g -o "\[.*\]" | sort | uniq
     //to search the xml file and see if any new tags have been added.
     private static final Pattern UHD_PATTERN =
-            Pattern.compile("\\[Ultra HD\\]|\\[ULTRA HD\\]|\\[UHD\\]|\\[4K\\/Ultra HD\\]|\\[4K\\/UHD\\]|\\[4K\\]");
+            Pattern.compile(
+                    "\\[Ultra HD\\]|\\[ULTRA HD\\]|\\[UHD\\]|\\[4K\\/Ultra HD\\]|\\[4K\\/UHD\\]|\\[4K\\]");
     private static final Duration DEFAULT_DURATION = Duration.standardMinutes(45);
     private static final Duration DEFAULT_MOVIE_DURATION = Duration.standardMinutes(120);
 
     public static String createBrandUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
-    
+
     public static String createSeriesUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
-    
+
     public static String createEpisodeUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
-    
+
     public static String createFilmUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
 
     @Override
     public Iterable<Content> extract(AmazonUnboxItem source) {
-        if(MOVIE.equals(source.getContentType())) {
+        if (MOVIE.equals(source.getContentType())) {
             return ImmutableSet.of(extractFilm(source));
         }
         //as things currently are, these are not in the feed, and the extractBrand() method will not
         //properly cope with this. If things change amend accordingly.
-//        if (TVSERIES.equals(source.getContentType())) {
-//            return ImmutableSet.of(extractBrand(source));
-//        }
+        //        if (TVSERIES.equals(source.getContentType())) {
+        //            return ImmutableSet.of(extractBrand(source));
+        //        }
         else if (TVSEASON.equals(source.getContentType())) {
             return ImmutableSet.of(extractSeries(source));
-        }
-        else if (TVEPISODE.equals(source.getContentType())) {
+        } else if (TVEPISODE.equals(source.getContentType())) {
             // Brands are not in the Unbox feed, so we must
             // create them from the data we have for an episode
             Brand brand = extractBrand(source);
@@ -138,7 +138,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             }
             episode.setParentRef(new ParentRef(createBrandUri(source.getSeriesAsin())));
             episode.setSpecialization(Specialization.TV);
-            
+
             item = episode;
         } else {
             item = new Item();
@@ -165,7 +165,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     @Nullable
     private Brand extractBrand(AmazonUnboxItem source) {
         String brandAsin = source.getSeriesAsin();
-        if(brandAsin == null || brandAsin.equals("")){
+        if (brandAsin == null || brandAsin.equals("")) {
             return null;
         }
 
@@ -192,7 +192,15 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             brand.setDescription(source.getSeriesTitle());
             //and for the same reason, the image will be assigned later by using one from the series
         } else {
-            brand.setDescription(StringEscapeUtils.unescapeXml(source.getSynopsis()));
+            String synopsis = StringEscapeUtils.unescapeXml(source.getSynopsis());
+            if (synopsis != null) {
+                synopsis = synopsis.trim();
+            }
+            if (synopsis != null && !synopsis.isEmpty()) {
+                brand.setDescription(synopsis);
+            } else {
+                brand.setDescription(source.getTitle());
+            }
             brand.setImage(source.getLargeImageUrl());
         }
         return brand;
@@ -247,7 +255,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             }
         } //---SD URLS--- (its an else-if because currently one asin = one SD/HD RENT/BUY combo.)
         else if (!Strings.isNullOrEmpty(source.getUnboxSdPurchaseUrl())
-                  && !Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
+                 && !Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
             sdLocations.add(createLocation(
                     RevenueContract.PAY_TO_BUY,
                     source.getUnboxSdPurchasePrice(),
@@ -257,7 +265,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                 sdLocations.add(createSubLocation(source.getUnboxSdPurchaseUrl()));
                 addedSubscription = true;
             }
-        }  else if (!Strings.isNullOrEmpty(source.getUnboxSdRentalUrl())
+        } else if (!Strings.isNullOrEmpty(source.getUnboxSdRentalUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxSdRentalPrice())) {
             sdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,
@@ -281,18 +289,23 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             }
         }
 
-
         ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
         if (!hdLocations.isEmpty()) {
-            if(isUhd) { //add both a UHD and HD location.
-                encodings.add(createEncoding(org.atlasapi.media.entity.Quality.FOUR_K, hdLocations));
+            if (isUhd) { //add both a UHD and HD location.
+                encodings.add(createEncoding(
+                        org.atlasapi.media.entity.Quality.FOUR_K,
+                        hdLocations
+                ));
             }
             encodings.add(createEncoding(org.atlasapi.media.entity.Quality.HD, hdLocations));
 
         }
         if (!sdLocations.isEmpty()) {
-            if(isUhd) { //add both a UHD and SD location.
-                encodings.add(createEncoding(org.atlasapi.media.entity.Quality.FOUR_K, sdLocations));
+            if (isUhd) { //add both a UHD and SD location.
+                encodings.add(createEncoding(
+                        org.atlasapi.media.entity.Quality.FOUR_K,
+                        sdLocations
+                ));
             }
             encodings.add(createEncoding(org.atlasapi.media.entity.Quality.SD, sdLocations));
         }
@@ -318,7 +331,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         version.setCanonicalUri(cleanUri(url));
         if (source.getDuration() != null) {
             version.setDuration(source.getDuration());
-        } else{
+        } else {
             //add defaults (ECOTEST-428)
             if (MOVIE.equals(source.getContentType())) {
                 version.setDuration(DEFAULT_MOVIE_DURATION);
@@ -329,10 +342,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         version.setManifestedAs(encodings);
         return version;
     }
-    
+
     private Encoding createEncoding(org.atlasapi.media.entity.Quality quality,
             Set<Location> locations) {
-        
+
         Encoding encoding = new Encoding();
         if (quality != org.atlasapi.media.entity.Quality.SD) {
             encoding.setHighDefinition(true);
@@ -342,7 +355,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         encoding.setAvailableAt(locations);
         return encoding;
     }
-    
+
     private Location createLocation(RevenueContract revenueContract,
             @Nullable String price, String url) {
         String cleanedUri = cleanUri(url);
@@ -361,9 +374,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     /**
      * The plan is to create a unique identifier for each locations, so can fit in the same set
      * multiple locations with the same uri, but different revenue methods.
-     * @return
+     *
      * @param cleanedUri
      * @param revenueContract
+     * @return
      */
     private String createCannonicalUri(
             String cleanedUri, RevenueContract revenueContract) {
@@ -371,7 +385,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private String cleanUri(String url) {
-        if(url == null){
+        if (url == null) {
             return null;
         }
         return url.replaceAll(TAG_PLACEHOLDER, "").replaceAll(URL_SUFFIX_TO_REMOVE, "");
@@ -399,10 +413,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         policy.setAvailabilityEnd(POLICY_AVAILABILITY_ENDS);
         policy.setAvailabilityStart(POLICY_AVAILABILITY_START);
 
-
         return policy;
     }
-    
+
     private void setCommonFields(Content content, String title, String uri) {
         content.setCanonicalUri(uri);
         content.setActivelyPublished(true);
@@ -416,11 +429,14 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             AmazonUnboxItem source,
             String uri
     ) {
-        setCommonFields(content,source.getTitle(), uri);
+        setCommonFields(content, source.getTitle(), uri);
         content.setGenres(generateGenres(source));
         content.setLanguages(generateLanguages(source));
         String desc = StringEscapeUtils.unescapeXml(source.getSynopsis());
-        if(!Strings.isNullOrEmpty(desc)){
+        if (desc != null) {
+            desc = desc.trim();
+        }
+        if (!Strings.isNullOrEmpty(desc)) {
             content.setDescription(desc);
         } else {
             content.setDescription(source.getTitle());
@@ -468,8 +484,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     /**
-     * @param source supplied for completeness, so that the signature doesn't need changing if 
-     * languages are ingested at a later point  
+     * @param source supplied for completeness, so that the signature doesn't need changing if
+     *               languages are ingested at a later point
      */
     private Set<String> generateLanguages(AmazonUnboxItem source) { //NOSONAR
         // YV requires the language to be correct. We ingest nothing so we store nothing. YV output
@@ -500,7 +516,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private List<Alias> generateAliases(AmazonUnboxItem item) {
-        Alias asinAlias = new Alias(AmazonUnboxContentWritingItemProcessor.GB_AMAZON_ASIN, item.getAsin());
+        Alias asinAlias = new Alias(
+                AmazonUnboxContentWritingItemProcessor.GB_AMAZON_ASIN,
+                item.getAsin()
+        );
         if (item.getTConst() == null) {
             return ImmutableList.of(asinAlias);
         }
@@ -538,7 +557,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private Iterable<Certificate> generateCertificates(AmazonUnboxItem item) {
-        if(!Strings.isNullOrEmpty(item.getRating())) {
+        if (!Strings.isNullOrEmpty(item.getRating())) {
             return ImmutableSet.of(new Certificate(item.getRating(), Countries.GB));
         } else {
             return ImmutableSet.of();

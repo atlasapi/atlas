@@ -9,10 +9,8 @@ import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
-import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
-import org.atlasapi.equiv.results.extractors.ContinueUntilOneWorksExtractor;
-import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
-import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
+import org.atlasapi.equiv.results.extractors.AllWithTheSameHighscoreAndPublisherExtractor;
+import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
@@ -24,6 +22,7 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.scorers.SequenceContainerScorer;
+import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
@@ -32,6 +31,7 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
 
@@ -59,15 +59,18 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                                 dependencies.getEquivSummaryStore()
                         )
                 )
-                .withScorer(
-                        new SequenceContainerScorer()
+                .withScorers(
+                        ImmutableSet.of(
+                                new TitleMatchingContainerScorer(2),
+                                new SequenceContainerScorer()
+                        )
                 )
                 .withCombiner(
                         new NullScoreAwareAveragingCombiner<>()
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(0.25),
+                                new MinimumScoreFilter<>(0.9999),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 ExclusionListFilter.create(
@@ -86,14 +89,9 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                                 //this should equiv all amazon versions of the same content together
                                 //then let it equate with other stuff as well.
                                 RemoveAndCombineExtractor.create(
-                                        AllOverOrEqThresholdExtractor.create(3.0),
-                                        ContinueUntilOneWorksExtractor.create(
-                                                ImmutableList.of(
-                                                        MultipleCandidateExtractor.create(),
-                                                        PercentThresholdEquivalenceExtractor.moreThanPercent(
-                                                                90)
-                                                )
-                                        )
+                                        AllWithTheSameHighscoreAndPublisherExtractor.create(3.00),
+                                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
+                                                .atLeastNTimesGreater(1.5)
                                 )
                         )
                 )

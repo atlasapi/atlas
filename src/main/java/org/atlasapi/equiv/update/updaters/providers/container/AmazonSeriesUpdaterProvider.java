@@ -8,7 +8,7 @@ import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
-import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
+import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighscoreAndPublisherExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
@@ -66,7 +66,7 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                         )
                 )
                 .withCombiner(
-                        new NullScoreAwareAveragingCombiner<>()
+                        new AddingEquivalenceCombiner<>()
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(

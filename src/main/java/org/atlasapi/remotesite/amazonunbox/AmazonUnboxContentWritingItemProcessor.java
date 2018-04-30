@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -54,6 +55,8 @@ import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxContentExtractor.UR
 public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemProcessor {
 
     private static final Ordering<Content> REVERSE_HIERARCHICAL_ORDER = HierarchicalOrdering.create().reverse();
+
+    private static final Duration CLIP_MAX_DURATION = Duration.ofMinutes(3);
 
     public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
     private static final String UNPUBLISH_NO_PAYLOAD_STRING = "This item lacks payload as it was not seen in the this ingest, and consequently it is being unpublished.";
@@ -146,12 +149,12 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private boolean shouldDiscard(ModelWithPayload<Content> contentWithPayload) {
-        if(contentWithPayload.getModel() instanceof Episode){
+        if (contentWithPayload.getModel() instanceof Episode) {
             Episode episode = contentWithPayload.asModelType(Episode.class).getModel();
             Integer episodeNumber = episode.getEpisodeNumber();
             // YV has requested we do not sent trailers, and we don't want to keep trailers either.
             // According to amazon trailers are identified with episodeNumbers 000 or 101.
-            if( episodeNumber == 0 || episodeNumber == 101){
+            if (episodeNumber == 0 || episodeNumber == 101) {
                 telescope.reportFailedEvent(
                         "Episode was discarded because it was a trailer (index 0 or 101)",
                         EntityType.EPISODE,
@@ -159,13 +162,16 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 );
                 return true;
             }
-
+        }
+        if (contentWithPayload.getModel() instanceof Item) {
+            Item item = contentWithPayload.asModelType(Item.class).getModel();
             //We also discard Clips. ECOTEST-429
-            if (episode.getTitle() != null && !episode.getVersions().isEmpty()) {
-                if (episode.getTitle().toLowerCase().startsWith("clip")) {
+            if (item.getTitle() != null && !item.getVersions().isEmpty()) {
+                if (item.getTitle().toLowerCase().startsWith("clip")) {
                     //check duration
-                    Version version = episode.getVersions().iterator().next();
-                    if (version.getDuration() != null && version.getDuration() <= 180) { //seconds
+                    Version version = item.getVersions().iterator().next();
+                    if (version.getDuration() != null
+                            && version.getDuration() < CLIP_MAX_DURATION.getSeconds()) {
                         telescope.reportFailedEvent(
                                 "Episode was discarded because it was a clip",
                                 EntityType.EPISODE,

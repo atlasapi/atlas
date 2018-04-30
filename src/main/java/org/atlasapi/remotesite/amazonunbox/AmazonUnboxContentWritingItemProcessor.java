@@ -1,19 +1,16 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.SetMultimap;
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.common.base.Maybe;
+import org.atlasapi.feeds.tasks.youview.creation.HierarchicalOrdering;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
@@ -34,52 +31,32 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
-import com.metabroadcast.columbus.telescope.client.EntityType;
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.SetMultimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxContentExtractor.URI_PREFIX;
 
 public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemProcessor {
 
-    private static final Ordering<Content> REVERSE_HIERARCHICAL_ORDER = new Ordering<Content>() {
-        @Override
-        public int compare(Content left, Content right) {
-            if (left instanceof Item) {
-                if (right instanceof Item) {
-                    return 0;
-                } else {
-                    return -1;
-                }
-            } else if (left instanceof Series) {
-                if (right instanceof Item) {
-                    return 1;
-                } else if (right instanceof Series) {
-                    return 0;
-                } else {
-                    return -1;
-                }
-            } else {
-                if (right instanceof Brand) {
-                    return 0;
-                } else {
-                    return 1;
-                }
-            }
-        }
-    };
+    private static final Ordering<Content> REVERSE_HIERARCHICAL_ORDER = HierarchicalOrdering.create().reverse();
+
+    private static final Duration CLIP_MAX_DURATION = Duration.ofMinutes(3);
 
     public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
     private static final String UNPUBLISH_NO_PAYLOAD_STRING = "This item lacks payload as it was not seen in the this ingest, and consequently it is being unpublished.";
@@ -172,12 +149,12 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private boolean shouldDiscard(ModelWithPayload<Content> contentWithPayload) {
-        if(contentWithPayload.getModel() instanceof Episode){
+        if (contentWithPayload.getModel() instanceof Episode) {
             Episode episode = contentWithPayload.asModelType(Episode.class).getModel();
             Integer episodeNumber = episode.getEpisodeNumber();
             // YV has requested we do not sent trailers, and we don't want to keep trailers either.
             // According to amazon trailers are identified with episodeNumbers 000 or 101.
-            if( episodeNumber == 0 || episodeNumber == 101){
+            if (episodeNumber == 0 || episodeNumber == 101) {
                 telescope.reportFailedEvent(
                         "Episode was discarded because it was a trailer (index 0 or 101)",
                         EntityType.EPISODE,
@@ -185,13 +162,16 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 );
                 return true;
             }
-
+        }
+        if (contentWithPayload.getModel() instanceof Item) {
+            Item item = contentWithPayload.asModelType(Item.class).getModel();
             //We also discard Clips. ECOTEST-429
-            if (episode.getTitle() != null && !episode.getVersions().isEmpty()) {
-                if (episode.getTitle().toLowerCase().startsWith("clip")) {
+            if (item.getTitle() != null && !item.getVersions().isEmpty()) {
+                if (item.getTitle().toLowerCase().startsWith("clip")) {
                     //check duration
-                    Version version = episode.getVersions().iterator().next();
-                    if (version.getDuration() != null && version.getDuration() <= 180) { //seconds
+                    Version version = item.getVersions().iterator().next();
+                    if (version.getDuration() != null
+                            && version.getDuration() < CLIP_MAX_DURATION.getSeconds()) {
                         telescope.reportFailedEvent(
                                 "Episode was discarded because it was a clip",
                                 EntityType.EPISODE,

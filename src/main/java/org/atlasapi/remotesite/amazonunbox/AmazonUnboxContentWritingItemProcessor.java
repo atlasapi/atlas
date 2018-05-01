@@ -58,8 +58,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private static final Duration CLIP_MAX_DURATION = Duration.ofMinutes(3);
 
-    public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
-    private static final String UNPUBLISH_NO_PAYLOAD_STRING = "This item lacks payload as it was not seen in the this ingest, and consequently it is being unpublished.";
+    public static final String GB_AMAZON_ASIN = "gb:amazon:asin"; //this should be kept in sync with a similar field in atlas-feeds
+    private static final String UNPUBLISH_NO_PAYLOAD_STRING = "This item lacks payload as it was not seen in this ingest, and consequently it is being unpublished.";
 
     private static final Predicate<Alias> AMAZON_ALIAS =
             input -> GB_AMAZON_ASIN.equals(input.getNamespace());
@@ -67,9 +67,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             input -> input.startsWith(URI_PREFIX);
 
 
-    private final Logger log = LoggerFactory.getLogger(
-            AmazonUnboxContentWritingItemProcessor.class
-    );
+    private final Logger log= LoggerFactory.getLogger(AmazonUnboxContentWritingItemProcessor.class);
     private final Map<String, ModelWithPayload<? extends Container>>
             seenContainer = Maps.newHashMap();
     private final SetMultimap<String, ModelWithPayload<? extends Content>>
@@ -173,8 +171,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                     if (version.getDuration() != null
                             && version.getDuration() < CLIP_MAX_DURATION.getSeconds()) {
                         telescope.reportFailedEvent(
-                                "Episode was discarded because it was a clip",
-                                EntityType.EPISODE,
+                                "Content was discarded because it was a clip",
+                                contentWithPayload.getModel(),
                                 contentWithPayload.getPayload()
                         );
                         return true;
@@ -202,7 +200,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             );
             telescope.reportFailedEvent(
                     "The following content has been referenced, but was not seen itself in the feed",
-                    cached.asMap().keySet()
+                    cached.asMap()
             );
         }
 
@@ -547,7 +545,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             } else {
                 writer.createOrUpdate(content.asModelType(Container.class).getModel());
                 reportContentWithPayloadToTelescope(content, telescope);
-
             }
         } else if (content.getModel() instanceof Item) {
             if (content.getModel() instanceof Episode) {

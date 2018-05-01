@@ -108,7 +108,6 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
                 container.setThisOrChildLastUpdated(now);
             }
         } else if (container.getLastUpdated() == null) {
-            log.info("new container or model change");
             container.setLastUpdated(now);
             container.setThisOrChildLastUpdated(now);
         }

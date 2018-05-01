@@ -76,7 +76,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
-                                DescriptionMatchingScorer.makeScorer(),
+                                //DescriptionMatchingScorer.makeScorer(), TODO sometimes broken ATM
                                 new SequenceItemScorer(Score.ONE)
                         )
                 )
@@ -105,7 +105,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                 //get all items that scored perfectly everywhere.
                                 //this should equiv all amazon versions of the same content together
                                 //then let it equate with other stuff as well.
-                                AllOverOrEqThresholdExtractor.create(4.00),
+                                AllOverOrEqThresholdExtractor.create(3.00), // TODO: dropped as Description scorer removed
                                 ExcludePublisherThenExtractExtractor.create(
                                         Publisher.AMAZON_UNBOX, //we don't want to equiv with other amazon items
                                         PercentThresholdEquivalenceExtractor.moreThanPercent(90)

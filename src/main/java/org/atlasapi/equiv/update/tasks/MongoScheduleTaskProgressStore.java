@@ -69,7 +69,12 @@ public class MongoScheduleTaskProgressStore implements ScheduleTaskProgressStore
             update.unsetField(PUBLISHER);
         }
         
-        collection.update(where().fieldEquals(ID, taskName).build(), update.build(), UPSERT, SINGLE);
+        collection.update(
+                where().fieldEquals(ID, taskName).build(),
+                update.build(),
+                UPSERT,
+                SINGLE
+        );
     }
 
 }

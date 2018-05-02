@@ -68,11 +68,13 @@ public class ContentEquivalenceUpdateController {
     ) {
         this.contentUpdater = RootEquivalenceUpdater.create(contentResolver, contentUpdater);
         this.contentResolver = contentResolver;
-        this.executor = new ThreadPoolExecutor(
-                1, 200,
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+                200, 200,
                 60, TimeUnit.SECONDS,
                 new BlockingArrayQueue<>(30000)
         );
+        threadPoolExecutor.allowCoreThreadTimeOut(true);
+        executor = threadPoolExecutor;
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
         this.lookupEntryStore = lookupEntryStore;
         this.mapper = new ObjectMapper();

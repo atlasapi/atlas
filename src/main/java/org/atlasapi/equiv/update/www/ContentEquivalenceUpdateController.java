@@ -3,7 +3,8 @@ package org.atlasapi.equiv.update.www;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -33,6 +34,7 @@ import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.eclipse.jetty.util.BlockingArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -66,7 +68,11 @@ public class ContentEquivalenceUpdateController {
     ) {
         this.contentUpdater = RootEquivalenceUpdater.create(contentResolver, contentUpdater);
         this.contentResolver = contentResolver;
-        this.executor = Executors.newFixedThreadPool(5);
+        this.executor = new ThreadPoolExecutor(
+                1, 200,
+                60, TimeUnit.SECONDS,
+                new BlockingArrayQueue<>(30000)
+        );
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
         this.lookupEntryStore = lookupEntryStore;
         this.mapper = new ObjectMapper();

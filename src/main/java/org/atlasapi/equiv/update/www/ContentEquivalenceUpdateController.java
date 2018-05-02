@@ -126,6 +126,8 @@ public class ContentEquivalenceUpdateController {
             executor.submit(updateFor(content, telescope));
         }
 
+        log.info("Equivalence endpoint executor status: {}", executor);
+
         telescope.endReporting();
 
         response.setStatus(OK.code());

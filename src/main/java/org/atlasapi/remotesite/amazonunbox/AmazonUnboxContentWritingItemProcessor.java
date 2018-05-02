@@ -169,7 +169,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                     //check duration
                     Version version = item.getVersions().iterator().next();
                     if (version.getDuration() != null
-                            && version.getDuration() < CLIP_MAX_DURATION.getSeconds()) {
+                            && version.getDuration() <= CLIP_MAX_DURATION.getSeconds()) {
                         telescope.reportFailedEvent(
                                 "Content was discarded because it was a clip",
                                 contentWithPayload.getModel(),

@@ -11,6 +11,7 @@ import org.atlasapi.persistence.media.entity.ContentTranslator;
 import org.atlasapi.persistence.media.entity.DescribedTranslator;
 import org.atlasapi.remotesite.ContentExtractor;
 
+import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.RepetitionRules.Daily;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -50,7 +51,9 @@ public class AmazonUnboxModule {
     
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(amazonUnboxUpdater().withName("Amazon Unbox Daily Updater"), DAILY);
+        scheduler.schedule(amazonUnboxUpdater().withName("Amazon Unbox Daily Updater"),
+                RepetitionRules.NEVER
+        );
     }
 
     @Bean

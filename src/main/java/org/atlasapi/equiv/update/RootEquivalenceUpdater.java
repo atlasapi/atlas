@@ -95,10 +95,10 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
     }
 
     private boolean updateContainer(Container container, OwlTelescopeReporter telescope) {
-        updateContentEquivalence(container, telescope);
-        for (Item child : childrenOf(container)) {
-            updateContentEquivalence(child, telescope);
-        }
+//        updateContentEquivalence(container, telescope);
+//        for (Item child : childrenOf(container)) {
+//            updateContentEquivalence(child, telescope);
+//        }
         if (container instanceof Brand) {
             for (Series series : seriesOf((Brand) container)) {
                updateContentEquivalence(series, telescope);

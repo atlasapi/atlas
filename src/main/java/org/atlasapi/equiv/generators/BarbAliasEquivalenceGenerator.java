@@ -1,13 +1,9 @@
 package org.atlasapi.equiv.generators;
 
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
-
+import com.metabroadcast.common.stream.MoreStreams;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
@@ -20,6 +16,10 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
+
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BarbAliasEquivalenceGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
@@ -79,39 +79,42 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         desc.finishStage();
 
         Set<Iterable<LookupEntry>> entriesSet = subject.getAliases().stream().map(alias ->
-            lookupEntryStore.entriesForAliases(
-                    Optional.of(alias.getNamespace()),
-                    ImmutableSet.of(alias.getValue())
-            )).collect(Collectors.toSet());
+                lookupEntryStore.entriesForAliases(
+                        Optional.of(alias.getNamespace()),
+                        ImmutableSet.of(alias.getValue())
+                )).collect(Collectors.toSet());
 
-        entriesSet.stream().filter(Objects::nonNull).forEach(iterableLookupEntry ->
-            iterableLookupEntry.forEach(entry -> {
-                Identified identified = resolver.findByCanonicalUris(
-                        ImmutableSet.of(entry.uri())
-                ).getFirstValue().requireValue();
+        entriesSet.stream()
+                .filter(Objects::nonNull)
+                .flatMap(MoreStreams::stream)
+                .filter(entry -> !entry.uri().equals(subject.getCanonicalUri()))
+                .distinct()
+                .forEach(entry -> {
+                    Identified identified = resolver.findByCanonicalUris(
+                            ImmutableSet.of(entry.uri())
+                    ).getFirstValue().requireValue();
 
-                if (!identified.getAliases().isEmpty()) {
-                    boolean match = false;
+                    if (!identified.getAliases().isEmpty()) {
+                        boolean match = false;
 
-                    for (Alias alias : identified.getAliases()) {
-                        if (subject.getAliases().contains(alias)) {
-                            match = true;
-                            break;
+                        for (Alias alias : identified.getAliases()) {
+                            if (subject.getAliases().contains(alias)) {
+                                match = true;
+                                break;
+                            }
+                        }
+
+                        if (match) {
+                            equivalents.addEquivalent((T) identified, Score.valueOf(10.0));
+                            desc.appendText("Resolved %s", identified.getCanonicalUri());
+
+                            // this if statement keeps lots of old tests happy
+                            if (identified.getId() != null) {
+                                generatorComponent.addComponentResult(identified.getId(), "10.0");
+                            }
                         }
                     }
-
-                    if (match) {
-                        equivalents.addEquivalent((T) identified, Score.ONE);
-                        desc.appendText("Resolved %s", identified.getCanonicalUri());
-
-                        // this if statement keeps lots of old tests happy
-                        if (identified.getId() != null) {
-                            generatorComponent.addComponentResult(identified.getId(), "1.0");
-                        }
-                    }
-                }
-            })
-        );
+                });
 
         equivToTelescopeResults.addGeneratorResult(generatorComponent);
 

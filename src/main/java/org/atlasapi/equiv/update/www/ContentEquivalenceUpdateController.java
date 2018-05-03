@@ -69,9 +69,9 @@ public class ContentEquivalenceUpdateController {
         this.contentUpdater = RootEquivalenceUpdater.create(contentResolver, contentUpdater);
         this.contentResolver = contentResolver;
         ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
-                200, 200,
+                15, 15, //The searcher cannot really cope with high load.
                 60, TimeUnit.SECONDS,
-                new BlockingArrayQueue<>(30000)
+                new BlockingArrayQueue<>(20000)
         );
         threadPoolExecutor.allowCoreThreadTimeOut(true);
         executor = threadPoolExecutor;

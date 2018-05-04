@@ -68,7 +68,6 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     }
 
     @Test
-    @Ignore
     public void testCallUpdateOnContent() {
         
         Item paItemOne = new Item("pa1", "pa1c", Publisher.PA);

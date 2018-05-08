@@ -329,7 +329,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private Version createVersion(AmazonUnboxItem source, String url, Set<Encoding> encodings) {
         Version version = new Version();
         version.setCanonicalUri(cleanUri(url));
-        if (source.getDuration() != null) {
+        if (source.getDuration() != null && source.getDuration().getStandardSeconds() > 0) {
             version.setDuration(source.getDuration());
         } else {
             //add defaults (ECOTEST-428)

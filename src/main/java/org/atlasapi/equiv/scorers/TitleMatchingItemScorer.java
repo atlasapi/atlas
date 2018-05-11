@@ -26,6 +26,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final ImmutableSet<String> PREFIXES = ImmutableSet.of("the ", "Live ");
     private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(Unrated\\)", "\\(Rated\\)");
     private static final Pattern TRAILING_APOSTROPHE_PATTERN =Pattern.compile("\\w' ");
+    private static final Score SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
 
     public enum TitleType {
@@ -117,7 +118,11 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
 
     private Score score(Item subject, Item suggestion) {
-        
+
+        if(subject.getTitle().equals(suggestion.getTitle())){
+            return SCORE_ON_PERFECT_MATCH;
+        }
+
         TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
         
@@ -174,7 +179,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (!matches) {
             return partialTitleScore(subjectTitle, suggestionTitle);
         } else {
-            return Score.valueOf(2D);
+            return SCORE_ON_PERFECT_MATCH;
         }
     }
 

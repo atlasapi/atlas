@@ -1,16 +1,18 @@
 package org.atlasapi.equiv.update.www;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.RootEquivalenceUpdater;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
@@ -23,17 +25,6 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.eclipse.jetty.util.BlockingArrayQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +32,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.metabroadcast.common.http.HttpStatusCode.NOT_FOUND;
 import static com.metabroadcast.common.http.HttpStatusCode.OK;
@@ -56,7 +58,7 @@ public class ContentEquivalenceUpdateController {
 
     private final EquivalenceUpdater<Content> contentUpdater;
     private final ContentResolver contentResolver;
-    private final ExecutorService executor;
+    private final ListeningExecutorService executor;
     private final SubstitutionTableNumberCodec codec;
     private final LookupEntryStore lookupEntryStore;
     private final ObjectMapper mapper;
@@ -74,7 +76,7 @@ public class ContentEquivalenceUpdateController {
                 new BlockingArrayQueue<>(20000)
         );
         threadPoolExecutor.allowCoreThreadTimeOut(true);
-        executor = threadPoolExecutor;
+        executor = MoreExecutors.listeningDecorator(threadPoolExecutor);
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
         this.lookupEntryStore = lookupEntryStore;
         this.mapper = new ObjectMapper();
@@ -96,7 +98,8 @@ public class ContentEquivalenceUpdateController {
     public void runUpdate(
             HttpServletResponse response,
             @RequestParam(value = "uris", required = false, defaultValue = "") String uris,
-            @RequestParam(value = "ids", required = false, defaultValue = "") String ids
+            @RequestParam(value = "ids", required = false, defaultValue = "") String ids,
+            @RequestParam(value = "async", required = false, defaultValue = "false") boolean async
     ) throws IOException {
 
         if (Strings.isNullOrEmpty(uris) && Strings.isNullOrEmpty(ids)) {
@@ -120,18 +123,36 @@ public class ContentEquivalenceUpdateController {
                 Event.Type.EQUIVALENCE
         );
 
+        List<Content> contents = resolved.getAllResolvedResults().stream()
+                .filter(Content.class::isInstance)
+                .map(Content.class::cast)
+                .collect(MoreCollectors.toImmutableList());
+
         telescope.startReporting();
 
-        for (Content content : Iterables.filter(resolved.getAllResolvedResults(), Content.class)) {
-            executor.submit(updateFor(content, telescope));
+        if(!async && contents.size() == 1) {
+            updateFor(contents.get(0), telescope).run();
+        } else {
+            Set<ListenableFuture<?>> futures = new HashSet<>();
+            for (Content content : contents) {
+                futures.add(executor.submit(updateFor(content, telescope)));
+            }
+            if (!async) {
+                try {
+                    //these will currently get stuck behind async tasks
+                    //this should use another executor or be able to set some kind of priority over async tasks
+                    Futures.get(Futures.allAsList(futures), Exception.class);
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    telescope.endReporting();
+                    return;
+                }
+            }
+            log.info("Equivalence endpoint executor status: {}", executor);
         }
-
-        log.info("Equivalence endpoint executor status: {}", executor);
-
         telescope.endReporting();
 
         response.setStatus(OK.code());
-
     }
 
     private Iterable<String> urisFor(String csvIds) {

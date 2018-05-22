@@ -3,6 +3,7 @@ package org.atlasapi.equiv.generators;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.stream.MoreStreams;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
@@ -10,22 +11,22 @@ import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class BarbAliasEquivalenceGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
     private final MongoLookupEntryStore lookupEntryStore;
     private final ContentResolver resolver;
     private static final String NAME = "Barb Alias Resolving Generator";
+    private static final int MAXIMUM_ALIAS_MATCHES = 50;
+    private static final double ALIAS_MATCHING_SCORE = 10.0;
 
     public BarbAliasEquivalenceGenerator(
             MongoLookupEntryStore lookupEntryStore,
@@ -78,41 +79,39 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         ));
         desc.finishStage();
 
-        Set<Iterable<LookupEntry>> entriesSet = subject.getAliases().stream().map(alias ->
-                lookupEntryStore.entriesForAliases(
-                        Optional.of(alias.getNamespace()),
-                        ImmutableSet.of(alias.getValue())
-                )).collect(Collectors.toSet());
-
-        entriesSet.stream()
+        Set<LookupEntry> entriesSet = subject.getAliases().parallelStream()
+                .map(alias ->
+                    lookupEntryStore.entriesForAliases(
+                            Optional.of(alias.getNamespace()),
+                            ImmutableSet.of(alias.getValue())))
                 .filter(Objects::nonNull)
                 .flatMap(MoreStreams::stream)
-                .filter(entry -> !entry.uri().equals(subject.getCanonicalUri()))
+                .collect(MoreCollectors.toImmutableSet());
+
+        Set<LookupEntry> candidateEntries = subject.getAliases().parallelStream()
+                .map(alias ->
+                        entriesSet.stream()
+                                .filter(entry -> !entry.uri().equals(subject.getCanonicalUri())
+                                        && entry.aliases().contains(alias))
+                                .collect(MoreCollectors.toImmutableSet()))
+                .filter(collection -> collection.size() <= MAXIMUM_ALIAS_MATCHES) //avoids equiving on aliases which are too common
+                .flatMap(MoreStreams::stream)
+                .collect(MoreCollectors.toImmutableSet());
+
+        ResolvedContent resolved = resolver.findByCanonicalUris(candidateEntries.stream()
+                .map(LookupEntry::uri)
+                .collect(MoreCollectors.toImmutableSet())
+        );
+
+        resolved.getAllResolvedResults().stream()
                 .distinct()
-                .forEach(entry -> {
-                    Identified identified = resolver.findByCanonicalUris(
-                            ImmutableSet.of(entry.uri())
-                    ).getFirstValue().requireValue();
+                .forEach(identified -> {
+                    equivalents.addEquivalent((T) identified, Score.valueOf(ALIAS_MATCHING_SCORE));
+                    desc.appendText("Resolved %s", identified.getCanonicalUri());
 
-                    if (!identified.getAliases().isEmpty()) {
-                        boolean match = false;
-
-                        for (Alias alias : identified.getAliases()) {
-                            if (subject.getAliases().contains(alias)) {
-                                match = true;
-                                break;
-                            }
-                        }
-
-                        if (match) {
-                            equivalents.addEquivalent((T) identified, Score.valueOf(10.0));
-                            desc.appendText("Resolved %s", identified.getCanonicalUri());
-
-                            // this if statement keeps lots of old tests happy
-                            if (identified.getId() != null) {
-                                generatorComponent.addComponentResult(identified.getId(), "10.0");
-                            }
-                        }
+                    // this if statement keeps lots of old tests happy
+                    if (identified.getId() != null) {
+                        generatorComponent.addComponentResult(identified.getId(), String.valueOf(ALIAS_MATCHING_SCORE));
                     }
                 });
 

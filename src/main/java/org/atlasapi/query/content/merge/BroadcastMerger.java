@@ -1,25 +1,22 @@
 package org.atlasapi.query.content.merge;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.media.entity.Broadcast;
-
-import com.metabroadcast.common.stream.MoreCollectors;
-
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.media.entity.Broadcast;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -97,7 +94,7 @@ public class BroadcastMerger {
 
         if (!updateBroadcastsValid) {
             throw new IllegalArgumentException("Found broadcasts in the request body that are"
-                    + " outside the asserted interval");
+                    + " outside the broadcast assertion interval");
         }
 
         ImmutableSet<Broadcast> broadcastsToPreserve = existing
@@ -113,8 +110,8 @@ public class BroadcastMerger {
 
     private Boolean shouldPreserveExistingBroadcast(Broadcast broadcast) {
         if (!channelAssertions.isPresent()) {
-            // If we have no assertions all existing broadcasts should be removed
-            return false;
+            // If we have no assertions all existing broadcasts should be kept
+            return true;
         }
 
         ImmutableCollection<BroadcastAssertion> assertions =
@@ -135,8 +132,8 @@ public class BroadcastMerger {
 
     private Boolean isValidUpdateBroadcast(Broadcast broadcast) {
         if (!channelAssertions.isPresent()) {
-            // If we have no assertions all update broadcasts are valid
-            return true;
+            // If we have no assertions all update broadcasts are invalid
+            return false;
         }
 
         ImmutableCollection<BroadcastAssertion> assertions =

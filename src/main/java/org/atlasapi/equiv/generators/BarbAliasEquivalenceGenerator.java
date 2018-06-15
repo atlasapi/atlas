@@ -11,6 +11,7 @@ import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
@@ -27,6 +28,12 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
     private static final String NAME = "Barb Alias Resolving Generator";
     private static final int MAXIMUM_ALIAS_MATCHES = 50;
     private static final double ALIAS_MATCHING_SCORE = 10.0;
+
+    private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
+    private static final String BCID_NAMESPACE_SUFFIX = "bcid";
+    private static final String BROADCAST_GROUP_NAMESPACE_PREFIX = "gb:barb:broadcastGroup";
+    private static final String ORIGINATING_OWNER_NAMESPACE_PREFIX = "gb:barb:originatingOwner:broadcastGroup";
+
 
     public BarbAliasEquivalenceGenerator(
             MongoLookupEntryStore lookupEntryStore,
@@ -80,6 +87,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         desc.finishStage();
 
         Set<LookupEntry> entriesSet = subject.getAliases().parallelStream()
+                .filter(alias -> !alias.getNamespace().endsWith(TXNUMBER_NAMESPACE_SUFFIX))
                 .map(alias ->
                     lookupEntryStore.entriesForAliases(
                             Optional.of(alias.getNamespace()),
@@ -89,10 +97,11 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                 .collect(MoreCollectors.toImmutableSet());
 
         Set<LookupEntry> candidateEntries = subject.getAliases().parallelStream()
+                .filter(alias -> !alias.getNamespace().endsWith(TXNUMBER_NAMESPACE_SUFFIX)) //don't equiv on txnumber
                 .map(alias ->
                         entriesSet.stream()
                                 .filter(entry -> !entry.uri().equals(subject.getCanonicalUri())
-                                        && entry.aliases().contains(alias))
+                                        && matchesAlias(entry, alias))
                                 .collect(MoreCollectors.toImmutableSet()))
                 .filter(collection -> collection.size() <= MAXIMUM_ALIAS_MATCHES) //avoids equiving on aliases which are too common
                 .flatMap(MoreStreams::stream)
@@ -118,6 +127,32 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         equivToTelescopeResults.addGeneratorResult(generatorComponent);
 
         return equivalents;
+    }
+
+    private boolean matchesAlias(LookupEntry entry, Alias alias) {
+        if(entry.aliases().contains(alias)) {
+            return true;
+        }
+        //equiv between originating owner and broadcast group namespaces
+        if(alias.getNamespace().startsWith(BROADCAST_GROUP_NAMESPACE_PREFIX)
+                && entry.aliases().contains(
+                new Alias(
+                        ORIGINATING_OWNER_NAMESPACE_PREFIX.concat(
+                                alias.getNamespace().substring(BROADCAST_GROUP_NAMESPACE_PREFIX.length())
+                        ),
+                        alias.getValue()))) {
+            return true;
+        }
+        if(alias.getNamespace().startsWith(ORIGINATING_OWNER_NAMESPACE_PREFIX)
+                && entry.aliases().contains(
+                new Alias(
+                        BROADCAST_GROUP_NAMESPACE_PREFIX.concat(
+                                alias.getNamespace().substring(ORIGINATING_OWNER_NAMESPACE_PREFIX.length())
+                        ),
+                        alias.getValue()))) {
+            return true;
+        }
+        return false;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.amazonunbox;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipInputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -54,7 +55,7 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
                 throw new RuntimeException("Response code " + statusCode + " returned from " + uri);
             }
 
-            ZipInputStream zis = new ZipInputStream(response.getEntity().getContent());
+            ZipInputStream zis = new ZipInputStream(response.getEntity().getContent(), StandardCharsets.UTF_16);
 
             zis.getNextEntry();
 

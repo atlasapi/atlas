@@ -88,18 +88,21 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
             String tmpXmlFilename = "tmpAmazonCatalogue.tmp";
 
             //Read the file, remove invalid xml, and store it as a tmp file.
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tmpXmlFilename));
+            log.info("Cleaning invalid xml characters from Amazon's catalogue. The fill will be stored at {}", tmpXmlFilename);
             BufferedReader reader = new BufferedReader(new InputStreamReader(zis));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tmpXmlFilename));
             while (reader.ready()){
                 String line = reader.readLine();
                 String clean = line.replaceAll(xml10pattern, "");
                 if(!line.equals(clean)){
-                    log.warn("Removed illegal xml from line: "+line);
+                    log.warn("Removed illegal xml from line: {}", line);
                 }
                 writer.write(clean);
+                writer.newLine();
             }
-            InputStream fis = new FileInputStream(tmpXmlFilename);
+            writer.close();
 
+            InputStream fis = new FileInputStream(tmpXmlFilename);
             saxParser.parse(fis, handler);
             zis.close();
 

@@ -46,11 +46,14 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
 
     private static final Logger log = LoggerFactory.getLogger(AmazonUnboxHttpFeedSupplier.class);
 
+    private static final String TMP_FILENAME = "tmpAmazonCatalogue.tmp";
+    private static final String REPLACEMENT_STRING = "[?]";
+
     private final String uri;
     private Pattern encodePoints = Pattern.compile("(&#[0-9]+;)");
     private DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
-    private static final String OPENINGTAG = "<test>";
-    private static final String CLOSINGTAG = "</test>";
+    private static final String OPENING_TAG = "<test>";
+    private static final String CLOSING_TAG = "</test>";
 
     public AmazonUnboxHttpFeedSupplier(String uri) {
         this.uri = checkNotNull(uri);
@@ -68,7 +71,6 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
         ) {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
-            final SAXParser testingSaxParser = factory.newSAXParser();
 
             int statusCode = response.getStatusLine().getStatusCode();
             if (HttpStatusCode.OK.code() != statusCode) {
@@ -78,22 +80,10 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
             ZipInputStream zis = new ZipInputStream(response.getEntity().getContent());
             zis.getNextEntry();
 
-            String tmpXmlFilename = "tmpAmazonCatalogue.tmp";
-
             //Read the file, remove invalid xml, and store it as a tmp file.
-            log.info("Cleaning invalid xml characters from Amazon's catalogue. The fill will be stored at {}", tmpXmlFilename);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(zis));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tmpXmlFilename));
-            while (reader.ready()){
-                String line = reader.readLine();
-                String outcome = cleanLine(line);
+            createTmpFileWithCleanXml(zis);
 
-                writer.write(outcome);
-                writer.newLine();
-            }
-            writer.close();
-
-            InputStream fis = new FileInputStream(tmpXmlFilename);
+            InputStream fis = new FileInputStream(TMP_FILENAME);
             saxParser.parse(fis, handler);
             zis.close();
 
@@ -104,9 +94,24 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
         }
     }
 
+    private void createTmpFileWithCleanXml(ZipInputStream zis)
+            throws IOException, ParserConfigurationException {
+        log.info("Cleaning invalid xml characters from Amazon's catalogue. "
+                 + "The tmp file will be stored at {}", TMP_FILENAME);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(zis));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(TMP_FILENAME));
+        while (reader.ready()){
+            String line = reader.readLine();
+            writer.write(cleanLine(line));
+            writer.newLine();
+        }
+        writer.close();
+    }
+
+    //Try to parse encoded characters, e.g. &#55357; . Replace the ones that are invalid ones.
     private String cleanLine(String line) throws ParserConfigurationException, IOException {
         String outcome = line;
-        boolean retry = false;
+        boolean retry;
         do {
             Matcher matcher = encodePoints.matcher(outcome);
             retry = false;
@@ -116,10 +121,9 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
                     parseEncodedCharacter(encodePoint);
                 } catch (SAXException e) {
                     log.warn(
-                            "Replaced illegal XML character {} with ?. line {}",
-                            encodePoint,
-                            line);
-                    outcome = outcome.replaceAll(encodePoint, "?");
+                            "Replaced illegal XML character {} from {} with a {}",
+                            encodePoint, line, REPLACEMENT_STRING);
+                    outcome = outcome.replaceAll(encodePoint, REPLACEMENT_STRING);
                     retry = true;
                 }
             }
@@ -130,7 +134,7 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
     public void parseEncodedCharacter(String xml) throws
             SAXException, ParserConfigurationException, IOException {
         DocumentBuilder builder = documentFactory.newDocumentBuilder();
-        InputSource is = new InputSource(new StringReader(OPENINGTAG + xml + CLOSINGTAG));
+        InputSource is = new InputSource(new StringReader(OPENING_TAG + xml + CLOSING_TAG));
         builder.parse(is);
     }
 

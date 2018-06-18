@@ -1,7 +1,13 @@
 package org.atlasapi.remotesite.amazonunbox;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.zip.ZipInputStream;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,6 +24,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -56,13 +63,17 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
                 throw new RuntimeException("Response code " + statusCode + " returned from " + uri);
             }
 
-            ZipInputStream zis = new ZipInputStream(response.getEntity().getContent());
+            ZipInputStream zis = new ZipInputStream(response.getEntity().getContent(),
+                    StandardCharsets.UTF_16);
             zis.getNextEntry();
-            InputSource inputSource = new InputSource(zis);
-            inputSource.setEncoding("UTF-16");
 
-            saxParser.parse(inputSource, handler);
+            byte[] bom = new byte[] {(byte)239, (byte)187, (byte)191};
+            List<InputStream> streams = Arrays.asList(
+                    new ByteArrayInputStream(bom),
+                    zis);
+            InputStream is = new SequenceInputStream(Collections.enumeration(streams));
 
+            saxParser.parse(is, handler);
             zis.close();
 
             return processor.getResult();

@@ -1,8 +1,13 @@
 package org.atlasapi.remotesite.amazonunbox;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -80,37 +85,28 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
             ZipInputStream zis = new ZipInputStream(response.getEntity().getContent());
             zis.getNextEntry();
 
-            log.info("Attempting to load the whole amazon catalogue in memory.");
-            StringWriter writer = new StringWriter();
-            IOUtils.copy(zis, writer, "UTF-8");
-            String theString = writer.toString();
-            log.info("Succeeded loading amazon catalogue in memory. Attempting to replace illegal characters.");
-            String theCleanedString = theString.replaceAll(xml10pattern, "");
-            log.info("Succeeded replacing illegal characters.");
+            String tmpXmlFilename = "tmpAmazonCatalogue.tmp";
 
-            //  FilteringInputStream fis = new FilteringInputStream(zis);
+            //Read the file, remove invalid xml, and store it as a tmp file.
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tmpXmlFilename));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(zis));
+            while (reader.ready()){
+                String line = reader.readLine();
+                String clean = line.replaceAll(xml10pattern, "");
+                if(!line.equals(clean)){
+                    log.warn("Removed illegal xml from line: "+line);
+                }
+                writer.write(clean);
+            }
+            InputStream fis = new FileInputStream(tmpXmlFilename);
 
-            saxParser.parse(theCleanedString, handler);
+            saxParser.parse(fis, handler);
             zis.close();
 
             return processor.getResult();
 
         } catch (IOException | ParserConfigurationException | SAXException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private class FilteringInputStream extends InputStream{
-
-        InputStream delegate;
-
-        public FilteringInputStream(InputStream delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public int read() throws IOException {
-            return delegate.read();
         }
     }
 

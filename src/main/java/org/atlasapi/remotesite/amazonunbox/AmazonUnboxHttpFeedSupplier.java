@@ -56,7 +56,7 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
                 throw new RuntimeException("Response code " + statusCode + " returned from " + uri);
             }
 
-            ZipInputStream zis = new ZipInputStream(response.getEntity().getContent(), StandardCharsets.UTF_16);
+            ZipInputStream zis = new ZipInputStream(response.getEntity().getContent());
             zis.getNextEntry();
             InputSource inputSource = new InputSource(zis);
             inputSource.setEncoding("UTF-16");

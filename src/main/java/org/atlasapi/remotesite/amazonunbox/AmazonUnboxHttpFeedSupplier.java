@@ -66,7 +66,7 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
             ZipInputStream zis = new ZipInputStream(response.getEntity().getContent());
             zis.getNextEntry();
 
-            String beginning = "<?xml version=\"1.0\" encoding=\"utf-16\"?>";
+            String beginning = "<?xml version=\"1.1\" ?>";
             List<InputStream> streams = Arrays.asList(
                     new ByteArrayInputStream(beginning.getBytes()), zis);
             InputStream is = new SequenceInputStream(Collections.enumeration(streams));

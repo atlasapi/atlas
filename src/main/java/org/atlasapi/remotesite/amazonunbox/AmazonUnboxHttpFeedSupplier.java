@@ -64,10 +64,10 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
             }
 
             ZipInputStream zis = new ZipInputStream(response.getEntity().getContent(),
-                    StandardCharsets.UTF_16LE);
+                    StandardCharsets.UTF_16BE);
             zis.getNextEntry();
 
-            byte[] bom = new byte[] {(byte)255, (byte)254};
+            byte[] bom = new byte[] {(byte)254, (byte)255};
             List<InputStream> streams = Arrays.asList(
                     new ByteArrayInputStream(bom),
                     zis);

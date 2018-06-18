@@ -2,31 +2,26 @@ package org.atlasapi.remotesite.amazonunbox;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.SequenceInputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.StringReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
-import org.atlasapi.remotesite.pa.channels.PaChannelGroupsIngester;
 
 import com.metabroadcast.common.http.HttpStatusCode;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
-import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -35,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -53,13 +47,10 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
     private static final Logger log = LoggerFactory.getLogger(AmazonUnboxHttpFeedSupplier.class);
 
     private final String uri;
-    String xml10pattern = "[^"
-                          + "\u0009\r\n"
-                          + "\u0020-\uD7FF"
-                          + "\uE000-\uFFFD"
-                          + "\ud800\udc00-\udbff\udfff"
-                          + "]";
-    String bigEncodePoints = "&#[0-9]{5};";
+    private Pattern encodePoints = Pattern.compile("(&#[0-9]+;)");
+    private DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
+    private static final String OPENINGTAG = "<test>";
+    private static final String CLOSINGTAG = "</test>";
 
     public AmazonUnboxHttpFeedSupplier(String uri) {
         this.uri = checkNotNull(uri);
@@ -77,6 +68,7 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
         ) {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
+            final SAXParser testingSaxParser = factory.newSAXParser();
 
             int statusCode = response.getStatusLine().getStatusCode();
             if (HttpStatusCode.OK.code() != statusCode) {
@@ -94,12 +86,9 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
             BufferedWriter writer = new BufferedWriter(new FileWriter(tmpXmlFilename));
             while (reader.ready()){
                 String line = reader.readLine();
-                String clean = line.replaceAll(xml10pattern, "");
-                clean = clean.replaceAll(bigEncodePoints, "");
-                if(!line.equals(clean)){
-                    log.warn("Removed illegal xml from line: {}", line);
-                }
-                writer.write(clean);
+                String outcome = cleanLine(line);
+
+                writer.write(outcome);
                 writer.newLine();
             }
             writer.close();
@@ -113,6 +102,36 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
         } catch (IOException | ParserConfigurationException | SAXException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String cleanLine(String line) throws ParserConfigurationException, IOException {
+        String outcome = line;
+        boolean retry = false;
+        do {
+            Matcher matcher = encodePoints.matcher(outcome);
+            retry = false;
+            while (matcher.find()) {
+                String encodePoint = matcher.group(1);
+                try {
+                    parseEncodedCharacter(encodePoint);
+                } catch (SAXException e) {
+                    log.warn(
+                            "Replaced illegal XML character {} with ?. line {}",
+                            encodePoint,
+                            line);
+                    outcome = outcome.replaceAll(encodePoint, "?");
+                    retry = true;
+                }
+            }
+        } while (retry);
+        return outcome;
+    }
+
+    public void parseEncodedCharacter(String xml) throws
+            SAXException, ParserConfigurationException, IOException {
+        DocumentBuilder builder = documentFactory.newDocumentBuilder();
+        InputSource is = new InputSource(new StringReader(OPENINGTAG + xml + CLOSINGTAG));
+        builder.parse(is);
     }
 
     private static class ItemCollatingAmazonUnboxProcessor implements

@@ -67,7 +67,7 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
                     StandardCharsets.UTF_16LE);
             zis.getNextEntry();
 
-            byte[] bom = new byte[] {(byte)255, (byte)254, (byte)191};
+            byte[] bom = new byte[] {(byte)255, (byte)254};
             List<InputStream> streams = Arrays.asList(
                     new ByteArrayInputStream(bom),
                     zis);

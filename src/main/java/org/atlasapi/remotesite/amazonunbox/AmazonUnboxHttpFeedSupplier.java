@@ -16,6 +16,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -56,10 +57,11 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
             }
 
             ZipInputStream zis = new ZipInputStream(response.getEntity().getContent(), StandardCharsets.UTF_16);
-
             zis.getNextEntry();
+            InputSource inputSource = new InputSource(zis);
+            inputSource.setEncoding("UTF-16");
 
-            saxParser.parse(zis, handler);
+            saxParser.parse(inputSource, handler);
 
             zis.close();
 

@@ -59,6 +59,7 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
                           + "\uE000-\uFFFD"
                           + "\ud800\udc00-\udbff\udfff"
                           + "]";
+    String bigEncodePoints = "&#[0-9]{5};";
 
     public AmazonUnboxHttpFeedSupplier(String uri) {
         this.uri = checkNotNull(uri);
@@ -94,6 +95,7 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
             while (reader.ready()){
                 String line = reader.readLine();
                 String clean = line.replaceAll(xml10pattern, "");
+                clean = clean.replaceAll(bigEncodePoints, "");
                 if(!line.equals(clean)){
                     log.warn("Removed illegal xml from line: {}", line);
                 }

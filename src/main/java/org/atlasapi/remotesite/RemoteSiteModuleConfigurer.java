@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.atlasapi.feeds.lakeview.LakeviewModule;
 import org.atlasapi.remotesite.amazonunbox.AmazonUnboxModule;
 import org.atlasapi.remotesite.archiveorg.ArchiveOrgModule;
+import org.atlasapi.remotesite.barb.channels.BarbChannelsModule;
 import org.atlasapi.remotesite.bbc.audience.AudienceModule;
 import org.atlasapi.remotesite.bbc.products.BBCProductsModule;
 import org.atlasapi.remotesite.bt.channels.BtChannelsModule;
@@ -91,6 +92,7 @@ public class RemoteSiteModuleConfigurer {
         .put("getty", GettyModule.class)
         .put("bt-events", BtEventsModule.class)
         .put("opta-events", OptaEventsModule.class)
+        .put("barb-channels", BarbChannelsModule.class)
     .build();
 
     public Iterable<? extends Class<?>> enabledModules() {

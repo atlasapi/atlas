@@ -35,6 +35,7 @@ ENV SERVER_PORT="8080" \
     TELESCOPE_REPORTING_THREAD_NAME="" \
     TELESCOPE_METRICS_PREFIX="" \
     REPID_SERVICE_HOST="" \
+    UPDATERS_BARB_CHANNELS_ENABLED="false" \
     UPDATERS_BBC_AUDIENCE_DATA_ENABLED="false" \
     UPDATERS_BBC_PRODUCTS_ENABLED="false" \
     UPDATERS_BBC_ENABLED="false" \
@@ -307,6 +308,7 @@ CMD java \
     -Dunbox.remote.s3.secret="$UNBOX_REMOTE_S3_SECRET" \
     -Dunbox.s3.bucket="$UNBOX_S3_BUCKET" \
     -Dunbox.url="$UNBOX_URL" \
+    -Dupdaters.barb-channels.enabled="$UPDATERS_BARB_CHANNELS_ENABLED" \
     -Dupdaters.bbc-audience-data.enabled="$UPDATERS_BBC_AUDIENCE_DATA_ENABLED" \
     -Dupdaters.bbc-products.enabled="$UPDATERS_BBC_PRODUCTS_ENABLED" \
     -Dupdaters.bbc.enabled="$UPDATERS_BBC_ENABLED" \

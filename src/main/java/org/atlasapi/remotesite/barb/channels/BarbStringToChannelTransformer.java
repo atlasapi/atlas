@@ -32,8 +32,8 @@ public class BarbStringToChannelTransformer {
 
         checkArgument(split.length == 2);
 
-        String stationCode = sanitize(split[0]);
-        String channelTitle = sanitize(split[1]);
+        String stationCode = trim(split[0]);
+        String channelTitle = sanitizeTitle(split[1]);
 
         checkArgument(isValid(stationCode));
 
@@ -55,8 +55,12 @@ public class BarbStringToChannelTransformer {
         return format(URI_FORMAT, PUB_DETAILS.getKey(), code);
     }
 
-    private String sanitize(String str) {
+    private String trim(String str) {
         return str.trim();
+    }
+
+    private String sanitizeTitle(String title) {
+        return trim(title.replace("\\",""));
     }
 
     private boolean isValid(String stationCode) {

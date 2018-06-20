@@ -64,6 +64,7 @@ public class BarbChannelForceIngestController {
     ) throws IOException {
 
         Map<String, String> createdChannels = Maps.newHashMap();
+        List<String> updatedChannels = Lists.newArrayList();
         List<String> failedChannels = Lists.newArrayList();
 
         String[] splitChannels = channels.split("\\|");
@@ -73,11 +74,14 @@ public class BarbChannelForceIngestController {
                 Channel newChannel = barbChannelTransformer.transform(channel);
                 channelWriter.createOrUpdate(newChannel);
 
-                checkNotNull(newChannel.getId());
-                createdChannels.put(
-                        codec.encode(BigInteger.valueOf(newChannel.getId())),
-                        newChannel.getTitle()
-                );
+                if (newChannel.getId() == null) {
+                    updatedChannels.add(newChannel.getUri());
+                } else {
+                    createdChannels.put(
+                            codec.encode(BigInteger.valueOf(newChannel.getId())),
+                            newChannel.getTitle()
+                    );
+                }
             } catch (Exception e) {
                 log.error("Error creating/updating channel {}", channel, e);
                 failedChannels.add(channel);
@@ -86,21 +90,24 @@ public class BarbChannelForceIngestController {
 
         BarbChannelIngestResponse resp = new BarbChannelIngestResponse(
                 createdChannels,
+                updatedChannels,
                 failedChannels,
-                getFinishMessage(createdChannels, splitChannels)
+                getFinishMessage(createdChannels, updatedChannels, splitChannels)
         );
 
         response.getWriter().write(mapper.writeValueAsString(resp));
     }
 
-    private String getFinishMessage(Map<String, String> created, String[] total) {
-        return format("Processed %d of %d", created.size(), total.length);
+    private String getFinishMessage(Map<String, String> created, List<String> updated, String[] total) {
+        return format("Processed %d of %d", created.size() + updated.size(), total.length);
     }
 
     private class BarbChannelIngestResponse {
 
         @JsonProperty("created_channels")
         private final Map<String, String> createdChannels;
+        @JsonProperty("updated_channels")
+        private final List<String> updatedChannels;
         @JsonProperty("failed_channels")
         private final List<String> failedChannels;
         @JsonProperty("message")
@@ -109,10 +116,12 @@ public class BarbChannelForceIngestController {
         @JsonCreator
         BarbChannelIngestResponse(
                 Map<String, String> createdChannels,
+                List<String> updatedChannels,
                 List<String> failedChannels,
                 String message
         ) {
             this.createdChannels = createdChannels;
+            this.updatedChannels = updatedChannels;
             this.failedChannels = failedChannels;
             this.message = message;
         }

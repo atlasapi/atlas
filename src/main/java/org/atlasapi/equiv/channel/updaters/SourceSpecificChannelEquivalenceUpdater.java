@@ -28,7 +28,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     private final ChannelResolver channelResolver;
     private final EquivalenceUpdaterMetadata metadata;
 
-    private SourceSpecificChannelEquivalenceUpdater(Builder builder) {
+    SourceSpecificChannelEquivalenceUpdater(Builder builder) {
         this.publisher = checkNotNull(builder.publisher);
         this.channelMatcher = checkNotNull(builder.channelMatcher);
         this.channelWriter = checkNotNull(builder.channelWriter);
@@ -57,7 +57,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
         return true;
     }
 
-    private void setAndUpdateEquivalents(
+    void setAndUpdateEquivalents(
             Channel candidate,
             Channel subject,
             OwlTelescopeReporter telescope
@@ -91,7 +91,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
         );
     }
 
-    private void verify(Channel channel, Publisher publisher) {
+    void verify(Channel channel, Publisher publisher) {
         if (!channel.getSource().equals(publisher)) {
             throw new IllegalArgumentException("Channel source does not match updater source");
         }

@@ -103,10 +103,12 @@ RUN mkdir -p /data/accessible-dir \
     mkdir -p /data/rovi \
     mkdir -p /data/unbox \
     mkdir -p /data/ws \
-    mkdir -p /data/youview
+    mkdir -p /data/youview \
+    mkdir -p /usr/local/jetty/equiv
 
 COPY target/atlas.war /usr/local/jetty/atlas.war
 COPY log4j.properties /usr/local/jetty/log4j.properties
+COPY src/main/resources/equivList.csv /usr/local/jetty/equiv/equivList.csv
 
 WORKDIR /usr/local/jetty
 
@@ -119,6 +121,9 @@ CMD java \
     -Dapplications.client.env="$APPLICATIONS_CLIENT_ENV" \
     -Datlas.search.host="$ATLAS_SEARCH_HOST" \
     -Daz="$AZ" \
+    -Dbarb.ftp.host="$BARB_FTP_HOST" \
+    -Dbarb.ftp.password="$BARB_FTP_PASSWORD" \
+    -Dbarb.ftp.username="$BARB_FTP_USERNAME" \
     -Dbbc.audience-data.filename="$BBC_AUDIENCE_DATA_FILENAME" \
     -Dbbc.nitro.apiKey="$BBC_NITRO_APIKEY" \
     -Dbbc.nitro.releaseDateIngest.enabled="$BBC_NITRO_RELEASEDATEINGEST_ENABLED" \

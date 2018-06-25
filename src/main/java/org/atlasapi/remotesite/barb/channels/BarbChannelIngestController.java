@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.barb.channels;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
@@ -9,6 +7,7 @@ import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelWriter;
+import org.atlasapi.remotesite.barb.channels.response.BarbChannelIngestResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
@@ -28,9 +26,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
 @Controller
-public class BarbChannelForceIngestController {
+public class BarbChannelIngestController {
 
-    private static final Logger log = LoggerFactory.getLogger(BarbChannelForceIngestController.class);
+    private static final Logger log = LoggerFactory.getLogger(BarbChannelIngestController.class);
 
     private final ChannelWriter channelWriter;
     private final ObjectMapper mapper;
@@ -38,7 +36,7 @@ public class BarbChannelForceIngestController {
 
     private final BarbStringToChannelTransformer barbChannelTransformer;
 
-    public BarbChannelForceIngestController(
+    public BarbChannelIngestController(
             ChannelWriter channelWriter,
             ChannelModelTransformer modelTransformer,
             ObjectMapper mapper
@@ -88,7 +86,7 @@ public class BarbChannelForceIngestController {
             }
         }
 
-        BarbChannelIngestResponse resp = new BarbChannelIngestResponse(
+        BarbChannelIngestResponse resp = BarbChannelIngestResponse.create(
                 createdChannels,
                 updatedChannels,
                 failedChannels,
@@ -98,47 +96,15 @@ public class BarbChannelForceIngestController {
         response.getWriter().write(mapper.writeValueAsString(resp));
     }
 
+
+//    @RequestMapping(value="/system/update/barb/equiv",method=RequestMethod.POST)
+//    public void forceIngest(
+//            @Context HttpServletResponse response
+//    ) throws IOException {
+//
+//    }
+
     private String getFinishMessage(Map<String, String> created, List<String> updated, String[] total) {
         return format("Processed %d of %d", created.size() + updated.size(), total.length);
-    }
-
-    private class BarbChannelIngestResponse {
-
-        @JsonProperty("created_channels")
-        private final Map<String, String> createdChannels;
-        @JsonProperty("updated_channels")
-        private final List<String> updatedChannels;
-        @JsonProperty("failed_channels")
-        private final List<String> failedChannels;
-        @JsonProperty("message")
-        private final String message;
-
-        @JsonCreator
-        BarbChannelIngestResponse(
-                Map<String, String> createdChannels,
-                List<String> updatedChannels,
-                List<String> failedChannels,
-                String message
-        ) {
-            this.createdChannels = createdChannels;
-            this.updatedChannels = updatedChannels;
-            this.failedChannels = failedChannels;
-            this.message = message;
-        }
-
-        @JsonProperty("created_channels")
-        public Map<String, String> getCreatedChannels() {
-            return createdChannels;
-        }
-
-        @JsonProperty("failed_channels")
-        public List<String> getFailedChannels() {
-            return failedChannels;
-        }
-
-        @JsonProperty("message")
-        public String getMessage() {
-            return message;
-        }
     }
 }

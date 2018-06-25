@@ -41,6 +41,7 @@ public class ChannelEquivTaskModule {
     private static final RepetitionRule BT_DEV_1_REPETITION = RepetitionRules.daily(BT_NON_PROD_BASE_START_TIME);
     private static final RepetitionRule BT_DEV_2_REPETITION = RepetitionRules.daily(BT_NON_PROD_BASE_START_TIME.plusHours(1));
     private static final RepetitionRule BT_REF_REPETITION = RepetitionRules.daily(BT_NON_PROD_BASE_START_TIME.plusHours(2));
+    private static final RepetitionRule BARB_CHANNEL_REPETITION = RepetitionRules.NEVER;
 
     @Value("${equiv.updater.enabled}") private boolean updaterEnabled;
     @Value("${channel.equiv.enabled}") private boolean channelEquivEnabled;
@@ -90,6 +91,11 @@ public class ChannelEquivTaskModule {
         scheduleEquivalenceJob(
                 createUpdateTask(Publisher.BT_TV_CHANNELS_REFERENCE, equivalenceUpdater),
                 BT_REF_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                createUpdateTask(Publisher.BARB_CHANNELS, equivalenceUpdater),
+                BARB_CHANNEL_REPETITION,
                 jobsAtStartup
         );
     }

@@ -56,8 +56,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private static final Ordering<Content> REVERSE_HIERARCHICAL_ORDER = HierarchicalOrdering.create().reverse();
 
-    private static final Duration CLIP_MAX_DURATION = Duration.ofMinutes(3);
-
     public static final String GB_AMAZON_ASIN = "gb:amazon:asin"; //this should be kept in sync with a similar field in atlas-feeds
     private static final String UNPUBLISH_NO_PAYLOAD_STRING = "This item lacks payload as it was not seen in this ingest, and consequently it is being unpublished.";
 
@@ -163,20 +161,15 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         }
         if (contentWithPayload.getModel() instanceof Item) {
             Item item = contentWithPayload.asModelType(Item.class).getModel();
-            //We also discard Clips. ECOTEST-429
+            //We also discard Clips. ECOTEST-429. CPINC-1223 removed the duration restriction.
             if (item.getTitle() != null && !item.getVersions().isEmpty()) {
-                if (item.getTitle().toLowerCase().startsWith("clip")) {
-                    //check duration
-                    Version version = item.getVersions().iterator().next();
-                    if (version.getDuration() != null
-                            && version.getDuration() <= CLIP_MAX_DURATION.getSeconds()) {
-                        telescope.reportFailedEvent(
-                                "Content was discarded because it was a clip",
-                                contentWithPayload.getModel(),
-                                contentWithPayload.getPayload()
-                        );
-                        return true;
-                    }
+                if (item.getTitle().toLowerCase().startsWith("clip:")) {
+                    telescope.reportFailedEvent(
+                            "Content was discarded because it was a clip",
+                            contentWithPayload.getModel(),
+                            contentWithPayload.getPayload()
+                    );
+                    return true;
                 }
             }
 

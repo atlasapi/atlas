@@ -5,6 +5,7 @@ import java.util.Set;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
+import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -26,12 +27,14 @@ import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
+import org.atlasapi.equiv.scorers.ParentTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
@@ -60,6 +63,13 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         //candidates which are the item itself (because there is no further filtering
                         //to remove them, whereas the Publisher filter used elsewhere does that).
                         ImmutableSet.of(
+                                TitleSearchGenerator.create(
+                                        dependencies.getSearchResolver(),
+                                        Item.class,
+                                        targetPublishers,
+                                        1,
+                                        true //allow to generate candidates from amazon itself.
+                                ),
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore()
@@ -76,6 +86,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
+                                new ParentTitleMatchingItemScorer(dependencies.getContentResolver(), Score.ONE, Score.ONE, Score.ZERO,Score.ZERO),
                                 //DescriptionMatchingScorer.makeScorer(), TODO sometimes broken ATM
                                 new SequenceItemScorer(Score.ONE)
                         )
@@ -88,7 +99,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(0.25),
+                                new MinimumScoreFilter<>(1),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 ExclusionListFilter.create(

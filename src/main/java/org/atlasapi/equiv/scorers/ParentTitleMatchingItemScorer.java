@@ -34,7 +34,6 @@ import org.apache.commons.lang3.StringUtils;
 public class ParentTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     public String name ;
-    private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
     private Score DEFAULT_SCORE = Score.ZERO;
 
     public enum TitleType {
@@ -74,10 +73,6 @@ public class ParentTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private final Score scoreOnSeriesMismatch;
     private final Score scoreOnBrandMismatch;
 
-    private boolean initialized = false;
-    private Container series = null;
-    private Container brand = null;
-
     public ParentTitleMatchingItemScorer(
             ContentResolver contentResolver,
             Score scoreOnSeriesMatch,
@@ -108,12 +103,18 @@ public class ParentTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         scorerComponent.setComponentName(name);
         Builder<Item> equivalents = DefaultScoredCandidates.fromSource(name);
 
-        if (!initialized) {
-            initialize(subject, desc);
+        Container series = getSeries(subject);
+        Container brand = getBrand(subject);
+
+        if(series == null){
+            desc.appendText("No Series found. Everything will get a score of %s for Series.", DEFAULT_SCORE);
+        }
+        if(brand == null){
+            desc.appendText("No Brand found. Everything will get a score of %s for Brands.", DEFAULT_SCORE);
         }
 
         for (Item suggestion : suggestions) {
-            Score equivScore = score(suggestion, desc);
+            Score equivScore = score(brand, series, suggestion, desc);
             equivalents.addEquivalent(suggestion, equivScore);
             scorerComponent.addComponentResult(
                     suggestion.getId(),
@@ -124,20 +125,6 @@ public class ParentTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         equivToTelescopeResults.addScorerResult(scorerComponent);
 
         return equivalents.build();
-    }
-
-    private void initialize(Item subject,
-            ResultDescription desc) {
-        series = getSeries(subject);
-        brand = getBrand(subject);
-
-        if(series == null){
-            desc.appendText("No Series found. Everything will get a score of %s for Series.", DEFAULT_SCORE);
-        }
-        if(brand == null){
-            desc.appendText("No Brand found. Everything will get a score of %s for Brands.", DEFAULT_SCORE);
-        }
-        initialized = true;
     }
 
     @Nullable
@@ -171,7 +158,9 @@ public class ParentTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return null;
     }
 
-    private Score score(Item suggestion, ResultDescription desc) {
+    private Score score(@Nullable Container brand, @Nullable Container series,
+            Item suggestion, ResultDescription desc) {
+
         Container suggBrand = getBrand(suggestion);
         Container suggSeries = getSeries(suggestion);
         Score brandScore = DEFAULT_SCORE;

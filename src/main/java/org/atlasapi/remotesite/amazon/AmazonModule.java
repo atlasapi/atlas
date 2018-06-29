@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmazonModule {
 
-    private final static Daily DAILY = RepetitionRules.daily(new LocalTime(23, 0, 0));
+    private final static Daily DAILY = RepetitionRules.daily(new LocalTime(17, 0, 0));
     
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;
@@ -50,17 +50,13 @@ public class AmazonModule {
     
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(
-                amazonUpdater().withName("Amazon Prime Video Daily Updater"),
-                RepetitionRules.NEVER
-        );
+        scheduler.schedule(amazonUpdater().withName("Amazon Prime Video Daily Updater"), DAILY);
     }
 
     @Bean
     public AmazonTask amazonUpdater() {
         
-        AmazonPreProcessingItemProcessor preProcessor =
-                new AmazonPreProcessingItemProcessor();
+        AmazonPreProcessingItemProcessor preProcessor = new AmazonPreProcessingItemProcessor();
         
         ContentExtractor<AmazonItem,Iterable<Content>> contentExtractor =
                 new AmazonContentExtractor();

@@ -1,18 +1,24 @@
 package org.atlasapi.remotesite.amazon;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
-import com.metabroadcast.columbus.telescope.api.Event;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class AmazonTask extends ScheduledTask {
@@ -75,6 +81,27 @@ public class AmazonTask extends ScheduledTask {
             Throwables.propagate(e);
         }
         telescope.endReporting();
+        //When done, trigger a reindexing of the whole amazon catalogue.
+        //The endpoint does not reply in a meaningful fashion, so just hit it and hope.
+        try {
+            URL url = new URL("http://search.owl.atlas.mbst.tv:8181/index?publisher=AMAZON_UNBOX");
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.setConnectTimeout(5000);
+            con.setReadTimeout(5000);
+            int responseCode = con.getResponseCode();
+            if(responseCode != HttpStatus.SC_ACCEPTED){
+                throw new IllegalStateException("Request not accepted. Response code was "+responseCode);
+            }
+            con.disconnect();
+        } catch (IOException | IllegalStateException e) {
+            log.error(
+                    "The Amazon ingester has failed to hit the reindex endpoint. "
+                    + "Based on past experience owl search will"
+                    + "not properly index amazon content after ingest. If we are still relying on"
+                    + "this logic, hit the endpoint manually. {}",
+                    "http://search.owl.atlas.mbst.tv:8181/index?publisher=AMAZON_UNBOX", e);
+        }
     }
 
     private AmazonProcessor<UpdateProgress> processor(

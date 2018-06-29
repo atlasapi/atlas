@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -42,9 +42,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *       file takes a while
  *
  */
-public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<AmazonUnboxItem>> {
+public class AmazonHttpFeedSupplier implements Supplier<ImmutableList<AmazonItem>> {
 
-    private static final Logger log = LoggerFactory.getLogger(AmazonUnboxHttpFeedSupplier.class);
+    private static final Logger log = LoggerFactory.getLogger(AmazonHttpFeedSupplier.class);
 
     private static final String TMP_FILENAME = "tmpAmazonCatalogue.tmp";
     private static final String REPLACEMENT_STRING = "[?]";
@@ -55,15 +55,15 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
     private static final String OPENING_TAG = "<test>";
     private static final String CLOSING_TAG = "</test>";
 
-    public AmazonUnboxHttpFeedSupplier(String uri) {
+    public AmazonHttpFeedSupplier(String uri) {
         this.uri = checkNotNull(uri);
     }
     
     @Override
-    public ImmutableList<AmazonUnboxItem> get() {
+    public ImmutableList<AmazonItem> get() {
         HttpGet get = new HttpGet(uri);
-        final ItemCollatingAmazonUnboxProcessor processor = new ItemCollatingAmazonUnboxProcessor();
-        final AmazonUnboxContentHandler handler = new AmazonUnboxContentHandler(processor);
+        final ItemCollatingAmazonProcessor processor = new ItemCollatingAmazonProcessor();
+        final AmazonContentHandler handler = new AmazonContentHandler(processor);
 
         try (
                 CloseableHttpClient client = HttpClients.createDefault();
@@ -138,19 +138,19 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
         builder.parse(is);
     }
 
-    private static class ItemCollatingAmazonUnboxProcessor implements
-            AmazonUnboxProcessor<ImmutableList<AmazonUnboxItem>> {
+    private static class ItemCollatingAmazonProcessor implements
+            AmazonProcessor<ImmutableList<AmazonItem>> {
     
-        private final ImmutableList.Builder<AmazonUnboxItem> items = ImmutableList.builder();
+        private final ImmutableList.Builder<AmazonItem> items = ImmutableList.builder();
         
         @Override
-        public boolean process(AmazonUnboxItem item) {
+        public boolean process(AmazonItem item) {
             items.add(item);
             return true;
         }
     
         @Override
-        public ImmutableList<AmazonUnboxItem> getResult() {
+        public ImmutableList<AmazonItem> getResult() {
             return items.build();
         };
     }

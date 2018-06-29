@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -21,7 +21,6 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -35,9 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -50,9 +48,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxContentExtractor.URI_PREFIX;
+import static org.atlasapi.remotesite.amazon.AmazonContentExtractor.URI_PREFIX;
 
-public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemProcessor {
+public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
 
     private static final Ordering<Content> REVERSE_HIERARCHICAL_ORDER = HierarchicalOrdering.create().reverse();
 
@@ -65,7 +63,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             input -> input.startsWith(URI_PREFIX);
 
 
-    private final Logger log= LoggerFactory.getLogger(AmazonUnboxContentWritingItemProcessor.class);
+    private final Logger log= LoggerFactory.getLogger(AmazonContentWritingItemProcessor.class);
     private final Map<String, ModelWithPayload<? extends Container>>
             seenContainer = Maps.newHashMap();
     private final SetMultimap<String, ModelWithPayload<? extends Content>>
@@ -77,12 +75,12 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Set<String> episodeUris = new HashSet<>();
     private OwlTelescopeReporter telescope;
 
-    private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
+    private final ContentExtractor<AmazonItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
     private final ContentWriter writer;
     private final ContentLister lister;
     private final int missingContentPercentage;
-    private final AmazonUnboxBrandProcessor brandProcessor;
+    private final AmazonBrandProcessor brandProcessor;
     private final ContentMerger contentMerger;
 
     //Title Cleaning
@@ -91,13 +89,13 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 //    private final Pattern episodePattern2 = Pattern.compile("(?i)[s|e]+[\\d]+[ \\.-\\/]*[s|e]+[\\d]+");//S05E01 etc
     private final String titleSeparator = "[ ]*[\\p{Pd}:]+[ ]*"; // any dash or colon.
 
-    public AmazonUnboxContentWritingItemProcessor(
-            ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor,
+    public AmazonContentWritingItemProcessor(
+            ContentExtractor<AmazonItem, Iterable<Content>> extractor,
             ContentResolver resolver,
             ContentWriter writer,
             ContentLister lister,
             int missingContentPercentage,
-            AmazonUnboxBrandProcessor brandProcessor
+            AmazonBrandProcessor brandProcessor
     ) {
         this.extractor = checkNotNull(extractor);
         this.resolver = checkNotNull(resolver);
@@ -126,7 +124,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
     
     @Override
-    public void process(AmazonUnboxItem item) {
+    public void process(AmazonItem item) {
         for (Content content : extract(item)) {
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
             if (shouldDiscard(contentWithPayload)) {
@@ -450,7 +448,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private void checkForDeletedContent(OwlTelescopeReporter telescope) {
         //get all amazon content from the db. See if there are any items we have not seen in the current ingest.
         Set<Content> notSeen = new TreeSet<>(REVERSE_HIERARCHICAL_ORDER);
-        Iterator<Content> allAmazonContent = resolveAllAmazonUnboxContent();
+        Iterator<Content> allAmazonContent = resolveAllAmazonContent();
         int allAmazonContentSize = 1; //prevent division by zero later on.
         while(allAmazonContent.hasNext()){
             allAmazonContentSize++;
@@ -498,20 +496,20 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
             } else {
                 telescope.reportFailedEvent(
-                        "Amazon Unbox content with uri "
+                        "Amazon content with uri "
                         + notSeenContent.getCanonicalUri()
                         + " not an Item or a Container, and thus"
                         + "cannot be unpublished."
                 );
 
-                log.error("Amazon Unbox content with uri {} not an Item or a Container,"
+                log.error("Amazon content with uri {} not an Item or a Container,"
                           + " and thus cannot unpublished",
                         notSeenContent.getCanonicalUri() );
             }
         }
     }
 
-    private Iterator<Content> resolveAllAmazonUnboxContent() {
+    private Iterator<Content> resolveAllAmazonContent() {
         ContentListingCriteria criteria = ContentListingCriteria
             .defaultCriteria()
             .forPublisher(Publisher.AMAZON_UNBOX)
@@ -520,7 +518,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         return lister.listContent(criteria);
     }
     
-    public Iterable<Content> extract(AmazonUnboxItem item) {
+    public Iterable<Content> extract(AmazonItem item) {
         return extractor.extract(item);
     }
     

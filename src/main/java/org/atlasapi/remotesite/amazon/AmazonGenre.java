@@ -1,7 +1,7 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 
-public enum AmazonUnboxGenre {
+public enum AmazonGenre {
     ACTION,
     ADVENTURE,
     ANIMATION,

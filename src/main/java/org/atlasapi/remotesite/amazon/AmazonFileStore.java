@@ -1,9 +1,9 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface AmazonUnboxFileStore {
+public interface AmazonFileStore {
     
     void save(String fileName, InputStream dataStream) throws IOException;
     

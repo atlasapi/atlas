@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -15,18 +15,18 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 
-public class AmazonUnboxUpdateTask extends ScheduledTask {
+public class AmazonTask extends ScheduledTask {
 
-    private final Logger log = LoggerFactory.getLogger(AmazonUnboxUpdateTask.class);
+    private final Logger log = LoggerFactory.getLogger(AmazonTask.class);
     
-    private final AmazonUnboxItemProcessor itemPreProcessor;
-    private final AmazonUnboxItemProcessor itemProcessor;
-    private final AmazonUnboxHttpFeedSupplier feedSupplier;
+    private final AmazonItemProcessor itemPreProcessor;
+    private final AmazonItemProcessor itemProcessor;
+    private final AmazonHttpFeedSupplier feedSupplier;
     
-    public AmazonUnboxUpdateTask(
-            AmazonUnboxItemProcessor preHandler,
-            AmazonUnboxItemProcessor handler,
-            AmazonUnboxHttpFeedSupplier feedSupplier
+    public AmazonTask(
+            AmazonItemProcessor preHandler,
+            AmazonItemProcessor handler,
+            AmazonHttpFeedSupplier feedSupplier
     ) {
         this.itemPreProcessor = checkNotNull(preHandler);
         this.itemProcessor = checkNotNull(handler);
@@ -38,16 +38,16 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
         OwlTelescopeReporter telescope = OwlTelescopeReporterFactory
                 .getInstance()
                 .getTelescopeReporter(
-                    OwlTelescopeReporters.AMAZON_UNBOX_UPDATE_TASK,
+                    OwlTelescopeReporters.AMAZON_PRIME_VIDEO_UPDATE_TASK,
                     Event.Type.INGEST
         );
         telescope.startReporting();
 
         try  {
             itemPreProcessor.prepare(telescope);
-            AmazonUnboxProcessor<UpdateProgress> processor = processor(itemPreProcessor, telescope);
-            ImmutableList<AmazonUnboxItem> items = feedSupplier.get();
-            for (AmazonUnboxItem item : items) {
+            AmazonProcessor<UpdateProgress> processor = processor(itemPreProcessor, telescope);
+            ImmutableList<AmazonItem> items = feedSupplier.get();
+            for (AmazonItem item : items) {
                 processor.process(item);
             }
             itemPreProcessor.finish();
@@ -56,7 +56,7 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
 
             itemProcessor.prepare(telescope);
             processor = processor(itemProcessor, telescope);
-            for (AmazonUnboxItem item : items) {
+            for (AmazonItem item : items) {
                 processor.process(item);
             }
             itemProcessor.finish();
@@ -77,21 +77,21 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
         telescope.endReporting();
     }
 
-    private AmazonUnboxProcessor<UpdateProgress> processor(
-            final AmazonUnboxItemProcessor handler,
+    private AmazonProcessor<UpdateProgress> processor(
+            final AmazonItemProcessor handler,
             OwlTelescopeReporter telescope) {
-        return new AmazonUnboxProcessor<UpdateProgress>() {
+        return new AmazonProcessor<UpdateProgress>() {
 
             UpdateProgress progress = UpdateProgress.START;
 
             @Override
-            public boolean process(AmazonUnboxItem aUItem) {
+            public boolean process(AmazonItem amazonItem) {
                 try {
-                    handler.process(aUItem);
+                    handler.process(amazonItem);
                     progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
-                    telescope.reportFailedEvent("Unable to process item. (" + e.getMessage() + ")", aUItem);
-                    log.error("Error processing: " + aUItem.toString(), e);
+                    telescope.reportFailedEvent("Unable to process item. (" + e.getMessage() + ")", amazonItem);
+                    log.error("Error processing: " + amazonItem.toString(), e);
                     progress.reduce(UpdateProgress.FAILURE);
                 }
                 return shouldContinue();

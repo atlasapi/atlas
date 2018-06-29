@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,10 +46,10 @@ import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class AmazonUnboxContentWritingItemProcessorTest {
+public class AmazonContentWritingItemProcessorTest {
 
-    private AmazonUnboxContentWritingItemProcessor processor;
-    private ContentExtractor extractor = new AmazonUnboxContentExtractor();
+    private AmazonContentWritingItemProcessor processor;
+    private ContentExtractor extractor = new AmazonContentExtractor();
     @Mock
     private ContentResolver resolver;
     @Mock
@@ -57,7 +57,7 @@ public class AmazonUnboxContentWritingItemProcessorTest {
     @Mock
     private ContentLister lister;
     @Mock
-    private AmazonUnboxBrandProcessor brandProcessor;
+    private AmazonBrandProcessor brandProcessor;
     private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
     @Captor
     private ArgumentCaptor<Episode> itemArgumentCaptor;
@@ -69,7 +69,7 @@ public class AmazonUnboxContentWritingItemProcessorTest {
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(ResolvedContent.builder()
                 .build());
         when(lister.listContent(any(ContentListingCriteria.class))).thenReturn(Collections.<Content>emptyIterator());
-        processor = new AmazonUnboxContentWritingItemProcessor(
+        processor = new AmazonContentWritingItemProcessor(
                 extractor,
                 resolver,
                 writer,
@@ -84,12 +84,12 @@ public class AmazonUnboxContentWritingItemProcessorTest {
             throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = factory.newSAXParser();
-        TestAmazonUnboxProcessor testprocessor = new TestAmazonUnboxProcessor();
-        AmazonUnboxContentHandler handler = new AmazonUnboxContentHandler(testprocessor);
+        TestAmazonProcessor testprocessor = new TestAmazonProcessor();
+        AmazonContentHandler handler = new AmazonContentHandler(testprocessor);
         saxParser.parse(getFileAsInputStream("hierarchy.xml"), handler);
 
         processor.prepare(telescope);
-        for (AmazonUnboxItem item : testprocessor.getItems()) {
+        for (AmazonItem item : testprocessor.getItems()) {
             processor.process(item);
         }
         processor.finish();
@@ -114,13 +114,13 @@ public class AmazonUnboxContentWritingItemProcessorTest {
         return Resources.newInputStreamSupplier(testFile).getInput();
     }
 
-    private class TestAmazonUnboxProcessor implements AmazonUnboxProcessor<UpdateProgress> {
+    private class TestAmazonProcessor implements AmazonProcessor<UpdateProgress> {
 
         private UpdateProgress progress = UpdateProgress.START;
-        private final List<AmazonUnboxItem> items = Lists.newArrayList();
+        private final List<AmazonItem> items = Lists.newArrayList();
 
         @Override
-        public boolean process(AmazonUnboxItem aUItem) {
+        public boolean process(AmazonItem aUItem) {
             items.add(aUItem);
             progress = progress.reduce(UpdateProgress.SUCCESS);
             return true;
@@ -131,7 +131,7 @@ public class AmazonUnboxContentWritingItemProcessorTest {
             return progress;
         }
 
-        public List<AmazonUnboxItem> getItems() {
+        public List<AmazonItem> getItems() {
             return items;
         }
     }

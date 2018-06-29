@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -18,7 +18,6 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.CrewMember;
-import org.atlasapi.media.entity.CrewMember.Role;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
@@ -41,7 +40,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -50,9 +48,9 @@ import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
 
 
-public class AmazonUnboxContentExtractorTest {
+public class AmazonContentExtractorTest {
 
-    private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor = new AmazonUnboxContentExtractor();
+    private final ContentExtractor<AmazonItem, Iterable<Content>> extractor = new AmazonContentExtractor();
 
     private Map<Integer, Encoding> encodingsByHorizontalScale(Iterable<Encoding> encodings) {
         return Maps.uniqueIndex(encodings, new Function<Encoding, Integer>() {
@@ -70,7 +68,7 @@ public class AmazonUnboxContentExtractorTest {
 
     @Test
     public void testExtractionOfHdContent() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withUrl("http://hdlocation.org/")
                 .withUnboxHdPurchaseUrl("http://hdlocation.org/")
                 .withUnboxHdPurchasePrice("9.99")
@@ -88,7 +86,7 @@ public class AmazonUnboxContentExtractorTest {
 
     @Test
     public void testExtractionOfUhdContent() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withUrl("http://hdlocation.org/")
                 .withUnboxHdPurchaseUrl("http://hdlocation.org/")
                 .withUnboxHdPurchasePrice("9.99")
@@ -123,7 +121,7 @@ public class AmazonUnboxContentExtractorTest {
 
     @Test
     public void testExtractionOfNonExtractionOfUhdContent() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withUrl("http://hdlocation.org/")
                 .withUnboxHdPurchaseUrl(null)
                 .withUnboxHdPurchasePrice(null)
@@ -158,8 +156,8 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfGenres() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
-                .withGenres(ImmutableSet.of(AmazonUnboxGenre.ACTION, AmazonUnboxGenre.ADVENTURE))
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+                .withGenres(ImmutableSet.of(AmazonGenre.ACTION, AmazonGenre.ADVENTURE))
                 .build();
         
         Content extractedContent = Iterables.getOnlyElement(extractor.extract(filmItem));
@@ -170,7 +168,7 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfPeople() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .addDirectorRole("Director 1")
                 .addDirectorRole("Director 2")
                 .addStarringRole("Cast 1")
@@ -189,7 +187,7 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfCommonFields() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withTConst("ImdbId")
                 .build();
         
@@ -219,7 +217,7 @@ public class AmazonUnboxContentExtractorTest {
     }
 
     public void testExtractionOfVersions() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withDuration(Duration.standardMinutes(100))
                 .build();
 
@@ -232,7 +230,7 @@ public class AmazonUnboxContentExtractorTest {
 
     @Test
     public void testExtractionOfPolicyWithRental() {
-        AmazonUnboxItem filmItem = AmazonUnboxItem.builder()
+        AmazonItem filmItem = AmazonItem.builder()
                 .withAsin("filmAsin")
                 .withUrl("http://www.amazon.com/gp/product/B007FUIBHM/ref=atv_feed_catalog")
                 .withContentType(ContentType.MOVIE)
@@ -255,7 +253,7 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfPolicyWithNoSubscription() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withTitle("testTitle")
                 .withRental(false)
                 .withUrl("unbox.amazon.co.uk/filmAsin")
@@ -275,7 +273,7 @@ public class AmazonUnboxContentExtractorTest {
 
     @Test
     public void testExtractionOfPolicyWithSubscription() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withTitle("testTitle")
                 .withRental(true)
                 .withIsTrident(true)
@@ -307,7 +305,7 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfFilm() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+        AmazonItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .build();
         
         
@@ -320,7 +318,7 @@ public class AmazonUnboxContentExtractorTest {
     //TODO hierarchied episodes?
     @Test
     public void testExtractionOfEpisodeWithSeries() {
-        AmazonUnboxItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
+        AmazonItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
                 .withEpisodeNumber(5)
                 .withSeasonAsin("seasonAsin")
                 .withSeasonNumber(2)
@@ -338,7 +336,7 @@ public class AmazonUnboxContentExtractorTest {
     @Test
     @Ignore //no longer required behaviour, but that might change thus left the test.
     public void testEpisodeTitleDoesNotContainBrandTitle() {
-        AmazonUnboxItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
+        AmazonItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
                 .withEpisodeNumber(5)
                 .withSeasonNumber(2)
                 .withSeasonAsin("seasonAsin")
@@ -353,7 +351,7 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfEpisodeWithBrand() {
-        AmazonUnboxItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
+        AmazonItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
                 .withEpisodeNumber(5)
                 .withSeriesAsin("seriesAsin")
                 .build();
@@ -368,7 +366,7 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfEpisodeWithSeriesAndBrand() {
-        AmazonUnboxItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
+        AmazonItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
                 .withEpisodeNumber(5)
                 .withSeasonAsin("seasonAsin")
                 .withSeasonNumber(2)
@@ -392,7 +390,7 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfItem() {
-        AmazonUnboxItem episodeItem = createAmazonUnboxItem("itemAsin", ContentType.TVEPISODE).build();
+        AmazonItem episodeItem = createAmazonUnboxItem("itemAsin", ContentType.TVEPISODE).build();
         
         Item item = (Item) Iterables.getOnlyElement(Iterables.filter(extractor.extract(episodeItem), Item.class));
         
@@ -401,7 +399,7 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfSeriesWithBrand() {
-        AmazonUnboxItem episodeItem = createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
+        AmazonItem episodeItem = createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
                 .withSeriesAsin("seriesAsin")
                 .build();
         
@@ -413,7 +411,7 @@ public class AmazonUnboxContentExtractorTest {
     
     @Test
     public void testExtractionOfTopLevelSeries() {
-        AmazonUnboxItem episodeItem = createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON).build();
+        AmazonItem episodeItem = createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON).build();
         
         Series series = (Series) Iterables.getOnlyElement(extractor.extract(episodeItem));
         
@@ -423,30 +421,30 @@ public class AmazonUnboxContentExtractorTest {
 
     @Test
     public void testImageExtractionHandlesNullImageUris() {
-        AmazonUnboxItem amazonUnboxItem =
+        AmazonItem amazonItem =
                 createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
                         .withLargeImageUrl(null)
                         .build();
 
-        Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonUnboxItem));
+        Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonItem));
 
         assertEquals(0, series.getImages().size());
     }
 
     @Test
     public void testImageExtractionHandlesEmptyImageUris() {
-        AmazonUnboxItem amazonUnboxItem =
+        AmazonItem amazonItem =
                 createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
                         .withLargeImageUrl("")
                         .build();
 
-        Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonUnboxItem));
+        Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonItem));
 
         assertEquals(0, series.getImages().size());
     }
 
     /**
-     * Creates a Builder object for an AmazonUnboxItem, defaulting enough fields to
+     * Creates a Builder object for an AmazonItem, defaulting enough fields to
      * ensure that content extraction will succeed. Any of these fields can be overridden,
      * and more fields can be added to the return value of this method if needed.
      * 
@@ -454,8 +452,8 @@ public class AmazonUnboxContentExtractorTest {
      * @param type - type of item
      * @return
      */
-    private AmazonUnboxItem.Builder createAmazonUnboxItem(String asin, ContentType type) {
-        return AmazonUnboxItem.builder()
+    private AmazonItem.Builder createAmazonUnboxItem(String asin, ContentType type) {
+        return AmazonItem.builder()
                 .withAsin(asin)
                 .withTitle("testTitle")
                 .withUrl("http://www.amazon.com/gp/product/B007FUIBHM/ref=atv_feed_catalog")

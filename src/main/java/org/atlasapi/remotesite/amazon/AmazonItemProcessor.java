@@ -1,13 +1,13 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
-public interface AmazonUnboxItemProcessor {
+public interface AmazonItemProcessor {
 
     void prepare(OwlTelescopeReporter telescope);
     
-    void process(AmazonUnboxItem item);
+    void process(AmazonItem item);
 
     void finish();
 }

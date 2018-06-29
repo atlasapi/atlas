@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -20,7 +20,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class AmazonUnboxContentHandler extends DefaultHandler {
+public class AmazonContentHandler extends DefaultHandler {
     
     private static final Splitter SPLIT_ON_COMMA =
             Splitter.on(',').trimResults().omitEmptyStrings();
@@ -28,12 +28,12 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     private static final ImmutableSet<String> KNOWN_NON_REAL_NAMES = ImmutableSet.of("unavailable");
     private static final Pattern TWO_ALPHA_CHARS = Pattern.compile(".*[a-zA-Z].*[a-zA-Z].*");
     
-    private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentHandler.class);
+    private final Logger log = LoggerFactory.getLogger(AmazonContentHandler.class);
     private final DateTimeFormatter dateParser =
             ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.forID("Europe/London"));
-    private final AmazonUnboxProcessor<?> processor;
+    private final AmazonProcessor<?> processor;
     
-    private AmazonUnboxItem.Builder item = null;
+    private AmazonItem.Builder item = null;
     
     private ItemField currentField = null;
     private StringBuffer buffer = null;
@@ -42,7 +42,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
             ItemField.RELATED_PRODUCTS);
     private boolean ignoreBlock = false;
 
-    public AmazonUnboxContentHandler(AmazonUnboxProcessor<?> processor) {
+    public AmazonContentHandler(AmazonProcessor<?> processor) {
         this.processor = checkNotNull(processor);
     }
     
@@ -59,7 +59,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
             }
             buffer = new StringBuffer();
         } else if (qName.equalsIgnoreCase("Item")) {
-            item = AmazonUnboxItem.builder();
+            item = AmazonItem.builder();
         }
     }
 
@@ -102,94 +102,94 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withEpisodeNumber(Integer.valueOf(buffer.toString()));
                 break;
             case GENRE_ACTION:
-                item.withGenre(AmazonUnboxGenre.ACTION);
+                item.withGenre(AmazonGenre.ACTION);
                 break;
             case GENRE_ADVENTURE:
-                item.withGenre(AmazonUnboxGenre.ADVENTURE);
+                item.withGenre(AmazonGenre.ADVENTURE);
                 break;
             case GENRE_ANIMATION:
-                item.withGenre(AmazonUnboxGenre.ANIMATION);
+                item.withGenre(AmazonGenre.ANIMATION);
                 break;
             case GENRE_BIOGRAPHY:
-                item.withGenre(AmazonUnboxGenre.BIOGRAPHY);
+                item.withGenre(AmazonGenre.BIOGRAPHY);
                 break;
             case GENRE_COMEDY:
-                item.withGenre(AmazonUnboxGenre.COMEDY);
+                item.withGenre(AmazonGenre.COMEDY);
                 break;
             case GENRE_CRIME:
-                item.withGenre(AmazonUnboxGenre.CRIME);
+                item.withGenre(AmazonGenre.CRIME);
                 break;
             case GENRE_DOCUMENTARY:
-                item.withGenre(AmazonUnboxGenre.DOCUMENTARY);
+                item.withGenre(AmazonGenre.DOCUMENTARY);
                 break;
             case GENRE_DRAMA:
-                item.withGenre(AmazonUnboxGenre.DRAMA);
+                item.withGenre(AmazonGenre.DRAMA);
                 break;
             case GENRE_FAMILY:
-                item.withGenre(AmazonUnboxGenre.FAMILY);
+                item.withGenre(AmazonGenre.FAMILY);
                 break;
             case GENRE_FANTASY:
-                item.withGenre(AmazonUnboxGenre.FANTASY);
+                item.withGenre(AmazonGenre.FANTASY);
                 break;
             case GENRE_FILMNOIR:
-                item.withGenre(AmazonUnboxGenre.FILMNOIR);
+                item.withGenre(AmazonGenre.FILMNOIR);
                 break;
             case GENRE_GAMESHOW:
-                item.withGenre(AmazonUnboxGenre.GAMESHOW);
+                item.withGenre(AmazonGenre.GAMESHOW);
                 break;
             case GENRE_GAYLESBIAN:
-                item.withGenre(AmazonUnboxGenre.GAYLESBIAN);
+                item.withGenre(AmazonGenre.GAYLESBIAN);
                 break;
             case GENRE_HISTORY:
-                item.withGenre(AmazonUnboxGenre.HISTORY);
+                item.withGenre(AmazonGenre.HISTORY);
                 break;
             case GENRE_HORROR:
-                item.withGenre(AmazonUnboxGenre.HORROR);
+                item.withGenre(AmazonGenre.HORROR);
                 break;
             case GENRE_INDEPENDENTFILM:
-                item.withGenre(AmazonUnboxGenre.INDEPENDENTFILM);
+                item.withGenre(AmazonGenre.INDEPENDENTFILM);
                 break;
             case GENRE_INTERNATIONAL:
-                item.withGenre(AmazonUnboxGenre.INTERNATIONAL);
+                item.withGenre(AmazonGenre.INTERNATIONAL);
                 break;
             case GENRE_MUSIC:
-                item.withGenre(AmazonUnboxGenre.MUSIC);
+                item.withGenre(AmazonGenre.MUSIC);
                 break;
             case GENRE_MUSICAL:
-                item.withGenre(AmazonUnboxGenre.MUSICAL);
+                item.withGenre(AmazonGenre.MUSICAL);
                 break;
             case GENRE_MYSTERY:
-                item.withGenre(AmazonUnboxGenre.MYSTERY);
+                item.withGenre(AmazonGenre.MYSTERY);
                 break;
             case GENRE_NONFICTION:
-                item.withGenre(AmazonUnboxGenre.NONFICTION);
+                item.withGenre(AmazonGenre.NONFICTION);
                 break;
             case GENRE_REALITYTV:
-                item.withGenre(AmazonUnboxGenre.REALITYTV);
+                item.withGenre(AmazonGenre.REALITYTV);
                 break;
             case GENRE_ROMANCE:
-                item.withGenre(AmazonUnboxGenre.ROMANCE);
+                item.withGenre(AmazonGenre.ROMANCE);
                 break;
             case GENRE_SCIFI:
-                item.withGenre(AmazonUnboxGenre.SCIFI);
+                item.withGenre(AmazonGenre.SCIFI);
                 break;
             case GENRE_SHORT:
-                item.withGenre(AmazonUnboxGenre.SHORT);
+                item.withGenre(AmazonGenre.SHORT);
                 break;
             case GENRE_SPORT:
-                item.withGenre(AmazonUnboxGenre.SPORT);
+                item.withGenre(AmazonGenre.SPORT);
                 break;
             case GENRE_TALKSHOW:
-                item.withGenre(AmazonUnboxGenre.TALKSHOW);
+                item.withGenre(AmazonGenre.TALKSHOW);
                 break;
             case GENRE_THRILLER:
-                item.withGenre(AmazonUnboxGenre.THRILLER);
+                item.withGenre(AmazonGenre.THRILLER);
                 break;
             case GENRE_WAR:
-                item.withGenre(AmazonUnboxGenre.WAR);
+                item.withGenre(AmazonGenre.WAR);
                 break;
             case GENRE_WESTERN:
-                item.withGenre(AmazonUnboxGenre.WESTERN);
+                item.withGenre(AmazonGenre.WESTERN);
                 break;
             case HASIMAGE:
                 break;

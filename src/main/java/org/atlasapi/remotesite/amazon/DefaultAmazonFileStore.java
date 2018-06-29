@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -17,13 +17,13 @@ import org.atlasapi.s3.S3Client;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Ordering;
 
-public class DefaultAmazonUnboxFileStore implements AmazonUnboxFileStore {
+public class DefaultAmazonFileStore implements AmazonFileStore {
     
     private final File localFolder;
     private final S3Client s3client;
     private final Ordering<File> fileOrdering;
 
-    public DefaultAmazonUnboxFileStore(
+    public DefaultAmazonFileStore(
             String localFilesPath,
             Ordering<File> fileOrdering,
             S3Client s3client

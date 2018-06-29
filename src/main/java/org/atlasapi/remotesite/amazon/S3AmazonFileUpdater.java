@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -16,18 +16,18 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Ordering;
 
 
-public class S3AmazonUnboxFileUpdater implements AmazonUnboxFileUpdater {
+public class S3AmazonFileUpdater implements AmazonFileUpdater {
     
     private final String bucketName;
     private final Supplier<S3Service> serviceSupplier;
-    private final AmazonUnboxFileStore fileStore;
+    private final AmazonFileStore fileStore;
     private final Ordering<S3Object> fileOrdering;
 
-    public S3AmazonUnboxFileUpdater(
+    public S3AmazonFileUpdater(
             Supplier<S3Service> serviceSupplier,
             String bucketName,
             Ordering<S3Object> fileOrdering,
-            AmazonUnboxFileStore fileStore
+            AmazonFileStore fileStore
     ) {
         this.fileOrdering = checkNotNull(fileOrdering);
         this.serviceSupplier = checkNotNull(serviceSupplier);

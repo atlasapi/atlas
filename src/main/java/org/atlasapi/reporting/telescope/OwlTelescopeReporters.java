@@ -20,7 +20,7 @@ public enum OwlTelescopeReporters implements TelescopeReporterName {
 
     CHANNEL_4_INGEST("channel4.ingester", "Channel 4 Ingester"),
 
-    AMAZON_UNBOX_UPDATE_TASK("amazon.ingester","Amazon Ingester"),
+    AMAZON_PRIME_VIDEO_UPDATE_TASK("amazon.ingester","Amazon Ingester"),
 
     RADIO_TIMES_INGESTER("radiotimes.ingester", "RadioTimes Film Ingester"),
 

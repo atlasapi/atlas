@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import java.util.Set;
 
@@ -10,7 +10,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 
-public class AmazonUnboxItem {
+public class AmazonItem {
     
     // TODO Trim out the unnecessary guff fields
     private final float amazonRating;
@@ -21,7 +21,7 @@ public class AmazonUnboxItem {
     private final Set<String> directors;
     private final Integer episodeNumber;
     // TODO how to parse genres
-    private final Set<AmazonUnboxGenre> genres;
+    private final Set<AmazonGenre> genres;
     private final String largeImageUrl;
     private final Quality quality;
     private final Boolean isPreOrder;
@@ -57,23 +57,23 @@ public class AmazonUnboxItem {
         return new Builder();
     }
     
-    public static boolean isBrand(AmazonUnboxItem item) {
+    public static boolean isBrand(AmazonItem item) {
         return item.getContentType().equals(ContentType.TVSERIES);
     }
 
-    public static boolean isSeries(AmazonUnboxItem item) {
+    public static boolean isSeries(AmazonItem item) {
         return item.getContentType().equals(ContentType.TVSEASON);
     }
 
-    public static boolean isEpisode(AmazonUnboxItem item) {
+    public static boolean isEpisode(AmazonItem item) {
         return item.getContentType().equals(ContentType.TVEPISODE);
     }
 
-    public static boolean isFilm(AmazonUnboxItem item) {
+    public static boolean isFilm(AmazonItem item) {
         return item.getContentType().equals(ContentType.MOVIE);
     }
     
-    private AmazonUnboxItem(Builder builder) {
+    private AmazonItem(Builder builder) {
         this.amazonRating = builder.amazonRating;
         this.amazonRatingsCount = builder.amazonRatingsCount;
         this.asin = builder.asin;
@@ -137,7 +137,7 @@ public class AmazonUnboxItem {
         return episodeNumber;
     }
     
-    public Set<AmazonUnboxGenre> getGenres() {
+    public Set<AmazonGenre> getGenres() {
         return genres;
     }
 
@@ -278,8 +278,8 @@ public class AmazonUnboxItem {
             return true;
         }
         
-        if (that instanceof AmazonUnboxItem) {
-            AmazonUnboxItem other = (AmazonUnboxItem) that;
+        if (that instanceof AmazonItem) {
+            AmazonItem other = (AmazonItem) that;
             return this.asin.equals(other.asin);
         }
         
@@ -288,7 +288,7 @@ public class AmazonUnboxItem {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(AmazonUnboxItem.class)
+        return Objects.toStringHelper(AmazonItem.class)
                 .add("amazonRating", amazonRating)
                 .add("amazonRatingsCount", amazonRatingsCount)
                 .add("asin", asin)
@@ -329,7 +329,7 @@ public class AmazonUnboxItem {
         private ContentType contentType;
         private Set<String> directors = Sets.newHashSet();
         private Integer episodeNumber;
-        private Set<AmazonUnboxGenre> genres = Sets.newHashSet();
+        private Set<AmazonGenre> genres = Sets.newHashSet();
         private String largeImageUrl;
         private Quality quality;
         private Boolean isPreOrder;
@@ -365,8 +365,8 @@ public class AmazonUnboxItem {
         
         private Builder() {}
         
-        public AmazonUnboxItem build() {
-            return new AmazonUnboxItem(this);
+        public AmazonItem build() {
+            return new AmazonItem(this);
         }
         
         public Builder withAmazonRating(float amazonRating) {
@@ -404,12 +404,12 @@ public class AmazonUnboxItem {
             return this;
         }
         
-        public Builder withGenres(Iterable<AmazonUnboxGenre> genres) {
+        public Builder withGenres(Iterable<AmazonGenre> genres) {
             this.genres = Sets.newHashSet(genres);
             return this;
         }
         
-        public Builder withGenre(AmazonUnboxGenre genre) {
+        public Builder withGenre(AmazonGenre genre) {
             this.genres.add(genre);
             return this;
         }

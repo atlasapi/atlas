@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import java.util.Map;
 
@@ -9,8 +9,8 @@ import com.google.common.collect.Multimap;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 
-public class AmazonUnboxPreProcessingItemProcessor
-        implements AmazonUnboxItemProcessor, AmazonUnboxBrandProcessor {
+public class AmazonPreProcessingItemProcessor
+        implements AmazonItemProcessor, AmazonBrandProcessor {
 
     private final Map<String, String> contentUriToTitleMap = Maps.newHashMap();
     private final Multimap<String, String> brandUriToSeriesUrisMap = ArrayListMultimap.create();
@@ -26,27 +26,27 @@ public class AmazonUnboxPreProcessingItemProcessor
     }
     
     @Override
-    public void process(AmazonUnboxItem item) {
-        if (AmazonUnboxItem.isBrand(item)) {
-            String uri = AmazonUnboxContentExtractor.createBrandUri(item.getAsin());
+    public void process(AmazonItem item) {
+        if (AmazonItem.isBrand(item)) {
+            String uri = AmazonContentExtractor.createBrandUri(item.getAsin());
             contentUriToTitleMap.put(uri, item.getTitle());
         }
-        if (AmazonUnboxItem.isSeries(item)) {
-            String uri = AmazonUnboxContentExtractor.createSeriesUri(item.getAsin());
+        if (AmazonItem.isSeries(item)) {
+            String uri = AmazonContentExtractor.createSeriesUri(item.getAsin());
             if (item.getSeriesAsin() != null) {
-                String brandUri = AmazonUnboxContentExtractor.createBrandUri(item.getAsin());
+                String brandUri = AmazonContentExtractor.createBrandUri(item.getAsin());
                 brandUriToSeriesUrisMap.put(brandUri, uri);
             }
             contentUriToTitleMap.put(uri, item.getTitle());
         }
-        if (AmazonUnboxItem.isEpisode(item)) {
-            String uri = AmazonUnboxContentExtractor.createEpisodeUri(item.getAsin());
+        if (AmazonItem.isEpisode(item)) {
+            String uri = AmazonContentExtractor.createEpisodeUri(item.getAsin());
             if (item.getSeasonAsin() != null) {
-                String seriesUri = AmazonUnboxContentExtractor.createSeriesUri(item.getSeasonAsin());
+                String seriesUri = AmazonContentExtractor.createSeriesUri(item.getSeasonAsin());
                 seriesUriToEpisodeUrisMap.put(seriesUri, uri);
             }
             if (item.getSeriesAsin() != null) {
-                String brandUri = AmazonUnboxContentExtractor.createBrandUri(item.getAsin());
+                String brandUri = AmazonContentExtractor.createBrandUri(item.getAsin());
                 brandUriToSeriesUrisMap.put(brandUri, uri);
             }
             contentUriToTitleMap.put(uri, item.getTitle());

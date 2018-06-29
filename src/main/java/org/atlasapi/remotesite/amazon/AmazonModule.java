@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import javax.annotation.PostConstruct;
 
@@ -11,7 +11,6 @@ import org.atlasapi.persistence.media.entity.ContentTranslator;
 import org.atlasapi.persistence.media.entity.DescribedTranslator;
 import org.atlasapi.remotesite.ContentExtractor;
 
-import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.RepetitionRules.Daily;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -24,7 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class AmazonUnboxModule {
+public class AmazonModule {
 
     private final static Daily DAILY = RepetitionRules.daily(new LocalTime(23, 0, 0));
     
@@ -33,7 +32,7 @@ public class AmazonUnboxModule {
     private @Autowired ContentLister contentLister;
     private @Autowired ContentResolver contentResolver;
 
-    private @Value("${unbox.url}") String unboxUrl;
+    private @Value("${unbox.url}") String amazonUrl;
     private @Value("${unbox.missingContent.percentage}") Integer missingContentPercentage;
 
     /**
@@ -51,20 +50,21 @@ public class AmazonUnboxModule {
     
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(amazonUnboxUpdater().withName("Amazon Unbox Daily Updater"),
+        scheduler.schedule(
+                amazonUpdater().withName("Amazon Prime Video Daily Updater"),
                 RepetitionRules.NEVER
         );
     }
 
     @Bean
-    public AmazonUnboxUpdateTask amazonUnboxUpdater() {
+    public AmazonTask amazonUpdater() {
         
-        AmazonUnboxPreProcessingItemProcessor preProcessor =
-                new AmazonUnboxPreProcessingItemProcessor();
+        AmazonPreProcessingItemProcessor preProcessor =
+                new AmazonPreProcessingItemProcessor();
         
-        ContentExtractor<AmazonUnboxItem,Iterable<Content>> contentExtractor =
-                new AmazonUnboxContentExtractor();
-        AmazonUnboxItemProcessor processor = new AmazonUnboxContentWritingItemProcessor(
+        ContentExtractor<AmazonItem,Iterable<Content>> contentExtractor =
+                new AmazonContentExtractor();
+        AmazonItemProcessor processor = new AmazonContentWritingItemProcessor(
                 contentExtractor,
                 contentResolver,
                 contentWriter(),
@@ -73,12 +73,12 @@ public class AmazonUnboxModule {
                 preProcessor
         );
         
-        return new AmazonUnboxUpdateTask(preProcessor, processor, amazonUnboxFeedSupplier());
+        return new AmazonTask(preProcessor, processor, amazonFeedSupplier());
     }
     
     @Bean
-    public AmazonUnboxHttpFeedSupplier amazonUnboxFeedSupplier() {
-        return new AmazonUnboxHttpFeedSupplier(unboxUrl);
+    public AmazonHttpFeedSupplier amazonFeedSupplier() {
+        return new AmazonHttpFeedSupplier(amazonUrl);
     }
 
 

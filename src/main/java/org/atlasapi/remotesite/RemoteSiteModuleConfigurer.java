@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.atlasapi.feeds.lakeview.LakeviewModule;
-import org.atlasapi.remotesite.amazonunbox.AmazonUnboxModule;
+import org.atlasapi.remotesite.amazon.AmazonModule;
 import org.atlasapi.remotesite.archiveorg.ArchiveOrgModule;
 import org.atlasapi.remotesite.barb.channels.BarbChannelsModule;
 import org.atlasapi.remotesite.bbc.audience.AudienceModule;
@@ -72,7 +72,7 @@ public class RemoteSiteModuleConfigurer {
         .put("redux", ReduxModule.class)
         .put("voila", VoilaModule.class)
         .put("lovefilm", LoveFilmModule.class)
-        .put("unbox", AmazonUnboxModule.class)
+        .put("unbox", AmazonModule.class)
         .put("netflix", NetflixModule.class)
         .put("youview", YouViewModule.class)
         .put("bbc-products", BBCProductsModule.class)

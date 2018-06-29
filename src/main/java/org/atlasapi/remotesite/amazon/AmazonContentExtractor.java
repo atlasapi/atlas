@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
 import java.util.Currency;
 import java.util.List;
@@ -50,14 +50,14 @@ import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.atlasapi.remotesite.amazonunbox.ContentType.MOVIE;
-import static org.atlasapi.remotesite.amazonunbox.ContentType.TVEPISODE;
-import static org.atlasapi.remotesite.amazonunbox.ContentType.TVSEASON;
+import static org.atlasapi.remotesite.amazon.ContentType.MOVIE;
+import static org.atlasapi.remotesite.amazon.ContentType.TVEPISODE;
+import static org.atlasapi.remotesite.amazon.ContentType.TVSEASON;
 
-public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem,
+public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
         Iterable<Content>> {
 
-    private static final Logger log = LoggerFactory.getLogger(AmazonUnboxContentExtractor.class);
+    private static final Logger log = LoggerFactory.getLogger(AmazonContentExtractor.class);
 
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
     private static final String IMDB_ALIAS_URL_PREFIX = "http://imdb.com/title/%s";
@@ -101,7 +101,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     @Override
-    public Iterable<Content> extract(AmazonUnboxItem source) {
+    public Iterable<Content> extract(AmazonItem source) {
         if (MOVIE.equals(source.getContentType())) {
             return ImmutableSet.of(extractFilm(source));
         }
@@ -113,7 +113,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         else if (TVSEASON.equals(source.getContentType())) {
             return ImmutableSet.of(extractSeries(source));
         } else if (TVEPISODE.equals(source.getContentType())) {
-            // Brands are not in the Unbox feed, so we must
+            // Brands are not in Amazon's feed, so we must
             // create them from the data we have for an episode
             Brand brand = extractBrand(source);
             if (brand == null) {
@@ -125,7 +125,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return ImmutableSet.of();
     }
 
-    private Content extractEpisode(AmazonUnboxItem source) {
+    private Content extractEpisode(AmazonItem source) {
         Item item;
         if (source.getSeasonAsin() != null || source.getSeriesAsin() != null) {
             Episode episode = new Episode();
@@ -149,7 +149,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return item;
     }
 
-    private Content extractSeries(AmazonUnboxItem source) {
+    private Content extractSeries(AmazonItem source) {
         Series series = new Series();
         if (source.getSeasonNumber() != null) {
             series.withSeriesNumber(source.getSeasonNumber());
@@ -163,7 +163,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     @Nullable
-    private Brand extractBrand(AmazonUnboxItem source) {
+    private Brand extractBrand(AmazonItem source) {
         String brandAsin = source.getSeriesAsin();
         if (brandAsin == null || brandAsin.equals("")) {
             return null;
@@ -207,7 +207,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
 
     }
 
-    private Content extractFilm(AmazonUnboxItem source) {
+    private Content extractFilm(AmazonItem source) {
         Film film = new Film();
         setFieldsForNonSynthesizedContent(film, source, createFilmUri(source.getAsin()));
         film.setSpecialization(Specialization.FILM);
@@ -215,7 +215,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return film;
     }
 
-    private Set<Version> generateVersions(AmazonUnboxItem source) {
+    private Set<Version> generateVersions(AmazonItem source) {
         //There are 4 sources of information about the actual quality
         //1. does the title contain a UHD tag?
         //2. does the seriesTitle contain a UHD tag?
@@ -312,7 +312,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return ImmutableSet.of(createVersion(source, versionUrl, encodings.build()));
     }
 
-    private boolean isUhd(AmazonUnboxItem source) {
+    private boolean isUhd(AmazonItem source) {
         if (!Strings.isNullOrEmpty(source.getTitle())
             && UHD_PATTERN.matcher(source.getTitle()).find()) {
             return true;
@@ -326,7 +326,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return false;
     }
 
-    private Version createVersion(AmazonUnboxItem source, String url, Set<Encoding> encodings) {
+    private Version createVersion(AmazonItem source, String url, Set<Encoding> encodings) {
         Version version = new Version();
         version.setCanonicalUri(cleanUri(url));
         if (source.getDuration() != null && source.getDuration().getStandardSeconds() > 0) {
@@ -426,7 +426,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
 
     private void setFieldsForNonSynthesizedContent(
             Content content,
-            AmazonUnboxItem source,
+            AmazonItem source,
             String uri
     ) {
         setCommonFields(content, source.getTitle(), uri);
@@ -476,7 +476,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return title;
     }
 
-    private Set<String> generateGenres(AmazonUnboxItem source) {
+    private Set<String> generateGenres(AmazonItem source) {
         return ImmutableSet.copyOf(source.getGenres()
                 .stream()
                 .map(input -> String.format(GENRE_URI_PATTERN, input.name().toLowerCase()))
@@ -487,13 +487,13 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
      * @param source supplied for completeness, so that the signature doesn't need changing if
      *               languages are ingested at a later point
      */
-    private Set<String> generateLanguages(AmazonUnboxItem source) { //NOSONAR
+    private Set<String> generateLanguages(AmazonItem source) { //NOSONAR
         // YV requires the language to be correct. We ingest nothing so we store nothing. YV output
         // code will detect the lack of language and publish the content as UND (i.e. undefined).
         return ImmutableSet.of();
     }
 
-    private List<CrewMember> generatePeople(AmazonUnboxItem source) {
+    private List<CrewMember> generatePeople(AmazonItem source) {
         if (source.getDirectors().isEmpty() && source.getStarring().isEmpty()) {
             return ImmutableList.of();
         }
@@ -515,9 +515,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return people.build();
     }
 
-    private List<Alias> generateAliases(AmazonUnboxItem item) {
+    private List<Alias> generateAliases(AmazonItem item) {
         Alias asinAlias = new Alias(
-                AmazonUnboxContentWritingItemProcessor.GB_AMAZON_ASIN,
+                AmazonContentWritingItemProcessor.GB_AMAZON_ASIN,
                 item.getAsin()
         );
         if (item.getTConst() == null) {
@@ -527,11 +527,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private List<Alias> generateBrandAliases(String asin) {
-        Alias asinAlias = new Alias(AmazonUnboxContentWritingItemProcessor.GB_AMAZON_ASIN, asin);
+        Alias asinAlias = new Alias(AmazonContentWritingItemProcessor.GB_AMAZON_ASIN, asin);
         return ImmutableList.of(asinAlias);
     }
 
-    private List<String> generateAliasUrls(AmazonUnboxItem item) {
+    private List<String> generateAliasUrls(AmazonItem item) {
         String amazonAsinAlias = String.format(AMAZON_ALIAS_URL_VERSION, item.getAsin());
         if (item.getTConst() == null) {
             return ImmutableList.of(amazonAsinAlias);
@@ -542,7 +542,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         );
     }
 
-    private List<Image> generateImages(AmazonUnboxItem item) {
+    private List<Image> generateImages(AmazonItem item) {
         if (Strings.isNullOrEmpty(item.getLargeImageUrl())) {
             return ImmutableList.of();
         }
@@ -556,7 +556,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return ImmutableList.of(image);
     }
 
-    private Iterable<Certificate> generateCertificates(AmazonUnboxItem item) {
+    private Iterable<Certificate> generateCertificates(AmazonItem item) {
         if (!Strings.isNullOrEmpty(item.getRating())) {
             return ImmutableSet.of(new Certificate(item.getRating(), Countries.GB));
         } else {

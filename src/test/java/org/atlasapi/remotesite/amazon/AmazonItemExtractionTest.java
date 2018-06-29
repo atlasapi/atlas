@@ -1,8 +1,8 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.remotesite.amazon;
 
-import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxGenre.ACTION;
-import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxGenre.ADVENTURE;
-import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxGenre.THRILLER;
+import static org.atlasapi.remotesite.amazon.AmazonGenre.ACTION;
+import static org.atlasapi.remotesite.amazon.AmazonGenre.ADVENTURE;
+import static org.atlasapi.remotesite.amazon.AmazonGenre.THRILLER;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -30,18 +30,18 @@ import com.google.common.io.Resources;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 
-public class AmazonUnboxItemExtractionTest {
+public class AmazonItemExtractionTest {
     
     @Test
     public void testParsingSingleItemUsingSax() throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = factory.newSAXParser();
         
-        TestAmazonUnboxProcessor processor = new TestAmazonUnboxProcessor();
-        AmazonUnboxContentHandler handler = new AmazonUnboxContentHandler(processor);
+        TestAmazonProcessor processor = new TestAmazonProcessor();
+        AmazonContentHandler handler = new AmazonContentHandler(processor);
         saxParser.parse(getFileAsInputStream("single_item.xml"), handler);
         
-        AmazonUnboxItem item = Iterables.getOnlyElement(processor.getItems());
+        AmazonItem item = Iterables.getOnlyElement(processor.getItems());
         
         assertEquals(2.0f, item.getAmazonRating(), 0.0001f);
         assertThat(item.getAmazonRatingsCount(), is(equalTo(7)));
@@ -79,13 +79,13 @@ public class AmazonUnboxItemExtractionTest {
         return Resources.newInputStreamSupplier(testFile).getInput();
     }
     
-    private class TestAmazonUnboxProcessor implements AmazonUnboxProcessor<UpdateProgress> {
+    private class TestAmazonProcessor implements AmazonProcessor<UpdateProgress> {
 
         private UpdateProgress progress = UpdateProgress.START;
-        private final List<AmazonUnboxItem> items = Lists.newArrayList();
+        private final List<AmazonItem> items = Lists.newArrayList();
         
         @Override
-        public boolean process(AmazonUnboxItem aUItem) {
+        public boolean process(AmazonItem aUItem) {
             items.add(aUItem);
             progress = progress.reduce(UpdateProgress.SUCCESS);
             return true;
@@ -96,7 +96,7 @@ public class AmazonUnboxItemExtractionTest {
             return progress;
         }
         
-        public List<AmazonUnboxItem> getItems() {
+        public List<AmazonItem> getItems() {
             return items;
         }
     }

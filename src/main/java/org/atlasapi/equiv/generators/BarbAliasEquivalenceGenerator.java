@@ -3,6 +3,7 @@ package org.atlasapi.equiv.generators;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.stream.MoreStreams;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -88,10 +89,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
 
         Set<LookupEntry> entriesSet = subject.getAliases().parallelStream()
                 .filter(alias -> !alias.getNamespace().endsWith(TXNUMBER_NAMESPACE_SUFFIX))
-                .map(alias ->
-                    lookupEntryStore.entriesForAliases(
-                            Optional.of(alias.getNamespace()),
-                            ImmutableSet.of(alias.getValue())))
+                .map(this::getLookupEntries)
                 .filter(Objects::nonNull)
                 .flatMap(MoreStreams::stream)
                 .collect(MoreCollectors.toImmutableSet());
@@ -129,30 +127,57 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         return equivalents;
     }
 
+    private Iterable<LookupEntry> getLookupEntries(Alias alias) {
+        Iterable<LookupEntry> entriesForAlias = lookupEntryStore.entriesForAliases(
+                Optional.of(alias.getNamespace()),
+                ImmutableSet.of(alias.getValue()));
+        if(alias.getNamespace().startsWith(ORIGINATING_OWNER_NAMESPACE_PREFIX)) { //also generate candidates for the original namespce
+            return Iterables.concat(entriesForAlias,
+                    lookupEntryStore.entriesForAliases(
+                            Optional.of(
+                                    replaceNamespace(
+                                            alias.getNamespace(),
+                                            ORIGINATING_OWNER_NAMESPACE_PREFIX,
+                                            BROADCAST_GROUP_NAMESPACE_PREFIX)
+                            ),
+                            ImmutableSet.of(alias.getValue()))
+                    );
+        } else {
+            return entriesForAlias;
+        }
+    }
+
     private boolean matchesAlias(LookupEntry entry, Alias alias) {
-        if(entry.aliases().contains(alias)) {
+        if (entry.aliases().contains(alias)) {
             return true;
         }
         //equiv between originating owner and broadcast group namespaces
-        if(alias.getNamespace().startsWith(BROADCAST_GROUP_NAMESPACE_PREFIX)
+        if (alias.getNamespace().startsWith(BROADCAST_GROUP_NAMESPACE_PREFIX)
                 && entry.aliases().contains(
-                new Alias(
-                        ORIGINATING_OWNER_NAMESPACE_PREFIX.concat(
-                                alias.getNamespace().substring(BROADCAST_GROUP_NAMESPACE_PREFIX.length())
-                        ),
-                        alias.getValue()))) {
+                        aliasForNewNamespace(alias, BROADCAST_GROUP_NAMESPACE_PREFIX, ORIGINATING_OWNER_NAMESPACE_PREFIX))
+                )
+        {
             return true;
         }
-        if(alias.getNamespace().startsWith(ORIGINATING_OWNER_NAMESPACE_PREFIX)
+        if (alias.getNamespace().startsWith(ORIGINATING_OWNER_NAMESPACE_PREFIX)
                 && entry.aliases().contains(
-                new Alias(
-                        BROADCAST_GROUP_NAMESPACE_PREFIX.concat(
-                                alias.getNamespace().substring(ORIGINATING_OWNER_NAMESPACE_PREFIX.length())
-                        ),
-                        alias.getValue()))) {
+                        aliasForNewNamespace(alias, ORIGINATING_OWNER_NAMESPACE_PREFIX, BROADCAST_GROUP_NAMESPACE_PREFIX))
+                )
+        {
             return true;
         }
         return false;
+    }
+
+    private Alias aliasForNewNamespace(Alias oldAlias, String oldNamespacePrefix, String newNamespacePrefix) {
+        return new Alias(
+                replaceNamespace(oldAlias.getNamespace(), oldNamespacePrefix, newNamespacePrefix),
+                oldAlias.getValue()
+        );
+    }
+
+    private String replaceNamespace(String namespace, String oldNamespacePrefix, String newNamespacePrefix) {
+        return newNamespacePrefix.concat(namespace.substring(oldNamespacePrefix.length()));
     }
 
     @Override

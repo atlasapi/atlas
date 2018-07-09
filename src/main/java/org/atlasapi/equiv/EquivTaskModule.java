@@ -15,6 +15,7 @@ import org.atlasapi.equiv.results.www.EquivalenceResultController;
 import org.atlasapi.equiv.results.www.RecentResultController;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask;
+import org.atlasapi.equiv.update.tasks.DeltaContentEquivalenceUpdateTask;
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
 import org.atlasapi.equiv.update.tasks.ScheduleEquivalenceUpdateTask;
 import org.atlasapi.equiv.update.tasks.ScheduleEquivalenceUpdateTask.Builder;
@@ -30,6 +31,7 @@ import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.listing.ContentLister;
+import org.atlasapi.persistence.content.mongo.LastUpdatedContentFinder;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
@@ -62,6 +64,7 @@ import com.google.common.util.concurrent.Service.Listener;
 import com.google.common.util.concurrent.Service.State;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
+import org.joda.time.Period;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,7 +157,9 @@ public class EquivTaskModule {
     private static final RepetitionRule BT_VOD_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(3, 0));
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(8, 0));
+            RepetitionRules.daily(new LocalTime(3, 30));
+    private static final RepetitionRule AMAZON_EQUIVALENCE_DELTA_REPETITION =
+            RepetitionRules.daily(new LocalTime(23, 0));
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(20, 0));
     private static final RepetitionRule WIKIPEDIA_EQUIVALENCE_REPETITION =
@@ -190,6 +195,7 @@ public class EquivTaskModule {
     @Autowired private ContentLister contentLister;
     @Autowired private SimpleScheduler taskScheduler;
     @Autowired private ContentResolver contentResolver;
+    @Autowired private LastUpdatedContentFinder contentFinder;
     @Autowired private DatabasedMongo db;
     @Autowired private LookupEntryStore lookupStore;
     @Autowired private ScheduleResolver scheduleResolver;
@@ -294,6 +300,14 @@ public class EquivTaskModule {
                         .withName("BT TVE VOD (systest2, conf1) Equivalence Updater"),
                 BT_VOD_EQUIVALENCE_REPETITION,
                 jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentResolver, contentFinder, equivUpdater, ignored)
+                        .forPublisher(AMAZON_UNBOX)
+                        .forDelta(new Period().withDays(1)) //i.e. since last repetition.
+                        .withName("Amazon Unbox Equivalence Delta Updater (last 24h)"),
+                AMAZON_EQUIVALENCE_DELTA_REPETITION
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(AMAZON_UNBOX).withName("Amazon Unbox Equivalence Updater"),

@@ -114,7 +114,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                 .distinct()
                 .forEach(identified -> {
                     equivalents.addEquivalent((T) identified, Score.valueOf(ALIAS_MATCHING_SCORE));
-                    desc.appendText("Resolved %s", identified.getCanonicalUri());
+                    desc.appendText("Candidate %s", identified.getCanonicalUri());
 
                     // this if statement keeps lots of old tests happy
                     if (identified.getId() != null) {

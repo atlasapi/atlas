@@ -80,10 +80,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         generatorComponent.setComponentName("Barb Alias Equivalence Generator");
 
         subject.getAliases().forEach(alias -> desc.appendText(
-                "namespace: " +
-                        alias.getNamespace() +
-                        ", value: " +
-                        alias.getValue()
+                "namespace: " + alias.getNamespace() + ", value: " + alias.getValue()
         ));
         desc.finishStage();
 
@@ -141,7 +138,18 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                                             BROADCAST_GROUP_NAMESPACE_PREFIX)
                             ),
                             ImmutableSet.of(alias.getValue()))
-                    );
+            );
+        } else if(alias.getNamespace().startsWith(BROADCAST_GROUP_NAMESPACE_PREFIX)) { //also generate candidates for base namespce
+            return Iterables.concat(entriesForAlias,
+                    lookupEntryStore.entriesForAliases(
+                            Optional.of(
+                                    replaceNamespace(
+                                            alias.getNamespace(),
+                                            BROADCAST_GROUP_NAMESPACE_PREFIX,
+                                            ORIGINATING_OWNER_NAMESPACE_PREFIX)
+                            ),
+                            ImmutableSet.of(alias.getValue()))
+            );
         } else {
             return entriesForAlias;
         }

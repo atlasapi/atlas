@@ -75,7 +75,6 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         ImmutableSet.of(
                                 //The BarbAliasEquivalenceGenerator also adds a score
                                 new TitleMatchingItemScorer(Score.nullScore()),
-                                new DescriptionTitleMatchingScorer(),
                                 DescriptionMatchingScorer.makeScorer()
                         )
                 )

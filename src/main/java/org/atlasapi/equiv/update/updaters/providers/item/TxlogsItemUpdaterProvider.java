@@ -10,6 +10,7 @@ import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
+import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -73,18 +74,17 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new ContentAliasScorer(Score.nullScore()),
+                                //The BarbAliasEquivalenceGenerator also adds a score
                                 new TitleMatchingItemScorer(Score.nullScore()),
-                                new DescriptionTitleMatchingScorer(),
                                 DescriptionMatchingScorer.makeScorer()
                         )
                 )
                 .withCombiner(
-                        new NullScoreAwareAveragingCombiner<>()
+                        new AddingEquivalenceCombiner<>()
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(0.25),
+                                new MinimumScoreFilter<>(2),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 ExclusionListFilter.create(
@@ -97,7 +97,7 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(1.5)
+                        AllOverOrEqThresholdExtractor.create(3)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

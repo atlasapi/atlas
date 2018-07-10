@@ -1,11 +1,9 @@
 package org.atlasapi.equiv.generators;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.stream.MoreStreams;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
@@ -19,8 +17,11 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
-import java.util.Objects;
-import java.util.Set;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.stream.MoreStreams;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
 
 public class BarbAliasEquivalenceGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
@@ -32,9 +33,12 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
 
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
     private static final String BCID_NAMESPACE_SUFFIX = "bcid";
-    private static final String BROADCAST_GROUP_NAMESPACE_PREFIX = "gb:barb:broadcastGroup";
-    private static final String ORIGINATING_OWNER_NAMESPACE_PREFIX = "gb:barb:originatingOwner:broadcastGroup";
-
+    private static final String BG_PREFIX = "gb:barb:broadcastGroup";
+    private static final String OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup";
+    private static final String ITV_BG_PREFIX = "gb:barb:broadcastGroup:2:bcid";
+    private static final String ITV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:2:bcid";
+    private static final String STV_BG_PREFIX = "gb:barb:broadcastGroup:111:bcid";
+    private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111:bcid";
 
     public BarbAliasEquivalenceGenerator(
             MongoLookupEntryStore lookupEntryStore,
@@ -84,25 +88,26 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         ));
         desc.finishStage();
 
-        Set<LookupEntry> entriesSet = subject.getAliases().parallelStream()
+        Set<Alias> expandedAliases = getExpandedAliases(subject.getAliases());
+
+        Set<LookupEntry> potentialCandidatesSet = expandedAliases.parallelStream()
                 .filter(alias -> !alias.getNamespace().endsWith(TXNUMBER_NAMESPACE_SUFFIX))
-                .map(this::getLookupEntries)
+                .map(this::getLookupEntries) //from atlas
                 .filter(Objects::nonNull)
                 .flatMap(MoreStreams::stream)
                 .collect(MoreCollectors.toImmutableSet());
 
-        Set<LookupEntry> candidateEntries = subject.getAliases().parallelStream()
+        //whoever wrote this had trust issues and is rechecking that what he got back is actually
+        //matching content. We assume he had good reason, but might as well be pointless.
+        Set<LookupEntry> candidatesSet = expandedAliases.parallelStream()
                 .filter(alias -> !alias.getNamespace().endsWith(TXNUMBER_NAMESPACE_SUFFIX)) //don't equiv on txnumber
-                .map(alias ->
-                        entriesSet.stream()
-                                .filter(entry -> !entry.uri().equals(subject.getCanonicalUri())
-                                        && matchesAlias(entry, alias))
-                                .collect(MoreCollectors.toImmutableSet()))
+                //for each alias of the subject, look in the potentialCandidatesSet and get those that match
+                .map(alias -> getAllThatMatch(alias, potentialCandidatesSet, subject))
                 .filter(collection -> collection.size() <= MAXIMUM_ALIAS_MATCHES) //avoids equiving on aliases which are too common
                 .flatMap(MoreStreams::stream)
                 .collect(MoreCollectors.toImmutableSet());
 
-        ResolvedContent resolved = resolver.findByCanonicalUris(candidateEntries.stream()
+        ResolvedContent resolved = resolver.findByCanonicalUris(candidatesSet.stream()
                 .map(LookupEntry::uri)
                 .collect(MoreCollectors.toImmutableSet())
         );
@@ -124,68 +129,74 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         return equivalents;
     }
 
-    private Iterable<LookupEntry> getLookupEntries(Alias alias) {
-        Iterable<LookupEntry> entriesForAlias = lookupEntryStore.entriesForAliases(
-                Optional.of(alias.getNamespace()),
-                ImmutableSet.of(alias.getValue()));
-        if(alias.getNamespace().startsWith(ORIGINATING_OWNER_NAMESPACE_PREFIX)) { //also generate candidates for the original namespce
-            return Iterables.concat(entriesForAlias,
-                    lookupEntryStore.entriesForAliases(
-                            Optional.of(
-                                    replaceNamespace(
-                                            alias.getNamespace(),
-                                            ORIGINATING_OWNER_NAMESPACE_PREFIX,
-                                            BROADCAST_GROUP_NAMESPACE_PREFIX)
-                            ),
-                            ImmutableSet.of(alias.getValue()))
-            );
-        } else if(alias.getNamespace().startsWith(BROADCAST_GROUP_NAMESPACE_PREFIX)) { //also generate candidates for base namespce
-            return Iterables.concat(entriesForAlias,
-                    lookupEntryStore.entriesForAliases(
-                            Optional.of(
-                                    replaceNamespace(
-                                            alias.getNamespace(),
-                                            BROADCAST_GROUP_NAMESPACE_PREFIX,
-                                            ORIGINATING_OWNER_NAMESPACE_PREFIX)
-                            ),
-                            ImmutableSet.of(alias.getValue()))
-            );
-        } else {
-            return entriesForAlias;
-        }
+    private ImmutableSet<LookupEntry> getAllThatMatch(Alias alias, Set<LookupEntry> entriesSet, T subject) {
+        return entriesSet.stream()
+                .filter(entry -> !isItself(subject, entry) && entryContainsAlias(entry, alias))
+                .collect(MoreCollectors.toImmutableSet());
     }
 
-    private boolean matchesAlias(LookupEntry entry, Alias alias) {
+    private boolean isItself(T subject, LookupEntry entry) {
+        return entry.uri().equals(subject.getCanonicalUri());
+    }
+
+    /**
+     * Expand the list of aliases to include things that don't have the same namespace, but should
+     * still match. (such as originatingOwnerBcid and Bcid, or ITV and STV.
+     * We can then use the expanded list to fetch candidates that have either alias.
+     */
+    private Set<Alias> getExpandedAliases(Set<Alias> aliases) {
+        Set<Alias> expandedAliases = new HashSet<>();
+        for (Alias alias : aliases) {
+            //add all the existing aliases
+            expandedAliases.add(alias);
+
+            //add the originating onwer if you have the normal one, and vs
+            if (alias.getNamespace().startsWith(OOBG_PREFIX)) {
+                expandedAliases.add(aliasForNewNamespace(alias, OOBG_PREFIX, BG_PREFIX));
+            } else if (alias.getNamespace().startsWith(BG_PREFIX)) {
+                expandedAliases.add(aliasForNewNamespace(alias, BG_PREFIX, OOBG_PREFIX));
+            }
+        }
+
+        for (Alias alias : expandedAliases) {
+            // if you have the ITV add the STV, and vs.
+            // The previous block would have already expanded that for Originating Owner.
+            if (alias.getNamespace().equals(ITV_BG_PREFIX)) {
+                expandedAliases.add(aliasForNewNamespace(alias, ITV_BG_PREFIX, STV_BG_PREFIX));
+            } else if (alias.getNamespace().startsWith(ITV_OOBG_PREFIX)) {
+                expandedAliases.add(aliasForNewNamespace(alias, ITV_OOBG_PREFIX, STV_OOBG_PREFIX));
+            } else if (alias.getNamespace().startsWith(STV_BG_PREFIX)) {
+                expandedAliases.add(aliasForNewNamespace(alias, STV_BG_PREFIX, ITV_BG_PREFIX));
+            } else if (alias.getNamespace().startsWith(STV_OOBG_PREFIX)) {
+                expandedAliases.add(aliasForNewNamespace(alias, STV_OOBG_PREFIX, ITV_OOBG_PREFIX));
+            }
+        }
+
+        return expandedAliases;
+    }
+
+    private Iterable<LookupEntry> getLookupEntries(Alias alias) {
+        return lookupEntryStore.entriesForAliases(
+                Optional.of(alias.getNamespace()),
+                ImmutableSet.of(alias.getValue()));
+    }
+
+    private boolean entryContainsAlias(LookupEntry entry, Alias alias) {
         if (entry.aliases().contains(alias)) {
             return true;
         }
-        //equiv between originating owner and broadcast group namespaces
-        if (alias.getNamespace().startsWith(BROADCAST_GROUP_NAMESPACE_PREFIX)
-                && entry.aliases().contains(
-                        aliasForNewNamespace(alias, BROADCAST_GROUP_NAMESPACE_PREFIX, ORIGINATING_OWNER_NAMESPACE_PREFIX))
-                )
-        {
-            return true;
-        }
-        if (alias.getNamespace().startsWith(ORIGINATING_OWNER_NAMESPACE_PREFIX)
-                && entry.aliases().contains(
-                        aliasForNewNamespace(alias, ORIGINATING_OWNER_NAMESPACE_PREFIX, BROADCAST_GROUP_NAMESPACE_PREFIX))
-                )
-        {
-            return true;
-        }
+
         return false;
     }
 
-    private Alias aliasForNewNamespace(Alias oldAlias, String oldNamespacePrefix, String newNamespacePrefix) {
+    private Alias aliasForNewNamespace(Alias alias, String oldPrefix, String newPrefix) {
         return new Alias(
-                replaceNamespace(oldAlias.getNamespace(), oldNamespacePrefix, newNamespacePrefix),
-                oldAlias.getValue()
-        );
+                getNewNamespace(alias.getNamespace(), oldPrefix, newPrefix),
+                alias.getValue());
     }
-
-    private String replaceNamespace(String namespace, String oldNamespacePrefix, String newNamespacePrefix) {
-        return newNamespacePrefix.concat(namespace.substring(oldNamespacePrefix.length()));
+    //replaces the oldPrefix with the newPrefix in the given namespace.
+    private String getNewNamespace(String namespace, String oldPrefix, String newPrefix) {
+        return newPrefix.concat(namespace.substring(oldPrefix.length()));
     }
 
     @Override

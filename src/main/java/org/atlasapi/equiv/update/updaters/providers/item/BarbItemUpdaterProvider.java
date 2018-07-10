@@ -87,7 +87,6 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                                 new MinimumScoreFilter<>(2),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
-                                new PublisherFilter<>(),
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()

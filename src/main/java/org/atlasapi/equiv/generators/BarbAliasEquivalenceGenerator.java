@@ -158,7 +158,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
             }
         }
 
-        for (Alias alias : expandedAliases) {
+        for (Alias alias : ImmutableSet.copyOf(expandedAliases)) {
             // if you have the ITV add the STV, and vs.
             // The previous block would have already expanded that for Originating Owner.
             if (alias.getNamespace().equals(ITV_BG_PREFIX)) {

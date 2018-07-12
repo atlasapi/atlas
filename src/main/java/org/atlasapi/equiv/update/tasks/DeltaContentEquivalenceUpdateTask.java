@@ -3,13 +3,9 @@ package org.atlasapi.equiv.update.tasks;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.equiv.update.RootEquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.mongo.LastUpdatedContentFinder;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
@@ -19,7 +15,6 @@ import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
-import com.hp.hpl.jena.sparql.function.library.date;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.slf4j.Logger;
@@ -46,11 +41,11 @@ public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
     private Period delta;
     private LastUpdatedContentFinder contentFinder;
 
-    public DeltaContentEquivalenceUpdateTask(ContentResolver contentResolver,
-            LastUpdatedContentFinder contentFinder, EquivalenceUpdater<Content> updater,
+    public DeltaContentEquivalenceUpdateTask(LastUpdatedContentFinder contentFinder,
+            EquivalenceUpdater<Content> updater,
             Set<String> ignored) {
         this.contentFinder = contentFinder;
-        this.updater = RootEquivalenceUpdater.create(contentResolver, updater);
+        this.updater = updater;
         this.ignored = ignored;
         telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.EQUIVALENCE,
@@ -64,7 +59,7 @@ public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
         return this;
     }
 
-    public DeltaContentEquivalenceUpdateTask forDelta(Period delta) {
+    public DeltaContentEquivalenceUpdateTask forLast(Period delta) {
         this.delta = delta;
         return this;
     }

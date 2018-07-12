@@ -14,6 +14,7 @@ import org.atlasapi.equiv.results.www.EquivGraphController;
 import org.atlasapi.equiv.results.www.EquivalenceResultController;
 import org.atlasapi.equiv.results.www.RecentResultController;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
+import org.atlasapi.equiv.update.RecoveringEquivalenceUpdater;
 import org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask;
 import org.atlasapi.equiv.update.tasks.DeltaContentEquivalenceUpdateTask;
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
@@ -303,9 +304,11 @@ public class EquivTaskModule {
         );
         scheduleEquivalenceJob(
                 new DeltaContentEquivalenceUpdateTask(
-                        contentResolver, contentFinder, equivUpdater, ignored)
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
                         .forPublisher(AMAZON_UNBOX)
-                        .forDelta(new Period().withDays(1)) //i.e. since last repetition.
+                        .forLast(new Period().withDays(1)) //i.e. since last repetition.
                         .withName("Amazon Unbox Equivalence Delta Updater (last 24h)"),
                 AMAZON_EQUIVALENCE_DELTA_REPETITION
         );

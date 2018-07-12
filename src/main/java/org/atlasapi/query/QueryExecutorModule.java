@@ -1,11 +1,16 @@
 package org.atlasapi.query;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.ServiceManager;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageConsumerFactory;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.queue.MessageSenderFactory;
+import com.metabroadcast.common.queue.kafka.KafkaConsumer;
+import com.metabroadcast.common.time.SystemClock;
 import org.atlasapi.input.BrandModelTransformer;
 import org.atlasapi.input.ClipModelTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
@@ -26,24 +31,12 @@ import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.EpisodeMerger;
 import org.atlasapi.query.content.merge.ItemMerger;
+import org.atlasapi.query.content.merge.SeriesMerger;
 import org.atlasapi.query.content.merge.SongMerger;
 import org.atlasapi.query.content.merge.VersionMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 import org.atlasapi.query.worker.ContentWriteMessageSerialiser;
 import org.atlasapi.query.worker.ContentWriteWorker;
-
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.MessageConsumerFactory;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.queue.MessageSenderFactory;
-import com.metabroadcast.common.queue.kafka.KafkaConsumer;
-import com.metabroadcast.common.time.SystemClock;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.ServiceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,7 +44,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_NO_LOCK_SETTING_CONTENT_WRITER;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @SuppressWarnings("PublicConstructor")
@@ -109,6 +106,7 @@ public class QueryExecutorModule {
         VersionMerger versionMerger = VersionMerger.create();
         SongMerger songMerger = SongMerger.create();
         EpisodeMerger episodeMerger = EpisodeMerger.create();
+        SeriesMerger seriesMerger = SeriesMerger.create();
 
         ItemMerger itemMerger = ItemMerger.create(versionMerger, songMerger);
 
@@ -120,7 +118,7 @@ public class QueryExecutorModule {
                 scheduleWriter,
                 channelResolver,
                 eventResolver,
-                ContentMerger.create(itemMerger, episodeMerger),
+                ContentMerger.create(itemMerger, episodeMerger, seriesMerger),
                 versionMerger
         );
     }

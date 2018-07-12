@@ -16,6 +16,7 @@ public class EpisodeMerger {
     public Item mergeEpisodes(Episode existing, Episode update) {
         existing.setSeriesNumber(update.getSeriesNumber());
         existing.setEpisodeNumber(update.getEpisodeNumber());
+        existing.setSeriesRef(update.getSeriesRef());
         return existing;
     }
 }

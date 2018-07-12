@@ -2,6 +2,8 @@ package org.atlasapi.equiv.update.tasks;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
@@ -10,6 +12,7 @@ import org.atlasapi.persistence.content.mongo.LastUpdatedContentFinder;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+import org.atlasapi.util.AlwaysBlockingQueue;
 
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.scheduling.ScheduledTask;
@@ -25,7 +28,8 @@ import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
 
 /**
  * This task will redo all equivalence since the given date, rather than using the Content
- * Lister's progress.
+ * Lister's progress. It runs with 15 threads, and the first person who needs to use it elsewhere
+ * gets convert the executor to a parameter.
  */
 public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
 
@@ -34,10 +38,11 @@ public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
     private final EquivalenceUpdater<Content> updater;
     private final Set<String> ignored;
     private final OwlTelescopeReporter telescope;
+    private final ThreadPoolExecutor executor;
 
     private String schedulingKey = "delta-equivalence";
     private Publisher publisher;
-    private UpdateProgress progress = UpdateProgress.START;
+    private volatile UpdateProgress progress = UpdateProgress.START;
     private Period delta;
     private LastUpdatedContentFinder contentFinder;
 
@@ -50,6 +55,12 @@ public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
         telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.EQUIVALENCE,
                 Event.Type.EQUIVALENCE
+        );
+
+        executor = new ThreadPoolExecutor(
+                15, 15, //The searcher cannot really cope with high load.
+                60, TimeUnit.SECONDS,
+                new AlwaysBlockingQueue<>(300)
         );
     }
 
@@ -73,7 +84,7 @@ public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
         Iterator<Content> contents = contentFinder.updatedSince(publisher, since);
         try {
             while(shouldContinue() && contents.hasNext()) {
-                handle(contents.next());
+                executor.submit(handle(contents.next()));
             }
         } catch (Exception e) {
             log.error(getName(), e);
@@ -89,17 +100,20 @@ public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
         this.progress = UpdateProgress.START;
     }
 
-    protected void handle(Content content) {
-        if (!ignored.contains(content.getCanonicalUri())) {
-            reportStatus(String.format("%s. Processing %s.", progress, content));
-            try {
-                updater.updateEquivalences(content, telescope);
-                progress = progress.reduce(SUCCESS);
-            } catch (Exception e) {
-                log.error(content.toString(), e);
-                progress = progress.reduce(FAILURE);
-            }
-        }
+    protected Runnable handle(Content content) {
+       return () -> {
+           if (!ignored.contains(content.getCanonicalUri())) {
+               reportStatus(String.format("%s. Processing %s.", progress, content));
+               try {
+                   updater.updateEquivalences(content, telescope);
+                   progress = progress.reduce(SUCCESS);
+               } catch (Exception e) {
+                   log.error(content.toString(), e);
+                   progress = progress.reduce(FAILURE);
+               }
+           }
+       };
+
     }
 
     protected void onFinish() {

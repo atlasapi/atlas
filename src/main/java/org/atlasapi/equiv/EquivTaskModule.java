@@ -159,7 +159,7 @@ public class EquivTaskModule {
             RepetitionRules.daily(new LocalTime(3, 0));
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule AMAZON_EQUIVALENCE_DELTA_REPETITION =
-            RepetitionRules.daily(new LocalTime(1, 0));
+            RepetitionRules.daily(new LocalTime(3, 00));
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(20, 0));
     private static final RepetitionRule WIKIPEDIA_EQUIVALENCE_REPETITION =

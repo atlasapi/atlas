@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmazonModule {
 
-    private final static Daily DAILY = RepetitionRules.daily(new LocalTime(17, 0, 0));
+    private final static Daily DAILY = RepetitionRules.daily(new LocalTime(19, 0, 0));
     
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;

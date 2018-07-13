@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.update.tasks;
 
+import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.C4;
 import static org.atlasapi.media.entity.Publisher.PA;
@@ -13,6 +14,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -28,6 +33,7 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.util.AlwaysBlockingQueue;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -67,8 +73,7 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         };
     }
 
-    @Test
-    public void testCallUpdateOnContent() {
+    public void testCallUpdateOnContent(ExecutorService executor) {
         
         Item paItemOne = new Item("pa1", "pa1c", Publisher.PA);
         Item bbcItemOne = new Item("bbc1", "bbc1c", Publisher.BBC);
@@ -93,7 +98,7 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         when(contentResolver.findByCanonicalUris(argThat(hasItem("episode"))))
             .thenReturn(ResolvedContent.builder().put(paEp.getCanonicalUri(), paEp).build());
         
-        new ContentEquivalenceUpdateTask(contentLister, contentResolver, progressStore, updater, ImmutableSet.<String>of()).forPublishers(PA, BBC, C4).run();
+        new ContentEquivalenceUpdateTask(contentLister, contentResolver, executor, progressStore, updater, ImmutableSet.of()).forPublishers(PA, BBC, C4).run();
         
         verify(updater).updateEquivalences(eq(paItemOne), any(OwlTelescopeReporter.class));
         verify(updater, times(2)).updateEquivalences(eq(paBrand), any(OwlTelescopeReporter.class));
@@ -103,5 +108,20 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         verify(updater).updateEquivalences(eq(bbcItemThree), any(OwlTelescopeReporter.class));
         verify(updater).updateEquivalences(eq(c4ItemOne), any(OwlTelescopeReporter.class));
         verify(progressStore).storeProgress(taskName, ContentListingProgress.START);
+    }
+
+    @Test
+    public void testCallUpdateOnContentMultithreaded() {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                3, 3, //this is used by all equiv tasks, so increase with caution.
+                60, TimeUnit.SECONDS,
+                new AlwaysBlockingQueue<>(SAVE_EVERY_BLOCK_SIZE)
+        );
+        testCallUpdateOnContent(executor);
+    }
+
+    @Test
+    public void testCallUpdateOnContentOnMainThread() {
+        testCallUpdateOnContent(null);
     }
 }

@@ -121,11 +121,9 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
     }
 
     private void runAsyncronously(Iterator<Content> contents) {
-        boolean proceed = true;
         Content current = null;
-
         try {
-            while (shouldContinue() && proceed && contents.hasNext()) {
+            while (shouldContinue() && contents.hasNext()) {
                 //Normally this saves progress to the db every 10 items. With multithreading
                 //we need to make sure that when progress is written, everything before that item
                 //has completed successfully. The strategy chosen was to batch tasks into
@@ -133,8 +131,11 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 //batch to finish, write progress, repeat until done.
                 CountDownLatch latch = new CountDownLatch(SAVE_EVERY_BLOCK_SIZE);
                 int submitted = 0;
-                while (shouldContinue() && proceed && contents.hasNext() && submitted < SAVE_EVERY_BLOCK_SIZE) {
+                while (shouldContinue() && contents.hasNext() && submitted < SAVE_EVERY_BLOCK_SIZE) {
                     current = contents.next();
+                    //We don't check the result of handle, because that was always true. If you
+                    //ever need to check that result you probably need to refactor the code
+                    //using invokeAll instead of the countdown latch.
                     executor.submit(handleAsync(current, latch));
                     submitted++;
                 }
@@ -152,7 +153,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
             log.error(getName(), e);
             onFinish(false, null);
         }
-        onFinish(proceed && shouldContinue(), null);
+        onFinish(shouldContinue(), null);
     }
 
     private void runSyncronously(Iterator<Content> contents) {
@@ -161,6 +162,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         int processed = 0;
         try {
             while (shouldContinue() && proceed && contents.hasNext()) {
+                current = contents.next();
                 proceed = handle(current);
                 if (++processed % 10 == 0) {
                     updateProgress(progressFrom(current));

@@ -1,8 +1,11 @@
 package org.atlasapi.equiv;
 
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -43,6 +46,7 @@ import org.atlasapi.remotesite.itv.whatson.ItvWhatsonChannelMap;
 import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
+import org.atlasapi.util.AlwaysBlockingQueue;
 
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.queue.kafka.KafkaConsumer;
@@ -77,6 +81,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
@@ -587,10 +592,19 @@ public class EquivTaskModule {
         return new ContentEquivalenceUpdateTask(
                 contentLister,
                 contentResolver,
+                getNewDefaultExecutor(),
                 progressStore(),
                 equivUpdater,
                 ignored
         ).forPublishers(publishers);
+    }
+
+    private ExecutorService getNewDefaultExecutor(){
+        return new ThreadPoolExecutor(
+                3, 3, //this is used by all equiv tasks, so increase with caution.
+                60, TimeUnit.SECONDS,
+                new AlwaysBlockingQueue<>(SAVE_EVERY_BLOCK_SIZE)
+        );
     }
 
     //Controllers...

@@ -113,7 +113,7 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     @Test
     public void testCallUpdateOnContentMultithreaded() {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                3, 3, //this is used by all equiv tasks, so increase with caution.
+                3, 3,
                 60, TimeUnit.SECONDS,
                 new AlwaysBlockingQueue<>(SAVE_EVERY_BLOCK_SIZE)
         );

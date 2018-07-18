@@ -65,8 +65,6 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
     /**
      * @param executor        If the executor is null all equiv will run on the callers thread.
-     *                        The executor will be given 10Minutes to shut down, feel free
-     *                        to customize if needed.
      */
     public ContentEquivalenceUpdateTask(
             ContentLister contentLister,
@@ -209,15 +207,6 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
     }
 
     protected void onFinish(boolean finished, @Nullable Content lastProcessed) {
-        if(executor != null) {
-            try {
-                executor.shutdown();
-                executor.awaitTermination(10, TimeUnit.MINUTES);
-            } catch (InterruptedException e) {
-                log.info("Job {} failed to complete. The executor did not properly shutdown in the 10minutes it was given.", schedulingKey);
-                telescope.reportFailedEvent("Abrupt executor termination. Not all scheduled equivalences have run.");
-            }
-        }
         telescope.endReporting();
         persistProgress(finished, lastProcessed);
     }

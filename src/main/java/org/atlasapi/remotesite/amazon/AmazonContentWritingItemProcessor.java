@@ -157,11 +157,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             // YV has requested we do not sent trailers, and we don't want to keep trailers either.
             // According to amazon trailers are identified with episodeNumbers 000 or 101.
             if (episodeNumber == 0 || episodeNumber == 101) {
-                telescope.reportFailedEvent(
-                        "Episode was discarded because it was a trailer (index 0 or 101)",
-                        EntityType.EPISODE,
-                        contentWithPayload.getPayload()
-                );
+//                log.info("Episode {} was discarded because it was a trailer (index 0 or 101)", episode.getCanonicalUri());
                 return true;
             }
         }
@@ -170,11 +166,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             //We also discard Clips. ECOTEST-429. CPINC-1223 removed the duration restriction.
             if (item.getTitle() != null && !item.getVersions().isEmpty()) {
                 if (item.getTitle().toLowerCase().startsWith("clip:")) {
-                    telescope.reportFailedEvent(
-                            "Content was discarded because it was a clip",
-                            contentWithPayload.getModel(),
-                            contentWithPayload.getPayload()
-                    );
+//                    log.info("Content {} was discarded because it was a clip", item.getCanonicalUri());
                     return true;
                 }
             }

@@ -506,7 +506,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         for (Content notSeenContent : contentSet) {
             notSeenContent.setActivelyPublished(false);
             if (notSeenContent instanceof Item) {
-                writer.createOrUpdate((Item) notSeenContent);
+//                writer.createateOrUpdate((Item) notSeenContent);
                 telescope.reportSuccessfulEvent(
                         notSeenContent.getId(),
                         notSeenContent.getAliases(),
@@ -515,7 +515,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                         UNPUBLISH_NO_PAYLOAD_STRING);
 
             } else if (notSeenContent instanceof Container) {
-                writer.createOrUpdate((Container) notSeenContent);
+//                writer.createOrUpdate((Container) notSeenContent);
                 telescope.reportSuccessfulEvent(
                         notSeenContent.getId(),
                         notSeenContent.getAliases(),
@@ -563,7 +563,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             } else if (content.getModel() instanceof Brand) {
                 cacheOrWriteBrandAndCachedSubContents(content.asModelType(Brand.class), telescope);
             } else {
-                writer.createOrUpdate(content.asModelType(Container.class).getModel());
+//                writer.createOrUpdate(content.asModelType(Container.class).getModel());
                 reportContentWithPayloadToTelescope(content, telescope);
             }
         } else if (content.getModel() instanceof Item) {
@@ -595,7 +595,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     }
     
     private void writeBrand(ModelWithPayload<Brand> brand, OwlTelescopeReporter telescope) {
-        writer.createOrUpdate(brand.getModel());
+//        writer.createOrUpdate(brand.getModel());
         reportContentWithPayloadToTelescope(brand, telescope);
 
         String brandUri = brand.getModel().getCanonicalUri();
@@ -625,7 +625,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
 
     public void writeSeries(ModelWithPayload<Series> series, OwlTelescopeReporter telescope) {
         String seriesUri = series.getModel().getCanonicalUri();
-        writer.createOrUpdate(series.getModel());
+//        writer.createOrUpdate(series.getModel());
         reportContentWithPayloadToTelescope(series, telescope);
 
         seenContainer.put(seriesUri, series);
@@ -642,7 +642,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         if (parent != null && !seenContainer.containsKey(parent.getUri())) {
             cached.put(parent.getUri(), item);
         } else {
-            writer.createOrUpdate(item.getModel());
+//            writer.createOrUpdate(item.getModel());
             reportContentWithPayloadToTelescope(item, telescope);
         }
     }
@@ -684,7 +684,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         if(episode.getModel().getCanonicalUri().contains("B00HUTA590")){
             log.info("AMAZON: WAS WRITTEN: {}",  episode.getModel().people());
         }
-        writer.createOrUpdate(episode.getModel());
+//        writer.createOrUpdate(episode.getModel());
         reportContentWithPayloadToTelescope(episode, telescope);
     }
 

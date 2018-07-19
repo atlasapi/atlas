@@ -54,6 +54,9 @@ public class AmazonTask extends ScheduledTask {
             AmazonProcessor<UpdateProgress> processor = processor(itemPreProcessor, telescope);
             ImmutableList<AmazonItem> items = feedSupplier.get();
             for (AmazonItem item : items) {
+                if(item.getAsin().equals("B00HUTA590")){
+                    log.info("AMAZON: THE ASIN WAS SENT FOR PRE-PROCESSING. {}", item.getDirectors());
+                }
                 processor.process(item);
             }
             itemPreProcessor.finish();
@@ -63,6 +66,9 @@ public class AmazonTask extends ScheduledTask {
             itemProcessor.prepare(telescope);
             processor = processor(itemProcessor, telescope);
             for (AmazonItem item : items) {
+                if(item.getAsin().equals("B00HUTA590")){
+                    log.info("AMAZON: THE ASIN WAS SENT FOR PROCESSING. {}", item.getDirectors());
+                }
                 processor.process(item);
             }
             itemProcessor.finish();

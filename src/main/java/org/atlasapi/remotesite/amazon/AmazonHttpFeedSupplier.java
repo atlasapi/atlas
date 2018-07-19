@@ -146,6 +146,9 @@ public class AmazonHttpFeedSupplier implements Supplier<ImmutableList<AmazonItem
         @Override
         public boolean process(AmazonItem item) {
             items.add(item);
+            if(item.getAsin().equals("B00HUTA590")){
+                log.info("AMAZON: FOUND ASIN",item);
+            }
             return true;
         }
     

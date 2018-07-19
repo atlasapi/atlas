@@ -125,9 +125,18 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     
     @Override
     public void process(AmazonItem item) {
+        if(item.getAsin().equals("B00HUTA590")){
+            log.info("AMAZON: RECEIVED FOR PROCESSING. {}", item.getDirectors());
+        }
         for (Content content : extract(item)) {
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
+            if(item.getAsin().equals("B00HUTA590")){
+                log.info("AMAZON: MADE INTO A CONTENT. {}", content.people());
+            }
             if (shouldDiscard(contentWithPayload)) {
+                if(item.getAsin().equals("B00HUTA590")){
+                    log.info("AMAZON: CONTENT WAS DISCARDED.");
+                }
                 continue;
             }
 
@@ -329,6 +338,9 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             } else if (content.getModel() instanceof Series){
                 series.add(content);
             } else {
+                if(content.getModel().getCanonicalUri().contains("B00HUTA590")){
+                    log.info("AMAZON: IS A NOT CONTAINER. {}", content.getModel().people());
+                }
                 notContainers.add(content);
             }
         }
@@ -345,10 +357,19 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
 
         Maybe<Identified> existing = resolve(content.getModel().getCanonicalUri());
         if (existing.isNothing()) {
+            if(content.getModel().getCanonicalUri().contains("B00HUTA590")){
+                log.info("AMAZON: NOT FOUND IN DB, NEW ITEM. {}", content.getModel().people());
+            }
             write(content, telescope);
         } else {
             Identified identified = existing.requireValue();
+            if(content.getModel().getCanonicalUri().contains("B00HUTA590")){
+                log.info("AMAZON: FOUND IN DB.");
+            }
             if (content.getModel() instanceof Item) {
+                if(content.getModel().getCanonicalUri().contains("B00HUTA590")){
+                    log.info("AMAZON: EXISTING PEOPLE: {}",  ContentMerger.asItem(identified).people());
+                }
                 write(mergeItemsWithPayload(
                             ContentMerger.asItem(identified),
                             content.asModelType(Item.class)),
@@ -367,6 +388,11 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             ModelWithPayload<? extends Item> contentWithPayload
     ) {
             Item merged = contentMerger.merge(existingContent, contentWithPayload.getModel());
+        if(existingContent.getCanonicalUri().contains("B00HUTA590")){
+            log.info("AMAZON: EXISTING PEOPLE: {}",  existingContent.people());
+            log.info("AMAZON: NEW PEOPLE: {}",  contentWithPayload.getModel().people());
+            log.info("AMAZON: MERGED PROPLE: {}",  merged.people());
+        }
             return new ModelWithPayload<>(merged, contentWithPayload.getPayload());
     }
 
@@ -454,6 +480,9 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             allAmazonContentSize++;
             Content examinedContent = allAmazonContent.next();
             if(!seenContent.containsKey(examinedContent.getCanonicalUri())){
+                if(examinedContent.getCanonicalUri().contains("B00HUTA590")){
+                    log.info("AMAZON: ITEM MARKED AS NOT SEEN.");
+                }
                 notSeen.add(examinedContent);
             }
         }
@@ -539,6 +568,9 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             }
         } else if (content.getModel() instanceof Item) {
             if (content.getModel() instanceof Episode) {
+                if(content.getModel().getCanonicalUri().contains("B00HUTA590")){
+                    log.info("AMAZON: CACHE OR WRITE EPISODE: {}",  content.getModel().people());
+                }
                 cacheOrWriteEpisode(content.asModelType(Episode.class), telescope);
             } else {
                 cacheOrWriteItem(content.asModelType(Content.class), telescope);
@@ -624,6 +656,9 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             ModelWithPayload<Content> brand = seenContent.get(parent.getUri());
             String brandUri = brand.getModel().getCanonicalUri();
             if (!seenContainer.containsKey(brandUri)) {
+                if(episode.getModel().getCanonicalUri().contains("B00HUTA590")){
+                    log.info("AMAZON: WAS CACHED 1: {}",  episode.getModel().people());
+                }
                 cached.put(brandUri, episode);
                 return;
             }
@@ -635,6 +670,9 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         if (seriesUri != null ) {
             if (!seenContainer.containsKey(seriesUri)) {
                 cached.put(seriesUri, episode);
+                if(episode.getModel().getCanonicalUri().contains("B00HUTA590")){
+                    log.info("AMAZON: WAS CACHED 2: {}",  episode.getModel().people());
+                }
                 return;
             }
             ModelWithPayload<Content> series = seenContent.get(seriesUri);
@@ -643,6 +681,9 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             }
         }
 
+        if(episode.getModel().getCanonicalUri().contains("B00HUTA590")){
+            log.info("AMAZON: WAS WRITTEN: {}",  episode.getModel().people());
+        }
         writer.createOrUpdate(episode.getModel());
         reportContentWithPayloadToTelescope(episode, telescope);
     }

@@ -646,7 +646,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                 //if we already have a series, and if we do, we'll allow the content to be
                 //updated as per normal.
 
-                //check atlas
+                //check atlas (TODO: will recheck every time when series is not there)
                 Series series = null;
                 Maybe<Identified> resolvedSeries = resolve(seriesUri);
                 if(!resolvedSeries.isNothing()){
@@ -675,8 +675,18 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                 }
             }
             ModelWithPayload<Content> series = seenContent.get(seriesUri);
-            if(series.getModel() instanceof Series) {
+            if(series != null && series.getModel() instanceof Series) {
                 episode.getModel().setSeriesNumber(series.asModelType(Series.class).getModel().getSeriesNumber());
+            } else if(series == null){
+                //at this point we should have either returned, or put something in seenContent.
+                //if we hit this
+                log.warn("You should not have hit that point in the code. If you see this examine"
+                         + "your logic. Content = {} , "
+                         + "!seenContainer.containsKey(seriesUri) = {}, "
+                         + "!existingSeriesThatGotRemovedButShouldBeRetained.contains(seriesUri) = {}",
+                        episode.getModel().getCanonicalUri(),
+                        !seenContainer.containsKey(seriesUri),
+                        !existingSeriesThatGotRemovedButShouldBeRetained.contains(seriesUri));
             }
         }
 

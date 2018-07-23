@@ -1,19 +1,15 @@
 package org.atlasapi.remotesite.amazon;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.SetMultimap;
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.feeds.tasks.youview.creation.HierarchicalOrdering;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
@@ -27,7 +23,6 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentExtractor;
@@ -35,22 +30,22 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
-import com.metabroadcast.columbus.telescope.client.EntityType;
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.SetMultimap;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.remotesite.amazon.AmazonContentExtractor.URI_PREFIX;
@@ -71,9 +66,6 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     private final Logger log= LoggerFactory.getLogger(AmazonContentWritingItemProcessor.class);
     private final Map<String, ModelWithPayload<? extends Container>>
             seenContainer = Maps.newHashMap();
-    // fun name ha? This keeps a note of all the series that disappeared from the feed but its
-    // episodes are still there.
-    private final Set<String> existingSeriesThatGotRemovedButShouldBeRetained = new ConcurrentHashSet<>();
     private final SetMultimap<String, ModelWithPayload<? extends Content>>
             cached = HashMultimap.create();
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
@@ -157,7 +149,11 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             // YV has requested we do not sent trailers, and we don't want to keep trailers either.
             // According to amazon trailers are identified with episodeNumbers 000 or 101.
             if (episodeNumber == 0 || episodeNumber == 101) {
-//                log.info("Episode {} was discarded because it was a trailer (index 0 or 101)", episode.getCanonicalUri());
+                telescope.reportFailedEvent(
+                        "Episode was discarded because it was a trailer (index 0 or 101)",
+                        EntityType.EPISODE,
+                        contentWithPayload.getPayload()
+                );
                 return true;
             }
         }
@@ -166,7 +162,11 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             //We also discard Clips. ECOTEST-429. CPINC-1223 removed the duration restriction.
             if (item.getTitle() != null && !item.getVersions().isEmpty()) {
                 if (item.getTitle().toLowerCase().startsWith("clip:")) {
-//                    log.info("Content {} was discarded because it was a clip", item.getCanonicalUri());
+                    telescope.reportFailedEvent(
+                            "Content was discarded because it was a clip",
+                            contentWithPayload.getModel(),
+                            contentWithPayload.getPayload()
+                    );
                     return true;
                 }
             }
@@ -632,61 +632,14 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         String seriesUri = episode.getModel().getSeriesRef() != null
                            ? episode.getModel().getSeriesRef().getUri()
                            : null;
-        if (seriesUri != null) {
-            if (!seenContainer.containsKey(seriesUri) &&
-                !existingSeriesThatGotRemovedButShouldBeRetained.contains(seriesUri)) {
-                //We have observed that occasionally amazon will remove series from the feed
-                //without removing its children. In that case, the code below was causing the
-                //episodes to not update. Cross-checking with their website is seems that
-                //episodes are still available, so it was decided that if that was the case
-                //we would update the content (rather than cascade unpublish everything under
-                //the series).
-
-                //The implementation for this is that we'll check the db to see
-                //if we already have a series, and if we do, we'll allow the content to be
-                //updated as per normal.
-
-                //check atlas (TODO: will recheck every time when series is not there)
-                Series series = null;
-                Maybe<Identified> resolvedSeries = resolve(seriesUri);
-                if(!resolvedSeries.isNothing()){
-                    Identified identifiedSeries = resolvedSeries.requireValue();
-                    if(identifiedSeries instanceof Series){
-                        series = (Series) identifiedSeries;
-                    }
-                }
-                if (series != null) {
-                    // We also need to mark the series as seen so we don't disable it
-                    // (while at the same time we cannot update it!).
-                    seenContent.put(seriesUri, new ModelWithPayload<>(series,
-                            "This series were retrieved from the db to fill in for missing series "
-                            + "from the feed, and as such don't have a payload."));
-                    //and keep a note so we don't refetch from atlas all the time.
-                    existingSeriesThatGotRemovedButShouldBeRetained.add(seriesUri);
-                    telescope.reportSuccessfulEventWithWarning(
-                            seriesUri, EntityType.SERIES,
-                            "This series has been removed from amazon's feed, but it's children have "
-                            + "not. Normally, this series should be unpublished because it is "
-                            + "missing from the feed, but due that conflict it was not."
-                    );
-                } else {
-                    cached.put(seriesUri, episode);
-                    return;
-                }
+        if (seriesUri != null ) {
+            if (!seenContainer.containsKey(seriesUri)) {
+                cached.put(seriesUri, episode);
+                return;
             }
             ModelWithPayload<Content> series = seenContent.get(seriesUri);
-            if(series != null && series.getModel() instanceof Series) {
+            if(series.getModel() instanceof Series) {
                 episode.getModel().setSeriesNumber(series.asModelType(Series.class).getModel().getSeriesNumber());
-            } else if(series == null){
-                //at this point we should have either returned, or put something in seenContent.
-                //if we hit this
-                log.warn("You should not have hit that point in the code. If you see this examine"
-                         + "your logic. Content = {} , "
-                         + "!seenContainer.containsKey(seriesUri) = {}, "
-                         + "!existingSeriesThatGotRemovedButShouldBeRetained.contains(seriesUri) = {}",
-                        episode.getModel().getCanonicalUri(),
-                        !seenContainer.containsKey(seriesUri),
-                        !existingSeriesThatGotRemovedButShouldBeRetained.contains(seriesUri));
             }
         }
 

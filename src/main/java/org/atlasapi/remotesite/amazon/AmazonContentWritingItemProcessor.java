@@ -665,7 +665,6 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         if (seriesUri != null ) {
             if (!seenContainer.containsKey(seriesUri)) {
                 cached.put(seriesUri, episode);
-                episodesWithoutAvailableSeries.add(episode.getModel());
                 return;
             }
             ModelWithPayload<Content> series = seenContent.get(seriesUri);

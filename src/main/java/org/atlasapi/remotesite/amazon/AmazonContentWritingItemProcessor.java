@@ -655,6 +655,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             String brandUri = brand.getModel().getCanonicalUri();
             if (!seenContainer.containsKey(brandUri)) {
                 cached.put(brandUri, episode);
+                episodesWithoutAvailableSeries.add(episode.getModel());
                 return;
             }
         }
@@ -664,6 +665,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                            : null;
         if (seriesUri != null ) {
             if (!seenContainer.containsKey(seriesUri)) {
+                episodesWithoutAvailableSeries.add(episode.getModel());
                 cached.put(seriesUri, episode);
                 return;
             }

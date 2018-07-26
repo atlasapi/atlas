@@ -600,11 +600,13 @@ public class EquivTaskModule {
     }
 
     private ExecutorService getNewDefaultExecutor(){
-        return new ThreadPoolExecutor(
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
                 6, 6, //this is used by all equiv tasks, so increase with caution.
                 60, TimeUnit.SECONDS,
                 new AlwaysBlockingQueue<>(SAVE_EVERY_BLOCK_SIZE)
         );
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 
     //Controllers...

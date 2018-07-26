@@ -1,8 +1,11 @@
 package org.atlasapi.equiv;
 
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -43,6 +46,7 @@ import org.atlasapi.remotesite.itv.whatson.ItvWhatsonChannelMap;
 import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
+import org.atlasapi.util.AlwaysBlockingQueue;
 
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.queue.kafka.KafkaConsumer;
@@ -77,6 +81,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
@@ -156,11 +161,10 @@ public class EquivTaskModule {
     private static final RepetitionRule RTE_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(22, 0));
     private static final RepetitionRule BT_VOD_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(3, 0));
-    private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(3, 30));
+            RepetitionRules.daily(new LocalTime(17, 0));
+    private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule AMAZON_EQUIVALENCE_DELTA_REPETITION =
-            RepetitionRules.daily(new LocalTime(1, 0));
+            RepetitionRules.daily(new LocalTime(3, 0)); //This is timed with the ingest. Do not move.
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(20, 0));
     private static final RepetitionRule WIKIPEDIA_EQUIVALENCE_REPETITION =
@@ -281,24 +285,6 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 publisherUpdateTask(BT_TVE_VOD)
                         .withName("BT TVE VOD (prod, conf1) Equivalence Updater"),
-                BT_VOD_EQUIVALENCE_REPETITION,
-                jobsAtStartup
-        );
-        scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD_VOLD_CONFIG_1)
-                        .withName("BT TVE VOD (vold, conf1) Equivalence Updater"),
-                BT_VOD_EQUIVALENCE_REPETITION,
-                jobsAtStartup
-        );
-        scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD_VOLE_CONFIG_1)
-                        .withName("BT TVE VOD (vole, conf1) Equivalence Updater"),
-                BT_VOD_EQUIVALENCE_REPETITION,
-                jobsAtStartup
-        );
-        scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD_SYSTEST2_CONFIG_1)
-                        .withName("BT TVE VOD (systest2, conf1) Equivalence Updater"),
                 BT_VOD_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
@@ -588,10 +574,21 @@ public class EquivTaskModule {
         return new ContentEquivalenceUpdateTask(
                 contentLister,
                 contentResolver,
+                getNewDefaultExecutor(),
                 progressStore(),
                 equivUpdater,
                 ignored
         ).forPublishers(publishers);
+    }
+
+    private ExecutorService getNewDefaultExecutor(){
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                6, 6, //this is used by all equiv tasks, so increase with caution.
+                60, TimeUnit.SECONDS,
+                new AlwaysBlockingQueue<>(SAVE_EVERY_BLOCK_SIZE)
+        );
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 
     //Controllers...

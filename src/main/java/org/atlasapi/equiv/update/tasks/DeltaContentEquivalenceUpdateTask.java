@@ -27,9 +27,9 @@ import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
 import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
 
 /**
- * This task will redo all equivalence since the given date, rather than using the Content
- * Lister's progress. It runs with 15 threads, and the first person who needs to use it elsewhere
- * gets convert the executor to a parameter.
+ * This task will redo equivalence for all content updated since the given date, rather than using
+ * the Content Lister's progress. It runs with 15 threads, and the first person who needs to use
+ * it elsewhere gets convert the executor to a parameter.
  */
 public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
 

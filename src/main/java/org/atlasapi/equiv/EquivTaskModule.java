@@ -161,10 +161,10 @@ public class EquivTaskModule {
     private static final RepetitionRule RTE_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(22, 0));
     private static final RepetitionRule BT_VOD_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(3, 0));
+            RepetitionRules.daily(new LocalTime(17, 0));
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule AMAZON_EQUIVALENCE_DELTA_REPETITION =
-            RepetitionRules.daily(new LocalTime(3, 00));
+            RepetitionRules.daily(new LocalTime(3, 0)); //This is timed with the ingest. Do not move.
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(20, 0));
     private static final RepetitionRule WIKIPEDIA_EQUIVALENCE_REPETITION =
@@ -285,24 +285,6 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 publisherUpdateTask(BT_TVE_VOD)
                         .withName("BT TVE VOD (prod, conf1) Equivalence Updater"),
-                BT_VOD_EQUIVALENCE_REPETITION,
-                jobsAtStartup
-        );
-        scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD_VOLD_CONFIG_1)
-                        .withName("BT TVE VOD (vold, conf1) Equivalence Updater"),
-                BT_VOD_EQUIVALENCE_REPETITION,
-                jobsAtStartup
-        );
-        scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD_VOLE_CONFIG_1)
-                        .withName("BT TVE VOD (vole, conf1) Equivalence Updater"),
-                BT_VOD_EQUIVALENCE_REPETITION,
-                jobsAtStartup
-        );
-        scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD_SYSTEST2_CONFIG_1)
-                        .withName("BT TVE VOD (systest2, conf1) Equivalence Updater"),
                 BT_VOD_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );

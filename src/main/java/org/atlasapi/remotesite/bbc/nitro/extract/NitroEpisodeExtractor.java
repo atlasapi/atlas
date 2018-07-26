@@ -176,11 +176,13 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         private void addLocationAliasesToItemVersion(Item item, Version version) {
             for (Encoding encoding : version.getManifestedAs()) {
                 for (Location location : encoding.getAvailableAt()) {
-                    location.addAlias(new Alias(
+                    Alias versionAlias = new Alias(
                             PID_ALIAS_NAMESPACE,
                             version.getCanonicalUri()
                                     .replace("http://nitro.bbc.co.uk/programmes/", "")
-                    ));
+                    );
+                    item.addAlias(versionAlias);
+                    location.addAlias(versionAlias);
                     location.addAlias(new Alias(
                             CRID_ALIAS_NAMESPACE,
                             nitroIdGenerator.generateVersionCrid(item, version)

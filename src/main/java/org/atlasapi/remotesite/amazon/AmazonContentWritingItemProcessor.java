@@ -477,40 +477,53 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                             "% of all Amazon content. File may be truncated.");
         }
 
-        unpublishContent(telescope, notSeen, UNPUBLISH_NO_PAYLOAD_STRING);
-        unpublishContentWithWarning(telescope, episodesWithoutAvailableSeries, UNPUBLISH_NO_SERIES_STRING);
+        unpublishUnseenContent(telescope, notSeen);
+        unpublishParentlessChildren(telescope, episodesWithoutAvailableSeries);
     }
 
-    private void unpublishContentWithWarning(OwlTelescopeReporter telescope, Set<Content> contentSet, String reason) {
+    /**
+     * This will attempt to unpublish parentless Children. The caveat is that we can't save
+     * children if they don't have parents, but their parents might have gone away from the
+     * feed, in which case we need to unpublish existing things, and not do anything for
+     * any new ingests.
+     */
+    private void unpublishParentlessChildren(OwlTelescopeReporter telescope,
+            Set<Content> contentSet) {
+        int unpublished = 0;
+        int notSaved = 0;
         for (Content content : contentSet) {
             content.setActivelyPublished(false);
             if (content instanceof Item) {
-                writer.createOrUpdate((Item) content);
-                telescope.reportSuccessfulEventWithWarning(
-                        content.getCanonicalUri(),
-                        OwlTelescopeUtilityMethodsAtlas.getEntityTypeFor(content),
-                        reason,
-                        content
-                );
-
-            } else if (content instanceof Container) {
-                writer.createOrUpdate((Container) content);
-                telescope.reportSuccessfulEventWithWarning(
-                        content.getCanonicalUri(),
-                        OwlTelescopeUtilityMethodsAtlas.getEntityTypeFor(content),
-                        reason,
-                        content
-                );
-
+                //instead of resolving from db and then trying to write to the db which will
+                //resolve again, we'll abuse the exception thrown if the thing is parentless.
+                //If we can write it, it means it already had saved parents, and will be
+                //unpublished. If throws an ISE then it probably did not have parents and
+                //couldn't be saved.
+                try {
+                    writer.createOrUpdate((Item) content);
+                    telescope.reportSuccessfulEventWithWarning(
+                            content.getCanonicalUri(),
+                            OwlTelescopeUtilityMethodsAtlas.getEntityTypeFor(content),
+                            AmazonContentWritingItemProcessor.UNPUBLISH_NO_SERIES_STRING,
+                            content
+                    );
+                    unpublished++;
+                } catch (IllegalStateException e){
+                    log.warn("Amazon item {} could not be saved the db because it had no parents. "
+                             + "This is no a problem, it would be saved as notActivelyPublished anyway. {}",
+                            content.getCanonicalUri(), e.getMessage());
+                    notSaved++;
+                }
             } else {
-                log.error("Amazon content with uri {} not an Item or a Container,"
-                          + " and thus cannot br unpublished",
+                log.error("Amazon content {} not an Item and shouldn't have made it here.",
                         content.getCanonicalUri() );
             }
         }
+        log.info("{} episodes were unpublished because their series disappeared from the feed.", unpublished);
+        log.info("{} episodes were not saved at all because they had no series in the feed.", notSaved);
     }
 
-    private void unpublishContent(OwlTelescopeReporter telescope, Set<Content> contentSet, String reason) {
+    private void unpublishUnseenContent(OwlTelescopeReporter telescope, Set<Content> contentSet) {
         for (Content notSeenContent : contentSet) {
             notSeenContent.setActivelyPublished(false);
             if (notSeenContent instanceof Item) {
@@ -520,7 +533,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                         notSeenContent.getAliases(),
                         notSeenContent,
                         notSeenContent.getCanonicalUri(),
-                        reason);
+                        AmazonContentWritingItemProcessor.UNPUBLISH_NO_PAYLOAD_STRING);
 
             } else if (notSeenContent instanceof Container) {
                 writer.createOrUpdate((Container) notSeenContent);
@@ -529,10 +542,10 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                         notSeenContent.getAliases(),
                         notSeenContent,
                         notSeenContent.getCanonicalUri(),
-                        reason);
+                        AmazonContentWritingItemProcessor.UNPUBLISH_NO_PAYLOAD_STRING);
 
             } else {
-                log.error("Amazon content with uri {} not an Item or a Container,"
+                log.error("Amazon content {} not an Item or a Container,"
                           + " and thus cannot be unpublished",
                         notSeenContent.getCanonicalUri() );
             }

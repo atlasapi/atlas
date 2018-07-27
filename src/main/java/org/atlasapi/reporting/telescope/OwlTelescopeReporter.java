@@ -77,15 +77,16 @@ public class OwlTelescopeReporter extends TelescopeReporter {
         );
     }
 
-    public void reportSuccessfulEventWithWarning(
-            String atlasItemId,
+    public <T extends Identified> void reportSuccessfulEventWithWarning(
+            long dbId,
+            Set<org.atlasapi.media.entity.Alias> aliases,
             EntityType entityType,
             String warningMsg,
-            Object... objectToSerialise
-    ) {
+            Object... objectToSerialise) {
+
         reportSuccessfulEventGeneric(
-                atlasItemId,
-                null,
+                encode(dbId),
+                OwlTelescopeUtilityMethodsAtlas.getAliases(aliases),
                 entityType,
                 warningMsg,
                 TelescopeReporterHelperMethods.serialize(objectToSerialise)

@@ -121,8 +121,8 @@ public class AmazonHttpFeedSupplier implements Supplier<ImmutableList<AmazonItem
                     parseEncodedCharacter(encodePoint);
                 } catch (SAXException e) {
                     log.warn(
-                            "Replaced illegal XML character reference {} with {}, in {} ",
-                            encodePoint, REPLACEMENT_STRING, line);
+                            "Replaced illegal XML character {} from {} with a {}",
+                            encodePoint, line, REPLACEMENT_STRING);
                     outcome = outcome.replaceAll(encodePoint, REPLACEMENT_STRING);
                     retry = true;
                 }

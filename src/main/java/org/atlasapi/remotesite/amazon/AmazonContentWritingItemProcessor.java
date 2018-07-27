@@ -30,7 +30,6 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,8 +73,6 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     private final BiMap<String, ModelWithPayload<Content>> seenContent = HashBiMap.create();
     private final Set<String> seriesUris = new HashSet<>();
     private final Set<String> episodeUris = new HashSet<>();
-    private final Set<ModelWithPayload<Episode>> episodesWithoutAvailableSeries = new HashSet<>();
-
     private OwlTelescopeReporter telescope;
 
     private final ContentExtractor<AmazonItem, Iterable<Content>> extractor;
@@ -122,7 +119,6 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         seenContent.clear();
         seriesUris.clear();
         episodeUris.clear();
-        episodesWithoutAvailableSeries.clear();
 
         this.telescope = telescope;
     }
@@ -209,7 +205,6 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         seenContent.clear();
         seriesUris.clear();
         episodeUris.clear();
-        episodesWithoutAvailableSeries.clear();
 
         telescope = null;
     }
@@ -475,54 +470,10 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                             "% of all Amazon content. File may be truncated.");
         }
 
-        unpublishUnseenContent(telescope, notSeen);
-        unpublishParentlessChildren(telescope, episodesWithoutAvailableSeries);
+        unpublishContent(telescope, notSeen);
     }
 
-    /**
-     * This will attempt to unpublish parentless Children. The caveat is that we can't save
-     * children if they don't have parents, but their parents might have gone away from the
-     * feed, in which case we need to unpublish existing things, and not do anything for
-     * any new ingests.
-     */
-    private void unpublishParentlessChildren(OwlTelescopeReporter telescope,
-            Set<ModelWithPayload<Episode>> contentSet) {
-        int unpublished = 0;
-        int notSaved = 0;
-        for (ModelWithPayload<Episode> contentWithPayload : contentSet) {
-            Episode content = contentWithPayload.getModel();
-            content.setActivelyPublished(false);
-
-            //instead of resolving from db and then trying to write to the db which will
-            //resolve again, we'll abuse the exception thrown if the thing is parentless.
-            //If we can write it, it means it already had saved parents, and will be
-            //unpublished. If throws an ISE then it probably did not have parents and
-            //couldn't be saved.
-            try {
-                writer.createOrUpdate(content);
-                telescope.reportSuccessfulEventWithWarning(
-                        content.getId(),
-                        content.getAliases(),
-                        EntityType.EPISODE,
-                        "The series of this episode have been unpublished, and so this episode is being unpublished as well.",
-                        contentWithPayload.getPayload()
-                );
-                unpublished++;
-            } catch (IllegalStateException e){
-                telescope.reportFailedEvent(
-                        "The series of this episode are missing from the feed, and consequently it cannot be ingested.",
-                        EntityType.EPISODE,
-                        contentWithPayload.getPayload()
-                );
-                notSaved++;
-            }
-
-        }
-        log.info("{} episodes were unpublished because their series disappeared from the feed.", unpublished);
-        log.info("{} episodes were not saved at all because they had no series in the feed.", notSaved);
-    }
-
-    private void unpublishUnseenContent(OwlTelescopeReporter telescope, Set<Content> contentSet) {
+    private void unpublishContent(OwlTelescopeReporter telescope, Set<Content> contentSet) {
         for (Content notSeenContent : contentSet) {
             notSeenContent.setActivelyPublished(false);
             if (notSeenContent instanceof Item) {
@@ -532,7 +483,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                         notSeenContent.getAliases(),
                         notSeenContent,
                         notSeenContent.getCanonicalUri(),
-                        AmazonContentWritingItemProcessor.UNPUBLISH_NO_PAYLOAD_STRING);
+                        UNPUBLISH_NO_PAYLOAD_STRING);
 
             } else if (notSeenContent instanceof Container) {
                 writer.createOrUpdate((Container) notSeenContent);
@@ -541,11 +492,18 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                         notSeenContent.getAliases(),
                         notSeenContent,
                         notSeenContent.getCanonicalUri(),
-                        AmazonContentWritingItemProcessor.UNPUBLISH_NO_PAYLOAD_STRING);
+                        UNPUBLISH_NO_PAYLOAD_STRING);
 
             } else {
-                log.error("Amazon content {} not an Item or a Container,"
-                          + " and thus cannot be unpublished",
+                telescope.reportFailedEvent(
+                        "Amazon content with uri "
+                        + notSeenContent.getCanonicalUri()
+                        + " not an Item or a Container, and thus"
+                        + "cannot be unpublished."
+                );
+
+                log.error("Amazon content with uri {} not an Item or a Container,"
+                          + " and thus cannot unpublished",
                         notSeenContent.getCanonicalUri() );
             }
         }
@@ -667,7 +625,6 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             String brandUri = brand.getModel().getCanonicalUri();
             if (!seenContainer.containsKey(brandUri)) {
                 cached.put(brandUri, episode);
-                episodesWithoutAvailableSeries.add(episode);
                 return;
             }
         }
@@ -677,7 +634,6 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                            : null;
         if (seriesUri != null ) {
             if (!seenContainer.containsKey(seriesUri)) {
-                episodesWithoutAvailableSeries.add(episode);
                 cached.put(seriesUri, episode);
                 return;
             }

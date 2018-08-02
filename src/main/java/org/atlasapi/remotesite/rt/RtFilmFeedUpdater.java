@@ -98,7 +98,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
         
         try {
             reportStatus("Started...");
-            getAndTransform(feedUrl);
+            getAndTransform(requestUri);
         } catch (Exception e) {
             AdapterLogEntry errorRecord = errorEntry()
                     .withCause(e)
@@ -115,10 +115,10 @@ public class RtFilmFeedUpdater extends ScheduledTask {
         }
     }
 
-    private void getAndTransform(String feedUrl) throws Exception {
-        Response response = Request.Get("http://somehost/")
-                .connectTimeout(1000)
-                .socketTimeout(1000)
+    private void getAndTransform(String requestUri) throws Exception {
+        Response response = Request.Get(requestUri)
+                .connectTimeout(300000)
+                .socketTimeout(60000)
                 .execute();
 
         InputStreamReader responseStream = new InputStreamReader(response.returnContent().asStream());

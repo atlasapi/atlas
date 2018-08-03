@@ -53,6 +53,6 @@ public class RtFilmModule {
 
     @Bean
     public RtFilmFeedUpdater rtFilmFeed4MonthUpdater() {
-        return RtFilmFeedUpdater.fourMonthUpdater(feedurl, log, contentResolver, contentWriter, rtFilmProcessor());
+        return RtFilmFeedUpdater.fourMonthUpdater(feedUrl, log, contentResolver, contentWriter, rtFilmProcessor());
     }
 }

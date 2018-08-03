@@ -3,26 +3,17 @@ package org.atlasapi.remotesite.rt;
 import static org.atlasapi.persistence.logging.AdapterLogEntry.errorEntry;
 
 import java.io.InputStreamReader;
-import java.net.URI;
 
 import nu.xom.Builder;
 import nu.xom.Element;
 import nu.xom.NodeFactory;
 import nu.xom.Nodes;
 
-import org.apache.http.*;
-import org.apache.http.client.fluent.Request;
-
-import org.apache.http.client.fluent.Response;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicHttpRequest;
-import org.apache.http.message.BasicRequestLine;
-import org.apache.http.params.HttpParams;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
@@ -54,6 +45,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
     private final AdapterLog log;
     private final RtFilmProcessor processor;
     private final boolean doCompleteUpdate;
+    private final boolean doFourMonthUpdate;
     private OwlTelescopeReporter telescopeReporter;
 
     public RtFilmFeedUpdater(
@@ -63,7 +55,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
             ContentWriter contentWriter,
             RtFilmProcessor processor
     ) {
-        this(feedUrl, log, contentResolver, contentWriter, processor, false);
+        this(feedUrl, log, contentResolver, contentWriter, processor, false, false);
     }
     
     private RtFilmFeedUpdater(
@@ -72,12 +64,14 @@ public class RtFilmFeedUpdater extends ScheduledTask {
             ContentResolver contentResolver,
             ContentWriter contentWriter,
             RtFilmProcessor processor,
-            boolean doCompleteUpdate
+            boolean doCompleteUpdate,
+            boolean doFourMonthUpdate
     ) {
         this.feedUrl = feedUrl;
         this.log = log;
         this.processor = processor;
         this.doCompleteUpdate = doCompleteUpdate;
+        this.doFourMonthUpdate = doFourMonthUpdate;
     }
     
     public static RtFilmFeedUpdater completeUpdater(
@@ -87,9 +81,18 @@ public class RtFilmFeedUpdater extends ScheduledTask {
             ContentWriter contentWriter,
             RtFilmProcessor processor
     ) {
-        return new RtFilmFeedUpdater(feedUrl, log, contentResolver, contentWriter, processor, true);
+        return new RtFilmFeedUpdater(feedUrl, log, contentResolver, contentWriter, processor, true, false);
     }
-    
+
+    public static RtFilmFeedUpdater fourMonthUpdater(
+            String feedUrl,
+            AdapterLog log,
+            ContentResolver contentResolver,
+            ContentWriter contentWriter,
+            RtFilmProcessor processor
+    ) {
+        return new RtFilmFeedUpdater(feedUrl, log, contentResolver, contentWriter, processor, false, true);
+    }
     @Override
     protected void runTask() {
         telescopeReporter = OwlTelescopeReporterFactory.getInstance()
@@ -102,6 +105,9 @@ public class RtFilmFeedUpdater extends ScheduledTask {
         
         if (doCompleteUpdate) {
             requestUri += "/since?lastUpdated=" + UrlEncoding.encode(dateFormat.print(START_DATE));
+        } else if (doFourMonthUpdate) {
+            requestUri += "/since?lastUpdated=" + UrlEncoding
+                    .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusMonths(4)));
         } else {
             requestUri += "/since?lastUpdated=" + UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusDays(3)));

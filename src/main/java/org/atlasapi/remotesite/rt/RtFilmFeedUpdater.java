@@ -3,15 +3,26 @@ package org.atlasapi.remotesite.rt;
 import static org.atlasapi.persistence.logging.AdapterLogEntry.errorEntry;
 
 import java.io.InputStreamReader;
+import java.net.URI;
 
 import nu.xom.Builder;
 import nu.xom.Element;
 import nu.xom.NodeFactory;
 import nu.xom.Nodes;
 
+import org.apache.http.*;
 import org.apache.http.client.fluent.Request;
 
 import org.apache.http.client.fluent.Response;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHttpRequest;
+import org.apache.http.message.BasicRequestLine;
+import org.apache.http.params.HttpParams;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
@@ -116,12 +127,16 @@ public class RtFilmFeedUpdater extends ScheduledTask {
     }
 
     private void getAndTransform(String requestUri) throws Exception {
-        Response response = Request.Get(requestUri)
-                .connectTimeout(300000)
-                .socketTimeout(60000)
-                .execute();
+        CloseableHttpClient httpClient = HttpClients
+                .custom()
+                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                .build();
 
-        InputStreamReader responseStream = new InputStreamReader(response.returnContent().asStream());
+        HttpGet httpGet = new HttpGet(requestUri);
+
+        CloseableHttpResponse response = httpClient.execute(httpGet);
+
+        InputStreamReader responseStream = new InputStreamReader(response.getEntity().getContent());
 
         FilmProcessingNodeFactory filmProcessingNodeFactory = new FilmProcessingNodeFactory();
         Builder builder = new Builder(filmProcessingNodeFactory);

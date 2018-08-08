@@ -3,6 +3,8 @@ package org.atlasapi.remotesite.channel4.pirate.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.annotation.Nullable;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EditorialInformation {
@@ -26,7 +28,7 @@ public class EditorialInformation {
         this.brand = checkNotNull(brand);
         this.contractNumber = checkNotNull(contractNumber);
         this.episode = checkNotNull(episode);
-        this.genre = checkNotNull(genre);
+        this.genre = genre;
         this.programmeNumber = checkNotNull(programmeNumber);
         this.series = checkNotNull(series);
     }
@@ -43,6 +45,7 @@ public class EditorialInformation {
         return episode;
     }
 
+    @Nullable
     public Genre getGenre() {
         return genre;
     }

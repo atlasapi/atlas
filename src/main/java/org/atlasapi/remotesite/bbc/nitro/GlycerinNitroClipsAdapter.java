@@ -177,7 +177,7 @@ public class GlycerinNitroClipsAdapter {
 
         ProgrammesQuery query = ProgrammesQuery.builder()
                 .withEntityType(EntityTypeOption.CLIP)
-                .withChildrenOf(ref.toString())
+                .withChildrenOf(ref.getPid())
                 .withMixins(IMAGES)
                 .withPageSize(pageSize)
                 .build();

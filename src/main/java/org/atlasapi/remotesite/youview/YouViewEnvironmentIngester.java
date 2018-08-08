@@ -1,7 +1,11 @@
 package org.atlasapi.remotesite.youview;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import com.google.api.client.repackaged.com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
+import com.google.common.primitives.Ints;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.RepetitionRules.Every;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -10,22 +14,17 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
-
 import org.joda.time.Duration;
 import org.springframework.context.annotation.Configuration;
 
-import com.google.api.client.repackaged.com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
-import com.google.common.primitives.Ints;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.RepetitionRules.Every;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Configuration
 public class YouViewEnvironmentIngester {
     
     private static final Every EVERY_15_MINUTES = RepetitionRules.every(Duration.standardMinutes(15));
     private static final Every EVERY_HOUR = RepetitionRules.every(Duration.standardHours(1));
+    private static final Every EVERY_12_HOURS = RepetitionRules.every(Duration.standardHours(12));
     
     private final SimpleScheduler scheduler;
     private final YouViewChannelProcessor youViewChannelProcessor;
@@ -68,8 +67,8 @@ public class YouViewEnvironmentIngester {
     
     public void startBackgroundTasks() {
         String publishers = publishers();
-        scheduler.schedule(youViewTodayUpdater().withName("YouView [" + publishers + "] Today Updater"), EVERY_15_MINUTES);
-        scheduler.schedule(youViewFornightUpdater().withName("YouView [" + publishers + "] Updater ±7 Days"), EVERY_HOUR);
+        scheduler.schedule(youViewTodayUpdater().withName("YouView [" + publishers + "] Today Updater"), EVERY_12_HOURS);
+        scheduler.schedule(youViewFornightUpdater().withName("YouView [" + publishers + "] Updater ±7 Days"), EVERY_12_HOURS);
     }
 
     private YouViewFortnightUpdater youViewFornightUpdater() {

@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.AVAILABLE_VERSIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
 
 /**
@@ -154,7 +155,7 @@ public class GlycerinNitroClipsAdapter {
             ProgrammesQuery query = ProgrammesQuery.builder()
                     .withEntityType(EntityTypeOption.CLIP)
                     .withChildrenOf(NitroUtil.toPids(ref))
-                    .withMixins(IMAGES)
+                    .withMixins(IMAGES, AVAILABLE_VERSIONS)
                     .withPageSize(pageSize)
                     .build();
             
@@ -178,7 +179,7 @@ public class GlycerinNitroClipsAdapter {
         ProgrammesQuery query = ProgrammesQuery.builder()
                 .withEntityType(EntityTypeOption.CLIP)
                 .withChildrenOf(ref.getPid())
-                .withMixins(IMAGES)
+                .withMixins(IMAGES, AVAILABLE_VERSIONS)
                 .withPageSize(pageSize)
                 .build();
 

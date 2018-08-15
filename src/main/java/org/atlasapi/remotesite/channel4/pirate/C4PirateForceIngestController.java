@@ -64,6 +64,11 @@ public class C4PirateForceIngestController {
                             if (eSB.getSeries().getId() != null) {
                                 // If it has been written
                                 eSB.getEpisode().setSeries(eSB.getSeries());
+
+                                // If a brand failed to write, set as container to write episode
+                                if (eSB.getEpisode().getContainer() == null) {
+                                    eSB.getEpisode().setContainer(eSB.getSeries());
+                                }
                             }
                         }
 

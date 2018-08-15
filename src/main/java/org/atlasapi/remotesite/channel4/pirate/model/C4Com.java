@@ -15,8 +15,8 @@ public class C4Com {
             @JsonProperty("Synopses") Synopses synopses,
             @JsonProperty("Title") String title
     ) {
-        this.synopses = checkNotNull(synopses);
-        this.title = checkNotNull(title);
+        this.synopses = synopses;
+        this.title = title;
     }
 
     public Synopses getSynopses() {

@@ -15,8 +15,8 @@ public class Series {
             @JsonProperty("C4Com") C4Com c4Com,
             @JsonProperty("Epg") Epg epg
     ) {
-        this.c4Com = checkNotNull(c4Com);
-        this.epg = checkNotNull(epg);
+        this.c4Com = c4Com;
+        this.epg = epg;
     }
 
     public C4Com getC4Com() {

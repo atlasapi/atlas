@@ -25,12 +25,12 @@ public class EditorialInformation {
             @JsonProperty("ProgrammeNumber")String programmeNumber,
             @JsonProperty("Series") Series series
     ) {
-        this.brand = checkNotNull(brand);
-        this.contractNumber = checkNotNull(contractNumber);
-        this.episode = checkNotNull(episode);
+        this.brand = brand;
+        this.contractNumber = contractNumber;
+        this.episode = episode;
         this.genre = genre;
-        this.programmeNumber = checkNotNull(programmeNumber);
-        this.series = checkNotNull(series);
+        this.programmeNumber = programmeNumber;
+        this.series = series;
     }
 
     public Brand getBrand() {

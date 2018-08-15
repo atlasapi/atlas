@@ -48,22 +48,25 @@ public class C4PirateForceIngestController {
                     .map(Item::getEditorialInformation)
                     .map(transformer::toEpisodeSeriesBrand)
                     .forEach(eSB -> {
-                        contentWriter.createOrUpdate(eSB.getBrand()); //write brand
 
-                        if (eSB.getSeries().getParent() == null) {
-                            // now brand has id, set as series container if null
-                            eSB.getSeries().setParent(eSB.getBrand());
-                        }
-                        contentWriter.createOrUpdate(eSB.getSeries()); // write series
+                        if (eSB.getBrand() != null) {
+                            contentWriter.createOrUpdate(eSB.getBrand()); // write brand
 
-                        if (eSB.getEpisode().getSeriesRef() == null) {
-                            // now series has id, set as episode series if null
-                            eSB.getEpisode().setSeries(eSB.getSeries());
+                            if(eSB.getBrand().getId() != null) {
+                                // If it has been written
+                                eSB.getSeries().setParent(eSB.getBrand());
+                                eSB.getEpisode().setContainer(eSB.getBrand());
+                            }
                         }
 
-                        if (eSB.getEpisode().getContainer() == null) {
-                            eSB.getEpisode().setContainer(eSB.getBrand());
+                        if (eSB.getSeries() != null) {
+                            contentWriter.createOrUpdate(eSB.getSeries()); // write series
+                            if (eSB.getSeries().getId() != null) {
+                                // If it has been written
+                                eSB.getEpisode().setSeries(eSB.getSeries());
+                            }
                         }
+
                         contentWriter.createOrUpdate(eSB.getEpisode()); // write episode
                     });
 

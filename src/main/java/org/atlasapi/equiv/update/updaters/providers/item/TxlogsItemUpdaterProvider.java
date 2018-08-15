@@ -1,7 +1,8 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import java.util.Set;
-
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.BarbAliasEquivalenceGenerator;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
@@ -11,7 +12,6 @@ import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
-import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
@@ -22,9 +22,7 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.ContentAliasScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -33,11 +31,9 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.Duration;
+
+import java.util.Set;
 
 public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 

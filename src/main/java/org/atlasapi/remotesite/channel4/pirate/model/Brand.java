@@ -13,7 +13,7 @@ public class Brand {
     public Brand(
             @JsonProperty("C4Com") C4Com c4Com
     ) {
-        this.c4Com = checkNotNull(c4Com);
+        this.c4Com = c4Com;
     }
 
     public C4Com getC4Com() {

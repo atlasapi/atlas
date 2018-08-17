@@ -4,7 +4,6 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.BarbAliasEquivalenceGenerator;
-import org.atlasapi.equiv.generators.BarbTitleGenerator;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
@@ -67,13 +66,13 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         Duration.standardMinutes(5),
                                         Predicates.alwaysTrue(),
                                         3.0
-                                ),
-                                BarbTitleGenerator.barbTitleGenerator(
-                                        ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
-                                        dependencies.getContentResolver(),
-                                        ImmutableSet.of(BarbTitleGenerator.BBC_BROADCAST_GROUP),
-                                        Score.valueOf(5.0)
                                 )
+//                                BarbTitleGenerator.barbTitleGenerator(
+//                                        ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
+//                                        dependencies.getContentResolver(),
+//                                        ImmutableSet.of(BarbTitleGenerator.BBC_BROADCAST_GROUP),
+//                                        Score.valueOf(5.0)
+//                                )
                         )
                 )
                 .withScorers(

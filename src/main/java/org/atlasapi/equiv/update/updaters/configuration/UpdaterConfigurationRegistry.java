@@ -1,42 +1,30 @@
 package org.atlasapi.equiv.update.updaters.configuration;
 
-import java.util.Set;
-
-import org.atlasapi.media.entity.Publisher;
-
-import com.metabroadcast.common.collect.MoreSets;
-import com.metabroadcast.common.stream.MoreCollectors;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.metabroadcast.common.collect.MoreSets;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.media.entity.Publisher;
+
+import java.util.Set;
 
 import static java.lang.String.format;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.MUSIC_SOURCES;
-import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration
-        .NON_STANDARD_SOURCES;
+import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.NON_STANDARD_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.TARGET_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.VF_SOURCES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_SERIES;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .BROADCAST_ITEM_CONTAINER;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .BT_VOD_CONTAINER;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .FACEBOOK_CONTAINER;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .NOP_CONTAINER;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .RTE_VOD_CONTAINER;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .RT_UPCOMING_CONTAINER;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .STANDARD_SERIES;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .STANDARD_TOP_LEVEL_CONTAINER;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .VOD_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.BROADCAST_ITEM_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.BT_VOD_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.FACEBOOK_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.NOP_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RTE_VOD_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RT_UPCOMING_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.STANDARD_SERIES;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.STANDARD_TOP_LEVEL_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
@@ -51,8 +39,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STRICT_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType
-        .VOD_WITH_SERIES_SEQUENCE_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_WITH_SERIES_SEQUENCE_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.YOUVIEW_ITEM;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
@@ -67,6 +54,7 @@ import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
+import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
@@ -727,19 +715,19 @@ public class UpdaterConfigurationRegistry {
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
                         ImmutableSet.of(
-                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE
+                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
                         )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
                         ImmutableSet.of(
-                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE
+                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
                         )
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,
                         ImmutableSet.of(
-                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE
+                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
                         )
                 )
                 .build();
@@ -756,17 +744,17 @@ public class UpdaterConfigurationRegistry {
                                 BARB_MASTER,
                                 UKTV,
                                 C4_PMLSD,
-                                FIVE,
+                                C5_DATA_SUBMISSION,
                                 BARB_TRANSMISSIONS
                         )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, FIVE)
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, C5_DATA_SUBMISSION)
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, FIVE)
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, C5_DATA_SUBMISSION)
                 )
                 .build();
     }

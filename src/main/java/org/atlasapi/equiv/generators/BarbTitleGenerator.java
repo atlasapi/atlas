@@ -154,9 +154,7 @@ public class BarbTitleGenerator<T extends Content> implements EquivalenceGenerat
         if(Strings.isNullOrEmpty(subject.getTitle()) || Strings.isNullOrEmpty(described.getTitle())) {
             return false;
         }
-        return subject.getTitle().toLowerCase().equals(
-                described.getTitle().toLowerCase()
-        );
+        return subject.getTitle().equalsIgnoreCase(described.getTitle());
     }
 
     private boolean isItself(T subject, LookupEntry entry) {

@@ -31,12 +31,13 @@ import static com.google.api.client.repackaged.com.google.common.base.Preconditi
 public class BarbTitleGenerator<T extends Content> implements EquivalenceGenerator<T> {
     public static final String BBC_BROADCAST_GROUP = "1";
 
-    private final MongoLookupEntryStore lookupEntryStore;
-    private final ContentResolver resolver;
     private static final String NAME = "Barb Title Resolving Generator";
+    private static final int MAXIMUM_TITLE_MATCHES = 20;
     private static final Pattern BROADCAST_GROUP_PATTERN = Pattern.compile("^gb:barb:broadcastGroup:([0-9]+):.*");
     private static final Joiner JOINER = Joiner.on(',');
 
+    private final MongoLookupEntryStore lookupEntryStore;
+    private final ContentResolver resolver;
     private final Set<String> broadcastGroupsToGenerate;
     private final Score scoreOnTitleMatch;
 
@@ -121,18 +122,22 @@ public class BarbTitleGenerator<T extends Content> implements EquivalenceGenerat
                 .collect(MoreCollectors.toImmutableSet())
         );
 
-        resolved.getAllResolvedResults().parallelStream()
-                .distinct()
-                .forEach(identified -> {
-                    if(titleMatches(subject, identified)) {
-                        equivalents.addEquivalent((T) identified, scoreOnTitleMatch);
-                        desc.appendText("Candidate %s", identified.getCanonicalUri());
 
-                        if (identified.getId() != null) {
-                            generatorComponent.addComponentResult(identified.getId(), String.valueOf(scoreOnTitleMatch.asDouble()));
-                        }
-                    }
-                });
+        int numberOfTitlesMatched = 0;
+        for (Identified identified : resolved.getAllResolvedResults()) {
+            if(titleMatches(subject, identified)) {
+                equivalents.addEquivalent((T) identified, scoreOnTitleMatch);
+                desc.appendText("Candidate %s", identified.getCanonicalUri());
+
+                if (identified.getId() != null) {
+                    generatorComponent.addComponentResult(identified.getId(), String.valueOf(scoreOnTitleMatch.asDouble()));
+                }
+                numberOfTitlesMatched++;
+                if(numberOfTitlesMatched >= MAXIMUM_TITLE_MATCHES) {
+                    break;
+                }
+            }
+        }
 
         equivToTelescopeResults.addGeneratorResult(generatorComponent);
 

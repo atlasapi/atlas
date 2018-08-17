@@ -65,7 +65,8 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         dependencies.getChannelResolver(),
                                         targetPublishers,
                                         Duration.standardMinutes(5),
-                                        Predicates.alwaysTrue()
+                                        Predicates.alwaysTrue(),
+                                        3.0
                                 ),
                                 BarbTitleGenerator.barbTitleGenerator(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),

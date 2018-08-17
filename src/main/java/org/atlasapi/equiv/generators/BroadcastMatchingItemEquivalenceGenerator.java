@@ -45,6 +45,24 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
             .standardHours(3)
             .plus(Duration.standardMinutes(5));
     private final Duration SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY = Duration.standardMinutes(10);
+    private final Double scoreOnMatch;
+
+    public BroadcastMatchingItemEquivalenceGenerator(
+            ScheduleResolver resolver,
+            ChannelResolver channelResolver,
+            Set<Publisher> supportedPublishers,
+            Duration flexibility,
+            Predicate<? super Broadcast> filter,
+            Double scoreOnMatch
+    ) {
+        this.resolver = resolver;
+        this.channelResolver = channelResolver;
+        this.supportedPublishers = supportedPublishers;
+        this.flexibility = flexibility;
+        this.filter = filter;
+        this.scoreOnMatch = scoreOnMatch;
+    }
+
 
     public BroadcastMatchingItemEquivalenceGenerator(
             ScheduleResolver resolver,
@@ -53,11 +71,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
             Duration flexibility,
             Predicate<? super Broadcast> filter
     ) {
-        this.resolver = resolver;
-        this.channelResolver = channelResolver;
-        this.supportedPublishers = supportedPublishers;
-        this.flexibility = flexibility;
-        this.filter = filter;
+        this(resolver, channelResolver, supportedPublishers, flexibility, filter, 1.0);
     }
     
     public BroadcastMatchingItemEquivalenceGenerator(
@@ -158,18 +172,18 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                 if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasQualifyingBroadcast(scheduleItem, broadcast)) {
-                    scores.addEquivalent(scheduleItem, Score.valueOf(1.0));
+                    scores.addEquivalent(scheduleItem, Score.valueOf(scoreOnMatch));
 
                     if (scheduleItem.getId() != null) {
-                        generatorComponent.addComponentResult(scheduleItem.getId(), "1.0");
+                        generatorComponent.addComponentResult(scheduleItem.getId(), scoreOnMatch.toString());
                     }
 
                 } else if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasFlexibleQualifyingBroadcast(scheduleItem, broadcast)) {
-                    scores.addEquivalent(scheduleItem, Score.valueOf(0.1));
+                    scores.addEquivalent(scheduleItem, Score.valueOf(scoreOnMatch/10));
 
-                    generatorComponent.addComponentResult(scheduleItem.getId(), "0.1");
+                    generatorComponent.addComponentResult(scheduleItem.getId(), Double.toString(scoreOnMatch/10));
                 }
             }
         }

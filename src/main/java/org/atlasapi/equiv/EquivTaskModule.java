@@ -583,7 +583,7 @@ public class EquivTaskModule {
 
     private ExecutorService getNewDefaultExecutor(){
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                1, 1, //this is used by all equiv tasks, so increase with caution.
+                5, 5, //this is used by all equiv tasks, so increase with caution.
                 60, TimeUnit.SECONDS,
                 new AlwaysBlockingQueue<>(SAVE_EVERY_BLOCK_SIZE)
         );

@@ -19,6 +19,7 @@ import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
+import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
@@ -112,7 +113,8 @@ public class DefaultConfiguration {
                             ITV_CPS,
                             BBC_NITRO,
                             C4_PMLSD,
-                            UKTV
+                            UKTV,
+                            C5_DATA_SUBMISSION
                     )
             )
             .addAll(MUSIC_SOURCES)

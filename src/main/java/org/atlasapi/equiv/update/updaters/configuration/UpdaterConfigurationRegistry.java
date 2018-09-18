@@ -70,6 +70,7 @@ import static org.atlasapi.media.entity.Publisher.ROVI_EN_US;
 import static org.atlasapi.media.entity.Publisher.RTE;
 import static org.atlasapi.media.entity.Publisher.TALK_TALK;
 import static org.atlasapi.media.entity.Publisher.UKTV;
+import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
@@ -77,6 +78,15 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 
+/**
+ * This class contains the source configuration for equivalence. When the equivalence executor
+ * picks up an item, it will check its source to see if there is a specific configuration for it,
+ * and if there is it will only match it against the specified sources.
+ *
+ * WHEN CREATING A NEW CONFIG, keep in mind to add your source to the NON_STANDARD_SOURCES list.
+ * If you don't, standard equivalence will run on top of whatever config you have set, and
+ * standard equivalence equivs to all sources.
+ */
 public class UpdaterConfigurationRegistry {
 
     private final ImmutableList<UpdaterConfiguration> updaterConfigurations;

@@ -295,7 +295,7 @@ public class EquivTaskModule {
                         ignored)
                         .forPublisher(AMAZON_UNBOX)
                         .forLast(new Period().withDays(2)) //i.e. since last repetition.
-                        .withName("Amazon Unbox Equivalence Delta Updater (last 24h)"),
+                        .withName("Amazon Unbox Equivalence Delta Updater (last 48h)"),
                 AMAZON_EQUIVALENCE_DELTA_REPETITION
         );
         scheduleEquivalenceJob(

@@ -294,7 +294,7 @@ public class EquivTaskModule {
                         RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
                         ignored)
                         .forPublisher(AMAZON_UNBOX)
-                        .forLast(new Period().withDays(1)) //i.e. since last repetition.
+                        .forLast(new Period().withDays(2)) //i.e. since last repetition.
                         .withName("Amazon Unbox Equivalence Delta Updater (last 24h)"),
                 AMAZON_EQUIVALENCE_DELTA_REPETITION
         );

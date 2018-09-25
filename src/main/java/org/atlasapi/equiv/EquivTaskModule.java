@@ -86,6 +86,7 @@ import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
+import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
@@ -171,6 +172,12 @@ public class EquivTaskModule {
             RepetitionRules.daily(new LocalTime(18, 0));
     private static final RepetitionRule BBC_MUSIC_EQUIVALENCE_REPETITION =
             RepetitionRules.every(Duration.standardHours(6));
+    private static final RepetitionRule TXLOGS_EQUIVALENCE_REPETITION =
+            RepetitionRules.daily(new LocalTime(15, 30));
+    private static final RepetitionRule XCDMF_EQUIVALENCE_REPETITION =
+            RepetitionRules.daily(new LocalTime(1, 30));
+    private static final RepetitionRule CDMF_EQUIVALENCE_REPETITION =
+            RepetitionRules.daily(new LocalTime(2, 30));
     private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
@@ -406,7 +413,7 @@ public class EquivTaskModule {
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_MASTER).withName("Barb CDMF Updater"),
-                RepetitionRules.NEVER,
+                CDMF_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
@@ -481,6 +488,16 @@ public class EquivTaskModule {
                         .withChannelsSupplier(bbcReduxChannels())
                         .build().withName("Redux Schedule Equivalence (8 day) Updater"),
                 REDUX_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(BARB_TRANSMISSIONS).withName("Barb TxLogs Updater"),
+                TXLOGS_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(BARB_X_MASTER).withName("Barb XCDMF Updater"),
+                XCDMF_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
 

@@ -25,8 +25,10 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.STANDARD_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.STANDARD_TOP_LEVEL_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.VOD_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.WIKIPEDIA_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_X_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
@@ -40,11 +42,13 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_WITH_SERIES_SEQUENCE_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.WIKIPEDIA_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.YOUVIEW_ITEM;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
+import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
@@ -70,6 +74,7 @@ import static org.atlasapi.media.entity.Publisher.ROVI_EN_US;
 import static org.atlasapi.media.entity.Publisher.RTE;
 import static org.atlasapi.media.entity.Publisher.TALK_TALK;
 import static org.atlasapi.media.entity.Publisher.UKTV;
+import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
@@ -77,6 +82,15 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 
+/**
+ * This class contains the source configuration for equivalence. When the equivalence executor
+ * picks up an item, it will check its source to see if there is a specific configuration for it,
+ * and if there is it will only match it against the specified sources.
+ *
+ * WHEN CREATING A NEW CONFIG, keep in mind to add your source to the NON_STANDARD_SOURCES list.
+ * If you don't, standard equivalence will run on top of whatever config you have set, and
+ * standard equivalence equivs to all sources.
+ */
 public class UpdaterConfigurationRegistry {
 
     private final ImmutableList<UpdaterConfiguration> updaterConfigurations;
@@ -114,12 +128,14 @@ public class UpdaterConfigurationRegistry {
                 makeTalkTalkConfiguration(),
                 makeRteConfiguration(),
                 makeFiveConfiguration(),
-                makeBarbMasterConfiguration(),
+                makeBarbMasterConfiguration(), //CDMF
                 makeBarbTransmissionConfiguration(),
                 makeItvCpsConfiguration(),
                 makeNitroConfiguration(),
                 makeC4PmlsdConfiguration(),
-                makeUktvConfiguration()
+                makeUktvConfiguration(),
+                makeWikipediaConfiguration(),
+                makeBarbXMasterConfiguration() //X-CDMF
         );
 
         configurations.add(
@@ -192,6 +208,50 @@ public class UpdaterConfigurationRegistry {
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,
                         TARGET_SOURCES
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeWikipediaConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(WIKIPEDIA)
+                .withItemEquivalenceUpdater(
+                        WIKIPEDIA_ITEM,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
+                        )
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        WIKIPEDIA_CONTAINER,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
+                        )
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
+                        )
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeBarbXMasterConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(BARB_X_MASTER)
+                .withItemEquivalenceUpdater(
+                        BARB_X_ITEM,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
+                        )
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        ImmutableSet.of() //there are no
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        ImmutableSet.of()
                 )
                 .build();
     }

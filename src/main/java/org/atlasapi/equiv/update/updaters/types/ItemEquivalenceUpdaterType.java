@@ -3,6 +3,7 @@ package org.atlasapi.equiv.update.updaters.types;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.BarbXItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
@@ -16,6 +17,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.StandardItemUpdaterProv
 import org.atlasapi.equiv.update.updaters.providers.item.TxlogsItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequenceUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 
@@ -69,6 +71,12 @@ public enum ItemEquivalenceUpdaterType {
     ),
     TXLOGS_ITEM(
             TxlogsItemUpdaterProvider.create()
+    ),
+    WIKIPEDIA_ITEM(
+            WikipediaItemUpdateProvider.create()
+    ),
+    BARB_X_ITEM(
+            BarbXItemUpdaterProvider.create()
     ),
     ;
 

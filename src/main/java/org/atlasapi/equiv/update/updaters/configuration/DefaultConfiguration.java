@@ -10,6 +10,7 @@ import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
+import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
@@ -42,6 +43,7 @@ import static org.atlasapi.media.entity.Publisher.VF_C5;
 import static org.atlasapi.media.entity.Publisher.VF_ITV;
 import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
 import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
+import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
 import static org.atlasapi.media.entity.Publisher.YOUTUBE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
@@ -112,7 +114,9 @@ public class DefaultConfiguration {
                             ITV_CPS,
                             BBC_NITRO,
                             C4_PMLSD,
-                            UKTV
+                            UKTV,
+                            WIKIPEDIA,
+                            BARB_X_MASTER
                     )
             )
             .addAll(MUSIC_SOURCES)

@@ -62,9 +62,9 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private final Score scoreOnMismatch;
-    
+
     public TitleMatchingItemScorer() {
-        this(Score.NULL_SCORE);
+        this(Score.nullScore());
     }
     
     public TitleMatchingItemScorer(Score scoreOnMismatch) {
@@ -104,7 +104,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private Score score(Item subject, Item suggestion, ResultDescription desc) {
-        Score score = Score.NULL_SCORE;
+        Score score = Score.nullScore();
         if(!Strings.isNullOrEmpty(suggestion.getTitle())) {
             if(Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title (%s) scored: %s", suggestion.getCanonicalUri(), score);
@@ -127,7 +127,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
         
         
-        Score score = Score.NULL_SCORE;
+        Score score = Score.nullScore();
 
         if(subjectType == suggestionType) {
             String subjectTitle = removePostfix(subject);
@@ -195,15 +195,15 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
             subjTitle = subjTitle.substring(0, subjTitle.indexOf(":"));
             suggTitle = suggTitle.substring(0, suggTitle.indexOf(":"));
-            return subjTitle.equals(suggTitle) ? Score.valueOf(1D) : scoreOnMismatch;
+            return subjTitle.equals(suggTitle) ? Score.ONE : scoreOnMismatch;
         } else if (subjTitle.contains(":") && subjTitle.length() > suggTitle.length()) {
 
             String subjSubstring = subjTitle.substring(0, subjTitle.indexOf(":"));
-            return subjSubstring.equals(suggTitle) ? Score.valueOf(1D) : scoreOnMismatch;
+            return subjSubstring.equals(suggTitle) ? Score.ONE : scoreOnMismatch;
         } else if (suggTitle.contains(":")) {
 
             String suggSubstring = suggTitle.substring(0, suggestionTitle.indexOf(":"));
-            return suggSubstring.equals(subjTitle) ? Score.valueOf(1D) : scoreOnMismatch;
+            return suggSubstring.equals(subjTitle) ? Score.ONE : scoreOnMismatch;
         }
 
         return scoreOnMismatch;

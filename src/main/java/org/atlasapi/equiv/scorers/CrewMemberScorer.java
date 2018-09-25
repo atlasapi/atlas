@@ -1,13 +1,7 @@
 package org.atlasapi.equiv.scorers;
 
-import static java.math.BigDecimal.ROUND_HALF_UP;
-import static java.math.RoundingMode.HALF_UP;
-
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -19,8 +13,13 @@ import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.CrewMember.Role;
 import org.atlasapi.media.entity.Item;
 
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Set;
+
+import static java.math.BigDecimal.ROUND_HALF_UP;
+import static java.math.RoundingMode.HALF_UP;
 
 public class CrewMemberScorer implements EquivalenceScorer<Item> {
 

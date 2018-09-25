@@ -69,7 +69,7 @@ public class RtFilmProcessor {
     private final AdapterLog log;
     
     private final PaCountryMap countryMapper = new PaCountryMap();
-    private final EnglishLanguageCodeMap languageMap = new EnglishLanguageCodeMap();
+    private final EnglishLanguageCodeMap languageMap = EnglishLanguageCodeMap.getInstance();
     
     private final Splitter csvSplitter = Splitter.on(",").omitEmptyStrings().trimResults();
     private final Splitter slashSplitter = Splitter.on("/").omitEmptyStrings().trimResults();

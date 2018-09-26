@@ -2,7 +2,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 
 import java.util.Set;
 
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
+import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -43,7 +43,7 @@ public class BettyItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
         return ContentEquivalenceUpdater.<Item>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
-                .withGenerator(new BroadcastMatchingItemEquivalenceGenerator(
+                .withGenerator(new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
                         dependencies.getScheduleResolver(),
                         dependencies.getChannelResolver(),
                         targetPublishers,

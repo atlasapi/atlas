@@ -3,8 +3,8 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.atlasapi.equiv.generators.BarbAliasEquivalenceGenerator;
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
+import org.atlasapi.equiv.generators.BarbAliasEquivalenceGeneratorAndScorer;
+import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -55,11 +55,11 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                BarbAliasEquivalenceGenerator.barbAliasResolvingGenerator(
+                                BarbAliasEquivalenceGeneratorAndScorer.barbAliasResolvingGenerator(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
                                         dependencies.getContentResolver()
                                 ),
-                                new BroadcastMatchingItemEquivalenceGenerator(
+                                new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
                                         targetPublishers,
@@ -77,7 +77,7 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                //The BarbAliasEquivalenceGenerator also adds a score
+                                //The BarbAliasEquivalenceGeneratorAndScorer also adds a score
                                 new TitleMatchingItemScorer(Score.nullScore()),
                                 DescriptionMatchingScorer.makeScorer()
                         )

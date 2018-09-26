@@ -32,15 +32,15 @@ import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BarbAliasEquivalenceGeneratorTest {
+public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     // force equivalence
-    private BarbAliasEquivalenceGenerator generator;
+    private BarbAliasEquivalenceGeneratorAndScorer generator;
     private final ContentResolver resolver = mock(ContentResolver.class);
     private final MongoLookupEntryStore lookupEntryStore = mock(MongoLookupEntryStore.class);
 
     // alias equivalence
-    private BarbAliasEquivalenceGenerator aliasGenerator;
+    private BarbAliasEquivalenceGeneratorAndScorer aliasGenerator;
     private final ContentResolver aliasResolver = mock(ContentResolver.class);
     private final MongoLookupEntryStore aliasLookupEntryStore = mock(MongoLookupEntryStore.class);
 
@@ -108,7 +108,7 @@ public class BarbAliasEquivalenceGeneratorTest {
                 ImmutableSet.of("someBcid")
         )).thenReturn(ImmutableSet.of(lookupEntry));
 
-        aliasGenerator = (BarbAliasEquivalenceGenerator) BarbAliasEquivalenceGenerator
+        aliasGenerator = (BarbAliasEquivalenceGeneratorAndScorer) BarbAliasEquivalenceGeneratorAndScorer
                 .barbAliasResolvingGenerator(aliasLookupEntryStore, aliasResolver);
     }
 
@@ -135,7 +135,7 @@ public class BarbAliasEquivalenceGeneratorTest {
 
         when(resolver.findByCanonicalUris(Matchers.anyCollection())).thenReturn(resolvedContent);
 
-        aliasGenerator = (BarbAliasEquivalenceGenerator) BarbAliasEquivalenceGenerator
+        aliasGenerator = (BarbAliasEquivalenceGeneratorAndScorer) BarbAliasEquivalenceGeneratorAndScorer
                 .barbAliasResolvingGenerator(aliasLookupEntryStore, aliasResolver);
     }
 

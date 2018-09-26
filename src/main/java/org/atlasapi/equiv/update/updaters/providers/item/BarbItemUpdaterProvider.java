@@ -2,8 +2,8 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 
 import java.util.Set;
 
-import org.atlasapi.equiv.generators.BarbAliasEquivalenceGenerator;
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
+import org.atlasapi.equiv.generators.BarbAliasEquivalenceGeneratorAndScorer;
+import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -18,12 +18,10 @@ import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.FilmFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -58,11 +56,11 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                BarbAliasEquivalenceGenerator.barbAliasResolvingGenerator(
+                                BarbAliasEquivalenceGeneratorAndScorer.barbAliasResolvingGenerator(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
                                         dependencies.getContentResolver()
                                 ),
-                                new BroadcastMatchingItemEquivalenceGenerator(
+                                new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
                                         targetPublishers,
@@ -73,7 +71,8 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                //The BarbAliasEquivalenceGenerator also adds a score
+                                //The BarbAliasEquivalenceGeneratorAndScorer also adds a score. max 10
+                                //Surprise! The BroadcastMatchingItemEquivalenceGeneratorAndScorer also adds a score. max 3.
                                 new TitleMatchingItemScorer(Score.nullScore()),
                                 DescriptionMatchingScorer.makeScorer()
                         )

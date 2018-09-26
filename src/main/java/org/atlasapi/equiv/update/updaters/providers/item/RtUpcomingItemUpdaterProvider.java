@@ -2,9 +2,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 
 import java.util.Set;
 
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
-import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
@@ -34,10 +32,8 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.joda.time.Duration;
 
 public class RtUpcomingItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 

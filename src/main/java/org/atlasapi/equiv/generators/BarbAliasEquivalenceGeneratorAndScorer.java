@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableSet;
  *
  * @param <T>
  */
-public class BarbAliasEquivalenceGenerator<T extends Content> implements EquivalenceGenerator<T> {
+public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implements EquivalenceGenerator<T> {
 
     private final MongoLookupEntryStore lookupEntryStore;
     private final ContentResolver resolver;
@@ -48,7 +48,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
     private static final String STV_BG_PREFIX = "gb:barb:broadcastGroup:111:bcid";
     private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111:bcid";
 
-    public BarbAliasEquivalenceGenerator(
+    public BarbAliasEquivalenceGeneratorAndScorer(
             MongoLookupEntryStore lookupEntryStore,
             ContentResolver resolver,
             double aliasMatchingScore
@@ -63,14 +63,14 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
             ContentResolver resolver,
             double aliasMatchingScore
     ) {
-        return new BarbAliasEquivalenceGenerator<>(lookupEntryStore, resolver, aliasMatchingScore);
+        return new BarbAliasEquivalenceGeneratorAndScorer<>(lookupEntryStore, resolver, aliasMatchingScore);
     }
 
     public static <T extends Content> EquivalenceGenerator<T> barbAliasResolvingGenerator(
             MongoLookupEntryStore lookupEntryStore,
             ContentResolver resolver
     ) {
-        return new BarbAliasEquivalenceGenerator<>(lookupEntryStore, resolver, 10.0);
+        return new BarbAliasEquivalenceGeneratorAndScorer<>(lookupEntryStore, resolver, 10.0);
     }
 
     @Override

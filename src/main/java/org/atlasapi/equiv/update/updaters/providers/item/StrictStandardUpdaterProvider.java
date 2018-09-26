@@ -2,7 +2,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 
 import java.util.Set;
 
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
+import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
@@ -56,7 +56,7 @@ public class StrictStandardUpdaterProvider implements EquivalenceUpdaterProvider
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.<EquivalenceGenerator<Item>>of(
-                                new BroadcastMatchingItemEquivalenceGenerator(
+                                new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
                                         targetPublishers,

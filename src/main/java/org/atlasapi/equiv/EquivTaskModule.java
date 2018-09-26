@@ -418,7 +418,7 @@ public class EquivTaskModule {
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_TRANSMISSIONS).withName("Barb TxLogs Updater"),
-                RepetitionRules.NEVER,
+                TXLOGS_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
@@ -488,11 +488,6 @@ public class EquivTaskModule {
                         .withChannelsSupplier(bbcReduxChannels())
                         .build().withName("Redux Schedule Equivalence (8 day) Updater"),
                 REDUX_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup
-        );
-        scheduleEquivalenceJob(
-                publisherUpdateTask(BARB_TRANSMISSIONS).withName("Barb TxLogs Updater"),
-                TXLOGS_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(

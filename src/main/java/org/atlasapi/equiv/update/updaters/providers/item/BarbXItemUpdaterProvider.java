@@ -2,7 +2,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 
 import java.util.Set;
 
-import org.atlasapi.equiv.generators.BarbAliasEquivalenceGenerator;
+import org.atlasapi.equiv.generators.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -51,7 +51,7 @@ public class BarbXItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                BarbAliasEquivalenceGenerator.barbAliasResolvingGenerator(
+                                BarbAliasEquivalenceGeneratorAndScorer.barbAliasResolvingGenerator(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
                                         dependencies.getContentResolver(),
                                         10.0
@@ -60,7 +60,7 @@ public class BarbXItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                //The BarbAliasEquivalenceGenerator also adds a score
+                                //The BarbAliasEquivalenceGeneratorAndScorer also adds a score
                                 new TitleMatchingItemScorer() //2 on perfect match
                         )
                 )

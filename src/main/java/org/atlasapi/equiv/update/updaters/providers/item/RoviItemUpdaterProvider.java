@@ -5,7 +5,7 @@ import java.util.Set;
 import com.google.api.client.util.Lists;
 
 import org.atlasapi.application.v3.DefaultApplication;
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
+import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
@@ -59,7 +59,7 @@ public class RoviItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                new BroadcastMatchingItemEquivalenceGenerator(
+                                new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
                                         targetPublishers,

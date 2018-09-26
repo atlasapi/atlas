@@ -46,6 +46,7 @@ public class SeriesModelTransformer extends ContentModelTransformer<Playlist, Se
         if (simple.getBrandSummary() != null) {
             result.setParentRef(new ParentRef(simple.getBrandSummary().getUri()));
         }
+        result.setCountriesOfOrigin(simple.getCountriesOfOrigin());
         return result;
     }
 }

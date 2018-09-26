@@ -2,7 +2,12 @@ package org.atlasapi.remotesite.wikipedia.television;
 
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.intl.Country;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Episode;
@@ -21,13 +26,20 @@ import com.google.common.collect.Maps;
 public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHierarchy, TvBrandHierarchy> {
     private static final Logger log = LoggerFactory.getLogger(TvBrandHierarchyExtractor.class);
 
+//    YYYY/MM/DD (sometimes only one M and/or D present)
+    private static Pattern YEAR_PATTERN_1 = Pattern.compile(".*first_aired.*?[sS]tart date[|](\\d{4})[|](\\d{1,2})[|](\\d{1,2}).*", Pattern.DOTALL);
+
+    private static Pattern US_PATTERN = Pattern.compile(".*[|] country.*?(United States).*", Pattern.DOTALL);
+    private static Pattern UK_PATTERN = Pattern.compile(".*[|] country.*?(United Kingdom).*", Pattern.DOTALL);
+
     @Override
     public TvBrandHierarchy extract(ScrapedFlatHierarchy source) {
+        log.info(source.getBrandArticle().getMediaWikiSource());
         NavigableMap<Integer, Episode> episodes = Maps.newTreeMap();
         Map<String, Series> seasons = Maps.newTreeMap();
         
         Article brandArticle = source.getBrandArticle();
-        Brand brand = extractBrand(brandArticle, source.getBrandInfo());
+        Brand brand = extractBrand(brandArticle, source);
         
         for(ScrapedEpisode scrapedEpisode : source.getEpisodes()) {
             String seasonName = scrapedEpisode.season == null ? null : Strings.emptyToNull(scrapedEpisode.season.name);
@@ -35,7 +47,7 @@ public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHi
             
             int episodeNumber = scrapedEpisode.numberInShow;
             if (episodeNumber == 0) {
-                log.warn("The TV show " + brand.getTitle() + " has an episode without a number, which is being ignored.");
+                log.warn("The TV show {} has an episode without a number, which is being ignored.", brand.getTitle());
                 continue;
             }
             Episode episode = episodes.get(scrapedEpisode.numberInShow);
@@ -55,34 +67,44 @@ public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHi
         return new TvBrandHierarchy(brand, ImmutableSet.copyOf(seasons.values()), ImmutableSet.copyOf(episodes.values()));
     }
 
-    private Brand extractBrand(Article brandArticle, ScrapedBrandInfobox info) {
+    private Brand extractBrand(Article brandArticle, ScrapedFlatHierarchy info) {
+        ScrapedBrandInfobox brandInfo = info.getBrandInfo();
+
         String url = brandArticle.getUrl();
-        String title = null;
         Brand brand = new Brand(url, null, Publisher.WIKIPEDIA);
         
-        if (info == null) {
-            log.warn("Extracting Brand info seems to have failed on \"" + brandArticle.getTitle() + "\"");
+        if (brandInfo == null) {
+            log.warn("Extracting Brand info seems to have failed on {}", brandArticle.getTitle());
             return brand;
         }
-        
-        title = Strings.emptyToNull(info.title);
-        if (title == null) {
-            log.info("Falling back to guessing brand name from \"" + brandArticle.getTitle() + "\"");
+
+        String title = brandInfo.title;
+
+        if (Strings.isNullOrEmpty(title)) {
+            log.info("Falling back to guessing brand name from {}", brandArticle.getTitle());
             title = guessBrandNameFromArticleTitle(brandArticle.getTitle());
         }
+
         brand.setTitle(title);
-        if (!Strings.isNullOrEmpty(info.image)) {
-            String image = SwebleHelper.getWikiImage(info.image);
+
+        if (!Strings.isNullOrEmpty(brandInfo.image)) {
+            String image = SwebleHelper.getWikiImage(brandInfo.image);
             brand.setImage(image);
         }
 
-        if (info.firstAired.isPresent()) {
-            brand.setYear(info.firstAired.get().getYear());
+        if (brandInfo.firstAired.isPresent()) {
+            brand.setYear(brandInfo.firstAired.get().getYear());
+        } else {
+            attemptYearFromSource(brand, info);
         }
-        if (info.imdbID != null) {
-            brand.addAlias(new Alias("imdb:title", info.imdbID));
-            brand.addAlias(new Alias("imdb:url", "http://imdb.com/title/tt" + info.imdbID));
+
+        if (brandInfo.imdbID != null) {
+            brand.addAlias(new Alias("imdb:title", brandInfo.imdbID));
+            brand.addAlias(new Alias("imdb:url", "http://imdb.com/title/tt" + brandInfo.imdbID));
         }
+
+        brand.setCountriesOfOrigin(extractCountriesSource(info));
+
         return brand;
     }
     
@@ -93,6 +115,34 @@ public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHi
         } else {
             return title.substring(0, indexOfBracketedStuffWeDontWant);
         }
+    }
+
+    /**
+     * Only grabs the most common pattern of start date. Room for improvement.
+     */
+    private void attemptYearFromSource(Brand brand, ScrapedFlatHierarchy info) {
+        Matcher matcher = YEAR_PATTERN_1.matcher(info.getBrandArticle().getMediaWikiSource());
+        if (matcher.matches()) {
+            Integer year = Integer.parseInt(matcher.group(1));
+            brand.setYear(year);
+        }
+    }
+
+    /**
+     * Only grabs the easiest to parse US and UK countries. Room for improvement.
+     */
+    private Set<Country> extractCountriesSource(ScrapedFlatHierarchy info) {
+        Matcher usMatcher = US_PATTERN.matcher(info.getBrandArticle().getMediaWikiSource());
+        if (usMatcher.matches()) {
+            return ImmutableSet.of(Countries.US);
+        }
+
+        Matcher ukMatcher = UK_PATTERN.matcher(info.getBrandArticle().getMediaWikiSource());
+        if (ukMatcher.matches()) {
+            return ImmutableSet.of(Countries.GB);
+        }
+
+        return ImmutableSet.of();
     }
 
     /**

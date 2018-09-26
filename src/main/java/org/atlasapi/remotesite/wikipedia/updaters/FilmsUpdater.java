@@ -119,8 +119,8 @@ public class FilmsUpdater extends ScheduledTask {
     private ListenableFuture<Void> updateFilm(ListenableFuture<Article> article) {
         return Futures.transform(article, new Function<Article, Void>() {
             public Void apply(Article article) {
-                Film flim = extractor.extract(article);
-                writer.createOrUpdate(flim);
+                Film film = extractor.extract(article);
+                writer.createOrUpdate(film);
                 return null;
             }
         }, executor);

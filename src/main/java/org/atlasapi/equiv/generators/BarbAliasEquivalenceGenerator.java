@@ -23,13 +23,21 @@ import com.metabroadcast.common.stream.MoreStreams;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
+/**
+ * Query for each alias. For each alias get a list of candidates, and score them as well (?).
+ *
+ * @param <T>
+ */
 public class BarbAliasEquivalenceGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
     private final MongoLookupEntryStore lookupEntryStore;
     private final ContentResolver resolver;
     private static final String NAME = "Barb Alias Resolving Generator";
+    //If there are more than MAXIMUM_ALIAS_MATCHES candidates for an alias then we don't accept it
+    //This is so as to not match content with bad aliases together (such as alias contentId 1).
     private static final int MAXIMUM_ALIAS_MATCHES = 50;
-    private static final double ALIAS_MATCHING_SCORE = 10.0;
+    //Score on match.
+    private final double aliasMatchingScore;
 
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
     private static final String BCID_NAMESPACE_SUFFIX = "bcid";
@@ -42,17 +50,27 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
 
     public BarbAliasEquivalenceGenerator(
             MongoLookupEntryStore lookupEntryStore,
-            ContentResolver resolver
+            ContentResolver resolver,
+            double aliasMatchingScore
     ) {
         this.lookupEntryStore = lookupEntryStore;
         this.resolver = resolver;
+        this.aliasMatchingScore = aliasMatchingScore;
+    }
+
+    public static <T extends Content> EquivalenceGenerator<T> barbAliasResolvingGenerator(
+            MongoLookupEntryStore lookupEntryStore,
+            ContentResolver resolver,
+            double aliasMatchingScore
+    ) {
+        return new BarbAliasEquivalenceGenerator<>(lookupEntryStore, resolver, aliasMatchingScore);
     }
 
     public static <T extends Content> EquivalenceGenerator<T> barbAliasResolvingGenerator(
             MongoLookupEntryStore lookupEntryStore,
             ContentResolver resolver
     ) {
-        return new BarbAliasEquivalenceGenerator<>(lookupEntryStore, resolver);
+        return new BarbAliasEquivalenceGenerator<>(lookupEntryStore, resolver, 10.0);
     }
 
     @Override
@@ -115,12 +133,13 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         resolved.getAllResolvedResults().stream()
                 .distinct()
                 .forEach(identified -> {
-                    equivalents.addEquivalent((T) identified, Score.valueOf(ALIAS_MATCHING_SCORE));
+                    equivalents.addEquivalent((T) identified, Score.valueOf(aliasMatchingScore));
                     desc.appendText("Candidate %s", identified.getCanonicalUri());
 
                     // this if statement keeps lots of old tests happy
                     if (identified.getId() != null) {
-                        generatorComponent.addComponentResult(identified.getId(), String.valueOf(ALIAS_MATCHING_SCORE));
+                        generatorComponent.addComponentResult(identified.getId(), String.valueOf(
+                                aliasMatchingScore));
                     }
                 });
 

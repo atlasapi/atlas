@@ -3,7 +3,6 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import java.util.Set;
 
 import org.atlasapi.equiv.generators.BarbAliasEquivalenceGenerator;
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -18,12 +17,8 @@ import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.FilmFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -33,20 +28,18 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.joda.time.Duration;
 
-public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+public class BarbXItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
 
-    private BarbItemUpdaterProvider() {
+    private BarbXItemUpdaterProvider() {
 
     }
 
-    public static BarbItemUpdaterProvider create() {
-        return new BarbItemUpdaterProvider();
+    public static BarbXItemUpdaterProvider create() {
+        return new BarbXItemUpdaterProvider();
     }
 
     @Override
@@ -60,22 +53,15 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         ImmutableSet.of(
                                 BarbAliasEquivalenceGenerator.barbAliasResolvingGenerator(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
-                                        dependencies.getContentResolver()
-                                ),
-                                new BroadcastMatchingItemEquivalenceGenerator(
-                                        dependencies.getScheduleResolver(),
-                                        dependencies.getChannelResolver(),
-                                        targetPublishers,
-                                        Duration.standardMinutes(5),
-                                        Predicates.alwaysTrue()
+                                        dependencies.getContentResolver(),
+                                        10.0
                                 )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
                                 //The BarbAliasEquivalenceGenerator also adds a score
-                                new TitleMatchingItemScorer(Score.nullScore()),
-                                DescriptionMatchingScorer.makeScorer()
+                                new TitleMatchingItemScorer() //2 on perfect match
                         )
                 )
                 .withCombiner(
@@ -83,7 +69,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(2.0),
+                                new MinimumScoreFilter<>(9.0),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 ExclusionListFilter.create(
@@ -96,7 +82,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3)
+                        AllOverOrEqThresholdExtractor.create(10.0)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

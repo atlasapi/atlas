@@ -108,7 +108,8 @@ public class BarbAliasEquivalenceGeneratorTest {
                 ImmutableSet.of("someBcid")
         )).thenReturn(ImmutableSet.of(lookupEntry));
 
-        aliasGenerator = new BarbAliasEquivalenceGenerator(aliasLookupEntryStore, aliasResolver);
+        aliasGenerator = (BarbAliasEquivalenceGenerator) BarbAliasEquivalenceGenerator
+                .barbAliasResolvingGenerator(aliasLookupEntryStore, aliasResolver);
     }
 
     private void setupForceEquivalenceTests() {
@@ -134,7 +135,8 @@ public class BarbAliasEquivalenceGeneratorTest {
 
         when(resolver.findByCanonicalUris(Matchers.anyCollection())).thenReturn(resolvedContent);
 
-        generator = new BarbAliasEquivalenceGenerator(lookupEntryStore, resolver);
+        aliasGenerator = (BarbAliasEquivalenceGenerator) BarbAliasEquivalenceGenerator
+                .barbAliasResolvingGenerator(aliasLookupEntryStore, aliasResolver);
     }
 
     //@Test TODO: create a new test now that the hardcoded content was removed

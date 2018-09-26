@@ -14,6 +14,7 @@ import org.atlasapi.equiv.update.updaters.providers.container.StandardSeriesUpda
 import org.atlasapi.equiv.update.updaters.providers.container
         .StandardTopLevelContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.VodContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.WikipediaContainerUpdateProvider;
 import org.atlasapi.media.entity.Container;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -51,6 +52,9 @@ public enum ContainerEquivalenceUpdaterType {
     ),
     AMAZON_SERIES(
             AmazonSeriesUpdaterProvider.create()
+    ),
+    WIKIPEDIA_CONTAINER(
+            WikipediaContainerUpdateProvider.create()
     ),
     ;
 

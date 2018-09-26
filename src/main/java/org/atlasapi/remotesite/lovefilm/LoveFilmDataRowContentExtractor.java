@@ -108,7 +108,7 @@ public class LoveFilmDataRowContentExtractor implements ContentExtractor<LoveFil
     private final DateTimeFormatter yearMonthDayFormat = ISODateTimeFormat.date().withZone(DateTimeZone.forID("Europe/London"));
     private final OldGenreMapping genreMapping = new LoveFilmGenreMapping();
     
-    private static final EnglishLanguageCodeMap languageCodeMap = new EnglishLanguageCodeMap();
+    private static final EnglishLanguageCodeMap languageCodeMap = EnglishLanguageCodeMap.getInstance();
     private static final OptionalMap<String, Certificate> certificateMap = ImmutableOptionalMap.fromMap(
         ImmutableMap.<String,Certificate>builder()
             .put("exempt",new Certificate("E", Countries.GB))

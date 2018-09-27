@@ -70,7 +70,7 @@ public class WikipediaContainerUpdateProvider implements EquivalenceUpdaterProvi
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(2),
+                                new MinimumScoreFilter<>(1.9),
                                 new MediaTypeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),

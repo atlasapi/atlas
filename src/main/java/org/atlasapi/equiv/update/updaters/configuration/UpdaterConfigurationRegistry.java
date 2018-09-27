@@ -228,7 +228,7 @@ public class UpdaterConfigurationRegistry {
                         )
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        STANDARD_SERIES,
+                        WIKIPEDIA_CONTAINER,
                         ImmutableSet.of(
                                 BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
                         )

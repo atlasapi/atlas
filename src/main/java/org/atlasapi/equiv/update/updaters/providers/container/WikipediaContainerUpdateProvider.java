@@ -72,7 +72,6 @@ public class WikipediaContainerUpdateProvider implements EquivalenceUpdaterProvi
                         ConjunctiveFilter.valueOf(ImmutableList.of(
                                 new MinimumScoreFilter<>(2),
                                 new MediaTypeFilter<>(),
-                                new SpecializationFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
                                 ExclusionListFilter.create(

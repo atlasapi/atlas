@@ -29,8 +29,8 @@ public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHi
 //    YYYY/MM/DD (sometimes only one M and/or D present)
     private static Pattern YEAR_PATTERN_1 = Pattern.compile(".*first_aired.*?[sS]tart date[|](\\d{4})[|](\\d{1,2})[|](\\d{1,2}).*", Pattern.DOTALL);
 
-    private static Pattern US_PATTERN = Pattern.compile(".*[|] country.*?(United States).*", Pattern.DOTALL);
-    private static Pattern UK_PATTERN = Pattern.compile(".*[|] country.*?(United Kingdom).*", Pattern.DOTALL);
+    private static Pattern US_PATTERN = Pattern.compile("^.*[|] country[^|]*?=\\s?(United States).*", Pattern.DOTALL);
+    private static Pattern UK_PATTERN = Pattern.compile("^.*[|] country[^|]*?=\\s?(United Kingdom).*", Pattern.DOTALL);
 
     @Override
     public TvBrandHierarchy extract(ScrapedFlatHierarchy source) {

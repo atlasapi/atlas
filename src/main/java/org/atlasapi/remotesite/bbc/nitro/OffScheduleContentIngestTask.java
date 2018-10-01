@@ -141,7 +141,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 .collect(MoreCollectors.toImmutableSet());
 
                 ImmutableSet<ModelWithPayload<Brand>> brands =
-                        localOrRemoteFetcher.resolveOrFetchSeries(resolvedItems).stream()
+                        localOrRemoteFetcher.resolveOrFetchBrand(resolvedItems).stream()
                                 .filter(input -> input.getModel() instanceof Brand)
                                 .map(input -> input.asModelType(Brand.class))
                                 .collect(MoreCollectors.toImmutableSet());

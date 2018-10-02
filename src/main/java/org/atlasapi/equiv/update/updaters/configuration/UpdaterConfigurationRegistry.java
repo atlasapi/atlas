@@ -19,6 +19,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.BROADCAST_ITEM_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.BT_VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.FACEBOOK_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_API_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.NOP_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RTE_VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RT_UPCOMING_CONTAINER;
@@ -32,6 +33,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_API_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
@@ -61,6 +63,7 @@ import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
+import static org.atlasapi.media.entity.Publisher.IMDB_API;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV_CPS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
@@ -251,6 +254,28 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,
+                        ImmutableSet.of()
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeImdbApiConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(IMDB_API)
+                .withItemEquivalenceUpdater(
+                        IMDB_API_ITEM,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
+                        )
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        IMDB_API_CONTAINER,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
+                        )
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        IMDB_API_CONTAINER,
                         ImmutableSet.of()
                 )
                 .build();

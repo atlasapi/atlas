@@ -1,8 +1,17 @@
 package org.atlasapi.input;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Actor;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Content;
@@ -24,21 +33,9 @@ import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.time.Clock;
+import java.util.List;
+import java.util.Set;
 
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 public abstract class ContentModelTransformer<F extends Description,T extends Content> extends DescribedModelTransformer<F, T> {
@@ -236,7 +233,6 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
 
     private CrewMember transformPerson(Person person, Publisher publisher) {
         CrewMember member;
-        checkNotNull(person.getUri(), "person requires uri");
         if ("actor".equals(person.getType())) {
             member = new Actor().withCharacter(person.getCharacter());
         } else {

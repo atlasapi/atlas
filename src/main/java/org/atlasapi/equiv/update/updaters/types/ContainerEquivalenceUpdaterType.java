@@ -1,18 +1,17 @@
 package org.atlasapi.equiv.update.updaters.types;
 
-import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.AmazonContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.AmazonSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BroadcastItemContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BtVodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.FacebookContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.ImdbApiContainerUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.NopContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RtUpcomingContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RteContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.StandardSeriesUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container
-        .StandardTopLevelContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.StandardTopLevelContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.VodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.WikipediaContainerUpdateProvider;
 import org.atlasapi.media.entity.Container;
@@ -55,6 +54,9 @@ public enum ContainerEquivalenceUpdaterType {
     ),
     WIKIPEDIA_CONTAINER(
             WikipediaContainerUpdateProvider.create()
+    ),
+    IMDB_API_CONTAINER(
+            ImdbApiContainerUpdateProvider.create()
     ),
     ;
 

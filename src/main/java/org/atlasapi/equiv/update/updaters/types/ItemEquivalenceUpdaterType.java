@@ -7,13 +7,14 @@ import org.atlasapi.equiv.update.updaters.providers.item.BarbXItemUpdaterProvide
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.StrictStandardUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.ImdbApitemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.MusicItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.NopItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RoviItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RtItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RtUpcomingItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.StandardItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.StrictStandardUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.TxlogsItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequenceUpdaterProvider;
@@ -78,6 +79,9 @@ public enum ItemEquivalenceUpdaterType {
     BARB_X_ITEM(
             BarbXItemUpdaterProvider.create()
     ),
+    IMDB_API_ITEM(
+            ImdbApitemUpdateProvider.create()
+    )
     ;
 
     private final EquivalenceUpdaterProvider<Item> provider;

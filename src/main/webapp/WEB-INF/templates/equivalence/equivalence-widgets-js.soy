@@ -54,7 +54,7 @@
   <tr id="{$equivalence.id}"{if $equivalence.strong} class="strong"{/if}>
     <td>{if $equivalence.strong}✔{else}✘{/if}</td>
     <td><a href="?uri={$equivalence.encodedId}">{$equivalence.title} ({$equivalence.publisher})</a></td>
-    <td><a href="http://atlasapi.org/3.0/content.json?uri={$equivalence.encodedId}"><img src="/static/images/external.png"></a></td>
+    <td><a href="{$equivalence.id}"><img src="/static/images/external.png"></a></td>
     {if $equivalence.scores['combined'] == false}
         <td>N/A</td>
     {else}

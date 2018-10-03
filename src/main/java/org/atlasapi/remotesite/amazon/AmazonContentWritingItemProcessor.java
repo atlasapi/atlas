@@ -164,14 +164,18 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         if (contentWithPayload.getModel() instanceof Item) {
             Item item = contentWithPayload.asModelType(Item.class).getModel();
             //We also discard Clips. ECOTEST-429. CPINC-1223 removed the duration restriction.
-            if (item.getTitle() != null && !item.getVersions().isEmpty()) {
-                if (item.getTitle().toLowerCase().startsWith("clip:")) {
-                    telescope.reportFailedEvent(
-                            "Content was discarded because it was a clip",
-                            contentWithPayload.getModel(),
-                            contentWithPayload.getPayload()
-                    );
-                    return true;
+            if (item.getTitle() != null) {
+                if (!item.getVersions().isEmpty()) {
+                    if (item.getTitle().toLowerCase().startsWith("clip:")) {
+                        telescope.reportFailedEvent(
+                                "Content was discarded because it was a clip",
+                                contentWithPayload.getModel(),
+                                contentWithPayload.getPayload()
+                        );
+                        return true;
+                    }
+                } else if (item.getTitle().toLowerCase().startsWith("clip:")) {
+                    log.warn("AMAZ-CLIP: found clip title but with no versions");
                 }
             }
 

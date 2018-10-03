@@ -1,9 +1,8 @@
 package org.atlasapi.equiv.update.updaters.configuration;
 
-import org.atlasapi.media.entity.Publisher;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import org.atlasapi.media.entity.Publisher;
 
 import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
@@ -22,6 +21,7 @@ import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
+import static org.atlasapi.media.entity.Publisher.IMDB_API;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV_CPS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
@@ -116,7 +116,8 @@ public class DefaultConfiguration {
                             C4_PMLSD,
                             UKTV,
                             WIKIPEDIA,
-                            BARB_X_MASTER
+                            BARB_X_MASTER,
+                            IMDB_API
                     )
             )
             .addAll(MUSIC_SOURCES)

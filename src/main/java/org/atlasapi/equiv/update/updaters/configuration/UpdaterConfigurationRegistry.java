@@ -138,7 +138,8 @@ public class UpdaterConfigurationRegistry {
                 makeC4PmlsdConfiguration(),
                 makeUktvConfiguration(),
                 makeWikipediaConfiguration(),
-                makeBarbXMasterConfiguration() //X-CDMF
+                makeBarbXMasterConfiguration(), //X-CDMF
+                makeImdbApiConfiguration()
         );
 
         configurations.add(

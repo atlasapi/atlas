@@ -70,7 +70,7 @@ public class ImdbApiContainerUpdateProvider implements EquivalenceUpdaterProvide
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(2.9),
+                                new MinimumScoreFilter<>(1.9), //year score effectively ignored for now since most content is without year
                                 new MediaTypeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),

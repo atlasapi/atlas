@@ -14,7 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ItemYearScorer implements EquivalenceScorer<Item> {
 
-    private static final String YEAR = "Item-Year";
+    private static final String NAME = "Item-Year";
 
     private final Score matchScore;
 
@@ -31,7 +31,7 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Item Year Scorer");
-        DefaultScoredCandidates.Builder<Item> scoredCandidates = DefaultScoredCandidates.fromSource(YEAR);
+        DefaultScoredCandidates.Builder<Item> scoredCandidates = DefaultScoredCandidates.fromSource(NAME);
 
         for (Item candidate : candidates) {
             Score score = score(subject, candidate);
@@ -53,5 +53,10 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
             return Score.nullScore();
         }
         return subject.getYear().equals(candidate.getYear()) ? matchScore : Score.ZERO;
+    }
+
+    @Override
+    public String toString(){
+        return NAME;
     }
 }

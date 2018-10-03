@@ -34,7 +34,7 @@
  * @param result
  */
 {template .result}
-<h2>{$result.title} - <span class="target-uri">{$result.id}</span> <a style="margin-left:5px;vertical-align:middle" href="http://atlasapi.org/3.0/content.json?uri={$result.encodedId}"><img src="/static/images/external.png"></a></h2>
+<h2>{$result.title} - <span class="target-uri">{$result.id}</span> <a style="margin-left:5px;vertical-align:middle" href="{$result.id}"><img src="/static/images/external.png"></a></h2>
 {if length($result.equivalences) > 0}
 <table>
     <tr>

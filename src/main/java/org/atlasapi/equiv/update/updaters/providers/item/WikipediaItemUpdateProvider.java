@@ -64,7 +64,7 @@ public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<I
                                         dependencies.getSearchResolver(),
                                         Item.class,
                                         targetPublishers,
-                                        2
+                                        0
                                 )
                         )
                 )

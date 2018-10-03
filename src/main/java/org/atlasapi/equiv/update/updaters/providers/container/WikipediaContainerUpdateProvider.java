@@ -53,7 +53,7 @@ public class WikipediaContainerUpdateProvider implements EquivalenceUpdaterProvi
                                 dependencies.getSearchResolver(),
                                 Container.class,
                                 targetPublishers,
-                                2
+                                0
                         )
                 )
                 .withScorers(

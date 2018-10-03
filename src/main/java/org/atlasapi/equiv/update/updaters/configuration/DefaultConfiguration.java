@@ -8,6 +8,7 @@ import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
+import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
@@ -111,6 +112,7 @@ public class DefaultConfiguration {
                             YOUVIEW_SCOTLAND_RADIO_STAGE,
                             BARB_MASTER,
                             BARB_TRANSMISSIONS,
+                            BARB_OVERRIDES,
                             ITV_CPS,
                             BBC_NITRO,
                             C4_PMLSD,

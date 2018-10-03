@@ -22,7 +22,6 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.ItemYearScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
@@ -63,20 +62,19 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                                         dependencies.getSearchResolver(),
                                         Item.class,
                                         targetPublishers,
-                                        0
+                                        2
                                 )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingItemScorer(), //Scores 2 on perfect match
                                 new ItemYearScorer(Score.ONE)
                         )
                 )
                 .withCombiner(
                         new RequiredScoreFilteringCombiner<>(
                                 new NullScoreAwareAveragingCombiner<>(),
-                                TitleMatchingItemScorer.NAME
+                                TitleSearchGenerator.NAME
                         )
                 )
                 .withFilter(

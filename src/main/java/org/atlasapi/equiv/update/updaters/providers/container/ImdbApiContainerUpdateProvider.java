@@ -21,7 +21,6 @@ import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoreThreshold;
 import org.atlasapi.equiv.scorers.ContainerYearScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
@@ -54,19 +53,18 @@ public class ImdbApiContainerUpdateProvider implements EquivalenceUpdaterProvide
                                 dependencies.getSearchResolver(),
                                 Container.class,
                                 targetPublishers,
-                                0
+                                2
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingContainerScorer(2.0),
                                 new ContainerYearScorer(Score.ONE)
                         )
                 )
                 .withCombiner(
                         new RequiredScoreFilteringCombiner<>(
                                 new NullScoreAwareAveragingCombiner<>(),
-                                TitleMatchingContainerScorer.NAME,
+                                TitleSearchGenerator.NAME,
                                 ScoreThreshold.greaterThanOrEqual(2)
                         )
                 )

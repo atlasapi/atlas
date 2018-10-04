@@ -159,11 +159,13 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
 
         if (useContentSpecialization && content.getSpecialization() != null) {
             titleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
+        } else if (!useContentSpecialization) {
+            titleQuery.withFakeSpecialization(true);
         }
 
         desc.appendText("query: %s, specialization: %s, publishers: %s",
                 title,
-                useContentSpecialization ? content.getSpecialization() : "[]",
+                useContentSpecialization ? content.getSpecialization() : "no specialization",
                 publishers);
 
         Iterable<? extends T> results = searchResolver.search(titleQuery.build(), application)
@@ -181,6 +183,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             );
             if (useContentSpecialization && content.getSpecialization() != null) {
                 titleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
+            } else if (!useContentSpecialization) {
+                titleQuery.withFakeSpecialization(true);
             }
             Iterable<? extends T> filteredExpandedTitleResults = Iterables.filter(
                     searchResolver.search(expandedTitleQuery.build(), application),

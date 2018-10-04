@@ -52,7 +52,7 @@ public class ImdbApiContainerUpdateProvider implements EquivalenceUpdaterProvide
                                 dependencies.getSearchResolver(),
                                 Container.class,
                                 targetPublishers,
-                                0
+                                2
                         )
                 )
                 .withScorers(

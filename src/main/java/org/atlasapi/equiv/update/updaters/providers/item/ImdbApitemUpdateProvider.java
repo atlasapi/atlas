@@ -62,7 +62,7 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                                         dependencies.getSearchResolver(),
                                         Item.class,
                                         targetPublishers,
-                                        0
+                                        2
                                 )
                         )
                 )

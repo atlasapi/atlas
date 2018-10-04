@@ -53,7 +53,7 @@ public class ImdbApiContainerUpdateProvider implements EquivalenceUpdaterProvide
                                 Container.class,
                                 targetPublishers,
                                 2
-                        )
+                        ) //scorer name is same as actual title scorer so should be same score to prevent one being overwritten
                 )
                 .withScorers(
                         ImmutableSet.of(
@@ -66,7 +66,7 @@ public class ImdbApiContainerUpdateProvider implements EquivalenceUpdaterProvide
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(2.9),
+                                new MinimumScoreFilter<>(1.9), //effectively ignores year at the moment
                                 new MediaTypeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),

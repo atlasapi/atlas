@@ -1,10 +1,15 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
+import com.google.api.client.util.Lists;
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
@@ -19,17 +24,10 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.api.client.util.Lists;
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class TitleSearchGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
@@ -53,7 +51,26 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             double exactMatchScore,
             boolean includeSelfPublisher
     ) {
-        return new TitleSearchGenerator<T>(searchResolver, cls, publishers, exactMatchScore, includeSelfPublisher);
+        return create(searchResolver, cls, publishers, exactMatchScore, includeSelfPublisher, true);
+    }
+
+    public static final <T extends Content> TitleSearchGenerator<T> create(
+            SearchResolver searchResolver, Class<? extends T> cls,
+            Iterable<Publisher> publishers,
+            double exactMatchScore,
+            boolean includeSelfPublisher,
+            boolean useContentSpecialization
+    ) {
+        return new TitleSearchGenerator<T>(
+                searchResolver,
+                cls,
+                publishers,
+                Functions.<String>identity(),
+                20,
+                exactMatchScore,
+                includeSelfPublisher,
+                useContentSpecialization
+        );
     }
     
     private final SearchResolver searchResolver;
@@ -65,15 +82,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final ExpandingTitleTransformer titleExpander;
     //include stuff from the same publisher as the given content
     private final boolean includeSelfPublisher;
-
-    public TitleSearchGenerator(
-            SearchResolver searchResolver, Class<? extends T> cls,
-            Iterable<Publisher> publishers,
-            double exactMatchScore,
-            boolean includeSelfPublisher
-    ) {
-        this(searchResolver, cls, publishers, Functions.<String>identity(), 20, exactMatchScore, includeSelfPublisher);
-    }
+    //filter search results to same specialization as the given content
+    private final boolean useContentSpecialization;
     
     public TitleSearchGenerator(
             SearchResolver searchResolver, Class<? extends T> cls,
@@ -83,6 +93,18 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             double exactMatchScore,
             boolean includeSelfPublisher
     ) {
+        this(searchResolver, cls, publishers, titleTransform, searchLimit, exactMatchScore, includeSelfPublisher, true);
+    }
+
+    public TitleSearchGenerator(
+            SearchResolver searchResolver, Class<? extends T> cls,
+            Iterable<Publisher> publishers,
+            Function<String,String> titleTransform,
+            int searchLimit,
+            double exactMatchScore,
+            boolean includeSelfPublisher,
+            boolean useContentSpecialization
+    ) {
         this.searchResolver = searchResolver;
         this.cls = cls;
         this.searchLimit = searchLimit;
@@ -91,6 +113,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         this.titleScorer = new ContentTitleScorer<T>(NAME, titleTransform, exactMatchScore);
         this.titleExpander = new ExpandingTitleTransformer();
         this.includeSelfPublisher = includeSelfPublisher;
+        this.useContentSpecialization = useContentSpecialization;
     }
 
     @Override
@@ -134,13 +157,13 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         title = normalize(title);
         SearchQuery.Builder titleQuery = getSearchQueryBuilder(publishers, title);
 
-        if (content.getSpecialization() != null) {
+        if (useContentSpecialization && content.getSpecialization() != null) {
             titleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
         }
 
         desc.appendText("query: %s, specialization: %s, publishers: %s",
                 title,
-                content.getSpecialization(),
+                useContentSpecialization ? content.getSpecialization() : "[]",
                 publishers);
 
         Iterable<? extends T> results = searchResolver.search(titleQuery.build(), application)
@@ -156,7 +179,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                     publishers,
                     expandedTitle
             );
-            if (content.getSpecialization() != null) {
+            if (useContentSpecialization && content.getSpecialization() != null) {
                 titleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
             }
             Iterable<? extends T> filteredExpandedTitleResults = Iterables.filter(

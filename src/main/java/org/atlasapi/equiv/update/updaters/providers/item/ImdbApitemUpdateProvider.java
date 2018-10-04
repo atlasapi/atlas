@@ -62,8 +62,10 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                                         dependencies.getSearchResolver(),
                                         Item.class,
                                         targetPublishers,
-                                        2
-                                ) //scorer name is same as actual title scorer so should be same score to prevent one being overwritten
+                                        0,
+                                        false,
+                                        false
+                                )
                         )
                 )
                 .withScorers(

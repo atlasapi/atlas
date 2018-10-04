@@ -52,7 +52,9 @@ public class ImdbApiContainerUpdateProvider implements EquivalenceUpdaterProvide
                                 dependencies.getSearchResolver(),
                                 Container.class,
                                 targetPublishers,
-                                2
+                                2,
+                                false,
+                                false
                         ) //scorer name is same as actual title scorer so should be same score to prevent one being overwritten
                 )
                 .withScorers(

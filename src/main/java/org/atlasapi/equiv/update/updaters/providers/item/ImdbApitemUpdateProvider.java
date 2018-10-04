@@ -20,8 +20,8 @@ import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.ItemYearScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
@@ -68,7 +68,7 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingItemScorer(), //scores 2
+                                new BarbTitleMatchingItemScorer(Score.valueOf(2.0), Score.nullScore()),
                                 new ItemYearScorer(Score.ONE)
                         )
                 )

@@ -267,7 +267,8 @@ public class UpdaterConfigurationRegistry {
                 .withItemEquivalenceUpdater(
                         IMDB_API_ITEM,
                         ImmutableSet.of(
-                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION, BARB_OVERRIDES
+                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION,
+                                BARB_OVERRIDES, BARB_TRANSMISSIONS, BARB_MASTER
                         )
                 )
                 .withTopLevelContainerEquivalenceUpdater(

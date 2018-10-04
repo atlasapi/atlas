@@ -135,7 +135,7 @@ public class BbcIonServices {
             //        .put("bbc_wales", "")
             //        .put("bbc_weather", "")
             //        .put("bbc_webonly", "")
-            //        .put("bbc_world_news", "")
+                    .put("bbc_world_news", "http://www.bbc.co.uk/services/bbcworldnews")
             //        .put("bbc_radio_webonly", "")
             //        .put("bbc_school_radio", "")
             //        .put("bbc_southern_counties_radio", "")

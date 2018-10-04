@@ -77,7 +77,7 @@ public class ImdbApiContainerUpdateProvider implements EquivalenceUpdaterProvide
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3D)
+                        AllOverOrEqThresholdExtractor.create(2D)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

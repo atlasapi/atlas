@@ -88,7 +88,7 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3D)
+                        AllOverOrEqThresholdExtractor.create(2D)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

@@ -49,7 +49,6 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
-import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
 import static org.atlasapi.media.entity.Publisher.BBC;
@@ -267,13 +266,13 @@ public class UpdaterConfigurationRegistry {
                 .withItemEquivalenceUpdater(
                         IMDB_API_ITEM,
                         ImmutableSet.of(
-                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION, BARB_OVERRIDES
+                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
                         )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         IMDB_API_CONTAINER,
                         ImmutableSet.of(
-                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION, BARB_OVERRIDES
+                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
                         )
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(

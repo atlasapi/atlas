@@ -11,8 +11,7 @@ import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
-import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
-import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
+import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
@@ -72,14 +71,11 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                         )
                 )
                 .withCombiner(
-                        new RequiredScoreFilteringCombiner<>(
-                                new NullScoreAwareAveragingCombiner<>(),
-                                TitleSearchGenerator.NAME
-                        )
+                        new AddingEquivalenceCombiner<>()
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(1.9), //year score effectively ignored for now since most content is without year
+                                new MinimumScoreFilter<>(2.9),
                                 new MediaTypeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
@@ -94,7 +90,7 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-                                EpisodeFilteringEquivalenceResultHandler.strict(
+                                EpisodeFilteringEquivalenceResultHandler.relaxed(
                                         LookupWritingEquivalenceHandler.create(
                                                 dependencies.getLookupWriter()
                                         ),

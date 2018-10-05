@@ -13,7 +13,9 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,9 +29,10 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             "the ", "Live ", "FILM: ", "FILM:", "NEW: ", "NEW:", "LIVE: ", "LIVE:"
     );
     private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(Unrated\\)", "\\(Rated\\)");
-    private static final Pattern TRAILING_APOSTROPHE_PATTERN =Pattern.compile("\\w' ");
+    private static final Pattern TRAILING_APOSTROPHE_PATTERN = Pattern.compile("\\w' ");
     private static final Score DEFAULT_SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
     private static final Score DEFAULT_SCORE_ON_MISMATCH = Score.nullScore();
+    private static final int TXLOG_TITLE_LENGTH = 40;
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
 
     public enum TitleType {
@@ -50,7 +53,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         public static TitleType titleTypeOf(String title) {
             for (TitleType type : ImmutableList.copyOf(TitleType.values())) {
-                if(type.matches(title)) {
+                if (type.matches(title)) {
                     return type;
                 }
             }
@@ -87,11 +90,11 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         scorerComponent.setComponentName("Barb Title Matching Item Scorer");
 
         Builder<Item> equivalents = DefaultScoredCandidates.fromSource(NAME);
-        
-        if(Strings.isNullOrEmpty(subject.getTitle())) {
+
+        if (Strings.isNullOrEmpty(subject.getTitle())) {
             desc.appendText("No Title on subject, all score null");
         }
-        
+
         for (Item suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
             equivalents.addEquivalent(suggestion, equivScore);
@@ -104,14 +107,14 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
 
         equivToTelescopeResults.addScorerResult(scorerComponent);
-    
+
         return equivalents.build();
     }
 
     private Score score(Item subject, Item suggestion, ResultDescription desc) {
         Score score = Score.nullScore();
-        if(!Strings.isNullOrEmpty(suggestion.getTitle())) {
-            if(Strings.isNullOrEmpty(suggestion.getTitle())) {
+        if (!Strings.isNullOrEmpty(suggestion.getTitle())) {
+            if (Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title (%s) scored: %s", suggestion.getCanonicalUri(), score);
             } else {
                 score = score(subject, suggestion);
@@ -123,29 +126,33 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
 
     private Score score(Item subject, Item suggestion) {
+        String subjectTitle = subject.getTitle();
+        if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS) && subjectTitle.length() > TXLOG_TITLE_LENGTH) {
+            subjectTitle = subjectTitle.substring(0, TXLOG_TITLE_LENGTH);
+        }
 
-        if(subject.getTitle().equals(suggestion.getTitle())){
+        if (subjectTitle.equals(suggestion.getTitle())) {
             return scoreOnPerfectMatch;
         }
 
         TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
-        
-        
+
+
         Score score = Score.nullScore();
 
-        if(subjectType == suggestionType) {
-            String subjectTitle = removePostfix(subject);
-            String suggestionTitle = removePostfix(suggestion);
+        if (subjectType == suggestionType) {
+            subjectTitle = removePostfix(subjectTitle, subject.getYear());
+            String suggestionTitle = removePostfix(suggestion.getTitle(), suggestion.getYear());
             return compareTitles(subjectTitle, suggestionTitle);
 
         }
-        
+
         return score;
     }
 
-    private String removePostfix(Item item) {
-        String removedYear = removeYearFromTitle(item);
+    private String removePostfix(String title, @Nullable Integer year) {
+        String removedYear = removeYearFromTitle(title, year);
         return removeRatings(removedYear).trim();
     }
 
@@ -156,11 +163,10 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return title;
     }
 
-    private String removeYearFromTitle(Item item) {
-        String title = item.getTitle();
+    private String removeYearFromTitle(String title, @Nullable Integer year) {
 
-        if (item.getYear() != null) {
-            return title.replaceAll("\\(" + item.getYear() + "\\)", "");
+        if (year != null) {
+            return title.replaceAll("\\(" + year + "\\)", "");
         } else {
             return title;
         }
@@ -237,6 +243,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private String normalizeRegularExpression(String title) {
         return regularExpressionReplaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title).toLowerCase()));
     }
+
     private boolean appearsToBeWithApostrophe(String title) {
         return TRAILING_APOSTROPHE_PATTERN.matcher(title).find();
     }
@@ -252,21 +259,21 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     private String replaceSpecialChars(String title) {
         return applyCommonReplaceRules(title)
-                    .replaceAll("\\.", "")
-                    .replaceAll("\\s?\\/\\s?", "-") // normalize spacing around back-to-back titles
-                    .replaceAll("[^A-Za-z0-9\\s']+", "-")
-                    .replace("'","")
-                    .replace(" ", "-");
-                    
+                .replaceAll("\\.", "")
+                .replaceAll("\\s?\\/\\s?", "-") // normalize spacing around back-to-back titles
+                .replaceAll("[^A-Za-z0-9\\s']+", "-")
+                .replace("'", "")
+                .replace(" ", "-");
+
     }
-    
+
     private String regularExpressionReplaceSpecialChars(String title) {
         return applyCommonReplaceRules(title)
-                    .replaceAll("[^A-Za-z0-9\\s']+", "-")
-                    .replace(" ", "\\-")
-                    .replaceAll("'\\\\-", "(\\\\w+|\\\\W*)\\-");
+                .replaceAll("[^A-Za-z0-9\\s']+", "-")
+                .replace(" ", "\\-")
+                .replaceAll("'\\\\-", "(\\\\w+|\\\\W*)\\-");
     }
-    
+
     private String removeCommonPrefixes(String title) {
         String titleWithoutPrefix = title;
         for (String prefix : PREFIXES) {
@@ -284,12 +291,12 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     //Matches e.g. "2. Kinross"
     private final Pattern seqTitle = Pattern.compile("\\s*\\d+\\s*[.:-]{1}\\s*(.*)");
-    
+
     private String removeSequencePrefix(String title) {
         Matcher matcher = seqTitle.matcher(title);
         return matcher.matches() ? matcher.group(1) : title;
     }
-    
+
     @Override
     public String toString() {
         return "Barb Title-matching Item Scorer";

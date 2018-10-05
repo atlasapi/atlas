@@ -9,17 +9,16 @@ import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
-import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
-import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
+import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
-import org.atlasapi.equiv.results.scores.ScoreThreshold;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.ContainerYearScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -53,24 +52,23 @@ public class WikipediaContainerUpdateProvider implements EquivalenceUpdaterProvi
                                 dependencies.getSearchResolver(),
                                 Container.class,
                                 targetPublishers,
-                                0
-                        )
+                                2,
+                                false,
+                                false
+                        ) //scorer name is same as actual title scorer so should be same score to prevent one being overwritten
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingContainerScorer(2)
+                                new TitleMatchingContainerScorer(2.0),
+                                new ContainerYearScorer(Score.ONE)
                         )
                 )
                 .withCombiner(
-                        new RequiredScoreFilteringCombiner<>(
-                                new NullScoreAwareAveragingCombiner<>(),
-                                TitleMatchingContainerScorer.NAME,
-                                ScoreThreshold.greaterThanOrEqual(2)
-                        )
+                        new AddingEquivalenceCombiner<>()
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(1.9),
+                                new MinimumScoreFilter<>(1.9), //effectively ignores year at the moment
                                 new MediaTypeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
@@ -81,7 +79,7 @@ public class WikipediaContainerUpdateProvider implements EquivalenceUpdaterProvi
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(2)
+                        AllOverOrEqThresholdExtractor.create(2D)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

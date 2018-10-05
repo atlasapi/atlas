@@ -11,19 +11,17 @@ import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
-import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
-import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
+import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.ItemYearScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
@@ -64,25 +62,24 @@ public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<I
                                         dependencies.getSearchResolver(),
                                         Item.class,
                                         targetPublishers,
-                                        0
+                                        0,
+                                        false,
+                                        false
                                 )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingItemScorer(), //Scores 2 on perfect match
+                                new BarbTitleMatchingItemScorer(Score.valueOf(2.0), Score.nullScore()),
                                 new ItemYearScorer(Score.ONE)
                         )
                 )
                 .withCombiner(
-                        new RequiredScoreFilteringCombiner<>(
-                                new NullScoreAwareAveragingCombiner<>(),
-                                TitleMatchingItemScorer.NAME
-                        )
+                        new AddingEquivalenceCombiner<>()
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(2.9),
+                                new MinimumScoreFilter<>(1.9), //effectively ignores year at the moment
                                 new MediaTypeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
@@ -93,11 +90,11 @@ public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<I
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3D)
+                        AllOverOrEqThresholdExtractor.create(2D)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-                                EpisodeFilteringEquivalenceResultHandler.strict(
+                                EpisodeFilteringEquivalenceResultHandler.relaxed(
                                         LookupWritingEquivalenceHandler.create(
                                                 dependencies.getLookupWriter()
                                         ),

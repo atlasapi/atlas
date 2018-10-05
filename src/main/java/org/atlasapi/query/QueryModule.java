@@ -16,6 +16,7 @@ package org.atlasapi.query;
 
 import org.atlasapi.equiv.AllFromPublishersEquivalentContentResolver;
 import org.atlasapi.equiv.EquivModule;
+import org.atlasapi.equiv.YouViewOutputContentMerger;
 import org.atlasapi.equiv.query.MergeOnOutputQueryExecutor;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
@@ -182,7 +183,7 @@ public class QueryModule {
 		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
 		queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
 		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
-		queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor);
+		queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor, new YouViewOutputContentMerger());
 		queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
 
 		return Boolean.parseBoolean(applicationsEnabled)

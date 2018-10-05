@@ -21,10 +21,16 @@ public class MergeOnOutputQueryExecutor implements KnownTypeQueryExecutor {
 
     private final KnownTypeQueryExecutor delegate;
     
-    private final OutputContentMerger merger = new OutputContentMerger();
+    private final OutputContentMerger merger;
 
     public MergeOnOutputQueryExecutor(KnownTypeQueryExecutor delegate) {
         this.delegate = delegate;
+        this.merger = new OutputContentMerger();
+    }
+
+    public MergeOnOutputQueryExecutor(KnownTypeQueryExecutor delegate, OutputContentMerger merger) {
+        this.delegate = delegate;
+        this.merger = merger;
     }
 
     @Override

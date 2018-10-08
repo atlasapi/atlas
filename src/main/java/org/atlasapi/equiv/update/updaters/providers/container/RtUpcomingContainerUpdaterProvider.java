@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.container;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ScalingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
@@ -17,7 +17,7 @@ import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
-import org.atlasapi.equiv.results.filters.FilmFilter;
+import org.atlasapi.equiv.results.filters.FilmYearFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.PublisherFilter;
@@ -32,8 +32,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 public class RtUpcomingContainerUpdaterProvider
         implements EquivalenceUpdaterProvider<Container> {
@@ -91,7 +90,7 @@ public class RtUpcomingContainerUpdaterProvider
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),
-                                new FilmFilter<>(),
+                                new FilmYearFilter<>(),
                                 new UnpublishedContentFilter<>()
                         ))
                 )

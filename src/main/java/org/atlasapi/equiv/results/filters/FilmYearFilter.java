@@ -7,7 +7,8 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Film;
 
-public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> {
+/** Filters out any films whose years differ by more than a year **/
+public class FilmYearFilter<T extends Content> extends AbstractEquivalenceFilter<T> {
 
     private static final int NUMBER_OF_YEARS_DIFFERENT_TOLERANCE = 1;
 
@@ -19,7 +20,7 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
             EquivToTelescopeResults equivToTelescopeResults
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
-        filterComponent.setComponentName("Film Filter");
+        filterComponent.setComponentName("Film Year Filter");
 
         if (!(input.candidate() instanceof Film && subject instanceof Film)) {
             filterComponent.addComponentResult(

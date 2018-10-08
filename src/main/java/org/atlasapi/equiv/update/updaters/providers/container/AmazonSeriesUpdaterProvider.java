@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.container;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -16,7 +16,7 @@ import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
-import org.atlasapi.equiv.results.filters.FilmFilter;
+import org.atlasapi.equiv.results.filters.FilmYearFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
@@ -30,8 +30,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
 
@@ -77,7 +76,7 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),
-                                new FilmFilter<>(),
+                                new FilmYearFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
                                 new ContainerHierarchyFilter()

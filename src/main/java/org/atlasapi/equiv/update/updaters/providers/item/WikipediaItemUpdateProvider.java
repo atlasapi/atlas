@@ -16,6 +16,7 @@ import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
+import org.atlasapi.equiv.results.filters.FilmAndEpisodeFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
@@ -81,6 +82,7 @@ public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<I
                         ConjunctiveFilter.valueOf(ImmutableList.of(
                                 new MinimumScoreFilter<>(1.9), //effectively ignores year at the moment
                                 new MediaTypeFilter<>(),
+                                new FilmAndEpisodeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
                                 ExclusionListFilter.create(

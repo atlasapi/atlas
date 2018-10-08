@@ -1,7 +1,8 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import java.util.Set;
-
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
@@ -15,7 +16,7 @@ import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
-import org.atlasapi.equiv.results.filters.FilmFilter;
+import org.atlasapi.equiv.results.filters.FilmYearFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
@@ -30,11 +31,9 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.Duration;
+
+import java.util.Set;
 
 public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
@@ -89,7 +88,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),
-                                new FilmFilter<>(),
+                                new FilmYearFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()
                         ))

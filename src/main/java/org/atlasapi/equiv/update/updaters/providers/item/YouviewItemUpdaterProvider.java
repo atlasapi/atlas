@@ -1,7 +1,8 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.time.DateTimeZones;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
@@ -15,7 +16,7 @@ import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchE
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
-import org.atlasapi.equiv.results.filters.FilmFilter;
+import org.atlasapi.equiv.results.filters.FilmYearFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.PublisherFilter;
@@ -34,13 +35,10 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-
-import com.metabroadcast.common.time.DateTimeZones;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+
+import java.util.Set;
 
 public class YouviewItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
@@ -102,7 +100,7 @@ public class YouviewItemUpdaterProvider implements EquivalenceUpdaterProvider<It
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),
-                                new FilmFilter<>(),
+                                new FilmYearFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()
                         ))

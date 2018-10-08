@@ -7,15 +7,14 @@ import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
-
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class FilmFilterTest {
+public class FilmYearFilterTest {
 
-    private final FilmFilter underTest = new FilmFilter();
+    private final FilmYearFilter underTest = new FilmYearFilter();
     private final EquivToTelescopeResults equivToTelescopeResults =
             EquivToTelescopeResults.create("id", "publisher");
 

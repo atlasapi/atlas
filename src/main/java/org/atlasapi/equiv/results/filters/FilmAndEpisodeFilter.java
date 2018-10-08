@@ -25,7 +25,7 @@ public class FilmAndEpisodeFilter<T extends Content> extends AbstractEquivalence
                 || (input.candidate() instanceof Episode && subject instanceof Film)) {
             desc.appendText(
                     "%s removed since its content type does not match",
-                    subject
+                    input.candidate()
             );
             filterComponent.addComponentResult(
                     input.candidate().getId(),

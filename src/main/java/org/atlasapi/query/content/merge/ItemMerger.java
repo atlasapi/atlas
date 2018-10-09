@@ -1,13 +1,12 @@
 package org.atlasapi.query.content.merge;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import java.util.Set;
 
 import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 
@@ -52,7 +51,6 @@ public class ItemMerger {
                     broadcastMerger
             );
         }
-        existing.setCountriesOfOrigin(update.getCountriesOfOrigin());
         existing.setYear(update.getYear());
         existing.setParentRef(update.getContainer());
 

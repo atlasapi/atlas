@@ -189,7 +189,10 @@ public class ContentMerger {
                 : update.getAwards());
         existing.setPresentationChannel(update.getPresentationChannel());
         existing.setYear(update.getYear());
+
+        //currently not set to use merge logic since these have been added later
         existing.setLanguages(update.getLanguages());
+        existing.setCountriesOfOrigin(update.getCountriesOfOrigin());
 
         if (existing instanceof Episode && update instanceof Episode) {
             episodeMerger.mergeEpisodes((Episode) existing, (Episode) update);

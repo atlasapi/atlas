@@ -119,12 +119,12 @@ public class RtFilmFeedUpdater extends ScheduledTask {
 
         if (doCompleteUpdate) {
             requestUri += "/since?lastUpdated=" + UrlEncoding.encode(dateFormat.print(START_DATE));
-        } else if (doFourMonthUpdate) {
-            requestUri += "/since?lastUpdated=" + UrlEncoding
-                    .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusMonths(4)));
         } else if (doTwoYearUpdate) {
             requestUri += "since?lastUpdate=" + UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusYears(2)));
+        } else if (doFourMonthUpdate) {
+            requestUri += "/since?lastUpdated=" + UrlEncoding
+                    .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusMonths(4)));
         } else {
             requestUri += "/since?lastUpdated=" + UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusDays(3)));

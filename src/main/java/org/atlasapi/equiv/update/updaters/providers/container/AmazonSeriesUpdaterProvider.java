@@ -3,6 +3,7 @@ package org.atlasapi.equiv.update.updaters.providers.container;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
+import org.atlasapi.equiv.generators.ExactTitleGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
@@ -28,9 +29,12 @@ import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
 import java.util.Set;
+
+import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 
 public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
 
@@ -49,13 +53,18 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
         return ContentEquivalenceUpdater.<Container>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
-                .withGenerator(
-                        //whatever generators are used here, should prevent the creation of
-                        //candidates which are the item itself (because there is no further filtering
-                        //to remove them, whereas the Publisher filter used elsewhere does that).
-                        new ContainerCandidatesContainerEquivalenceGenerator(
-                                dependencies.getContentResolver(),
-                                dependencies.getEquivSummaryStore()
+                .withGenerators(
+                        ImmutableSet.of(
+                                new ExactTitleGenerator<>(
+                                        dependencies.getSearchResolver(),
+                                        Container.class,
+                                        true,
+                                        AMAZON_UNBOX
+                                ),
+                                new ContainerCandidatesContainerEquivalenceGenerator(
+                                        dependencies.getContentResolver(),
+                                        dependencies.getEquivSummaryStore()
+                                )
                         )
                 )
                 .withScorers(

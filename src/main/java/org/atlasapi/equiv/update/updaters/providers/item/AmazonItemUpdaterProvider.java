@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
+import org.atlasapi.equiv.generators.ExactTitleGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
@@ -36,6 +37,8 @@ import org.atlasapi.media.entity.Publisher;
 
 import java.util.Set;
 
+import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
+
 public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
     private AmazonItemUpdaterProvider() {
@@ -58,6 +61,12 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         //candidates which are the item itself (because there is no further filtering
                         //to remove them, whereas the Publisher filter used elsewhere does that).
                         ImmutableSet.of(
+                                new ExactTitleGenerator<>(
+                                        dependencies.getSearchResolver(),
+                                        Item.class,
+                                        true,
+                                        AMAZON_UNBOX
+                                ),
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore()
@@ -73,7 +82,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingItemScorer(),
+                                new TitleMatchingItemScorer(), // Scores 2 on exact match
                                 //DescriptionMatchingScorer.makeScorer(), TODO sometimes broken ATM
                                 new SequenceItemScorer(Score.ONE)
                         )
@@ -105,7 +114,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                 //then let it equate with other stuff as well.
                                 AllOverOrEqThresholdExtractor.create(3.00), // TODO: dropped as Description scorer removed
                                 ExcludePublisherThenExtractExtractor.create(
-                                        Publisher.AMAZON_UNBOX, //we don't want to equiv with other amazon items
+                                        AMAZON_UNBOX, //we don't want to equiv with remaining amazon items if they don't have a perfect score
                                         PercentThresholdEquivalenceExtractor.moreThanPercent(90)
                                 )
 

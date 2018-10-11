@@ -39,13 +39,14 @@ import com.metabroadcast.common.url.UrlEncoding;
 public class RtFilmFeedUpdater extends ScheduledTask {
     
     private final static DateTimeFormatter dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss");
-    private final static DateTime START_DATE = new DateTime(2011, DateTimeConstants.APRIL, 12, 0, 0, 0, 0);
+    private final static DateTime START_DATE = new DateTime(2013, DateTimeConstants.APRIL, 12, 0, 0, 0, 0);
 
     private final String feedUrl;
     private final AdapterLog log;
     private final RtFilmProcessor processor;
     private final boolean doCompleteUpdate;
     private final boolean doFourMonthUpdate;
+    private final boolean doTwoYearUpdate;
     private OwlTelescopeReporter telescopeReporter;
 
     public RtFilmFeedUpdater(
@@ -55,7 +56,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
             ContentWriter contentWriter,
             RtFilmProcessor processor
     ) {
-        this(feedUrl, log, contentResolver, contentWriter, processor, false, false);
+        this(feedUrl, log, contentResolver, contentWriter, processor, false, false, false);
     }
     
     private RtFilmFeedUpdater(
@@ -65,13 +66,15 @@ public class RtFilmFeedUpdater extends ScheduledTask {
             ContentWriter contentWriter,
             RtFilmProcessor processor,
             boolean doCompleteUpdate,
-            boolean doFourMonthUpdate
+            boolean doFourMonthUpdate,
+            boolean dotwoYearUpdate
     ) {
         this.feedUrl = feedUrl;
         this.log = log;
         this.processor = processor;
         this.doCompleteUpdate = doCompleteUpdate;
         this.doFourMonthUpdate = doFourMonthUpdate;
+        this.doTwoYearUpdate = dotwoYearUpdate;
     }
     
     public static RtFilmFeedUpdater completeUpdater(
@@ -81,7 +84,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
             ContentWriter contentWriter,
             RtFilmProcessor processor
     ) {
-        return new RtFilmFeedUpdater(feedUrl, log, contentResolver, contentWriter, processor, true, false);
+        return new RtFilmFeedUpdater(feedUrl, log, contentResolver, contentWriter, processor, true, false, false);
     }
 
     public static RtFilmFeedUpdater fourMonthUpdater(
@@ -91,8 +94,19 @@ public class RtFilmFeedUpdater extends ScheduledTask {
             ContentWriter contentWriter,
             RtFilmProcessor processor
     ) {
-        return new RtFilmFeedUpdater(feedUrl, log, contentResolver, contentWriter, processor, false, true);
+        return new RtFilmFeedUpdater(feedUrl, log, contentResolver, contentWriter, processor, false, true, false);
     }
+
+    public static RtFilmFeedUpdater twoYearUpdater(
+            String feedUrl,
+            AdapterLog log,
+            ContentResolver contentResolver,
+            ContentWriter contentWriter,
+            RtFilmProcessor processor
+    ){
+        return new RtFilmFeedUpdater(feedUrl, log, contentResolver, contentWriter, processor, false, false, true);
+    }
+
     @Override
     protected void runTask() {
         telescopeReporter = OwlTelescopeReporterFactory.getInstance()
@@ -102,12 +116,15 @@ public class RtFilmFeedUpdater extends ScheduledTask {
         telescopeReporter.startReporting();
 
         String requestUri = feedUrl;
-        
+
         if (doCompleteUpdate) {
             requestUri += "/since?lastUpdated=" + UrlEncoding.encode(dateFormat.print(START_DATE));
         } else if (doFourMonthUpdate) {
             requestUri += "/since?lastUpdated=" + UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusMonths(4)));
+        } else if (doTwoYearUpdate) {
+            requestUri += "since?lastUpdate=" + UrlEncoding
+                    .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusYears(2)));
         } else {
             requestUri += "/since?lastUpdated=" + UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusDays(3)));

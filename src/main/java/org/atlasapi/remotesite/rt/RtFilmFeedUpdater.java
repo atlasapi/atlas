@@ -116,18 +116,18 @@ public class RtFilmFeedUpdater extends ScheduledTask {
                         Event.Type.INGEST);
         telescopeReporter.startReporting();
 
-        String requestUri = feedUrl + ENDPOINT;
+        String requestUri = feedUrl;
 
         if (doCompleteUpdate) {
-            requestUri += UrlEncoding.encode(dateFormat.print(START_DATE));
+            requestUri += ENDPOINT + UrlEncoding.encode(dateFormat.print(START_DATE));
         } else if (doTwoYearUpdate) {
-            requestUri += UrlEncoding
+            requestUri += ENDPOINT + UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusYears(2)));
         } else if (doFourMonthUpdate) {
-            requestUri += UrlEncoding
+            requestUri += ENDPOINT + UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusMonths(4)));
         } else {
-            requestUri += UrlEncoding
+            requestUri += ENDPOINT + UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusDays(3)));
         }
         

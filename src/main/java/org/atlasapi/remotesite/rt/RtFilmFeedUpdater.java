@@ -37,9 +37,10 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.url.UrlEncoding;
 
 public class RtFilmFeedUpdater extends ScheduledTask {
-    
+
     private final static DateTimeFormatter dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss");
     private final static DateTime START_DATE = new DateTime(2013, DateTimeConstants.APRIL, 12, 0, 0, 0, 0);
+    public static final String ENDPOINT = "/since?lastUpdated=";
 
     private final String feedUrl;
     private final AdapterLog log;
@@ -115,18 +116,18 @@ public class RtFilmFeedUpdater extends ScheduledTask {
                         Event.Type.INGEST);
         telescopeReporter.startReporting();
 
-        String requestUri = feedUrl;
+        String requestUri = feedUrl + ENDPOINT;
 
         if (doCompleteUpdate) {
-            requestUri += "/since?lastUpdated=" + UrlEncoding.encode(dateFormat.print(START_DATE));
+            requestUri += UrlEncoding.encode(dateFormat.print(START_DATE));
         } else if (doTwoYearUpdate) {
-            requestUri += "since?lastUpdate=" + UrlEncoding
+            requestUri += UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusYears(2)));
         } else if (doFourMonthUpdate) {
-            requestUri += "/since?lastUpdated=" + UrlEncoding
+            requestUri += UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusMonths(4)));
         } else {
-            requestUri += "/since?lastUpdated=" + UrlEncoding
+            requestUri += UrlEncoding
                     .encode(dateFormat.print(new DateTime(DateTimeZone.UTC).minusDays(3)));
         }
         

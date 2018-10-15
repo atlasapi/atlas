@@ -80,7 +80,7 @@ public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<I
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(1.9), //effectively ignores year at the moment
+                                new MinimumScoreFilter<>(2.9),
                                 new MediaTypeFilter<>(),
                                 new FilmAndEpisodeFilter<>(),
                                 new DummyContainerFilter<>(),

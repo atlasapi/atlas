@@ -22,6 +22,7 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
@@ -78,7 +79,12 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 .withScorers(
                         ImmutableSet.of(
                                 //The BarbAliasEquivalenceGeneratorAndScorer also adds a score
-                                new TitleMatchingItemScorer(Score.nullScore()),
+                                BarbTitleMatchingItemScorer.builder()
+                                        .withContentResolver(dependencies.getContentResolver())
+                                        .withScoreOnPerfectMatch(Score.valueOf(2.0))
+                                        .withScoreOnPartialMatch(Score.ONE)
+                                        .withScoreOnMismatch(Score.ZERO)
+                                        .build(),
                                 DescriptionMatchingScorer.makeScorer()
                         )
                 )
@@ -100,7 +106,7 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3)
+                        AllOverOrEqThresholdExtractor.create(4)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

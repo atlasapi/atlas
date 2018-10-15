@@ -79,7 +79,7 @@ public class WikipediaContainerUpdateProvider implements EquivalenceUpdaterProvi
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(2D)
+                        AllOverOrEqThresholdExtractor.create(3D)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

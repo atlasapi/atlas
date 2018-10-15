@@ -3,25 +3,35 @@ package org.atlasapi.equiv.scorers;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.base.Maybe;
 import org.apache.commons.lang3.StringUtils;
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
-import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.persistence.content.ContentResolver;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.api.client.repackaged.com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Caveat: Txlog names are scored against a suggestion's brand title as well so do not rely to heavily on this score for equiv
+ * This score should be used as a guideline to ensure two unrelated pieces of content don't equiv purely on a single other factor
+ * such as broadcast times for Txlogs
+ */
 public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     public static final String NAME = "Barb-Title";
@@ -31,9 +41,14 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(Unrated\\)", "\\(Rated\\)");
     private static final Pattern TRAILING_APOSTROPHE_PATTERN = Pattern.compile("\\w' ");
     private static final Score DEFAULT_SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
-    private static final Score DEFAULT_SCORE_ON_MISMATCH = Score.nullScore();
+    private static final Score DEFAULT_SCORE_ON_PARTIAL_MATCH = Score.ONE;
+    private static final Score DEFAULT_SCORE_ON_MISMATCH = Score.ZERO;
     private static final int TXLOG_TITLE_LENGTH = 40;
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
+    private final Score scoreOnPerfectMatch;
+    private final Score scoreOnPartialMatch;
+    private final Score scoreOnMismatch;
+    @Nullable private final ContentResolver contentResolver;
 
     public enum TitleType {
 
@@ -67,16 +82,15 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     }
 
-    private final Score scoreOnPerfectMatch;
-    private final Score scoreOnMismatch;
-
-    public BarbTitleMatchingItemScorer() {
-        this(DEFAULT_SCORE_ON_PERFECT_MATCH, DEFAULT_SCORE_ON_MISMATCH);
+    private BarbTitleMatchingItemScorer(Builder builder) {
+        scoreOnPerfectMatch = checkNotNull(builder.scoreOnPerfectMatch);
+        scoreOnPartialMatch = checkNotNull(builder.scoreOnPartialMatch);
+        scoreOnMismatch = checkNotNull(builder.scoreOnMismatch);
+        contentResolver = builder.contentResolver;
     }
 
-    public BarbTitleMatchingItemScorer(Score scoreOnPerfectMatch, Score scoreOnMismatch) {
-        this.scoreOnPerfectMatch = checkNotNull(scoreOnPerfectMatch);
-        this.scoreOnMismatch = checkNotNull(scoreOnMismatch);
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -89,7 +103,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Barb Title Matching Item Scorer");
 
-        Builder<Item> equivalents = DefaultScoredCandidates.fromSource(NAME);
+        DefaultScoredCandidates.Builder<Item> equivalents = DefaultScoredCandidates.fromSource(NAME);
 
         if (Strings.isNullOrEmpty(subject.getTitle())) {
             desc.appendText("No Title on subject, all score null");
@@ -97,6 +111,20 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         for (Item suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
+            //txlog titles are often just the title of the brand so score against suggestion's brand title
+            Optional<Score> parentScore = getParentScore(subject, desc, suggestion);
+            if (parentScore.isPresent()
+                    && parentScore.get().isRealScore()
+                    && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())
+                ) {
+                desc.appendText(String.format(
+                        "Parent for %s scored %.2f which is greater than its own score of %.2f",
+                        suggestion.getCanonicalUri(),
+                        parentScore.get().asDouble(),
+                        equivScore.asDouble()
+                ));
+                equivScore = parentScore.get();
+            }
             equivalents.addEquivalent(suggestion, equivScore);
             if (suggestion.getId() != null) {
                 scorerComponent.addComponentResult(
@@ -111,7 +139,37 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return equivalents.build();
     }
 
-    private Score score(Item subject, Item suggestion, ResultDescription desc) {
+    private Optional<Score> getParentScore(Item subject, ResultDescription desc, Item suggestion) {
+        if(!subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
+                || contentResolver == null
+                || suggestion.getContainer() == null
+        ) {
+            return Optional.empty();
+        }
+
+        Maybe<Identified> resolved = contentResolver.findByCanonicalUris(
+                ImmutableSet.of(suggestion.getContainer().getUri())
+        ).getFirstValue();
+        if(resolved.hasValue()) {
+            Content parent = (Content) resolved.requireValue();
+            if(parent instanceof Series) { //this shouldn't be required but is being included as a sanity check
+                Series series = (Series) parent;
+                if(series.getParent() != null) {
+                    resolved = contentResolver.findByCanonicalUris(
+                            ImmutableSet.of(suggestion.getContainer().getUri()))
+                    .getFirstValue();
+                    if(resolved.hasValue()) {
+                        parent = (Content) resolved.requireValue();
+                    }
+                }
+            }
+            Score parentScore = score(subject, parent, desc);
+            return Optional.of(parentScore);
+        }
+        return Optional.empty();
+    }
+
+    private Score score(Item subject, Content suggestion, ResultDescription desc) {
         Score score = Score.nullScore();
         if (!Strings.isNullOrEmpty(suggestion.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
@@ -125,9 +183,10 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    private Score score(Item subject, Item suggestion) {
+    private Score score(Item subject, Content suggestion) {
         String subjectTitle = subject.getTitle();
-        if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS) && subjectTitle.length() > TXLOG_TITLE_LENGTH) {
+        if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
+                && subjectTitle.length() > TXLOG_TITLE_LENGTH) {
             subjectTitle = subjectTitle.substring(0, TXLOG_TITLE_LENGTH);
         }
 
@@ -206,15 +265,15 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
             subjTitle = subjTitle.substring(0, subjTitle.indexOf(":"));
             suggTitle = suggTitle.substring(0, suggTitle.indexOf(":"));
-            return subjTitle.equals(suggTitle) ? Score.ONE : scoreOnMismatch;
+            return subjTitle.equals(suggTitle) ? scoreOnPartialMatch : scoreOnMismatch;
         } else if (subjTitle.contains(":") && subjTitle.length() > suggTitle.length()) {
 
             String subjSubstring = subjTitle.substring(0, subjTitle.indexOf(":"));
-            return subjSubstring.equals(suggTitle) ? Score.ONE : scoreOnMismatch;
+            return subjSubstring.equals(suggTitle) ? scoreOnPartialMatch : scoreOnMismatch;
         } else if (suggTitle.contains(":")) {
 
             String suggSubstring = suggTitle.substring(0, suggestionTitle.indexOf(":"));
-            return suggSubstring.equals(subjTitle) ? Score.ONE : scoreOnMismatch;
+            return suggSubstring.equals(subjTitle) ? scoreOnPartialMatch : scoreOnMismatch;
         }
 
         return scoreOnMismatch;
@@ -300,5 +359,39 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     @Override
     public String toString() {
         return "Barb Title-matching Item Scorer";
+    }
+
+    public static final class Builder {
+        private Score scoreOnPerfectMatch = DEFAULT_SCORE_ON_PERFECT_MATCH;
+        private Score scoreOnPartialMatch = DEFAULT_SCORE_ON_PARTIAL_MATCH;
+        private Score scoreOnMismatch = DEFAULT_SCORE_ON_MISMATCH;
+        private ContentResolver contentResolver;
+
+        private Builder() {
+        }
+
+        public Builder withScoreOnPerfectMatch(Score scoreOnPerfectMatch) {
+            this.scoreOnPerfectMatch = scoreOnPerfectMatch;
+            return this;
+        }
+
+        public Builder withScoreOnPartialMatch(Score scoreOnPartialMatch) {
+            this.scoreOnPartialMatch = scoreOnPartialMatch;
+            return this;
+        }
+
+        public Builder withScoreOnMismatch(Score scoreOnMismatch) {
+            this.scoreOnMismatch = scoreOnMismatch;
+            return this;
+        }
+
+        public Builder withContentResolver(ContentResolver contentResolver) {
+            this.contentResolver = contentResolver;
+            return this;
+        }
+
+        public BarbTitleMatchingItemScorer build() {
+            return new BarbTitleMatchingItemScorer(this);
+        }
     }
 }

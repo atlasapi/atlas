@@ -71,7 +71,10 @@ public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<I
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new BarbTitleMatchingItemScorer(Score.valueOf(2.0), Score.nullScore()),
+                                BarbTitleMatchingItemScorer.builder()
+                                        .withScoreOnPerfectMatch(Score.valueOf(2.0))
+                                        .withScoreOnMismatch(Score.ZERO)
+                                        .build(),
                                 new ItemYearScorer(Score.ONE)
                         )
                 )
@@ -92,7 +95,7 @@ public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<I
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(2D)
+                        AllOverOrEqThresholdExtractor.create(3D)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

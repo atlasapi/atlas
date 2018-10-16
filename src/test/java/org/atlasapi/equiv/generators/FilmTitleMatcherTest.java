@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.is;
 
+import org.atlasapi.media.entity.Film;
 import org.junit.Test;
 
 import junit.framework.TestCase;
@@ -15,6 +16,13 @@ public class FilmTitleMatcherTest extends TestCase {
     @Test
     public void testPerfectMatch() {
         assertThat(matcher.match("equal", "equal"), is(1.0));
+    }
+
+    @Test
+    public void testPerfectMatchForeign() {
+        Film f = new Film();
+        f.setTitle("トスカーナのブドウ園を歩い");
+        assertThat(matcher.titleMatch(f, f), is(1.0));
     }
 
     @Test

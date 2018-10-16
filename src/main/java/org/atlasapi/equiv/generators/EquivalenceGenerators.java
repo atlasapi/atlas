@@ -62,6 +62,7 @@ public class EquivalenceGenerators<T extends Content> {
         }
 
         if (!content.isActivelyPublished()) {
+            desc.appendText("Content is not actively published");
             return generatedScores.build();
         }
 

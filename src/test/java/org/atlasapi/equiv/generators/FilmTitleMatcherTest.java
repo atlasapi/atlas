@@ -19,13 +19,6 @@ public class FilmTitleMatcherTest extends TestCase {
     }
 
     @Test
-    public void testPerfectMatchForeign() {
-        Film f = new Film();
-        f.setTitle("トスカーナのブドウ園を歩い");
-        assertThat(matcher.titleMatch(f, f), is(1.0));
-    }
-
-    @Test
     public void testDifferentMatch() {
         assertThat(matcher.match("equal", "different"), is(0.0));
     }

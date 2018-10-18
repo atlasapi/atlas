@@ -3,6 +3,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.equiv.generators.AliasEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
 import org.atlasapi.equiv.generators.RadioTimesFilmEquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
@@ -22,12 +23,15 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.RtAliasScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 import java.util.Set;
 
@@ -53,6 +57,7 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                                 new RadioTimesFilmEquivalenceGenerator(
                                         dependencies.getContentResolver()
                                 ),
+                                //This should score less in here because it uses AliasURLs
                                 new FilmEquivalenceGenerator(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,
@@ -60,11 +65,19 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                                                 ImmutableList.copyOf(targetPublishers)
                                         ),
                                         false
+                                ),
+                                new AliasEquivalenceGenerator<>(
+                                        (MongoLookupEntryStore) dependencies.getLookupEntryStore(),
+                                        dependencies.getContentResolver(),
+                                        Item.class,
+                                        "rt:filmid"
                                 )
                         )
                 )
                 .withScorers(
-                        ImmutableSet.of()
+                        ImmutableSet.of(
+                                new RtAliasScorer(Score.nullScore())
+                        )
                 )
                 .withCombiner(
                         new NullScoreAwareAveragingCombiner<>()

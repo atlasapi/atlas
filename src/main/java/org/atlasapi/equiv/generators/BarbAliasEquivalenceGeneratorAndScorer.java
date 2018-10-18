@@ -70,6 +70,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
             MongoLookupEntryStore lookupEntryStore,
             ContentResolver resolver
     ) {
+        //Since BCIDs might be the only thing we can rely on for equiv we have to score it high enough to equiv outright currently
         return new BarbAliasEquivalenceGeneratorAndScorer<>(lookupEntryStore, resolver, 10.0);
     }
 
@@ -89,6 +90,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         return equivalents.build();
     }
 
+    //Only equiving on BCID aliases due to txnumber and transmission aliases both leading to bad candidates
     private DefaultScoredCandidates.Builder<T> findByCommonAlias(
             T subject,
             DefaultScoredCandidates.Builder<T> equivalents,
@@ -109,7 +111,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         Set<Alias> expandedAliases = getExpandedAliases(subject.getAliases());
 
         Set<LookupEntry> potentialCandidatesSet = expandedAliases.parallelStream()
-                .filter(alias -> !alias.getNamespace().endsWith(TXNUMBER_NAMESPACE_SUFFIX))
+                .filter(alias -> alias.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX))
                 .map(this::getLookupEntries) //from atlas
                 .filter(Objects::nonNull)
                 .flatMap(MoreStreams::stream)
@@ -118,7 +120,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         //whoever wrote this had trust issues and is rechecking that what he got back is actually
         //matching content. We assume he had good reason, but might as well be pointless.
         Set<LookupEntry> candidatesSet = expandedAliases.parallelStream()
-                .filter(alias -> !alias.getNamespace().endsWith(TXNUMBER_NAMESPACE_SUFFIX)) //don't equiv on txnumber
+                .filter(alias -> alias.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX))
                 //for each alias of the subject, look in the potentialCandidatesSet and get those that match
                 .map(alias -> getAllThatMatch(alias, potentialCandidatesSet, subject))
                 .filter(collection -> collection.size() <= MAXIMUM_ALIAS_MATCHES) //avoids equiving on aliases which are too common
@@ -150,7 +152,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
 
     private ImmutableSet<LookupEntry> getAllThatMatch(Alias alias, Set<LookupEntry> entriesSet, T subject) {
         return entriesSet.stream()
-                .filter(entry -> !isItself(subject, entry) && entryContainsAlias(entry, alias))
+                .filter(entry -> !isItself(subject, entry) && entry.aliases().contains(alias))
                 .collect(MoreCollectors.toImmutableSet());
     }
 
@@ -198,14 +200,6 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         return lookupEntryStore.entriesForAliases(
                 Optional.of(alias.getNamespace()),
                 ImmutableSet.of(alias.getValue()));
-    }
-
-    private boolean entryContainsAlias(LookupEntry entry, Alias alias) {
-        if (entry.aliases().contains(alias)) {
-            return true;
-        }
-
-        return false;
     }
 
     private Alias aliasForNewNamespace(Alias alias, String oldPrefix, String newPrefix) {

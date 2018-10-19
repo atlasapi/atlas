@@ -38,7 +38,9 @@ public class RtSpecializationFilter<T extends Content> extends AbstractEquivalen
                 || Objects.equal(candSpec, subSpec)
                 // don't filter out cases where PA's spec is TV, and RT's spec is Film
                 || (Objects.equal(candSpec.toString(), RT_FILM_SPECIALIZATION)
-                    && Objects.equal(subSpec.toString(), PA_TV_SPECIALIZATION));
+                    && Objects.equal(subSpec.toString(), PA_TV_SPECIALIZATION))
+                || (Objects.equal(candSpec.toString(), PA_TV_SPECIALIZATION)
+                    && Objects.equal(subSpec.toString(), RT_FILM_SPECIALIZATION));
 
         if (!result) {
             desc.appendText("%s removed. %s != %s",

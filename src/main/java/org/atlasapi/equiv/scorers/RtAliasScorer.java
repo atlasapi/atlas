@@ -15,7 +15,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class RtAliasScorer implements EquivalenceScorer<Item> {
 
-    private static final String NAME = "Content-Alias-Scorer";
+    private static final String NAME = "Rt-Alias-Scorer";
     private static final String NAMESPACE_TO_MATCH = "rt:filmid";
 
     private final Score mismatchScore;
@@ -35,7 +35,7 @@ public class RtAliasScorer implements EquivalenceScorer<Item> {
                 DefaultScoredCandidates.fromSource(NAME);
 
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
-        scorerComponent.setComponentName("Content Alias Scorer");
+        scorerComponent.setComponentName("Rt Alias Scorer");
 
         candidates.forEach(candidate -> {
             Score score = score(subject, candidate);

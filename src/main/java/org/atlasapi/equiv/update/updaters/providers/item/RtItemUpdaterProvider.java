@@ -21,7 +21,7 @@ import org.atlasapi.equiv.results.filters.FilmYearFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.PublisherFilter;
-import org.atlasapi.equiv.results.filters.SpecializationFilter;
+import org.atlasapi.equiv.results.filters.RtSpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.RtAliasScorer;
@@ -88,7 +88,9 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                         ConjunctiveFilter.valueOf(ImmutableList.of(
                                 new MinimumScoreFilter<>(0.25),
                                 new MediaTypeFilter<>(),
-                                new SpecializationFilter<>(),
+                                //Some things are TV in PA's data but Films in RT, so need
+                                //specific specialization filter that does not filter those out
+                                new RtSpecializationFilter<>(),
                                 new PublisherFilter<>(),
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),

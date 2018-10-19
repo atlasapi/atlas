@@ -2,6 +2,8 @@ package org.atlasapi.equiv.generators;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
@@ -42,7 +44,7 @@ public class AliasEquivalenceGenerator<T extends Content> implements Equivalence
             MongoLookupEntryStore lookupEntryStore,
             ContentResolver resolver,
             Class<T> cls,
-            String namespaceToMatch
+            @Nullable String namespaceToMatch
     ) {
         this.lookupEntryStore = lookupEntryStore;
         this.resolver = resolver;
@@ -69,7 +71,7 @@ public class AliasEquivalenceGenerator<T extends Content> implements Equivalence
         desc.finishStage();
 
         Set<T> resolvedContentForAliases = content.getAliases().parallelStream()
-                .filter(alias -> namespaceToMatch != null && alias.getNamespace().equals(namespaceToMatch))
+                .filter(alias -> namespaceToMatch == null || alias.getNamespace().equals(namespaceToMatch))
                 .map(this::getLookupEntries)
                 .flatMap(MoreStreams::stream)
                 .map(this::getResolvedContent)

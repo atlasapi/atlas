@@ -37,6 +37,8 @@ import java.util.Set;
 
 public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
+    private static final String NAMESPACE_TO_MATCH = "rt:filmid";
+
     private RtItemUpdaterProvider() {
     }
 
@@ -70,7 +72,7 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                                         (MongoLookupEntryStore) dependencies.getLookupEntryStore(),
                                         dependencies.getContentResolver(),
                                         Item.class,
-                                        "rt:filmid"
+                                        NAMESPACE_TO_MATCH
                                 )
                         )
                 )

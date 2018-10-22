@@ -37,7 +37,7 @@ import java.util.Set;
 
 public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
-    private static final String NAMESPACE_TO_MATCH = "rt:filmid";
+    private static final String NAMESPACE_TO_MATCH = "gb:pa:prog_id";
 
     private RtItemUpdaterProvider() {
     }

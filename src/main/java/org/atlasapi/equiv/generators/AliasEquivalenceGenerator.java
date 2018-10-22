@@ -82,12 +82,12 @@ public class AliasEquivalenceGenerator<T extends Content> implements Equivalence
                 .map(cls::cast)
                 .collect(MoreCollectors.toImmutableSet());
 
-        //check that each potential candidate is published, and that
-        //this doesn't generate self as a potential candidate
         for (T identified : resolvedContentForAliases) {
-            if (identified.isActivelyPublished()
-                    && content.isEquivalentTo(identified)
-            ) {
+            //if the candidate film is the subject itself, ignore
+            if (java.util.Objects.equals(content.getId(), identified.getId())) {
+                continue;
+            }
+            if (identified.isActivelyPublished()) {
                 candidates.addEquivalent(identified, Score.nullScore());
                 desc.appendText("Resolved %s", identified.getCanonicalUri());
             }

@@ -71,6 +71,7 @@ public class AliasEquivalenceGenerator<T extends Content> implements Equivalence
         desc.finishStage();
 
         Set<T> resolvedContentForAliases = content.getAliases().parallelStream()
+                //if a namespace is given, then we filter out the aliases that do not have that namespace
                 .filter(alias -> namespaceToMatch == null || alias.getNamespace().equals(namespaceToMatch))
                 .map(this::getLookupEntries)
                 .flatMap(MoreStreams::stream)
@@ -81,8 +82,12 @@ public class AliasEquivalenceGenerator<T extends Content> implements Equivalence
                 .map(cls::cast)
                 .collect(MoreCollectors.toImmutableSet());
 
+        //check that each potential candidate is published, and that
+        //this doesn't generate self as a potential candidate
         for (T identified : resolvedContentForAliases) {
-            if (identified.isActivelyPublished()) {
+            if (identified.isActivelyPublished()
+                    && content.isEquivalentTo(identified)
+            ) {
                 candidates.addEquivalent(identified, Score.nullScore());
                 desc.appendText("Resolved %s", identified.getCanonicalUri());
             }
@@ -107,6 +112,6 @@ public class AliasEquivalenceGenerator<T extends Content> implements Equivalence
 
     @Override
     public String toString() {
-        return "Alias Resolving Generator";
+        return "Alias Generator";
     }
 }

@@ -59,7 +59,7 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                                 new RadioTimesFilmEquivalenceGenerator(
                                         dependencies.getContentResolver()
                                 ),
-                                //This should score less in here because it uses AliasURLs
+                                //Here, this should score less than it does because it uses AliasURLs
                                 new FilmEquivalenceGenerator(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,

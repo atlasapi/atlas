@@ -14,8 +14,8 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
+import org.atlasapi.equiv.results.extractors.ContinueUntilOneWorksExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
-import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -79,7 +79,7 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new RtAliasScorer(Score.nullScore())
+                                new RtAliasScorer(Score.nullScore(), Score.valueOf(10D))
                         )
                 )
                 .withCombiner(
@@ -105,9 +105,10 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                 .withExtractor(
                         // Get all items that scored at least perfect for
                         // RtAlias. Then let it equiv to other stuff as well.
-                        RemoveAndCombineExtractor.create(
-                                AllOverOrEqThresholdExtractor.create(3),
+                        ContinueUntilOneWorksExtractor.create(ImmutableList.of(
+                                AllOverOrEqThresholdExtractor.create(4),
                                 PercentThresholdEquivalenceExtractor.moreThanPercent(90)
+                                )
                         )
                 )
                 .withHandler(

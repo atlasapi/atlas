@@ -62,7 +62,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         //to remove them, whereas the Publisher filter used elsewhere does that).
                         ImmutableSet.of(
                                 new ExactTitleGenerator<>(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getMongoContentResolver(),
                                         Item.class,
                                         true,
                                         AMAZON_UNBOX

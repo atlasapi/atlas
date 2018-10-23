@@ -56,7 +56,7 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                 .withGenerators(
                         ImmutableSet.of(
                                 new ExactTitleGenerator<>(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getMongoContentResolver(),
                                         Container.class,
                                         true,
                                         AMAZON_UNBOX

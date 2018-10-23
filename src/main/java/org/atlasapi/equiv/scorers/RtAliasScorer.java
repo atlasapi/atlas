@@ -17,6 +17,8 @@ public class RtAliasScorer implements EquivalenceScorer<Item> {
 
     private static final String NAME = "Rt-Alias-Scorer";
     private static final String NAMESPACE_TO_MATCH = "rt:filmid";
+    private static final Score SCORE_ON_PERFECT_MATCH = Score.valueOf(3D);
+    private static final String NEW_PA_URL_FORMAT = "http://pressassociation.com/episodes/";
 
     private final Score mismatchScore;
 
@@ -62,6 +64,10 @@ public class RtAliasScorer implements EquivalenceScorer<Item> {
 
         for (Alias alias : aliasesOfSubject) {
             if (isNamespaceTheDesiredOne(alias) && aliasesOfCandidate.contains(alias)) {
+                //score higher if candidate has new URL (to phase out old ones when both exist)
+                if (candidate.getCanonicalUri().contains(NEW_PA_URL_FORMAT)){
+                    return SCORE_ON_PERFECT_MATCH;
+                }
                 return Score.ONE;
             }
         }

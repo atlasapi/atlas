@@ -17,8 +17,11 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.SearchResolver;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.mongo.MongoContentResolver;
 import org.atlasapi.search.model.SearchQuery;
 
 import java.util.Objects;
@@ -36,7 +39,7 @@ public class ExactTitleGenerator<T extends Content> implements EquivalenceGenera
     private static final String NAME = "Exact Title";
 
     private final Set<Publisher> publisher;
-    private final SearchResolver searchResolver;
+    private final MongoContentResolver contentResolver;
     private final Class<? extends T> cls;
 
     //filter search results to same specialization as the given content
@@ -48,12 +51,12 @@ public class ExactTitleGenerator<T extends Content> implements EquivalenceGenera
      * initial easy cases.
      */
     public ExactTitleGenerator(
-            SearchResolver searchResolver,
+            MongoContentResolver contentResolver,
             Class<? extends T> cls,
             boolean useContentSpecialization,
             Publisher... publisher
     ) {
-        this.searchResolver = searchResolver;
+        this.contentResolver = contentResolver;
         this.cls = cls;
         this.useContentSpecialization = useContentSpecialization;
         this.publisher = ImmutableSet.copyOf(publisher);
@@ -84,6 +87,8 @@ public class ExactTitleGenerator<T extends Content> implements EquivalenceGenera
             return DefaultScoredCandidates.<T>fromSource(NAME).build();
         }
 
+        equivToTelescopeResults.addGeneratorResult(generatorComponent);
+
         return searchForCandidates(content, desc);
     }
 
@@ -112,7 +117,7 @@ public class ExactTitleGenerator<T extends Content> implements EquivalenceGenera
                 publisher
         );
 
-        Iterable<? extends T> results = searchResolver.search(titleQuery.build(), application)
+        Iterable<? extends T> results = contentResolver.getExactTitleMatches(content).getAllResolvedResults()
                 .stream()
                 .filter(cls::isInstance)
                 .map(cls::cast)

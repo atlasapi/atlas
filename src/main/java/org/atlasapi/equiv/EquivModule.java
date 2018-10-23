@@ -17,7 +17,9 @@ package org.atlasapi.equiv;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.queue.MessageSender;
+import com.mongodb.Mongo;
 import org.atlasapi.equiv.results.persistence.FileEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -36,6 +38,7 @@ import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
+import org.atlasapi.persistence.content.mongo.MongoContentResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,16 +67,19 @@ public class EquivModule {
     @Autowired private EquivalenceSummaryStore equivSummaryStore;
     @Autowired private LookupWriter lookupWriter;
     @Autowired private LookupEntryStore lookupEntryStore;
+    @Autowired private MongoContentResolver mongoContentResolver;
 
     @Autowired private KafkaMessagingModule messaging;
 
     @Bean
     public EquivalenceUpdater<Content> contentUpdater() {
+
         EquivalenceUpdaterProviderDependencies dependencies = EquivalenceUpdaterProviderDependencies
                 .builder()
                 .withScheduleResolver(scheduleResolver)
                 .withSearchResolver(searchResolver)
                 .withContentResolver(contentResolver)
+                .withMongoContentResolver(mongoContentResolver)
                 .withChannelResolver(channelResolver)
                 .withEquivSummaryStore(equivSummaryStore)
                 .withLookupWriter(lookupWriter)

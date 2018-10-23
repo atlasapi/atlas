@@ -7,6 +7,7 @@ import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
+import org.atlasapi.persistence.content.mongo.MongoContentResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
@@ -21,6 +22,7 @@ public class EquivalenceUpdaterProviderDependencies {
     private final ScheduleResolver scheduleResolver;
     private final SearchResolver searchResolver;
     private final ContentResolver contentResolver;
+    private final MongoContentResolver mongoContentResolver;
     private final ChannelResolver channelResolver;
     private final EquivalenceSummaryStore equivSummaryStore;
     private final LookupWriter lookupWriter;
@@ -34,6 +36,7 @@ public class EquivalenceUpdaterProviderDependencies {
             ScheduleResolver scheduleResolver,
             SearchResolver searchResolver,
             ContentResolver contentResolver,
+            MongoContentResolver mongoContentResolver,
             ChannelResolver channelResolver,
             EquivalenceSummaryStore equivSummaryStore,
             LookupWriter lookupWriter,
@@ -46,6 +49,7 @@ public class EquivalenceUpdaterProviderDependencies {
         this.scheduleResolver = checkNotNull(scheduleResolver);
         this.searchResolver = checkNotNull(searchResolver);
         this.contentResolver = checkNotNull(contentResolver);
+        this.mongoContentResolver = checkNotNull(mongoContentResolver);
         this.channelResolver = checkNotNull(channelResolver);
         this.equivSummaryStore = checkNotNull(equivSummaryStore);
         this.lookupWriter = checkNotNull(lookupWriter);
@@ -70,6 +74,10 @@ public class EquivalenceUpdaterProviderDependencies {
 
     public ContentResolver getContentResolver() {
         return contentResolver;
+    }
+
+    public MongoContentResolver getMongoContentResolver() {
+        return mongoContentResolver;
     }
 
     public ChannelResolver getChannelResolver() {
@@ -116,7 +124,12 @@ public class EquivalenceUpdaterProviderDependencies {
 
     public interface ContentResolverStep {
 
-        ChannelResolverStep withContentResolver(ContentResolver contentResolver);
+        MongoContentResolverStep withContentResolver(ContentResolver contentResolver);
+    }
+
+    public interface MongoContentResolverStep {
+
+        ChannelResolverStep withMongoContentResolver(MongoContentResolver contentResolver);
     }
 
     public interface ChannelResolverStep {
@@ -167,7 +180,7 @@ public class EquivalenceUpdaterProviderDependencies {
     }
 
     public static class Builder
-            implements ScheduleResolverStep, SearchResolverStep, ContentResolverStep,
+            implements ScheduleResolverStep, SearchResolverStep, ContentResolverStep, MongoContentResolverStep,
             ChannelResolverStep, EquivSummaryStoreStep, LookupWriterStep, LookupEntryStoreStep,
             EquivalenceResultStoreStep, MessageSenderStep, ExcludedUrisStep, ExcludedIdsStep,
             BuildStep {
@@ -175,6 +188,7 @@ public class EquivalenceUpdaterProviderDependencies {
         private ScheduleResolver scheduleResolver;
         private SearchResolver searchResolver;
         private ContentResolver contentResolver;
+        private MongoContentResolver mongoContentResolver;
         private ChannelResolver channelResolver;
         private EquivalenceSummaryStore equivSummaryStore;
         private LookupWriter lookupWriter;
@@ -200,8 +214,14 @@ public class EquivalenceUpdaterProviderDependencies {
         }
 
         @Override
-        public ChannelResolverStep withContentResolver(ContentResolver contentResolver) {
+        public MongoContentResolverStep withContentResolver(ContentResolver contentResolver) {
             this.contentResolver = contentResolver;
+            return this;
+        }
+
+        @Override
+        public ChannelResolverStep withMongoContentResolver(MongoContentResolver mongoContentResolver) {
+            this.mongoContentResolver = mongoContentResolver;
             return this;
         }
 
@@ -261,6 +281,7 @@ public class EquivalenceUpdaterProviderDependencies {
                     this.scheduleResolver,
                     this.searchResolver,
                     this.contentResolver,
+                    this.mongoContentResolver,
                     this.channelResolver,
                     this.equivSummaryStore,
                     this.lookupWriter,

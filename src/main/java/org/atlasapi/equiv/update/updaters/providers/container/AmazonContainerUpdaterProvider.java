@@ -30,6 +30,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.mongo.MongoContentResolver;
 
 import java.util.Set;
 
@@ -63,7 +64,7 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                                         true
                                 ),
                                 new ExactTitleGenerator<>(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getMongoContentResolver(),
                                         Container.class,
                                         true,
                                         Publisher.AMAZON_UNBOX

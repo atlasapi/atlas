@@ -103,8 +103,8 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                         ))
                 )
                 .withExtractor(
-                        // Get all amazon items with the same score that scored at least
-                        // perfect for title. Then let it equate with other stuff as well.
+                        // Get all items with the same score that scored at least
+                        // perfect for RtAlias. Then let it equiv to other stuff as well.
                         RemoveAndCombineExtractor.create(
                                 AllOverOrEqThresholdExtractor.create(3.00),
                                 PercentThresholdEquivalenceExtractor.moreThanPercent(90)

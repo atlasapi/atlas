@@ -13,7 +13,9 @@ import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
+import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -59,7 +61,6 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                                 new RadioTimesFilmEquivalenceGenerator(
                                         dependencies.getContentResolver()
                                 ),
-                                //TODO: here, this should score less than it does because it uses AliasURLs
                                 new FilmEquivalenceGenerator(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,
@@ -102,7 +103,12 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                         ))
                 )
                 .withExtractor(
-                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
+                        // Get all amazon items with the same score that scored at least
+                        // perfect for title. Then let it equate with other stuff as well.
+                        RemoveAndCombineExtractor.create(
+                                AllOverOrEqThresholdExtractor.create(3.00),
+                                PercentThresholdEquivalenceExtractor.moreThanPercent(90)
+                        )
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

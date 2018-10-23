@@ -63,12 +63,11 @@ public class RtAliasScorer implements EquivalenceScorer<Item> {
         Set<Alias> aliasesOfSubject = subject.getAliases();
 
         for (Alias alias : aliasesOfSubject) {
-            if (isNamespaceTheDesiredOne(alias) && aliasesOfCandidate.contains(alias)) {
-                //score higher if candidate has new URL (to phase out old ones when both exist)
-                if (candidate.getCanonicalUri().contains(NEW_PA_URL_FORMAT)){
-                    return SCORE_ON_PERFECT_MATCH;
-                }
-                return Score.ONE;
+            if (isNamespaceTheDesiredOne(alias)
+                    && aliasesOfCandidate.contains(alias)
+                    //score higher if candidate has new URL (to phase out old ones when both exist)
+                    && candidate.getCanonicalUri().contains(NEW_PA_URL_FORMAT)) {
+                return SCORE_ON_PERFECT_MATCH;
             }
         }
 

@@ -106,7 +106,7 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                         // Get all items that scored at least perfect for
                         // RtAlias. Then let it equiv to other stuff as well.
                         RemoveAndCombineExtractor.create(
-                                AllOverOrEqThresholdExtractor.create(3.00),
+                                AllOverOrEqThresholdExtractor.create(3),
                                 PercentThresholdEquivalenceExtractor.moreThanPercent(90)
                         )
                 )

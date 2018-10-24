@@ -42,6 +42,7 @@ public class RtAliasScorer implements EquivalenceScorer<Item> {
 
         candidates.forEach(candidate -> {
             Score score = score(subject, candidate);
+            desc.appendText("%s (%s) scored: %s", candidate.getTitle(), candidate.getCanonicalUri(), score);
             equivalents.addEquivalent(candidate, score);
 
             if (candidate.getId() != null) {

@@ -69,7 +69,9 @@ public class RtAliasScorer implements EquivalenceScorer<Item> {
                     //score high if candidate has new URL (to phase out old ones when both exist)
                     && candidate.getCanonicalUri().contains(NEW_PA_URL_FORMAT)) {
                 desc.appendText(
-                        "%s (%s) scored: %s on alias with namespace %s and value %s",
+                        "%s (%s) scored %s on alias with namespace %s and value %s",
+                        candidate.getTitle(),
+                        candidate.getCanonicalUri(),
                         perfectMatchScore,
                         alias.getNamespace(),
                         alias.getValue()

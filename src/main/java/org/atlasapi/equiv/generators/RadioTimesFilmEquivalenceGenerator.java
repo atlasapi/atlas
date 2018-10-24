@@ -69,6 +69,9 @@ public class RadioTimesFilmEquivalenceGenerator implements EquivalenceGenerator<
                 results.addEquivalent((Film)resolvedContent.requireValue(), Score.ONE);
 
                 if (((Film) resolvedContent.requireValue()).getId() != null) {
+                    desc.appendText("%s (%s) scored +1.0",
+                            resolvedContent.requireValue().getCanonicalUri(),
+                            ((Film) resolvedContent.requireValue()).getTitle());
                     generatorComponent.addComponentResult(
                             resolvedContent.requireValue().getId(),
                             "1.0"

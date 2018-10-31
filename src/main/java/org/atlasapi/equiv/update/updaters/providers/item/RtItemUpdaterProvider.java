@@ -103,8 +103,8 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                         ))
                 )
                 .withExtractor(
-                        // Get all items that scored at least perfect for
-                        // RtAlias. Then let it equiv to other stuff as well.
+                        // Equiv to items that scored for RtAlias.
+                        // If none did, then it equiv to the stuff it used to.
                         ContinueUntilOneWorksExtractor.create(ImmutableList.of(
                                 AllOverOrEqThresholdExtractor.create(4),
                                 PercentThresholdEquivalenceExtractor.moreThanPercent(90)

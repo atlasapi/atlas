@@ -89,7 +89,7 @@ public class AliasEquivalenceGenerator<T extends Content> implements Equivalence
             }
             if (identified.isActivelyPublished()) {
                 candidates.addEquivalent(identified, Score.nullScore());
-                desc.appendText("Resolved %s", identified.getCanonicalUri());
+                desc.appendText("Found potential candidate in %s", identified.getCanonicalUri());
             }
         }
 

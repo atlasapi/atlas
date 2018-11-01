@@ -13,6 +13,12 @@ import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * This alias based scorer makes RT items equiv to PA items that are under the new URI format.
+ * See the documentation regarding the RT equiv rework that this is part of:
+ * https://docs.metabroadcast.com/display/mbst/(WIP)+RT+Equiv+Rework
+ */
+
 public class RtAliasScorer implements EquivalenceScorer<Item> {
 
     private static final String NAME = "Rt-Alias-Scorer";

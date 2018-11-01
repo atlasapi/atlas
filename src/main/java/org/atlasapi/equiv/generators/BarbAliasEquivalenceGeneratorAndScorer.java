@@ -1,9 +1,9 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.stream.MoreStreams;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
@@ -17,11 +17,9 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
-import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.stream.MoreStreams;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Query for each alias. For each alias get a list of candidates, and score them as well (?).
@@ -41,6 +39,13 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
 
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
     private static final String BCID_NAMESPACE_SUFFIX = "bcid";
+    private static final Set<String> T1_BCID_NAMESPACES = ImmutableSet.of(
+            "gb:bbc:nitro:prod:version:pid",
+            "gb:itv:production:id",
+            "gb:channel4:prod:pmlsd:programmeId",
+            "gb:c5:bcid",
+            "gb:uktv:bcid"
+    );
     private static final String BG_PREFIX = "gb:barb:broadcastGroup";
     private static final String OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup";
     private static final String ITV_BG_PREFIX = "gb:barb:broadcastGroup:2:bcid";
@@ -111,7 +116,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         Set<Alias> expandedAliases = getExpandedAliases(subject.getAliases());
 
         Set<LookupEntry> potentialCandidatesSet = expandedAliases.parallelStream()
-                .filter(alias -> alias.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX))
+                .filter(alias -> acceptedAlias(alias))
                 .map(this::getLookupEntries) //from atlas
                 .filter(Objects::nonNull)
                 .flatMap(MoreStreams::stream)
@@ -120,7 +125,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         //whoever wrote this had trust issues and is rechecking that what he got back is actually
         //matching content. We assume he had good reason, but might as well be pointless.
         Set<LookupEntry> candidatesSet = expandedAliases.parallelStream()
-                .filter(alias -> alias.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX))
+                .filter(alias -> acceptedAlias(alias))
                 //for each alias of the subject, look in the potentialCandidatesSet and get those that match
                 .map(alias -> getAllThatMatch(alias, potentialCandidatesSet, subject))
                 .filter(collection -> collection.size() <= MAXIMUM_ALIAS_MATCHES) //avoids equiving on aliases which are too common
@@ -148,6 +153,18 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         equivToTelescopeResults.addGeneratorResult(generatorComponent);
 
         return equivalents;
+    }
+
+    private boolean acceptedAlias(Alias alias) {
+        if(alias.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX)) {
+            return true;
+        }
+        for(String namespace : T1_BCID_NAMESPACES) {
+            if(alias.getNamespace().equalsIgnoreCase(namespace)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ImmutableSet<LookupEntry> getAllThatMatch(Alias alias, Set<LookupEntry> entriesSet, T subject) {

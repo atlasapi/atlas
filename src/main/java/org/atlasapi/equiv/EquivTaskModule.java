@@ -128,7 +128,7 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 public class EquivTaskModule {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static final int EQUIV_THREADS_PER_JOB = 1;
+    private static final int EQUIV_THREADS_PER_JOB = 5;
 
     private static final Set<String> ignored =
             ImmutableSet.of("http://www.bbc.co.uk/programmes/b006mgyl");

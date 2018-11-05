@@ -126,8 +126,9 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 @Configuration
 @Import({ EquivModule.class, KafkaMessagingModule.class, YouViewCoreModule.class })
 public class EquivTaskModule {
-
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    private static final int EQUIV_THREADS_PER_JOB = 1;
 
     private static final Set<String> ignored =
             ImmutableSet.of("http://www.bbc.co.uk/programmes/b006mgyl");
@@ -596,7 +597,7 @@ public class EquivTaskModule {
 
     private ExecutorService getNewDefaultExecutor(){
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                5, 5, //this is used by all equiv tasks, so increase with caution.
+                EQUIV_THREADS_PER_JOB, EQUIV_THREADS_PER_JOB, //this is used by all equiv tasks, so increase with caution.
                 60, TimeUnit.SECONDS,
                 new AlwaysBlockingQueue<>(SAVE_EVERY_BLOCK_SIZE)
         );

@@ -1,12 +1,7 @@
 package org.atlasapi.query;
 
-import com.google.common.base.Splitter;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.time.SystemClock;
+import javax.xml.bind.JAXBElement;
+
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.EquivalenceBreaker;
@@ -21,6 +16,7 @@ import org.atlasapi.feeds.youview.ContentHierarchyExpanderFactory;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
+import org.atlasapi.input.ChannelGroupTransformer;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.ImageModelTranslator;
@@ -134,6 +130,7 @@ import org.atlasapi.query.topic.PublisherFilteringTopicContentLister;
 import org.atlasapi.query.topic.PublisherFilteringTopicResolver;
 import org.atlasapi.query.v2.ChannelController;
 import org.atlasapi.query.v2.ChannelGroupController;
+import org.atlasapi.query.v2.ChannelGroupWriteExecutor;
 import org.atlasapi.query.v2.ChannelWriteExecutor;
 import org.atlasapi.query.v2.ContentFeedController;
 import org.atlasapi.query.v2.ContentGroupController;
@@ -151,6 +148,15 @@ import org.atlasapi.query.v2.TopicController;
 import org.atlasapi.query.v2.TopicWriteController;
 import org.atlasapi.query.worker.ContentWriteMessage;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
+
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.time.SystemClock;
+
+import com.google.common.base.Splitter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -158,8 +164,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import tva.metadata._2010.TVAMainType;
-
-import javax.xml.bind.JAXBElement;
 
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
@@ -340,15 +344,20 @@ public class QueryWebModule {
 
     @Bean
     ChannelGroupController channelGroupController() {
-        NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
-        return new ChannelGroupController(
-                applicationFetcher,
-                log,
-                channelGroupModelWriter(),
-                cachingChannelGroupResolver(),
-                channelResolver,
-                idCodec
-        );
+        return ChannelGroupController.builder()
+                .withApplicationFetcher(applicationFetcher)
+                .withLog(log)
+                .withAtlasModelWriter(channelGroupModelWriter())
+                .withModelReader(new DefaultJacksonModelReader())
+                .withChannelGroupResolver(cachingChannelGroupResolver())
+                .withChannelGroupTransformer(new ChannelGroupTransformer())
+                .withChannelGroupWriteExecutor(channelGroupWriteExecutor())
+                .withChannelResolver(channelResolver)
+                .build();
+    }
+
+    private ChannelGroupWriteExecutor channelGroupWriteExecutor() {
+        return ChannelGroupWriteExecutor.create(channelGroupStore);
     }
 
     @Bean
@@ -356,11 +365,11 @@ public class QueryWebModule {
         ChannelGroupModelSimplifier channelGroupModelSimplifier = ChannelGroupModelSimplifier();
         return this.standardWriter(
                 new SimpleChannelGroupModelWriter(
-                        new JsonTranslator<ChannelGroupQueryResult>(),
+                        new JsonTranslator<>(),
                         channelGroupModelSimplifier
                 ),
                 new SimpleChannelGroupModelWriter(
-                        new JaxbXmlTranslator<ChannelGroupQueryResult>(),
+                        new JaxbXmlTranslator<>(),
                         channelGroupModelSimplifier
                 )
         );

@@ -28,8 +28,6 @@ import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.Platform;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.simple.response.WriteResponse;
-import org.atlasapi.media.entity.simple.response.WriteResponseWithOldIds;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;

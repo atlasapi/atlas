@@ -69,8 +69,6 @@ public class ChannelGroupWriteExecutor {
                             request.getRequestURL(), e);
             return Optional.empty();
         }
-
-        return Optional.empty();
     }
 
     public Optional<AtlasErrorSummary> deletePlatform(

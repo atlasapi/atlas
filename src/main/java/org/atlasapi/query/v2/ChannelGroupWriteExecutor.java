@@ -42,28 +42,30 @@ public class ChannelGroupWriteExecutor {
             org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup
     ) {
         try {
-            //store the new group in the database
-            ChannelGroup channelGroup = store.createOrUpdate(complexChannelGroup);
-            //if this is a new channelGroup, create it's URI
-            if (complexChannelGroup.getId() == null && channelGroup != null) {
+
+            if (complexChannelGroup.getId() == null) {
+                //store the new group in the database
+                complexChannelGroup = store.createOrUpdate(complexChannelGroup);
+
                 // we create a URI that allows us to detect BT has created that group through us
                 //and because we use the new ID format for it (all lowercase), we need to create it
                 //after it was written to the database.
-            channelGroup.setCanonicalUri(String.format(
+                complexChannelGroup.setCanonicalUri(String.format(
                         "http://%s/metabroadcast/%s",
-                    channelGroup.getPublisher().key(),
-                    deerCodec.encode(BigInteger.valueOf(channelGroup.getId()))
+                        complexChannelGroup.getPublisher().key(),
+                    deerCodec.encode(BigInteger.valueOf(complexChannelGroup.getId()))
                 ));
             }
+
             // in either case update the channel list.
             // we set the channel group numberings after we create the channel group
             // because we need to refer the channel group ID in each numbering object
             updateChannelGroupNumberings(
-                    channelGroup,
+                    complexChannelGroup,
                     simpleChannelGroup
             );
 
-            return Optional.ofNullable(store.createOrUpdate(channelGroup));
+            return Optional.ofNullable(store.createOrUpdate(complexChannelGroup));
         } catch (Exception e) {
             log.error("Error while creating/updating platform for request {}",
                             request.getRequestURL(), e);

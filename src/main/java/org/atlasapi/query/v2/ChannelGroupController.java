@@ -27,6 +27,7 @@ import org.atlasapi.media.channel.ChannelGroupType;
 import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.Platform;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
@@ -43,6 +44,7 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.query.Selection.SelectionBuilder;
+import com.metabroadcast.common.social.exceptions.BadRequestException;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
@@ -105,6 +107,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     private static final String DTT_ONLY = "dtt_only";
     private static final String IP_ONLY = "ip_only";
     private static final String FUTURE_CHANNELS = "future_channels";
+    private static final String SOURCE = "source";
 
     private final ChannelGroupFilterer filterer = new ChannelGroupFilterer();
     private final NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
@@ -138,7 +141,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             @RequestParam(value = ADVERTISED, required = false) String advertised,
             @RequestParam(value = DTT_ONLY, defaultValue = "", required = false) String dttOnly,
             @RequestParam(value = IP_ONLY, defaultValue = "", required = false) String ipOnly,
-            @RequestParam(value = FUTURE_CHANNELS, defaultValue = "true", required = false) boolean futureChannels
+            @RequestParam(value = FUTURE_CHANNELS, defaultValue = "true", required = false) boolean futureChannels,
+            @RequestParam(value = SOURCE, required = false) String source
     ) throws IOException {
         try {
             final Application application;
@@ -171,6 +175,24 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                     .filter(input -> application.getConfiguration()
                             .isReadEnabled(input.getPublisher()))
                     .collect(Collectors.toList()));
+
+            if (!Strings.isNullOrEmpty(source)) {
+                if (!Publisher.fromKey(source).hasValue()) {
+                    errorViewFor(
+                            request,
+                            response,
+                            AtlasErrorSummary.forException(
+                                    new IllegalArgumentException(
+                                            String.format("No publisher found for key %s", source)
+                                    )
+                            )
+                    );
+                } else {
+                    channelGroups = channelGroups.stream()
+                            .filter(input -> input.getPublisher().key().equals(source))
+                            .collect(Collectors.toList());
+                }
+            }
 
             if (!Strings.isNullOrEmpty(advertised)) {
                 ImmutableList.Builder filtered = ImmutableList.builder();
@@ -384,20 +406,24 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             );
         }
 
-        java.util.Optional<AtlasErrorSummary> errorSummary = channelGroupWriteExecutor.createOrUpdateChannelGroup(
+        java.util.Optional<ChannelGroup> channelGroup = channelGroupWriteExecutor.createOrUpdateChannelGroup(
                 request,
-                response,
                 complexChannelGroup,
                 simpleChannelGroup
         );
 
-        if (errorSummary.isPresent()) {
-            return error(request, response, errorSummary.get());
+        if (!channelGroup.isPresent()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return error(
+                    request,
+                    response,
+                    AtlasErrorSummary.forException(new BadRequestException("Error while creating/updating platform"))
+            );
         }
 
         response.setStatus(HttpServletResponse.SC_OK);
 
-        return null;
+        return new WriteResponse(idCodec.encode(BigInteger.valueOf(channelGroup.get().getId())));
     }
 
     @RequestMapping(value = { "/3.0/channel_groups/{id}.*" }, method = RequestMethod.DELETE)

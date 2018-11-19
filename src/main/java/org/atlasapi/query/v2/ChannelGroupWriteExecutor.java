@@ -36,15 +36,14 @@ public class ChannelGroupWriteExecutor {
         return new ChannelGroupWriteExecutor(store);
     }
 
-    public Optional<AtlasErrorSummary> createOrUpdateChannelGroup(
+    public Optional<ChannelGroup> createOrUpdateChannelGroup(
             HttpServletRequest request,
-            HttpServletResponse response,
             ChannelGroup complexChannelGroup,
             org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup
     ) {
         try {
             if (complexChannelGroup.getId() != null) {
-                store.createOrUpdate(complexChannelGroup);
+                return Optional.ofNullable(store.createOrUpdate(complexChannelGroup));
             } else {
                 long channelGroupId = store.createOrUpdate(complexChannelGroup).getId();
                 com.google.common.base.Optional<ChannelGroup> channelGroupToUpdate = store.channelGroupFor(
@@ -65,11 +64,7 @@ public class ChannelGroupWriteExecutor {
                             newChannelGroup,
                             simpleChannelGroup
                     );
-                    store.createOrUpdate(newChannelGroup);
-                } else {
-                    log.error("Couldn't find a platform for requested ID {}", channelGroupId);
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    return Optional.of(AtlasErrorSummary.forException(new IllegalArgumentException()));
+                    return Optional.ofNullable(store.createOrUpdate(newChannelGroup));
                 }
             }
         } catch (Exception e) {
@@ -80,11 +75,8 @@ public class ChannelGroupWriteExecutor {
                     ),
                     e
             );
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return Optional.of(AtlasErrorSummary.forException(e));
+            return Optional.empty();
         }
-
-        response.setStatus(HttpServletResponse.SC_OK);
 
         return Optional.empty();
     }

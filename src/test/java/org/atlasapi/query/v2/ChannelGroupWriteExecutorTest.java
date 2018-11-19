@@ -9,7 +9,6 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.Channel;
 import org.atlasapi.media.entity.simple.ChannelGroup;
 import org.atlasapi.media.entity.simple.ChannelNumbering;
-import org.atlasapi.output.AtlasModelWriter;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -52,7 +51,7 @@ public class ChannelGroupWriteExecutorTest {
     public void testUpdateExistingChannelGroupLogic() {
         when(complexChannelGroup.getId()).thenReturn(17L);
 
-        executor.createOrUpdateChannelGroup(request, response, complexChannelGroup, simpleChannelGroup);
+        executor.createOrUpdateChannelGroup(request, complexChannelGroup, simpleChannelGroup);
 
         verify(store, times(1)).createOrUpdate(complexChannelGroup);
     }
@@ -72,7 +71,7 @@ public class ChannelGroupWriteExecutorTest {
 
         Assert.assertTrue(complexChannelGroup.getChannelNumberings().isEmpty());
 
-        executor.createOrUpdateChannelGroup(request, response, complexChannelGroup, simpleChannelGroup);
+        executor.createOrUpdateChannelGroup(request, complexChannelGroup, simpleChannelGroup);
 
         Assert.assertFalse(existingComplexChannelGroup.getChannelNumberings().isEmpty());
 

@@ -108,9 +108,20 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     private static final String IP_ONLY = "ip_only";
     private static final String FUTURE_CHANNELS = "future_channels";
     private static final String SOURCE = "source";
+    /**
+     * Should be OWL or DEER, but we only check if it is DEER, and if it is, we'll assume that the
+     * provided ids are deer ids, and covert them to owl ids before we store them. This is because
+     * the caller might only have access to deer IDs. Reminder that channels and channelgroups,
+     * still use the old id format where things could use capitals etc.
+     */
+    private static final String ID_FORMAT = "id_format";
+
+    private static final String DEER = "Deer";
+    private static final String OWL = "Owl";
 
     private final ChannelGroupFilterer filterer = new ChannelGroupFilterer();
-    private final NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
+    private final NumberToShortStringCodec oldFormatIdCodec = new SubstitutionTableNumberCodec();
+    private final NumberToShortStringCodec newFormatIdCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
     private final ChannelResolver channelResolver;
     private final ChannelGroupResolver channelGroupResolver;
     private final ChannelGroupWriteExecutor channelGroupWriteExecutor;
@@ -219,7 +230,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                 List<String> dttIds = Arrays.asList(dttOnly.split("\\s*,\\s*"));
                 ImmutableList.Builder filtered = ImmutableList.builder();
                 for (ChannelGroup channelGroup : channelGroups) {
-                    String channelGroupId = idCodec.encode(BigInteger.valueOf(channelGroup.getId()));
+                    String channelGroupId = oldFormatIdCodec.encode(BigInteger.valueOf(channelGroup.getId()));
                     if (dttIds.contains(channelGroupId)) {
                         filtered.add(filterByDtt(channelGroup));
                     } else {
@@ -233,7 +244,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                 List<String> ipIds = Arrays.asList(ipOnly.split("\\s*,\\s*"));
                 ImmutableList.Builder filtered = ImmutableList.builder();
                 for (ChannelGroup channelGroup : channelGroups) {
-                    String channelGroupId = idCodec.encode(BigInteger.valueOf(channelGroup.getId()));
+                    String channelGroupId = oldFormatIdCodec.encode(BigInteger.valueOf(channelGroup.getId()));
                     if (ipIds.contains(channelGroupId)) {
                         filtered.add(filterByIp(channelGroup));
                     } else {
@@ -268,7 +279,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             }
 
             Optional<ChannelGroup> possibleChannelGroup = channelGroupResolver.channelGroupFor(
-                    idCodec.decode(id).longValue()
+                    oldFormatIdCodec.decode(id).longValue()
             );
             if (!possibleChannelGroup.isPresent()) {
                 errorViewFor(request, response, NOT_FOUND);
@@ -328,23 +339,25 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.POST)
     public WriteResponse createChannelGroup(
             HttpServletRequest request,
-            HttpServletResponse response
+            HttpServletResponse response,
+            @RequestParam(value = ID_FORMAT, required = false, defaultValue = OWL) String idFormat
     ) {
-        return createOrUpdateChannelGroup(request, response);
+        return createOrUpdateChannelGroup(request, response, idFormat);
     }
 
     @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.PUT)
     public WriteResponse updateChannelGroup(
             HttpServletRequest request,
-            HttpServletResponse response
+            HttpServletResponse response,
+            @RequestParam(value = ID_FORMAT, required = false, defaultValue = OWL) String idFormat
     ) {
-        return createOrUpdateChannelGroup(request, response);
+        return createOrUpdateChannelGroup(request, response, idFormat);
     }
 
     private WriteResponse createOrUpdateChannelGroup(
             HttpServletRequest request,
-            HttpServletResponse response
-    ) {
+            HttpServletResponse response,
+            String idFormat) {
         java.util.Optional<Application> possibleApplication;
         try {
             possibleApplication = applicationFetcher.applicationFor(request);
@@ -365,6 +378,10 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
 
         try {
             simpleChannelGroup = deserialize(new InputStreamReader(request.getInputStream()));
+
+            if(idFormat.equals(DEER)) {
+                convertFromDeerToOwlIds(simpleChannelGroup);
+            }
 
             if (simpleChannelGroup.getChannels().isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -423,7 +440,16 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
 
         response.setStatus(HttpServletResponse.SC_OK);
 
-        return new WriteResponse(idCodec.encode(BigInteger.valueOf(channelGroup.get().getId())));
+        return new WriteResponse(oldFormatIdCodec.encode(BigInteger.valueOf(channelGroup.get().getId())));
+    }
+
+    private void convertFromDeerToOwlIds(
+            org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup) {
+        simpleChannelGroup.getChannels().forEach(channelNumbering -> {
+            String deerId = channelNumbering.getChannel().getId();
+            String owlId = oldFormatIdCodec.encode(newFormatIdCodec.decode(deerId));
+            channelNumbering.getChannel().setId(owlId);
+        });
     }
 
     @RequestMapping(value = { "/3.0/channel_groups/{id}.*" }, method = RequestMethod.DELETE)
@@ -455,7 +481,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             return error(request, response, AtlasErrorSummary.forException(new UnauthorizedException()));
         }
 
-        long channelGroupId = idCodec.decode(id).longValue();
+        long channelGroupId = oldFormatIdCodec.decode(id).longValue();
         com.google.common.base.Optional<ChannelGroup> possibleChannelGroup = channelGroupResolver.channelGroupFor(
                 channelGroupId
         );
@@ -596,7 +622,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         if (!Strings.isNullOrEmpty(platformId)) {
             // resolve platform if present
             Optional<ChannelGroup> possiblePlatform = channelGroupResolver.channelGroupFor(
-                    idCodec.decode(platformId).longValue()
+                    oldFormatIdCodec.decode(platformId).longValue()
             );
             if (!possiblePlatform.isPresent()) {
                 throw new IllegalArgumentException("could not resolve channel group with id " + platformId);

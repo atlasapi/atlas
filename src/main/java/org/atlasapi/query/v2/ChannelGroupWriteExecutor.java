@@ -42,39 +42,31 @@ public class ChannelGroupWriteExecutor {
             org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup
     ) {
         try {
-            if (complexChannelGroup.getId() != null) {
-                return Optional.ofNullable(store.createOrUpdate(complexChannelGroup));
-            } else {
-                long channelGroupId = store.createOrUpdate(complexChannelGroup).getId();
-                com.google.common.base.Optional<ChannelGroup> channelGroupToUpdate = store.channelGroupFor(
-                        channelGroupId
-                );
-                if (channelGroupToUpdate.isPresent()) {
-                    ChannelGroup newChannelGroup = channelGroupToUpdate.get();
-                    // we update the canonical URI of the new channel group in order to differentiate
-                    // it from the previously created ones
-                    newChannelGroup.setCanonicalUri(String.format(
-                            "http://%s/metabroadcast/%s",
-                            newChannelGroup.getPublisher().key(),
-                            deerCodec.encode(BigInteger.valueOf(newChannelGroup.getId()))
-                    ));
-                    // we set the channel group numberings after we create the channel group
-                    // because we need to refer the channel group ID in each numbering object
-                    updateChannelGroupNumberings(
-                            newChannelGroup,
-                            simpleChannelGroup
-                    );
-                    return Optional.ofNullable(store.createOrUpdate(newChannelGroup));
-                }
+            //store the new group in the database
+            ChannelGroup channelGroup = store.createOrUpdate(complexChannelGroup);
+            //if this is a new channelGroup, create it's URI
+            if (complexChannelGroup.getId() == null && channelGroup != null) {
+                // we create a URI that allows us to detect BT has created that group through us
+                //and because we use the new ID format for it (all lowercase), we need to create it
+                //after it was written to the database.
+            channelGroup.setCanonicalUri(String.format(
+                        "http://%s/metabroadcast/%s",
+                    channelGroup.getPublisher().key(),
+                    deerCodec.encode(BigInteger.valueOf(channelGroup.getId()))
+                ));
             }
-        } catch (Exception e) {
-            log.error(
-                    String.format(
-                            "Error while creating/updating platform for request %s",
-                            request.getRequestURL()
-                    ),
-                    e
+            // in either case update the channel list.
+            // we set the channel group numberings after we create the channel group
+            // because we need to refer the channel group ID in each numbering object
+            updateChannelGroupNumberings(
+                    channelGroup,
+                    simpleChannelGroup
             );
+
+            return Optional.ofNullable(store.createOrUpdate(channelGroup));
+        } catch (Exception e) {
+            log.error("Error while creating/updating platform for request {}",
+                            request.getRequestURL(), e);
             return Optional.empty();
         }
 

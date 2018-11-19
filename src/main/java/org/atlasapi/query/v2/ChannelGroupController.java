@@ -117,8 +117,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
      */
     private static final String ID_FORMAT = "id_format";
 
-    private static final String DEER = "deer";
-    private static final String OWL = "owl";
+    public static final String DEER = "deer";
+    public static final String OWL = "owl";
 
     private final ChannelGroupFilterer filterer = new ChannelGroupFilterer();
     private final NumberToShortStringCodec oldFormatIdCodec = new SubstitutionTableNumberCodec();

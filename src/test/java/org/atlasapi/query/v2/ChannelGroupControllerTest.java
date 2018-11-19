@@ -77,7 +77,7 @@ public class ChannelGroupControllerTest {
         when(application.getConfiguration()).thenReturn(configuration);
         when(configuration.isWriteEnabled(any())).thenReturn(false);
 
-        controller.deleteChannelGroup("bc", request, response);
+        controller.deleteChannelGroup("bc", request, response, ChannelGroupController.OWL);
 
         verify(executor, times(0)).deletePlatform(request, response, 1L);
     }
@@ -92,7 +92,7 @@ public class ChannelGroupControllerTest {
         when(executor.deletePlatform(request, response, 1L))
                 .thenReturn(Optional.empty());
 
-        controller.deleteChannelGroup("bc", request, response);
+        controller.deleteChannelGroup("bc", request, response, ChannelGroupController.OWL);
 
         verify(executor, times(1)).deletePlatform(request, response, 1L);
     }

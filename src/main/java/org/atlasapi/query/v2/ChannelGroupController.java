@@ -112,12 +112,13 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
      * Should be OWL or DEER, but we only check if it is DEER, and if it is, we'll assume that the
      * provided ids are deer ids, and covert them to owl ids before we store them. This is because
      * the caller might only have access to deer IDs. Reminder that channels and channelgroups,
-     * still use the old id format where things could use capitals etc.
+     * still use the old id format where things could use capitals etc. The parameter affects both
+     * the ChannelGroup and Channels inside it.
      */
     private static final String ID_FORMAT = "id_format";
 
-    private static final String DEER = "Deer";
-    private static final String OWL = "Owl";
+    private static final String DEER = "deer";
+    private static final String OWL = "owl";
 
     private final ChannelGroupFilterer filterer = new ChannelGroupFilterer();
     private final NumberToShortStringCodec oldFormatIdCodec = new SubstitutionTableNumberCodec();
@@ -379,7 +380,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         try {
             simpleChannelGroup = deserialize(new InputStreamReader(request.getInputStream()));
 
-            if(idFormat.equals(DEER)) {
+            if(idFormat.toLowerCase().equals(DEER)) {
                 convertFromDeerToOwlIds(simpleChannelGroup);
             }
 
@@ -450,13 +451,20 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             String owlId = oldFormatIdCodec.encode(newFormatIdCodec.decode(deerId));
             channelNumbering.getChannel().setId(owlId);
         });
+
+        if(!Strings.isNullOrEmpty(simpleChannelGroup.getId())){
+            String deerId = simpleChannelGroup.getId();
+            String owlId = oldFormatIdCodec.encode(newFormatIdCodec.decode(deerId));
+            simpleChannelGroup.setId(owlId);
+        }
     }
 
     @RequestMapping(value = { "/3.0/channel_groups/{id}.*" }, method = RequestMethod.DELETE)
     public WriteResponse deleteChannelGroup(
             @PathVariable("id") String id,
             HttpServletRequest request,
-            HttpServletResponse response
+            HttpServletResponse response,
+            @RequestParam(value = ID_FORMAT, required = false, defaultValue = OWL) String idFormat
     ) throws IOException {
 
         if (Strings.isNullOrEmpty(id)) {
@@ -481,7 +489,10 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             return error(request, response, AtlasErrorSummary.forException(new UnauthorizedException()));
         }
 
-        long channelGroupId = oldFormatIdCodec.decode(id).longValue();
+        long channelGroupId = idFormat.toLowerCase().equals(DEER)
+                ? newFormatIdCodec.decode(id).longValue()
+                : oldFormatIdCodec.decode(id).longValue();
+
         com.google.common.base.Optional<ChannelGroup> possibleChannelGroup = channelGroupResolver.channelGroupFor(
                 channelGroupId
         );

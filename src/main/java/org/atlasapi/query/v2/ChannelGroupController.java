@@ -29,6 +29,7 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.Platform;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
+import org.atlasapi.media.entity.simple.response.WriteResponseWithOldIds;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
@@ -338,7 +339,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     }
 
     @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.POST)
-    public WriteResponse createChannelGroup(
+    public WriteResponseWithOldIds createChannelGroup(
             HttpServletRequest request,
             HttpServletResponse response,
             @RequestParam(value = ID_FORMAT, required = false, defaultValue = OWL) String idFormat
@@ -347,7 +348,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     }
 
     @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.PUT)
-    public WriteResponse updateChannelGroup(
+    public WriteResponseWithOldIds updateChannelGroup(
             HttpServletRequest request,
             HttpServletResponse response,
             @RequestParam(value = ID_FORMAT, required = false, defaultValue = OWL) String idFormat
@@ -355,7 +356,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         return createOrUpdateChannelGroup(request, response, idFormat);
     }
 
-    private WriteResponse createOrUpdateChannelGroup(
+    private WriteResponseWithOldIds createOrUpdateChannelGroup(
             HttpServletRequest request,
             HttpServletResponse response,
             String idFormat) {
@@ -441,7 +442,9 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
 
         response.setStatus(HttpServletResponse.SC_OK);
 
-        return new WriteResponse(oldFormatIdCodec.encode(BigInteger.valueOf(channelGroup.get().getId())));
+        return new WriteResponseWithOldIds(
+                oldFormatIdCodec.encode(BigInteger.valueOf(channelGroup.get().getId())),
+                newFormatIdCodec.encode(BigInteger.valueOf(channelGroup.get().getId())));
     }
 
     private void convertFromDeerToOwlIds(
@@ -460,7 +463,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     }
 
     @RequestMapping(value = { "/3.0/channel_groups/{id}.*" }, method = RequestMethod.DELETE)
-    public WriteResponse deleteChannelGroup(
+    public WriteResponseWithOldIds deleteChannelGroup(
             @PathVariable("id") String id,
             HttpServletRequest request,
             HttpServletResponse response,
@@ -523,7 +526,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         return null;
     }
 
-    private WriteResponse error(
+    private WriteResponseWithOldIds error(
             HttpServletRequest request,
             HttpServletResponse response,
             AtlasErrorSummary summary

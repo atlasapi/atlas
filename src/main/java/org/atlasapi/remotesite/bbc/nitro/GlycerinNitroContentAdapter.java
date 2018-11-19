@@ -28,6 +28,7 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -236,7 +237,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(
+    public Iterable<List<com.metabroadcast.columbus.telescope.client.ModelWithPayload<Item>>> fetchEpisodes(
             Iterable<PidReference> refs,
             ImmutableListMultimap<String, Broadcast> broadcasts
     ) throws NitroException {

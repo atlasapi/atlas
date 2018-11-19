@@ -17,7 +17,7 @@ import com.metabroadcast.status.api.NewAlert;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
-import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
 import org.atlasapi.reporting.OwlReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;

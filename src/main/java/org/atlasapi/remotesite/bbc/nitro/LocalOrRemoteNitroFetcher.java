@@ -34,6 +34,7 @@ import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 import java.util.List;
 import java.util.Map;

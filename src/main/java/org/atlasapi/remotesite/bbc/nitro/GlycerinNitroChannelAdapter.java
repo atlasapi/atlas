@@ -27,6 +27,7 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.List;

@@ -8,6 +8,7 @@ import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 import java.util.List;
 
@@ -57,7 +58,7 @@ public interface NitroContentAdapter {
     Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(Iterable<PidReference> refs) throws NitroException;
 
     // TODO: MBST-15521
-    Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(
+    Iterable<List<com.metabroadcast.columbus.telescope.client.ModelWithPayload<Item>>> fetchEpisodes(
             Iterable<PidReference> refs,
             ImmutableListMultimap<String, Broadcast> broadcasts
     ) throws NitroException;

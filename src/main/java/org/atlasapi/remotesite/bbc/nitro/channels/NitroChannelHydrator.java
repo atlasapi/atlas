@@ -15,7 +15,7 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
-import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.LocatorWithRegions;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewMasterbrand;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewService;

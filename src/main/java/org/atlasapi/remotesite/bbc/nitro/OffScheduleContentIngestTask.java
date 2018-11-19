@@ -30,6 +30,7 @@ import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 import org.atlasapi.util.GroupLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 import javax.annotation.Nullable;
 import java.util.List;

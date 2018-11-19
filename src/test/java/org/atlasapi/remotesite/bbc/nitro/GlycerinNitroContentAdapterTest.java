@@ -20,6 +20,7 @@ import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
 import com.metabroadcast.common.time.Clock;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 import com.google.api.client.util.Lists;
 import com.google.common.collect.ImmutableList;

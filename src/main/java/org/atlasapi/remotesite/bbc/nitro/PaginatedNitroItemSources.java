@@ -22,6 +22,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;

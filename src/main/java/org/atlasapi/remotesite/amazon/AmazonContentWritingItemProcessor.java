@@ -28,7 +28,7 @@ import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
-import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import org.slf4j.Logger;

@@ -511,15 +511,9 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                 channelGroupId
         );
         if (!possibleChannelGroup.isPresent()) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            errorViewFor(
-                    request,
-                    response,
-                    AtlasErrorSummary.forException(new NullPointerException(
-                            String.format("Channel Group with %s id %s does not exist.",
-                                    idFormat, id)
-                    ))
-            );
+            return error(request, response, AtlasErrorSummary.forException(new NullPointerException(
+                    String.format("No such platform exists with ID %s", id)
+            )));
         }
         if (!possibleApplication.get()
                 .getConfiguration()

@@ -73,10 +73,10 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     private static final Logger log = LoggerFactory.getLogger(ChannelGroupWriteExecutor.class);
     private static final Splitter SPLIT_ON_COMMA = Splitter.on(',');
     private static final ImmutableSet<Annotation> validAnnotations = ImmutableSet.<Annotation>builder()
-        .add(Annotation.CHANNELS)
-        .add(Annotation.HISTORY)
-        .add(Annotation.CHANNEL_GROUPS_SUMMARY)
-        .build();
+            .add(Annotation.CHANNELS)
+            .add(Annotation.HISTORY)
+            .add(Annotation.CHANNEL_GROUPS_SUMMARY)
+            .build();
     private static final AtlasErrorSummary NOT_FOUND = new AtlasErrorSummary(new NullPointerException())
         .withMessage("No such Channel Group exists")
         .withErrorCode("Channel Group not found")
@@ -115,9 +115,10 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
      * the ChannelGroup and Channels inside it.
      */
     private static final String ID_FORMAT = "id_format";
-
     public static final String DEER = "deer";
     public static final String OWL = "owl";
+
+    public static final String REFRESH_CACHE = "refresh_cache";
 
     private final ChannelGroupFilterer filterer = new ChannelGroupFilterer();
     private final NumberToShortStringCodec oldFormatIdCodec = new SubstitutionTableNumberCodec();
@@ -266,7 +267,9 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             @RequestParam(value = ADVERTISED, required = false) String advertised,
             @RequestParam(value = DTT_ONLY, defaultValue = "false", required = false) boolean dttOnly,
             @RequestParam(value = IP_ONLY, defaultValue = "false", required = false) boolean ipOnly,
-            @RequestParam(value = BT_FUTURE_CHANNELS, defaultValue = "true", required = false) boolean futureChannels
+            @RequestParam(value = BT_FUTURE_CHANNELS, defaultValue = "true", required = false) boolean futureChannels,
+            @RequestParam(value = REFRESH_CACHE, defaultValue = "false", required = false) boolean cacheRefresh,
+            @RequestParam(value = ID_FORMAT, required = false, defaultValue = OWL) String idFormat
     ) throws IOException {
         try {
             Application application;
@@ -277,9 +280,20 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                 return;
             }
 
-            Optional<ChannelGroup> possibleChannelGroup = channelGroupResolver.channelGroupFor(
-                    oldFormatIdCodec.decode(id).longValue()
-            );
+            long numericalId;
+            if(idFormat.toLowerCase().equals(DEER)) {
+                numericalId = newFormatIdCodec.decode(id).longValue();
+            } else {
+                numericalId = oldFormatIdCodec.decode(id).longValue();
+            }
+
+            if(cacheRefresh){
+                channelGroupResolver.invalidateCache(numericalId);
+            }
+
+            Optional<ChannelGroup> possibleChannelGroup =
+                    channelGroupResolver.channelGroupFor(numericalId);
+
             if (!possibleChannelGroup.isPresent()) {
                 errorViewFor(request, response, NOT_FOUND);
                 return;

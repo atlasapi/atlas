@@ -105,7 +105,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     private static final SelectionBuilder SELECTION_BUILDER = Selection.builder().withMaxLimit(50).withDefaultLimit(10);
     private static final String DTT_ONLY = "dtt_only";
     private static final String IP_ONLY = "ip_only";
-    private static final String FUTURE_CHANNELS = "future_channels";
+    private static final String BT_FUTURE_CHANNELS = "future_channels";
     private static final String SOURCE = "source";
     /**
      * Should be OWL or DEER, but we only check if it is DEER, and if it is, we'll assume that the
@@ -152,7 +152,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             @RequestParam(value = ADVERTISED, required = false) String advertised,
             @RequestParam(value = DTT_ONLY, defaultValue = "", required = false) String dttOnly,
             @RequestParam(value = IP_ONLY, defaultValue = "", required = false) String ipOnly,
-            @RequestParam(value = FUTURE_CHANNELS, defaultValue = "true", required = false) boolean futureChannels,
+            @RequestParam(value = BT_FUTURE_CHANNELS, defaultValue = "false", required = false) boolean futureChannels,
             @RequestParam(value = SOURCE, required = false) String source
     ) throws IOException {
         try {
@@ -216,15 +216,14 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             // This is a temporary hack for testing purposes. We do not want to show the new
             // duplicate BT channels that will have a start date somewhere 5 years in the future.
             // This should be removed once we deliver the channel grouping tool
-            if (!futureChannels) {
-                if (application.getTitle().equals("BT TVE Prod")) {
-                    ImmutableList.Builder filtered = ImmutableList.builder();
-                    for (ChannelGroup channelGroup : channelGroups) {
-                        filtered.add(filterByChannelStartDate(channelGroup));
-                    }
-                    channelGroups = filtered.build();
+            if (application.getTitle().equals("BT TVE Prod") && !futureChannels) {
+                ImmutableList.Builder filtered = ImmutableList.builder();
+                for (ChannelGroup channelGroup : channelGroups) {
+                    filtered.add(filterByChannelStartDate(channelGroup));
                 }
+                channelGroups = filtered.build();
             }
+
 
             if (!Strings.isNullOrEmpty(dttOnly)) {
                 List<String> dttIds = Arrays.asList(dttOnly.split("\\s*,\\s*"));
@@ -267,7 +266,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             @RequestParam(value = ADVERTISED, required = false) String advertised,
             @RequestParam(value = DTT_ONLY, defaultValue = "false", required = false) boolean dttOnly,
             @RequestParam(value = IP_ONLY, defaultValue = "false", required = false) boolean ipOnly,
-            @RequestParam(value = FUTURE_CHANNELS, defaultValue = "true", required = false) boolean futureChannels
+            @RequestParam(value = BT_FUTURE_CHANNELS, defaultValue = "true", required = false) boolean futureChannels
     ) throws IOException {
         try {
             Application application;

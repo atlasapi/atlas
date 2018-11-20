@@ -42,17 +42,25 @@ public class ChannelGroupWriteExecutor {
             org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup
     ) {
         try {
+
             if (complexChannelGroup.getId() != null) {
+                updateChannelGroupNumberings(
+                        complexChannelGroup,
+                        simpleChannelGroup
+                );
                 return Optional.ofNullable(store.createOrUpdate(complexChannelGroup));
             } else {
+                //if it is a new group, create it first
                 long channelGroupId = store.createOrUpdate(complexChannelGroup).getId();
                 com.google.common.base.Optional<ChannelGroup> channelGroupToUpdate = store.channelGroupFor(
                         channelGroupId
                 );
+                //then create the parts that require the ID, and reupdate the document.
                 if (channelGroupToUpdate.isPresent()) {
                     ChannelGroup newChannelGroup = channelGroupToUpdate.get();
-                    // we update the canonical URI of the new channel group in order to differentiate
-                    // it from the previously created ones
+                    //we create a URI that allows us to detect BT has created that group through us
+                    //and because we use the new ID format for it (all lowercase), we need to create it
+                    //after it was written to the database.
                     newChannelGroup.setCanonicalUri(String.format(
                             "http://%s/metabroadcast/%s",
                             newChannelGroup.getPublisher().key(),
@@ -67,18 +75,13 @@ public class ChannelGroupWriteExecutor {
                     return Optional.ofNullable(store.createOrUpdate(newChannelGroup));
                 }
             }
+
+            return Optional.ofNullable(store.createOrUpdate(complexChannelGroup));
         } catch (Exception e) {
-            log.error(
-                    String.format(
-                            "Error while creating/updating platform for request %s",
-                            request.getRequestURL()
-                    ),
-                    e
-            );
+            log.error("Error while creating/updating platform for request {}",
+                            request.getRequestURL(), e);
             return Optional.empty();
         }
-
-        return Optional.empty();
     }
 
     public Optional<AtlasErrorSummary> deletePlatform(

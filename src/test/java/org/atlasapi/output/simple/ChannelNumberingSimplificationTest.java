@@ -370,6 +370,11 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         }
 
         @Override
+        public void invalidateCache(Long id) {
+
+        }
+
+        @Override
         public Iterable<ChannelGroup> channelGroupsFor(Iterable<? extends Long> ids) {
             return Iterables.transform(channelGroups.keySet(), new Function<Long, ChannelGroup>() {
                 @Override

@@ -383,7 +383,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                 convertFromDeerToOwlIds(simpleChannelGroup);
             }
 
-            if (simpleChannelGroup.getChannels().isEmpty()) {
+            if (simpleChannelGroup.getChannels() == null || simpleChannelGroup.getChannels().isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return error(
                         request,

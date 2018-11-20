@@ -140,7 +140,8 @@ public class UpdaterConfigurationRegistry {
                 makeUktvConfiguration(),
                 makeWikipediaConfiguration(),
                 makeBarbXMasterConfiguration(), //X-CDMF
-                makeImdbApiConfiguration()
+                makeImdbApiConfiguration(),
+                makeC5DataSubmissionConfiguration()
         );
 
         configurations.add(
@@ -905,6 +906,24 @@ public class UpdaterConfigurationRegistry {
     private static UpdaterConfiguration makeUktvConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(UKTV)
+                .withItemEquivalenceUpdater(
+                        BARB_ITEM,
+                        ImmutableSet.of(BARB_TRANSMISSIONS, BARB_MASTER, PA, RADIO_TIMES)
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        TARGET_SOURCES
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        TARGET_SOURCES
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeC5DataSubmissionConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(C5_DATA_SUBMISSION)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
                         ImmutableSet.of(BARB_TRANSMISSIONS, BARB_MASTER, PA, RADIO_TIMES)

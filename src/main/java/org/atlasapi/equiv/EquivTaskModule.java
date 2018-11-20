@@ -93,6 +93,7 @@ import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
+import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.IMDB_API;
@@ -175,6 +176,8 @@ public class EquivTaskModule {
             RepetitionRules.daily(new LocalTime(2, 30));
     private static final RepetitionRule IMDB_API_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(5, 30));
+    private static final RepetitionRule C5_DATA_SUBMISSION_EQUIVALENCE_REPETITION =
+            RepetitionRules.daily(new LocalTime(3, 0));
     private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
@@ -497,7 +500,11 @@ public class EquivTaskModule {
                 IMDB_API_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-
+        scheduleEquivalenceJob(
+                publisherUpdateTask(C5_DATA_SUBMISSION).withName("C5 Data Submission Updater"),
+                C5_DATA_SUBMISSION_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
     }
 
     private void addYouViewScheduleEquivalenceJobs(Set<ScheduledTask> jobsAtStartup) {

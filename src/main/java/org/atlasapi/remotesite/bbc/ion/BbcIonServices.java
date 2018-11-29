@@ -50,7 +50,7 @@ public class BbcIonServices {
             .put("bbc_two_england", "http://www.bbc.co.uk/services/bbctwo/england")
             //        .put("bbc_two_wales", "http://www.bbc.co.uk/services/bbctwo/wales_analogue")
             .put("bbc_two_wales_digital", "http://www.bbc.co.uk/services/bbctwo/wales")
-            .put("bbc_two_wales_hd", "ttp://nitro.bbc.co.uk/services/bbc_two_wales_hd_233a_447e")
+            .put("bbc_two_wales_hd", "http://nitro.bbc.co.uk/services/bbc_two_wales_hd_233a_447e")
             //        .put("bbc_two_northern_ireland", "http://www.bbc.co.uk/services/bbctwo/ni_analogue")
             .put("bbc_two_northern_ireland_digital", "http://www.bbc.co.uk/services/bbctwo/ni")
             .put("bbc_two_northern_ireland_hd","http://nitro.bbc.co.uk/services/bbc_two_northern_ireland_hd_233a_447d")

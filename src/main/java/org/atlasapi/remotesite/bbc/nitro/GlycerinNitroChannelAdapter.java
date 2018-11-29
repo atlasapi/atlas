@@ -98,6 +98,24 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             channels.addAll(extractChannels(uriToParentChannels, results));
         }
 
+        ServicesQuery wleshd = ServicesQuery.builder()
+                .withSid("bbc_two_wales_hd")
+                .build();
+        GlycerinResponse<Service> walesresp = glycerin.execute(wleshd);
+
+        List<Service> walesres = walesresp.getResults();
+
+        ServicesQuery nihd = ServicesQuery.builder()
+                .withSid("bbc_two_northern_ireland_hd")
+                .build();
+        GlycerinResponse<Service> niresp = glycerin.execute(nihd);
+
+        List<Service> nires = niresp.getResults();
+
+        channels.addAll(extractChannels(uriToParentChannels, walesres));
+        channels.addAll(extractChannels(uriToParentChannels, nires));
+
+
         return channels.build();
     }
 

@@ -1,5 +1,7 @@
 package org.atlasapi.query.v2;
 
+import java.util.Date;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -67,6 +69,8 @@ public class ChannelGroupWriteExecutorTest {
         when(store.channelGroupFor(17L)).thenReturn(Optional.of(existingComplexChannelGroup));
         when(simpleChannelGroup.getChannels()).thenReturn(ImmutableList.of(channelNumbering));
         when(channelNumbering.getChannel()).thenReturn(channel);
+        when(channelNumbering.getStartDate()).thenReturn(new Date());
+        when(channelNumbering.getEndDate()).thenReturn(new Date());
         when(channel.getId()).thenReturn("bc");
 
         Assert.assertTrue(complexChannelGroup.getChannelNumberings().isEmpty());

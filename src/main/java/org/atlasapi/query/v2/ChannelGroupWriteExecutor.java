@@ -2,6 +2,7 @@ package org.atlasapi.query.v2;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -120,8 +121,14 @@ public class ChannelGroupWriteExecutor {
                         .withChannel(idCodec.decode(channelNumbering.getChannel().getId()).longValue())
                         .withChannelGroup(channelGroupToBeUpdated.getId())
                         .withChannelNumber(channelNumbering.getChannelNumber())
-                        .withStartDate(LocalDate.fromDateFields(channelNumbering.getStartDate()))
-                        .withEndDate(LocalDate.fromDateFields(channelNumbering.getEndDate()))
+                        .withStartDate(Objects.isNull(channelNumbering.getStartDate())
+                                       ? null
+                                       : LocalDate.fromDateFields(channelNumbering.getStartDate())
+                        )
+                        .withEndDate(Objects.isNull(channelNumbering.getEndDate())
+                                     ? null
+                                     : LocalDate.fromDateFields(channelNumbering.getEndDate())
+                        )
                         .build()
         ));
         channelGroupToBeUpdated.setChannelNumberings(channelNumberingList);

@@ -15,6 +15,7 @@ import org.atlasapi.output.AtlasErrorSummary;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.api.client.util.Lists;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,6 +119,9 @@ public class ChannelGroupWriteExecutor {
                 ChannelNumbering.builder()
                         .withChannel(idCodec.decode(channelNumbering.getChannel().getId()).longValue())
                         .withChannelGroup(channelGroupToBeUpdated.getId())
+                        .withChannelNumber(channelNumbering.getChannelNumber())
+                        .withStartDate(LocalDate.fromDateFields(channelNumbering.getStartDate()))
+                        .withEndDate(LocalDate.fromDateFields(channelNumbering.getEndDate()))
                         .build()
         ));
         channelGroupToBeUpdated.setChannelNumberings(channelNumberingList);

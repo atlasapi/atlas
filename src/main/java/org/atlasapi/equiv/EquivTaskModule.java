@@ -413,13 +413,11 @@ public class EquivTaskModule {
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_MASTER).withName("Barb CDMF Updater"),
-                CDMF_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                CDMF_EQUIVALENCE_REPETITION
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_TRANSMISSIONS).withName("Barb TxLogs Updater"),
-                TXLOGS_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                TXLOGS_EQUIVALENCE_REPETITION
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(ITV_CPS).withName("ITV CPS Updater"),
@@ -492,8 +490,7 @@ public class EquivTaskModule {
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_X_MASTER).withName("Barb XCDMF Updater"),
-                XCDMF_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                XCDMF_EQUIVALENCE_REPETITION
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(IMDB_API).withName("IMDB Api Updater"),

@@ -141,7 +141,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
                 
             } else if ((film.getYear() != null && tolerableYearDifference(film, equivFilm)) || (film.getYear() == null && acceptNullYears)) {
                 Score score = Score.valueOf(titleMatcher.titleMatch(film, equivFilm));
-                desc.appendText("%s (%s) scored %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), score);
+                desc.appendText("%s (%s) scored %s on title match", equivFilm.getTitle(), equivFilm.getCanonicalUri(), score);
                 scores.addEquivalent(equivFilm, score);
 
                 if (equivFilm.getId() != null) {

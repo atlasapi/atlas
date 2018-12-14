@@ -77,7 +77,8 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)
                                         ),
-                                        true)
+                                        true,
+                                        0)
                         )
                 )
                 .withScorers(

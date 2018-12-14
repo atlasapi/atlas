@@ -1,12 +1,8 @@
 package org.atlasapi.equiv.generators;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-import javax.ws.rs.DefaultValue;
 
 import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
@@ -51,10 +47,10 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private final FilmTitleMatcher titleMatcher;
     private final boolean acceptNullYears;
 
-    //default value = 1; this var was changed to being a parameter in the constructor in order to
-    //constrict the equiv rules for certain sources so we do not mistakenly equiv when the years differ
+    //this var is used to ensure films with multiple release dates equiv; useful if we want
+    //to set it to 0 to constrict equiv (eg. Amazon should not have different release years)
     //Context: we had a support issue caused by a bad equiv on exact title match (for RT)
-    private Integer numberOfYearsDifference;
+    private int tolerableYearDifference;
 
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
 
@@ -75,14 +71,14 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             Iterable<Publisher> publishers,
             Application application,
             boolean acceptNullYears,
-            Integer numberOfYearsDifference
+            Integer tolerableYearDifference
     ) {
         this.searchResolver = searchResolver;
         this.publishers = ImmutableList.copyOf(publishers);
         this.searchApplication = application;
         this.acceptNullYears = acceptNullYears;
         this.titleMatcher = new FilmTitleMatcher(titleExpander);
-        this.numberOfYearsDifference = numberOfYearsDifference;
+        this.tolerableYearDifference = tolerableYearDifference;
     }
 
     @Override
@@ -215,7 +211,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         } else if (equivFilm.getYear() == null && acceptNullYears) {
             return true;
         }
-        return Math.abs(film.getYear() - equivFilm.getYear()) <= numberOfYearsDifference;
+        return Math.abs(film.getYear() - equivFilm.getYear()) <= tolerableYearDifference;
     }
 
     private String normalize(String title) {

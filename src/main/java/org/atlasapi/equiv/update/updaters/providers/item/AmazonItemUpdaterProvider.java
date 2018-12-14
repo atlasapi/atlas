@@ -75,10 +75,9 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         dependencies.getSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(
-                                                ImmutableList.copyOf(targetPublishers)
-                                        ),
+                                                ImmutableList.copyOf(targetPublishers)),
                                         true,
-                                        0)
+                                        0) //only equiv on exact year, as agreed
                         )
                 )
                 .withScorers(

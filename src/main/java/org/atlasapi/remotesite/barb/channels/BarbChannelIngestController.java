@@ -4,10 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.EntityType;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.remotesite.barb.channels.response.BarbChannelIngestResponse;
+import org.atlasapi.reporting.OwlReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -60,6 +66,12 @@ public class BarbChannelIngestController {
             @RequestParam("channels") String channels,
             @Context HttpServletResponse response
     ) throws IOException {
+    	OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
+                OwlTelescopeReporters.BARB_INGEST_CHANNELS,
+                Event.Type.INGEST
+        );
+        OwlReporter owlReporter = new OwlReporter(telescope);
+        owlReporter.getTelescopeReporter().startReporting();
 
         Map<String, String> createdChannels = Maps.newHashMap();
         List<String> updatedChannels = Lists.newArrayList();
@@ -69,9 +81,15 @@ public class BarbChannelIngestController {
 
         for (String channel: splitChannels) {
             try {
+            	/* report success*/
                 Channel newChannel = barbChannelTransformer.transform(channel);
                 channelWriter.createOrUpdate(newChannel);
-
+                
+                owlReporter.getTelescopeReporter().reportSuccessfulEvent(
+                		newChannel.getId(),
+                		newChannel.getAliases(),
+                        EntityType.CHANNEL,
+                        channelWithPayload.get().getPayload());
                 if (newChannel.getId() == null) {
                     updatedChannels.add(newChannel.getUri());
                 } else {
@@ -83,6 +101,10 @@ public class BarbChannelIngestController {
             } catch (Exception e) {
                 log.error("Error creating/updating channel {}", channel, e);
                 failedChannels.add(channel);
+                owlReporter.getTelescopeReporter().reportFailedEvent(
+                        "Error creating/updating channel {} "+channel +
+                        " (" + e.getMessage() + ")");
+                owlReporter.getTelescopeReporter().endReporting();
             }
         }
 
@@ -94,6 +116,7 @@ public class BarbChannelIngestController {
         );
 
         response.getWriter().write(mapper.writeValueAsString(resp));
+        owlReporter.getTelescopeReporter().endReporting();
     }
 
 

@@ -17,6 +17,8 @@ public enum OwlTelescopeReporters implements TelescopeReporterName {
     BBC_NITRO_INGEST_OFFSCHEDULE("bbc.nitro.ingester.offschedule", "Nitro off-schedule Ingester"),
     BBC_NITRO_INGEST_API("bbc.nitro.ingester.api", "Nitro API Ingester"),
     BBC_NITRO_INGEST_CHANNELS("bbc.nitro.ingester.channels", "Nitro Channel Ingester"),
+    
+    BARB_INGEST_CHANNELS("barb.ingester.channels", "Barb Channel Ingester"),
 
     CHANNEL_4_INGEST("channel4.ingester", "Channel 4 Ingester"),
 
@@ -36,7 +38,7 @@ public enum OwlTelescopeReporters implements TelescopeReporterName {
     MANUAL_CHANNEL_EQUIVALENCE("equivalence.channel.manual", "Manual Channel Equivalence"),
     QUERY_EXECUTOR_EQUIVALENCE("equivalence.query-executor", "Query Executor Equivalence")
     ;
-
+    
     final String reporterKey;
     final String reporterName;
 

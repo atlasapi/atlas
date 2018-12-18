@@ -84,27 +84,34 @@ public class BarbChannelIngestController {
             	/* report success*/
                 Channel newChannel = barbChannelTransformer.transform(channel);
                 channelWriter.createOrUpdate(newChannel);
-                
-                owlReporter.getTelescopeReporter().reportSuccessfulEvent(
-                		newChannel.getId(),
-                		newChannel.getAliases(),
-                        EntityType.CHANNEL,
-                        channelWithPayload.get().getPayload());
                 if (newChannel.getId() == null) {
                     updatedChannels.add(newChannel.getUri());
+
+                    owlReporter.getTelescopeReporter().reportSuccessfulEvent(
+                            newChannel.getId(),
+                            newChannel.getAliases(),
+                            EntityType.CHANNEL,
+                            "CHANNEL WAS EXISTING AND UPDATED",
+                            channel);
                 } else {
                     createdChannels.put(
                             codec.encode(BigInteger.valueOf(newChannel.getId())),
                             newChannel.getTitle()
                     );
+
+                    owlReporter.getTelescopeReporter().reportSuccessfulEvent(
+                            newChannel.getId(),
+                            newChannel.getAliases(),
+                            EntityType.CHANNEL,
+                            "CHANNEL IS NEW AND CREATED",
+                            channel);
                 }
             } catch (Exception e) {
                 log.error("Error creating/updating channel {}", channel, e);
                 failedChannels.add(channel);
                 owlReporter.getTelescopeReporter().reportFailedEvent(
-                        "Error creating/updating channel {} "+channel +
-                        " (" + e.getMessage() + ")");
-                owlReporter.getTelescopeReporter().endReporting();
+                        "Error creating/updating channel "+channel +
+                        " (" + e.getMessage() + ")", channel, e);
             }
         }
 

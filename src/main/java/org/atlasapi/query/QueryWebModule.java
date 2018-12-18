@@ -1,7 +1,12 @@
 package org.atlasapi.query;
 
-import javax.xml.bind.JAXBElement;
-
+import com.google.common.base.Splitter;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.time.SystemClock;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.EquivalenceBreaker;
@@ -35,7 +40,6 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Topic;
-import org.atlasapi.media.entity.simple.ChannelGroupQueryResult;
 import org.atlasapi.media.entity.simple.ChannelQueryResult;
 import org.atlasapi.media.entity.simple.ContentGroupQueryResult;
 import org.atlasapi.media.entity.simple.ContentQueryResult;
@@ -97,7 +101,7 @@ import org.atlasapi.output.simple.TopicModelSimplifier;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.EquivalenceContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.PeopleResolver;
@@ -148,15 +152,6 @@ import org.atlasapi.query.v2.TopicController;
 import org.atlasapi.query.v2.TopicWriteController;
 import org.atlasapi.query.worker.ContentWriteMessage;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
-
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.time.SystemClock;
-
-import com.google.common.base.Splitter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -164,6 +159,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import tva.metadata._2010.TVAMainType;
+
+import javax.xml.bind.JAXBElement;
 
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
@@ -178,7 +175,7 @@ public class QueryWebModule {
     @Autowired private DatabasedMongo mongo;
     @Autowired private ContentGroupWriter contentGroupWriter;
     @Autowired private ContentGroupResolver contentGroupResolver;
-    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private EquivalenceContentWriter contentWriter;
     @Autowired private LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     @Autowired private ScheduleWriter scheduleWriter;
     @Autowired private ContentResolver contentResolver;

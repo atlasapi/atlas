@@ -22,7 +22,7 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.segment.SegmentWriter;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.EquivalenceContentWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
@@ -55,7 +55,7 @@ import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETT
 @Configuration
 @Import({ KafkaMessagingModule.class })
 public class QueryExecutorModule {
-    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private EquivalenceContentWriter contentWriter;
     @Autowired private ScheduleWriter scheduleWriter;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ChannelResolver channelResolver;

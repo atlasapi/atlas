@@ -1,22 +1,26 @@
 package org.atlasapi.query.v2;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
-import javax.ws.rs.core.HttpHeaders;
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.api.client.repackaged.com.google.common.base.Joiner;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.api.client.util.Maps;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.properties.Configurer;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.social.exceptions.BadRequestException;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.stream.MoreStreams;
+import com.metabroadcast.common.time.Timestamp;
+import org.apache.commons.io.IOUtils;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.equiv.EquivalenceBreaker;
@@ -43,31 +47,26 @@ import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.properties.Configurer;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.social.exceptions.BadRequestException;
-import com.metabroadcast.common.time.Timestamp;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.google.api.client.repackaged.com.google.common.base.Joiner;
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.api.client.util.Maps;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
+import javax.ws.rs.core.HttpHeaders;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -81,12 +80,14 @@ public class ContentWriteController {
 
     private static final String ID = "id";
     private static final String URI = "uri";
+    private static final String EXPLICIT = "explicit";
 
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;
 
     private static final Logger log = LoggerFactory.getLogger(ContentWriteController.class);
     private static final NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
+    private static final Splitter COMMA_SPLITTER = Splitter.on(',');
 
     private final ApplicationFetcher applicationFetcher;
     private final ContentWriteExecutor writeExecutor;
@@ -208,6 +209,78 @@ public class ContentWriteController {
         }
 
         return null;
+    }
+
+    /**
+     * This was added as a way to update the explicit equivalence on an existing piece of content without having to
+     * hit the regular content PUT endpoint since we may not care to change anything about the actual content itself.
+     * N.B. this updates the content table since it contains a copy of the explicit set and is used for merging
+     * explicit equivalences in the regular content POST endpoint.
+     *
+     * In particular this allows an easy way to remove all explicit equivalences on a piece of content since the other
+     * methods do not support updating the explicit equivalences with an empty set.
+     */
+    @Nullable
+    public WriteResponse updateExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
+        PossibleApplication possibleApplication = validateApplicationConfiguration(req, resp);
+        if (possibleApplication.getErrorSummary().isPresent()) {
+            return error(req, resp, possibleApplication.getErrorSummary().get());
+        }
+        String uri = req.getParameter(URI);
+        if(Strings.isNullOrEmpty(uri) || req.getParameter(EXPLICIT) == null) {
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new BadRequestException(
+                            String.format("'%s' / '%s' not specified", URI, EXPLICIT)
+                    ))
+            );
+        }
+
+        ResolvedContent resolvedContent =
+                contentResolver.findByCanonicalUris(Lists.newArrayList(uri));
+
+        @SuppressWarnings("deprecation")
+        Maybe<Identified> identified;
+
+        if (!resolvedContent.isEmpty()) {
+            identified = resolvedContent.getFirstValue();
+        } else {
+            return error(req, resp, AtlasErrorSummary.forException(
+                    new NoSuchElementException("could not resolve content for URI")
+            ));
+        }
+
+        // If we didn't find one, return an error
+        if (!identified.hasValue()) {
+            return error(req, resp, AtlasErrorSummary.forException(
+                    new NoSuchElementException("Unable to resolve content")));
+        }
+
+        Content content = (Content) identified.requireValue();
+
+        // Check if the api key has write permissions for this publisher
+        Optional<AtlasErrorSummary> apiKeyErrorSummary = validateApiKey(
+                req,
+                resp,
+                content.getPublisher(),
+                possibleApplication.getApplication()
+        );
+        if (apiKeyErrorSummary.isPresent()) {
+            return error(req, resp, apiKeyErrorSummary.get());
+        }
+
+        Iterable<LookupEntry> explicitEquivLookupEntries = lookupEntryStore.entriesForCanonicalUris(
+                COMMA_SPLITTER.splitToList(req.getParameter(EXPLICIT))
+        );
+        ImmutableSet<LookupRef> explicitEquivLookupRefs = MoreStreams.stream(explicitEquivLookupEntries)
+                .map(LookupEntry::lookupRef)
+                .collect(MoreCollectors.toImmutableSet());
+
+        writeExecutor.updateExplicitEquivalence(content, explicitEquivLookupRefs);
+
+        resp.setStatus(HttpServletResponse.SC_OK);
+        return new WriteResponse(encodeId(content.getId()));
     }
 
     private PossibleApplication validateApplicationConfiguration(

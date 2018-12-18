@@ -1,12 +1,9 @@
 package org.atlasapi.query.content;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
@@ -19,26 +16,28 @@ import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.ScheduleEntry;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.EquivalenceContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.VersionMerger;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
-
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -48,7 +47,7 @@ public class ContentWriteExecutor {
     private final ModelReader reader;
     private final ModelTransformer<Description, Content> transformer;
     private final ContentResolver resolver;
-    private final ContentWriter writer;
+    private final EquivalenceContentWriter writer;
     private final ScheduleWriter scheduleWriter;
     private final ChannelResolver channelResolver;
     private final EventResolver eventResolver;
@@ -60,7 +59,7 @@ public class ContentWriteExecutor {
             ModelReader reader,
             ModelTransformer<Description, Content> transformer,
             ContentResolver resolver,
-            ContentWriter writer,
+            EquivalenceContentWriter writer,
             ScheduleWriter scheduleWriter,
             ChannelResolver channelResolver,
             EventResolver eventResolver,
@@ -82,7 +81,7 @@ public class ContentWriteExecutor {
             ModelReader reader,
             ModelTransformer<Description, Content> transformer,
             ContentResolver resolver,
-            ContentWriter writer,
+            EquivalenceContentWriter writer,
             ScheduleWriter scheduleWriter,
             ChannelResolver channelResolver,
             EventResolver eventResolver,
@@ -156,6 +155,18 @@ public class ContentWriteExecutor {
         long duration = (System.nanoTime() - startTime)/1000000;
         if(duration > 1000){
             log.info("TIMER. Super slow. Writing to db took {}ms. uri={} {}",duration, content.getCanonicalUri(), Thread.currentThread().getName());
+        }
+    }
+
+    public void updateExplicitEquivalence(
+            Content content,
+            Set<LookupRef> explicitEquivRefs
+    ) {
+        content.setEquivalentTo(explicitEquivRefs);
+        if(content instanceof  Item) {
+            writer.createOrUpdate((Item) content, true);
+        } else {
+            writer.createOrUpdate((Container) content, true);
         }
     }
 

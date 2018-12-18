@@ -17,6 +17,7 @@ import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.simple.Description;
@@ -160,13 +161,14 @@ public class ContentWriteExecutor {
 
     public void updateExplicitEquivalence(
             Content content,
+            Set<Publisher> publishers,
             Set<LookupRef> explicitEquivRefs
     ) {
         content.setEquivalentTo(explicitEquivRefs);
         if(content instanceof  Item) {
-            writer.createOrUpdate((Item) content, true);
+            writer.createOrUpdate((Item) content, publishers, true);
         } else {
-            writer.createOrUpdate((Container) content, true);
+            writer.createOrUpdate((Container) content, publishers, true);
         }
     }
 

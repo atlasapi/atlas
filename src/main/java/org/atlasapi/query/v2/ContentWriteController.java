@@ -237,6 +237,15 @@ public class ContentWriteController {
             );
         }
 
+        String sources = req.getParameter(SOURCE_PARAMETER);
+        ImmutableSet<Publisher> publishers = Strings.isNullOrEmpty(sources)
+                ? Publisher.all()
+                : COMMA_SPLITTER.splitToList(sources).stream()
+                        .map(Publisher::fromKey)
+                        .filter(Maybe::hasValue)
+                        .map(Maybe::requireValue)
+                        .collect(MoreCollectors.toImmutableSet());
+
         ResolvedContent resolvedContent =
                 contentResolver.findByCanonicalUris(Lists.newArrayList(uri));
 
@@ -277,7 +286,7 @@ public class ContentWriteController {
                 .map(LookupEntry::lookupRef)
                 .collect(MoreCollectors.toImmutableSet());
 
-        writeExecutor.updateExplicitEquivalence(content, explicitEquivLookupRefs);
+        writeExecutor.updateExplicitEquivalence(content, publishers, explicitEquivLookupRefs);
 
         resp.setStatus(HttpServletResponse.SC_OK);
         return new WriteResponse(encodeId(content.getId()));

@@ -85,6 +85,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     private final int missingContentPercentage;
     private final AmazonBrandProcessor brandProcessor;
     private final ContentMerger contentMerger;
+    private final Clock clock;
 
     //Title Cleaning
 //    private final Pattern straySymbols = Pattern.compile("^[\\p{Pd}: ]+|[\\p{Pd}: ]+$");//p{Pd}=dashes
@@ -696,16 +697,18 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     }
 
     private void reportContentWithPayloadToTelescope(
-            ModelWithPayload<? extends Content> content,
+            ModelWithPayload<? extends javax.swing.text.AbstractDocument.Content> content,
             OwlTelescopeReporter telescope)
     {
         if(content.getModel().getId() != null){
-            telescope.reportSuccessfulEvent(
-                    content.getModel().getId(),
-                    content.getModel().getAliases(),
-                    content.getModel(),
-                    content.getPayload()
-            );
+        	if(content.getModel().getLastUpdated() == null || content.getModel().getLastUpdated() >= clock.now().minusMinutes(5)){
+	        	telescope.reportSuccessfulEvent(
+	                    content.getModel().getId(),
+	                    content.getModel().getAliases(),
+	                    content.getModel(),
+	                    content.getPayload()
+	            );
+        	}
         } else {
             telescope.reportFailedEvent(
                     "Atlas did not return an id after attempting to create or update this content",

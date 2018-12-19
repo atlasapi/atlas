@@ -436,7 +436,7 @@
         <dependency>
             <groupId>org.atlasapi</groupId>
             <artifactId>atlas-persistence</artifactId>
-            <version>${atlas.persistence}</version>
+            <version>${atlas.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>jetty</artifactId>
@@ -781,7 +781,6 @@
     </dependencies>
     <properties>
         <atlas.version>${project.version}</atlas.version>
-        <atlas.persistence>5.2-SNAPSHOT}</atlas.persistence>
         <common.version>1.0-SNAPSHOT</common.version>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <jetty.version>9.4.1.v20170120</jetty.version>

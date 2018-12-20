@@ -701,7 +701,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             OwlTelescopeReporter telescope)
     {
         if(content.getModel().getId() != null){
-        	if(content.getModel().getLastUpdated() == null || content.getModel().getLastUpdated() >= clock.now().minusMinutes(5)){
+        	if(content.getModel().getLastUpdated() >= clock.now().minusMinutes(5)){
 	        	telescope.reportSuccessfulEvent(
 	                    content.getModel().getId(),
 	                    content.getModel().getAliases(),

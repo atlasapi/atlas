@@ -1,6 +1,7 @@
 package org.atlasapi.query.content;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.base.Maybe;
@@ -29,6 +30,9 @@ import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.VersionMerger;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
+
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +49,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ContentWriteExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(ContentWriteExecutor.class);
+
     private final ModelReader reader;
     private final ModelTransformer<Description, Content> transformer;
     private final ContentResolver resolver;
@@ -54,7 +60,7 @@ public class ContentWriteExecutor {
     private final EventResolver eventResolver;
     private final ContentMerger contentMerger;
     private final VersionMerger versionMerger;
-    private static final Logger log = LoggerFactory.getLogger(ContentWriteExecutor.class);
+    private final BroadcastTrimmer trimmer;
 
     private ContentWriteExecutor(
             ModelReader reader,
@@ -65,7 +71,8 @@ public class ContentWriteExecutor {
             ChannelResolver channelResolver,
             EventResolver eventResolver,
             ContentMerger contentMerger,
-            VersionMerger versionMerger
+            VersionMerger versionMerger,
+            BroadcastTrimmer trimmer
     ) {
         this.reader = checkNotNull(reader);
         this.transformer = checkNotNull(transformer);
@@ -76,6 +83,7 @@ public class ContentWriteExecutor {
         this.eventResolver = checkNotNull(eventResolver);
         this.contentMerger = checkNotNull(contentMerger);
         this.versionMerger = checkNotNull(versionMerger);
+        this.trimmer = checkNotNull(trimmer);
     }
 
     public static ContentWriteExecutor create(
@@ -87,7 +95,8 @@ public class ContentWriteExecutor {
             ChannelResolver channelResolver,
             EventResolver eventResolver,
             ContentMerger contentMerger,
-            VersionMerger versionMerger
+            VersionMerger versionMerger,
+            BroadcastTrimmer trimmer
     ) {
         return new ContentWriteExecutor(
                 reader,
@@ -98,7 +107,8 @@ public class ContentWriteExecutor {
                 channelResolver,
                 eventResolver,
                 contentMerger,
-                versionMerger
+                versionMerger,
+                trimmer
         );
     }
 
@@ -148,7 +158,12 @@ public class ContentWriteExecutor {
         if (updatedContent instanceof Item) {
             Item item = (Item) updatedContent;
             writer.createOrUpdate(item);
-            updateSchedule(item);
+
+            if (updatedContent.getPublisher().key().equals(Publisher.BT_SPORT_EBS.key())) {
+                updateEbsSchedule(updatedContent, item);
+            } else {
+                updateSchedule(item);
+            }
         } else {
             writer.createOrUpdate((Container) updatedContent);
         }
@@ -157,6 +172,36 @@ public class ContentWriteExecutor {
         if(duration > 1000){
             log.info("TIMER. Super slow. Writing to db took {}ms. uri={} {}",duration, content.getCanonicalUri(), Thread.currentThread().getName());
         }
+    }
+
+    private void updateEbsSchedule(Content updatedContent, Item item) {
+        Broadcast broadcast = updatedContent.getVersions()
+                .iterator()
+                .next()
+                .getBroadcasts()
+                .iterator()
+                .next();
+
+        Interval broadcastInterval = new Interval(
+                broadcast.getTransmissionTime(),
+                broadcast.getTransmissionEndTime()
+        );
+
+        Channel channel = channelResolver.fromUri(broadcast.getBroadcastOn())
+                .requireValue();
+
+        ImmutableMap<String, String> acceptableIds = ImmutableMap.of(
+                broadcast.getSourceId(),
+                updatedContent.getCanonicalUri()
+        );
+
+        trimmer.trimBroadcasts(broadcastInterval, channel, acceptableIds);
+
+        scheduleWriter.replaceScheduleBlock(
+                item.getPublisher(),
+                channel,
+                ImmutableSet.of(new ScheduleEntry.ItemRefAndBroadcast(item, broadcast))
+        );
     }
 
     public void updateExplicitEquivalence(

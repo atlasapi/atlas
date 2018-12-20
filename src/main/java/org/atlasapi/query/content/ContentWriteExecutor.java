@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -175,33 +176,31 @@ public class ContentWriteExecutor {
     }
 
     private void updateEbsSchedule(Content updatedContent, Item item) {
-        Broadcast broadcast = updatedContent.getVersions()
+        for (Broadcast broadcast : updatedContent.getVersions()
                 .iterator()
                 .next()
-                .getBroadcasts()
-                .iterator()
-                .next();
+                .getBroadcasts()) {
+            Interval broadcastInterval = new Interval(
+                    broadcast.getTransmissionTime(),
+                    broadcast.getTransmissionEndTime()
+            );
 
-        Interval broadcastInterval = new Interval(
-                broadcast.getTransmissionTime(),
-                broadcast.getTransmissionEndTime()
-        );
+            Channel channel = channelResolver.fromUri(broadcast.getBroadcastOn())
+                    .requireValue();
 
-        Channel channel = channelResolver.fromUri(broadcast.getBroadcastOn())
-                .requireValue();
+            ImmutableMap<String, String> acceptableIds = ImmutableMap.of(
+                    broadcast.getSourceId(),
+                    updatedContent.getCanonicalUri()
+            );
 
-        ImmutableMap<String, String> acceptableIds = ImmutableMap.of(
-                broadcast.getSourceId(),
-                updatedContent.getCanonicalUri()
-        );
+            trimmer.trimBroadcasts(broadcastInterval, channel, acceptableIds);
 
-        trimmer.trimBroadcasts(broadcastInterval, channel, acceptableIds);
-
-        scheduleWriter.replaceScheduleBlock(
-                item.getPublisher(),
-                channel,
-                ImmutableSet.of(new ScheduleEntry.ItemRefAndBroadcast(item, broadcast))
-        );
+            scheduleWriter.replaceScheduleBlock(
+                    item.getPublisher(),
+                    channel,
+                    ImmutableSet.of(new ScheduleEntry.ItemRefAndBroadcast(item, broadcast))
+            );
+        }
     }
 
     public void updateExplicitEquivalence(

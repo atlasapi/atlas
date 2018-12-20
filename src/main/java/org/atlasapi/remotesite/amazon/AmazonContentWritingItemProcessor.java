@@ -30,6 +30,8 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import com.metabroadcast.common.time.Clock;
+import com.metabroadcast.common.time.SystemClock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +87,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     private final int missingContentPercentage;
     private final AmazonBrandProcessor brandProcessor;
     private final ContentMerger contentMerger;
-    private final Clock clock;
+    private final Clock clock =new SystemClock();
 
     //Title Cleaning
 //    private final Pattern straySymbols = Pattern.compile("^[\\p{Pd}: ]+|[\\p{Pd}: ]+$");//p{Pd}=dashes
@@ -697,18 +699,20 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     }
 
     private void reportContentWithPayloadToTelescope(
-            ModelWithPayload<? extends javax.swing.text.AbstractDocument.Content> content,
+            ModelWithPayload<? extends Content> content,
             OwlTelescopeReporter telescope)
     {
-        if(content.getModel().getId() != null){
-        	if(content.getModel().getLastUpdated() == null || content.getModel().getLastUpdated() >= clock.now().minusMinutes(5)){
+        /* this check was provided to report event to the telescope only if content is updated now
+            here time is provided as 5 minutes so if the content is updated between the current time
+            and time since 5 minutes before then only event will get reported to telescope.
+         */
+         if( content.getModel().getId() != null && content.getModel().getLastUpdated().isAfter(clock.now().minusMinutes(5))){
 	        	telescope.reportSuccessfulEvent(
 	                    content.getModel().getId(),
 	                    content.getModel().getAliases(),
 	                    content.getModel(),
 	                    content.getPayload()
 	            );
-        	}
         } else {
             telescope.reportFailedEvent(
                     "Atlas did not return an id after attempting to create or update this content",

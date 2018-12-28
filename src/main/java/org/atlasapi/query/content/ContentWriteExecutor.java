@@ -160,8 +160,8 @@ public class ContentWriteExecutor {
             Item item = (Item) updatedContent;
             writer.createOrUpdate(item);
 
-            if (updatedContent.getPublisher().key().equals(Publisher.BT_SPORT_EBS.key())) {
-                updateEbsSchedule(updatedContent, item);
+            if (content.getPublisher().key().equals(Publisher.BT_SPORT_EBS.key())) {
+                updateEbsSchedule(content, item);
             } else {
                 updateSchedule(item);
             }
@@ -175,8 +175,8 @@ public class ContentWriteExecutor {
         }
     }
 
-    private void updateEbsSchedule(Content updatedContent, Item item) {
-        for (Broadcast broadcast : updatedContent.getVersions()
+    private void updateEbsSchedule(Content content, Item item) {
+        for (Broadcast broadcast : content.getVersions()
                 .iterator()
                 .next()
                 .getBroadcasts()) {
@@ -190,7 +190,7 @@ public class ContentWriteExecutor {
 
             ImmutableMap<String, String> acceptableIds = ImmutableMap.of(
                     broadcast.getSourceId(),
-                    updatedContent.getCanonicalUri()
+                    content.getCanonicalUri()
             );
 
             trimmer.trimBroadcasts(broadcastInterval, channel, acceptableIds);

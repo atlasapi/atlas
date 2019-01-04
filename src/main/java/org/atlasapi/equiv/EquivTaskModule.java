@@ -1,13 +1,23 @@
 package org.atlasapi.equiv;
 
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-
+import com.google.api.client.util.Sets;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Service.Listener;
+import com.google.common.util.concurrent.Service.State;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.kafka.KafkaConsumer;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
 import org.atlasapi.equiv.results.probe.EquivalenceProbeStore;
 import org.atlasapi.equiv.results.probe.EquivalenceResultProbeController;
@@ -46,26 +56,6 @@ import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
 import org.atlasapi.util.AlwaysBlockingQueue;
-
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.kafka.KafkaConsumer;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-
-import com.google.api.client.util.Sets;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.Service.Listener;
-import com.google.common.util.concurrent.Service.State;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.joda.time.Period;
@@ -79,10 +69,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 
+import javax.annotation.PostConstruct;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
@@ -184,6 +182,8 @@ public class EquivTaskModule {
             RepetitionRules.daily(new LocalTime(5, 30));
     private static final RepetitionRule C5_DATA_SUBMISSION_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(3, 0));
+    private static final RepetitionRule BARB_CENSUS_EQUIVALENCE_REPETITION =
+            RepetitionRules.daily(new LocalTime(7, 0));
     private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
@@ -456,6 +456,16 @@ public class EquivTaskModule {
                 TXLOGS_EQUIVALENCE_DELTA_REPETITION
         );
         scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(BARB_TRANSMISSIONS)
+                        .forLast(new Period().withWeeks(2))
+                        .withName("TxLog Delta Updater (last 2 weeks)"),
+                RepetitionRules.NEVER
+        );
+        scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_TRANSMISSIONS).withName("Barb TxLogs Updater"),
                 TXLOGS_EQUIVALENCE_REPETITION
         );
@@ -536,6 +546,11 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 publisherUpdateTask(C5_DATA_SUBMISSION).withName("C5 Data Submission Updater"),
                 C5_DATA_SUBMISSION_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(BARB_CENSUS).withName("BARB Census Updater"),
+                BARB_CENSUS_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
     }

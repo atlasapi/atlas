@@ -7,6 +7,7 @@ import org.atlasapi.media.entity.Publisher;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
 import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
@@ -121,7 +122,8 @@ public class DefaultConfiguration {
                             WIKIPEDIA,
                             BARB_X_MASTER,
                             IMDB_API,
-                            C5_DATA_SUBMISSION
+                            C5_DATA_SUBMISSION,
+                            BARB_CENSUS
                     )
             )
             .addAll(MUSIC_SOURCES)

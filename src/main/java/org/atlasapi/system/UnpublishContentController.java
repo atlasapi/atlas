@@ -17,7 +17,9 @@ import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -92,7 +94,7 @@ public class UnpublishContentController {
         Optional<Identified> identified = resolveContent(lookupEntry);
         Described described = validatePublisher(publisher, identified);
 
-        removeItemFromEquivSet(status, lookupEntry);
+        removeItemFromEquivSet(described, lookupEntry);
         described.setActivelyPublished(status);
         writeUpdate(described);
     }
@@ -146,18 +148,17 @@ public class UnpublishContentController {
         return described;
     }
 
-    private void removeItemFromEquivSet(boolean status, LookupEntry lookupEntry){
-        if(!status) {
-            String lookupEntryUri = lookupEntry.uri();
-            lookupEntry.directEquivalents()
-                    .stream()
-                    .map(LookupRef::uri)
-                    .filter(lookupRefUri -> !lookupRefUri.equals(lookupEntryUri))
-                    .forEach(lookupRefUri -> equivalenceBreaker.removeFromSet(
-                            lookupEntryUri,
-                            lookupRefUri
-                    ));
-        }
+    /**
+     * This will take an item, and remove all direct equivalences from it
+     */
+    private void removeItemFromEquivSet(Described described, LookupEntry lookupEntry){
+
+        ImmutableSet<String> equivsToRemove = lookupEntry.directEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(MoreCollectors.toImmutableSet());
+
+        equivalenceBreaker.removeFromSet(described, lookupEntry, equivsToRemove);
     }
 
     private void writeUpdate(Described described) {

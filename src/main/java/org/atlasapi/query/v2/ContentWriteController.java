@@ -406,7 +406,7 @@ public class ContentWriteController {
 
         // remove from equivset if un-publishing
         if(!publishStatus){
-            removeItemFromEquivSet(lookupEntry);
+            removeItemFromEquivSet(described, lookupEntry);
         }
 
         // set publisher status
@@ -425,16 +425,17 @@ public class ContentWriteController {
         return null;
     }
 
-    private void removeItemFromEquivSet(LookupEntry lookupEntry){
-        String lookupEntryUri = lookupEntry.uri();
-        lookupEntry.directEquivalents()
+    /**
+     * This will take an item, and remove all direct equivalences from it
+     */
+    private void removeItemFromEquivSet(Described described, LookupEntry lookupEntry){
+
+        ImmutableSet<String> equivsToRemove = lookupEntry.directEquivalents()
                 .stream()
                 .map(LookupRef::uri)
-                .filter(lookupRefUri -> !lookupRefUri.equals(lookupEntryUri))
-                .forEach(lookupRefUri -> equivalenceBreaker.removeFromSet(
-                        lookupEntryUri,
-                        lookupRefUri
-                ));
+                .collect(MoreCollectors.toImmutableSet());
+
+        equivalenceBreaker.removeFromSet(described, lookupEntry, equivsToRemove);
     }
 
 

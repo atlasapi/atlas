@@ -48,6 +48,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.YOUVIEW_ITEM;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
 import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
@@ -140,7 +141,9 @@ public class UpdaterConfigurationRegistry {
                 makeUktvConfiguration(),
                 makeWikipediaConfiguration(),
                 makeBarbXMasterConfiguration(), //X-CDMF
-                makeImdbApiConfiguration()
+                makeImdbApiConfiguration(),
+                makeC5DataSubmissionConfiguration(),
+                makeBarbCensusConfiguration()
         );
 
         configurations.add(
@@ -916,6 +919,44 @@ public class UpdaterConfigurationRegistry {
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,
                         TARGET_SOURCES
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeC5DataSubmissionConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(C5_DATA_SUBMISSION)
+                .withItemEquivalenceUpdater(
+                        BARB_ITEM,
+                        ImmutableSet.of(BARB_TRANSMISSIONS, BARB_MASTER, PA, RADIO_TIMES)
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        TARGET_SOURCES
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        TARGET_SOURCES
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeBarbCensusConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(BARB_CENSUS)
+                .withItemEquivalenceUpdater(
+                        BARB_ITEM,
+                        ImmutableSet.of(
+                                BARB_MASTER
+                        )
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        ImmutableSet.of()
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        ImmutableSet.of()
                 )
                 .build();
     }

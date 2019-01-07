@@ -80,6 +80,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
@@ -93,6 +94,7 @@ import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
+import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.IMDB_API;
@@ -126,8 +128,9 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 @Configuration
 @Import({ EquivModule.class, KafkaMessagingModule.class, YouViewCoreModule.class })
 public class EquivTaskModule {
-
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    private static final int EQUIV_THREADS_PER_JOB = 5;
 
     private static final Set<String> ignored =
             ImmutableSet.of("http://www.bbc.co.uk/programmes/b006mgyl");
@@ -138,9 +141,9 @@ public class EquivTaskModule {
     private static final RepetitionRule YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION =
             RepetitionRules.every(Duration.standardHours(4));
     private static final RepetitionRule YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(9, 0));
+            RepetitionRules.daily(new LocalTime(12, 0));
     private static final RepetitionRule BBC_SCHEDULE_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(9, 0));
+            RepetitionRules.daily(new LocalTime(12, 0));
     private static final RepetitionRule ITV_SCHEDULE_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(11, 0));
     private static final RepetitionRule ITV_EQUIVALENCE_REPETITION =
@@ -166,14 +169,21 @@ public class EquivTaskModule {
             RepetitionRules.daily(new LocalTime(18, 0));
     private static final RepetitionRule BBC_MUSIC_EQUIVALENCE_REPETITION =
             RepetitionRules.every(Duration.standardHours(6));
-    private static final RepetitionRule TXLOGS_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(15, 30));
-    private static final RepetitionRule XCDMF_EQUIVALENCE_REPETITION =
+    private static final RepetitionRule TXLOGS_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule TXLOGS_EQUIVALENCE_DELTA_REPETITION =
+            RepetitionRules.daily(new LocalTime(9, 0));
+    private static final RepetitionRule XCDMF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule XCDMF_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(1, 30));
-    private static final RepetitionRule CDMF_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(2, 30));
+    private static final RepetitionRule CDMF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule CDMF_EQUIVALENCE_DELTA_REPETITION =
+            RepetitionRules.daily(new LocalTime(9, 0));
     private static final RepetitionRule IMDB_API_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(5, 30));
+    private static final RepetitionRule C5_DATA_SUBMISSION_EQUIVALENCE_REPETITION =
+            RepetitionRules.daily(new LocalTime(3, 0));
+    private static final RepetitionRule BARB_CENSUS_EQUIVALENCE_REPETITION =
+            RepetitionRules.daily(new LocalTime(7, 0));
     private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
@@ -190,7 +200,7 @@ public class EquivTaskModule {
     private static final RepetitionRule C4_PRESS_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(4, 0));
     private static final RepetitionRule NITRO_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(4, 0));
+            RepetitionRules.daily(new LocalTime(5, 0));
 
     @Value("${equiv.updater.enabled}") private String updaterEnabled;
     @Value("${equiv.updater.youviewschedule.enabled}")private String youViewScheduleUpdaterEnabled;
@@ -408,14 +418,56 @@ public class EquivTaskModule {
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(BARB_MASTER)
+                        .forLast(new Period().withDays(2))
+                        .withName("BARB CDMF Delta Updater (last 48h)"),
+                CDMF_EQUIVALENCE_DELTA_REPETITION
+        );
+        scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_MASTER).withName("Barb CDMF Updater"),
-                CDMF_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                CDMF_EQUIVALENCE_REPETITION
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(BARB_X_MASTER)
+                        .forLast(new Period().withDays(2))
+                        .withName("BARB XCDMF Delta Updater (last 48h)"),
+                XCDMF_EQUIVALENCE_DELTA_REPETITION
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(BARB_X_MASTER).withName("Barb XCDMF Updater"),
+                XCDMF_EQUIVALENCE_REPETITION
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(BARB_TRANSMISSIONS)
+                        .forLast(new Period().withDays(2))
+                        .withName("TxLog Delta Updater (last 48h)"),
+                TXLOGS_EQUIVALENCE_DELTA_REPETITION
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(BARB_TRANSMISSIONS)
+                        .forLast(new Period().withWeeks(2))
+                        .withName("TxLog Delta Updater (last 2 weeks)"),
+                RepetitionRules.NEVER
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_TRANSMISSIONS).withName("Barb TxLogs Updater"),
-                TXLOGS_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                TXLOGS_EQUIVALENCE_REPETITION
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(ITV_CPS).withName("ITV CPS Updater"),
@@ -487,16 +539,20 @@ public class EquivTaskModule {
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                publisherUpdateTask(BARB_X_MASTER).withName("Barb XCDMF Updater"),
-                XCDMF_EQUIVALENCE_REPETITION,
-                jobsAtStartup
-        );
-        scheduleEquivalenceJob(
                 publisherUpdateTask(IMDB_API).withName("IMDB Api Updater"),
                 IMDB_API_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-
+        scheduleEquivalenceJob(
+                publisherUpdateTask(C5_DATA_SUBMISSION).withName("C5 Data Submission Updater"),
+                C5_DATA_SUBMISSION_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(BARB_CENSUS).withName("BARB Census Updater"),
+                BARB_CENSUS_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
     }
 
     private void addYouViewScheduleEquivalenceJobs(Set<ScheduledTask> jobsAtStartup) {
@@ -596,7 +652,7 @@ public class EquivTaskModule {
 
     private ExecutorService getNewDefaultExecutor(){
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                5, 5, //this is used by all equiv tasks, so increase with caution.
+                EQUIV_THREADS_PER_JOB, EQUIV_THREADS_PER_JOB, //this is used by all equiv tasks, so increase with caution.
                 60, TimeUnit.SECONDS,
                 new AlwaysBlockingQueue<>(SAVE_EVERY_BLOCK_SIZE)
         );

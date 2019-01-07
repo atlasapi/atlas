@@ -35,7 +35,6 @@ import static com.google.common.collect.Iterables.filter;
 public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     
     private static final Pattern IMDB_REF = Pattern.compile("http://imdb.com/title/[\\d\\w]+");
-    private static final int NUMBER_OF_YEARS_DIFFERENT_TOLERANCE = 1;
 
     private static final float TITLE_WEIGHTING = 1.0f;
     private static final float BROADCAST_WEIGHTING = 0.0f;
@@ -48,6 +47,11 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private final FilmTitleMatcher titleMatcher;
     private final boolean acceptNullYears;
 
+    //this var is used to ensure films with multiple release dates equiv (eg. film released across the span of two years)
+    //useful if we want to constrict equiv (eg. Amazon should not have different release years)
+    //Context: we had a support issue caused by a bad equiv on exact title match (for RT)
+    private int tolerableYearDifference;
+
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
 
     private final List<Publisher> publishers;
@@ -59,11 +63,22 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             Application application,
             boolean acceptNullYears
     ) {
+        this(searchResolver, publishers, application, acceptNullYears, 1);
+    }
+
+    public FilmEquivalenceGenerator(
+            SearchResolver searchResolver,
+            Iterable<Publisher> publishers,
+            Application application,
+            boolean acceptNullYears,
+            Integer tolerableYearDifference
+    ) {
         this.searchResolver = searchResolver;
         this.publishers = ImmutableList.copyOf(publishers);
         this.searchApplication = application;
         this.acceptNullYears = acceptNullYears;
         this.titleMatcher = new FilmTitleMatcher(titleExpander);
+        this.tolerableYearDifference = tolerableYearDifference;
     }
 
     @Override
@@ -196,7 +211,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         } else if (equivFilm.getYear() == null && acceptNullYears) {
             return true;
         }
-        return Math.abs(film.getYear() - equivFilm.getYear()) <= NUMBER_OF_YEARS_DIFFERENT_TOLERANCE;
+        return Math.abs(film.getYear() - equivFilm.getYear()) <= tolerableYearDifference;
     }
 
     private String normalize(String title) {

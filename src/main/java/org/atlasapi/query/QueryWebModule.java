@@ -21,6 +21,7 @@ import org.atlasapi.feeds.youview.ContentHierarchyExpanderFactory;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
+import org.atlasapi.input.ChannelGroupTransformer;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.ImageModelTranslator;
@@ -39,7 +40,6 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Topic;
-import org.atlasapi.media.entity.simple.ChannelGroupQueryResult;
 import org.atlasapi.media.entity.simple.ChannelQueryResult;
 import org.atlasapi.media.entity.simple.ContentGroupQueryResult;
 import org.atlasapi.media.entity.simple.ContentQueryResult;
@@ -101,7 +101,7 @@ import org.atlasapi.output.simple.TopicModelSimplifier;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.EquivalenceContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.PeopleResolver;
@@ -134,6 +134,7 @@ import org.atlasapi.query.topic.PublisherFilteringTopicContentLister;
 import org.atlasapi.query.topic.PublisherFilteringTopicResolver;
 import org.atlasapi.query.v2.ChannelController;
 import org.atlasapi.query.v2.ChannelGroupController;
+import org.atlasapi.query.v2.ChannelGroupWriteExecutor;
 import org.atlasapi.query.v2.ChannelWriteExecutor;
 import org.atlasapi.query.v2.ContentFeedController;
 import org.atlasapi.query.v2.ContentGroupController;
@@ -174,7 +175,7 @@ public class QueryWebModule {
     @Autowired private DatabasedMongo mongo;
     @Autowired private ContentGroupWriter contentGroupWriter;
     @Autowired private ContentGroupResolver contentGroupResolver;
-    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private EquivalenceContentWriter contentWriter;
     @Autowired private LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     @Autowired private ScheduleWriter scheduleWriter;
     @Autowired private ContentResolver contentResolver;
@@ -340,15 +341,20 @@ public class QueryWebModule {
 
     @Bean
     ChannelGroupController channelGroupController() {
-        NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
-        return new ChannelGroupController(
-                applicationFetcher,
-                log,
-                channelGroupModelWriter(),
-                cachingChannelGroupResolver(),
-                channelResolver,
-                idCodec
-        );
+        return ChannelGroupController.builder()
+                .withApplicationFetcher(applicationFetcher)
+                .withLog(log)
+                .withAtlasModelWriter(channelGroupModelWriter())
+                .withModelReader(new DefaultJacksonModelReader())
+                .withChannelGroupResolver(cachingChannelGroupResolver())
+                .withChannelGroupTransformer(new ChannelGroupTransformer())
+                .withChannelGroupWriteExecutor(channelGroupWriteExecutor())
+                .withChannelResolver(channelResolver)
+                .build();
+    }
+
+    private ChannelGroupWriteExecutor channelGroupWriteExecutor() {
+        return ChannelGroupWriteExecutor.create(channelGroupStore);
     }
 
     @Bean
@@ -356,11 +362,11 @@ public class QueryWebModule {
         ChannelGroupModelSimplifier channelGroupModelSimplifier = ChannelGroupModelSimplifier();
         return this.standardWriter(
                 new SimpleChannelGroupModelWriter(
-                        new JsonTranslator<ChannelGroupQueryResult>(),
+                        new JsonTranslator<>(),
                         channelGroupModelSimplifier
                 ),
                 new SimpleChannelGroupModelWriter(
-                        new JaxbXmlTranslator<ChannelGroupQueryResult>(),
+                        new JaxbXmlTranslator<>(),
                         channelGroupModelSimplifier
                 )
         );

@@ -71,7 +71,10 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new BarbTitleMatchingItemScorer(Score.valueOf(2.0), Score.nullScore()),
+                                BarbTitleMatchingItemScorer.builder()
+                                        .withScoreOnPerfectMatch(Score.valueOf(2.0))
+                                        .withScoreOnMismatch(Score.ZERO)
+                                        .build(),
                                 new ItemYearScorer(Score.ONE)
                         )
                 )
@@ -80,7 +83,7 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(1.9), //effectively ignores year at the moment
+                                new MinimumScoreFilter<>(2.9),
                                 new MediaTypeFilter<>(),
                                 new FilmAndEpisodeFilter<>(),
                                 new DummyContainerFilter<>(),
@@ -92,7 +95,7 @@ public class ImdbApitemUpdateProvider implements EquivalenceUpdaterProvider<Item
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(2D)
+                        AllOverOrEqThresholdExtractor.create(3D)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

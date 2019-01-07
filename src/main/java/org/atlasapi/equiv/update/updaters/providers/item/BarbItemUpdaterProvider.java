@@ -22,8 +22,8 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
@@ -72,7 +72,12 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         ImmutableSet.of(
                                 //The BarbAliasEquivalenceGeneratorAndScorer also adds a score. max 10
                                 //Surprise! The BroadcastMatchingItemEquivalenceGeneratorAndScorer also adds a score. max 3.
-                                new TitleMatchingItemScorer(Score.nullScore()),
+                                BarbTitleMatchingItemScorer.builder()
+                                        .withContentResolver(dependencies.getContentResolver())
+                                        .withScoreOnPerfectMatch(Score.valueOf(2.0))
+                                        .withScoreOnPartialMatch(Score.ONE)
+                                        .withScoreOnMismatch(Score.ZERO)
+                                        .build(),
                                 DescriptionMatchingScorer.makeScorer()
                         )
                 )
@@ -94,7 +99,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3)
+                        AllOverOrEqThresholdExtractor.create(4)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

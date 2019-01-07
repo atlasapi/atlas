@@ -68,7 +68,7 @@ public class ImdbApiContainerUpdateProvider implements EquivalenceUpdaterProvide
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(1.9), //effectively ignores year at the moment
+                                new MinimumScoreFilter<>(2.9),
                                 new MediaTypeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
@@ -79,7 +79,7 @@ public class ImdbApiContainerUpdateProvider implements EquivalenceUpdaterProvide
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(2D)
+                        AllOverOrEqThresholdExtractor.create(3D)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

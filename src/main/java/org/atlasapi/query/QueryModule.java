@@ -14,13 +14,13 @@ permissions and limitations under the License. */
 
 package org.atlasapi.query;
 
-import org.atlasapi.equiv.AllFromPublishersEquivalentContentResolver;
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.YouViewOutputContentMerger;
 import org.atlasapi.equiv.query.MergeOnOutputQueryExecutor;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
+import org.atlasapi.persistence.content.AllFromPublishersEquivalentContentResolver;
 import org.atlasapi.persistence.content.DefaultEquivalentContentResolver;
 import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.cassandra.CassandraContentStore;

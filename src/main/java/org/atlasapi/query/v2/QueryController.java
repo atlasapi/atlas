@@ -14,16 +14,12 @@ permissions and limitations under the License. */
 
 package org.atlasapi.query.v2;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.application.v3.DefaultApplication;
@@ -39,17 +35,18 @@ import org.atlasapi.output.QueryResult;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.event.EventContentLister;
 import org.atlasapi.persistence.logging.AdapterLog;
-
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Controller
 public class QueryController extends BaseController<QueryResult<Identified, ? extends Identified>> {
@@ -296,5 +293,10 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.DELETE)
     public WriteResponse deleteContent(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.unpublishContent(req, resp);
+    }
+
+    @RequestMapping(value="/3.0/debug/equivalence/explicit/content.json", method = RequestMethod.PUT)
+    public WriteResponse updateExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
+        return contentWriteController.updateExplicitEquivalence(req, resp);
     }
 }

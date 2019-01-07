@@ -19,10 +19,12 @@ import org.atlasapi.input.ItemModelTransformer;
 import org.atlasapi.input.SegmentModelTransformer;
 import org.atlasapi.input.SeriesModelTransformer;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.segment.SegmentWriter;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.EquivalenceContentWriter;
+import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
@@ -37,6 +39,9 @@ import org.atlasapi.query.content.merge.VersionMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 import org.atlasapi.query.worker.ContentWriteMessageSerialiser;
 import org.atlasapi.query.worker.ContentWriteWorker;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,8 +60,9 @@ import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETT
 @Configuration
 @Import({ KafkaMessagingModule.class })
 public class QueryExecutorModule {
-    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private EquivalenceContentWriter contentWriter;
     @Autowired private ScheduleWriter scheduleWriter;
+    @Autowired private ScheduleResolver scheduleResolver;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ChannelResolver channelResolver;
     @Autowired @Qualifier("topicStore") private TopicStore topicStore;
@@ -119,7 +125,8 @@ public class QueryExecutorModule {
                 channelResolver,
                 eventResolver,
                 ContentMerger.create(itemMerger, episodeMerger, seriesMerger),
-                versionMerger
+                versionMerger,
+                broadcastTrimmer()
         );
     }
 
@@ -145,6 +152,16 @@ public class QueryExecutorModule {
     public MessageSender<ContentWriteMessage> contentWriteMessageSender() {
         return senderFactory.makeMessageSender(
                 contentWriteTopic, new ContentWriteMessageSerialiser()
+        );
+    }
+
+    @Bean
+    BroadcastTrimmer broadcastTrimmer() {
+        return new ScheduleResolverBroadcastTrimmer(
+                Publisher.BT_SPORT_EBS,
+                scheduleResolver,
+                contentResolver,
+                contentWriter
         );
     }
 

@@ -1,12 +1,5 @@
 package org.atlasapi.equiv;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.LookupRef;
@@ -17,13 +10,23 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableSet;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EquivalenceBreakerTest {
@@ -87,4 +90,30 @@ public class EquivalenceBreakerTest {
         verify(lookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))), 
                 argThat(hasItem(ContentRef.valueOf(ITEM_TO_KEEP))), argThat(is(Publisher.all())));
     }
+
+
+    @Test
+    public void testRemovesMultipleItemsFromEquivalentSet() {
+        when(lookupEntryStore.entriesForCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
+                .thenReturn(ImmutableSet.of(EXAMPLE_ITEM_LOOKUP));
+
+        when(contentResolver.findByCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
+                .thenReturn(ResolvedContent.builder().put(REMOVE_FROM_URI, EXAMPLE_ITEM).build());
+
+        when(contentResolver.findByCanonicalUris(argThat(hasItem(ITEM_TO_KEEP_URI))))
+                .thenReturn(ResolvedContent.builder()
+                        .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
+                        .build());
+
+        ImmutableSet<String> allEquivs = EXAMPLE_ITEM_LOOKUP.directEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(MoreCollectors.toImmutableSet());
+
+        equivalenceBreaker.removeFromSet(EXAMPLE_ITEM, EXAMPLE_ITEM_LOOKUP, allEquivs);
+
+        verify(lookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))),
+                argThat(is(ImmutableList.of())), argThat(is(Publisher.all())));
+    }
+
 }

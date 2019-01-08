@@ -249,6 +249,7 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
         return split(request.getParameter("id"));
     }
 
+
     private List<String> getEventRefIds(HttpServletRequest request) {
         return split(request.getParameter("event_ids"));
     }

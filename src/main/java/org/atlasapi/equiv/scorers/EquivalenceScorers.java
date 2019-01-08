@@ -38,7 +38,7 @@ public class EquivalenceScorers<T> {
                 scoredScores.add(scorer.score(content, candidates, desc, equivToTelescopeResults));
                 desc.finishStage();
             } catch (Exception e) {
-                throw new RuntimeException(String.format("{} - {}", scorer, content), e);
+                throw new RuntimeException(String.format("%s - %s", scorer, content), e);
             }
         }
 

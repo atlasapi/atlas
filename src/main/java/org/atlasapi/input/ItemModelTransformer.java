@@ -249,6 +249,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
     private Location locationFrom(org.atlasapi.media.entity.simple.Location inputLocation, DateTime now) {
         Location location = new Location();
         location.setLastUpdated(now);
+        location.setCanonicalUri(inputLocation.getCanonicalUri());
         location.setEmbedCode(inputLocation.getEmbedCode());
         location.setEmbedId(inputLocation.getEmbedId());
         location.setTransportIsLive(inputLocation.getTransportIsLive());

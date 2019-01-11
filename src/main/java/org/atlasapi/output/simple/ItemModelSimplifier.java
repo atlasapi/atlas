@@ -710,6 +710,7 @@ public class ItemModelSimplifier
             simpleLocation.setTransportSubType(location.getTransportSubType().toString());
         }
         simpleLocation.setUri(location.getUri());
+        simpleLocation.setCanonicalUri(location.getCanonicalUri());
         simpleLocation.setEmbedCode(location.getEmbedCode());
         simpleLocation.setEmbedId(location.getEmbedId());
         simpleLocation.setAvailable(location.getAvailable());

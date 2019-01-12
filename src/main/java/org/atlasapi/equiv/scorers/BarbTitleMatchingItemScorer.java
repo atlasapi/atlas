@@ -171,7 +171,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     private Score score(Item subject, Content suggestion, ResultDescription desc) {
         Score score = Score.nullScore();
-        if (!Strings.isNullOrEmpty(suggestion.getTitle())) {
+        if (!Strings.isNullOrEmpty(subject.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title (%s) scored: %s", suggestion.getCanonicalUri(), score);
             } else {

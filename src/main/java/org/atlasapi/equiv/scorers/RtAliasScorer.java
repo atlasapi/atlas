@@ -85,12 +85,22 @@ public class RtAliasScorer implements EquivalenceScorer<Item> {
                 return perfectMatchScore;
             }
         }
-        desc.appendText("%s (%s) ignored: no matching alias for namespace %s and/or URI not %s",
-                candidate.getTitle(),
-                candidate.getCanonicalUri(),
-                NAMESPACE_TO_MATCH,
-                NEW_PA_URL_FORMAT
-        );
+        if(!candidate.getCanonicalUri().contains(NEW_PA_URL_FORMAT)){
+            desc.appendText(
+                    "%s (%s) ignored: URI not %s",
+                    candidate.getTitle(),
+                    candidate.getCanonicalUri(),
+                    NEW_PA_URL_FORMAT
+            );
+        }
+        else {
+            desc.appendText(
+                    "%s (%s) ignored: no matching alias for namespace %s",
+                    candidate.getTitle(),
+                    candidate.getCanonicalUri(),
+                    NAMESPACE_TO_MATCH
+            );
+        }
         return mismatchScore;
     }
 

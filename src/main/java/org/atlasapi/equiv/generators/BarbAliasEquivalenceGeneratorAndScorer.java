@@ -39,6 +39,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
 
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
     private static final String BCID_NAMESPACE_SUFFIX = "bcid";
+    private static final String PARENT_VERSION_BCID_NAMESPACE_SUFFIX = "parentVersionBcid";
     private static final Set<String> T1_BCID_NAMESPACES = ImmutableSet.of(
             "gb:bbc:nitro:prod:version:pid",
             "gb:itv:production:id",
@@ -156,7 +157,9 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     }
 
     private boolean acceptedAlias(Alias alias) {
-        if(alias.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX)) {
+        if(alias.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX)
+                || alias.getNamespace().endsWith(PARENT_VERSION_BCID_NAMESPACE_SUFFIX)
+        ) {
             return true;
         }
         for(String namespace : T1_BCID_NAMESPACES) {
@@ -189,10 +192,27 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
             expandedAliases.add(alias);
 
             //add the originating onwer if you have the normal one, and vs
-            if (alias.getNamespace().startsWith(OOBG_PREFIX)) {
-                expandedAliases.add(aliasForNewNamespace(alias, OOBG_PREFIX, BG_PREFIX));
+            if (alias.getNamespace().startsWith(OOBG_PREFIX)) { //add bcid and parentVersionBcid aliases
+                Alias bgAliasForOobg = aliasForNewNamespacePrefix(alias, OOBG_PREFIX, BG_PREFIX);
+                expandedAliases.add(bgAliasForOobg);
+                //at the time of writing this, this should always be true
+                if(bgAliasForOobg.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX)) {
+                    expandedAliases.add(
+                            aliasForNewNamespaceSuffix(bgAliasForOobg, BCID_NAMESPACE_SUFFIX, PARENT_VERSION_BCID_NAMESPACE_SUFFIX)
+                    );
+                }
             } else if (alias.getNamespace().startsWith(BG_PREFIX)) {
-                expandedAliases.add(aliasForNewNamespace(alias, BG_PREFIX, OOBG_PREFIX));
+                if(alias.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX)) { //add oobcid and parentVersionBcid aliases
+                    expandedAliases.add(aliasForNewNamespacePrefix(alias, BG_PREFIX, OOBG_PREFIX));
+                    expandedAliases.add(
+                            aliasForNewNamespaceSuffix(alias, BCID_NAMESPACE_SUFFIX, PARENT_VERSION_BCID_NAMESPACE_SUFFIX)
+                    );
+                } else if(alias.getNamespace().endsWith(PARENT_VERSION_BCID_NAMESPACE_SUFFIX)) { //add bcid and oobbcid aliases
+                    Alias bcidAliasFromParentBcid =
+                            aliasForNewNamespaceSuffix(alias, PARENT_VERSION_BCID_NAMESPACE_SUFFIX, BCID_NAMESPACE_SUFFIX);
+                    expandedAliases.add(bcidAliasFromParentBcid);
+                    expandedAliases.add(aliasForNewNamespacePrefix(bcidAliasFromParentBcid, BG_PREFIX, OOBG_PREFIX));
+                }
             }
         }
 
@@ -200,13 +220,13 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
             // if you have the ITV add the STV, and vs.
             // The previous block would have already expanded that for Originating Owner.
             if (alias.getNamespace().equals(ITV_BG_PREFIX)) {
-                expandedAliases.add(aliasForNewNamespace(alias, ITV_BG_PREFIX, STV_BG_PREFIX));
+                expandedAliases.add(aliasForNewNamespacePrefix(alias, ITV_BG_PREFIX, STV_BG_PREFIX));
             } else if (alias.getNamespace().startsWith(ITV_OOBG_PREFIX)) {
-                expandedAliases.add(aliasForNewNamespace(alias, ITV_OOBG_PREFIX, STV_OOBG_PREFIX));
+                expandedAliases.add(aliasForNewNamespacePrefix(alias, ITV_OOBG_PREFIX, STV_OOBG_PREFIX));
             } else if (alias.getNamespace().startsWith(STV_BG_PREFIX)) {
-                expandedAliases.add(aliasForNewNamespace(alias, STV_BG_PREFIX, ITV_BG_PREFIX));
+                expandedAliases.add(aliasForNewNamespacePrefix(alias, STV_BG_PREFIX, ITV_BG_PREFIX));
             } else if (alias.getNamespace().startsWith(STV_OOBG_PREFIX)) {
-                expandedAliases.add(aliasForNewNamespace(alias, STV_OOBG_PREFIX, ITV_OOBG_PREFIX));
+                expandedAliases.add(aliasForNewNamespacePrefix(alias, STV_OOBG_PREFIX, ITV_OOBG_PREFIX));
             }
         }
 
@@ -219,14 +239,26 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
                 ImmutableSet.of(alias.getValue()));
     }
 
-    private Alias aliasForNewNamespace(Alias alias, String oldPrefix, String newPrefix) {
+    private Alias aliasForNewNamespacePrefix(Alias alias, String oldPrefix, String newPrefix) {
         return new Alias(
-                getNewNamespace(alias.getNamespace(), oldPrefix, newPrefix),
+                replaceNamespacePrefix(alias.getNamespace(), oldPrefix, newPrefix),
                 alias.getValue());
     }
     //replaces the oldPrefix with the newPrefix in the given namespace.
-    private String getNewNamespace(String namespace, String oldPrefix, String newPrefix) {
+    private String replaceNamespacePrefix(String namespace, String oldPrefix, String newPrefix) {
         return newPrefix.concat(namespace.substring(oldPrefix.length()));
+    }
+
+    private Alias aliasForNewNamespaceSuffix(Alias alias, String oldSuffix, String newSuffix) {
+        return new Alias(
+                replaceNamespaceSuffix(alias.getNamespace(), oldSuffix, newSuffix),
+                alias.getValue()
+        );
+    }
+
+    //replaces the oldSuffix with the newSuffix in the given namespace.
+    private String replaceNamespaceSuffix(String namespace, String oldSuffix, String newSuffix) {
+        return namespace.substring(0, namespace.length() - oldSuffix.length()).concat(newSuffix);
     }
 
     @Override

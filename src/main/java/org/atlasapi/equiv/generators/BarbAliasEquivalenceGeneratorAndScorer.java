@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.generators;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.stream.MoreStreams;
@@ -18,6 +19,7 @@ import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -40,19 +42,24 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
     private static final String BCID_NAMESPACE_SUFFIX = "bcid";
     private static final String PARENT_VERSION_BCID_NAMESPACE_SUFFIX = "parentVersionBcid";
-    private static final Set<String> T1_BCID_NAMESPACES = ImmutableSet.of(
-            "gb:bbc:nitro:prod:version:pid",
-            "gb:itv:production:id",
-            "gb:channel4:prod:pmlsd:programmeId",
-            "gb:c5:bcid",
-            "gb:uktv:bcid"
+    private static final Map<String, String> T1_BROADCAST_GROUP_BCID_ALIAS_MAP = ImmutableMap.of(
+            "gb:barb:broadcastGroup:1:bcid", "gb:bbc:nitro:prod:version:pid",
+            "gb:barb:broadcastGroup:2:bcid", "gb:itv:production:id",
+            "gb:barb:broadcastGroup:3:bcid", "gb:channel4:prod:pmlsd:programmeId",
+            "gb:barb:broadcastGroup:4:bcid", "gb:c5:bcid",
+            "gb:barb:broadcastGroup:63:bcid", "gb:uktv:bcid"
     );
+    private static final ImmutableSet<String> T1_BCID_NAMESPACES =
+            ImmutableSet.copyOf(T1_BROADCAST_GROUP_BCID_ALIAS_MAP.values());
+
     private static final String BG_PREFIX = "gb:barb:broadcastGroup";
     private static final String OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup";
     private static final String ITV_BG_PREFIX = "gb:barb:broadcastGroup:2:bcid";
     private static final String ITV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:2:bcid";
     private static final String STV_BG_PREFIX = "gb:barb:broadcastGroup:111:bcid";
     private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111:bcid";
+    private static final String C4_BCID_PREFIX = "C4:";
+    private static final String C4_BG_NAMESPACE = "gb:barb:broadcastGroup:3:bcid";
 
     public BarbAliasEquivalenceGeneratorAndScorer(
             MongoLookupEntryStore lookupEntryStore,
@@ -227,6 +234,19 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
                 expandedAliases.add(aliasForNewNamespacePrefix(alias, STV_BG_PREFIX, ITV_BG_PREFIX));
             } else if (alias.getNamespace().startsWith(STV_OOBG_PREFIX)) {
                 expandedAliases.add(aliasForNewNamespacePrefix(alias, STV_OOBG_PREFIX, ITV_OOBG_PREFIX));
+            }
+        }
+
+        for (Alias alias : ImmutableSet.copyOf(expandedAliases)) {
+            if (T1_BROADCAST_GROUP_BCID_ALIAS_MAP.containsKey(alias.getNamespace())) {
+                String value =
+                        alias.getNamespace().equals(C4_BG_NAMESPACE) && alias.getValue().startsWith(C4_BCID_PREFIX)
+                                ? alias.getValue().substring(C4_BCID_PREFIX.length()) //C4 CMS bcids do not include this prefix
+                                : alias.getValue();
+                expandedAliases.add(new Alias(
+                        T1_BROADCAST_GROUP_BCID_ALIAS_MAP.get(alias.getNamespace()),
+                        value
+                ));
             }
         }
 

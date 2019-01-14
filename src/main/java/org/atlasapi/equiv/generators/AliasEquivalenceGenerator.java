@@ -35,9 +35,7 @@ public class AliasEquivalenceGenerator<T extends Content> implements Equivalence
             ContentResolver resolver,
             Class<T> cls
     ) {
-        this.lookupEntryStore = lookupEntryStore;
-        this.resolver = resolver;
-        this.cls = cls;
+        this(lookupEntryStore, resolver, cls, null);
     }
 
     public AliasEquivalenceGenerator(

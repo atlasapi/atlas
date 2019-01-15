@@ -41,6 +41,8 @@ import static org.mockito.Mockito.when;
 
 public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
+    private static final double SCORE_ON_MATCH = 10.0;
+
     private static final String BBC_CMS_BCID_NAMESPACE = "gb:bbc:nitro:prod:version:pid";
     private static final String C4_CMS_BCID_NAMESPACE = "gb:channel4:prod:pmlsd:programmeId";
     private static final String ITV_CMS_BCID_NAMESPACE = "gb:itv:production:id";
@@ -65,7 +67,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
     private final MongoLookupEntryStore aliasLookupEntryStore = mock(MongoLookupEntryStore.class);
     private BarbAliasEquivalenceGeneratorAndScorer<Content> aliasGenerator =
             (BarbAliasEquivalenceGeneratorAndScorer<Content>) BarbAliasEquivalenceGeneratorAndScorer
-                    .barbAliasResolvingGenerator(aliasLookupEntryStore, aliasResolver);
+                    .barbAliasResolvingGenerator(aliasLookupEntryStore, aliasResolver, SCORE_ON_MATCH);
 
     Content aliasIdentified1;
     Content aliasIdentified2;
@@ -327,9 +329,9 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 EquivToTelescopeResults.create("id", "publisher")
         );
         assertTrue(!scoredCandidates.candidates().containsKey(bgItem));
-        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == SCORE_ON_MATCH);
     }
 
     @Test
@@ -345,10 +347,10 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(oobgItem));
-        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == SCORE_ON_MATCH);
     }
 
     @Test
@@ -364,10 +366,10 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(parentBcidItem));
-        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == SCORE_ON_MATCH);
     }
 
     @Test
@@ -383,9 +385,9 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(cmsItem));
     }
 
@@ -415,13 +417,13 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(stvOobgItem));
-        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == SCORE_ON_MATCH);
 
         scoredCandidates = aliasGenerator.generate(
                 stvBgItem,
@@ -429,25 +431,25 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 EquivToTelescopeResults.create("id", "publisher")
         );
         assertTrue(!scoredCandidates.candidates().containsKey(stvBgItem));
-        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == SCORE_ON_MATCH);
 
         scoredCandidates = aliasGenerator.generate(
                 stvParentBcidItem,
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(stvParentBcidItem));
-        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == SCORE_ON_MATCH);
     }
 
     @Test
@@ -476,51 +478,51 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(itvBgItem));
-        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == SCORE_ON_MATCH);
 
         scoredCandidates = aliasGenerator.generate(
                 itvOobgItem,
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(itvOobgItem));
-        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == SCORE_ON_MATCH);
 
         scoredCandidates = aliasGenerator.generate(
                 itvParentBcidItem,
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(itvParentBcidItem));
-        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(itvCmsItem).asDouble() == SCORE_ON_MATCH);
 
         scoredCandidates = aliasGenerator.generate(
                 itvCmsItem,
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(stvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(stvParentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvBgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvOobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(itvParentBcidItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(itvCmsItem));
     }
 
@@ -540,38 +542,38 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 EquivToTelescopeResults.create("id", "publisher")
         );
         assertTrue(!scoredCandidates.candidates().containsKey(bgItem));
-        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == SCORE_ON_MATCH);
 
         scoredCandidates = aliasGenerator.generate(
                 oobgItem,
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(oobgItem));
-        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == SCORE_ON_MATCH);
 
         scoredCandidates = aliasGenerator.generate(
                 parentBcidItem,
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(parentBcidItem));
-        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(cmsItem).asDouble() == SCORE_ON_MATCH);
 
         scoredCandidates = aliasGenerator.generate(
                 cmsItem,
                 desc,
                 EquivToTelescopeResults.create("id", "publisher")
         );
-        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == 10.0);
-        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == 10.0);
+        assertTrue(scoredCandidates.candidates().get(bgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(oobgItem).asDouble() == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem).asDouble() == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(cmsItem));
     }
 

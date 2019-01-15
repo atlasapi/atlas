@@ -1,7 +1,8 @@
 package org.atlasapi.equiv.generators;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.stream.MoreStreams;
@@ -19,9 +20,10 @@ import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import static com.google.gdata.util.common.base.Preconditions.checkArgument;
 
 /**
  * Query for each alias. For each alias get a list of candidates, and score them as well (?).
@@ -42,7 +44,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
     private static final String BCID_NAMESPACE_SUFFIX = "bcid";
     private static final String PARENT_VERSION_BCID_NAMESPACE_SUFFIX = "parentVersionBcid";
-    private static final Map<String, String> T1_BROADCAST_GROUP_BCID_ALIAS_MAP = ImmutableMap.of(
+    private static final BiMap<String, String> T1_BROADCAST_GROUP_BCID_ALIAS_MAP = ImmutableBiMap.of(
             "gb:barb:broadcastGroup:1:bcid", "gb:bbc:nitro:prod:version:pid",
             "gb:barb:broadcastGroup:2:bcid", "gb:itv:production:id",
             "gb:barb:broadcastGroup:3:bcid", "gb:channel4:prod:pmlsd:programmeId",
@@ -54,10 +56,10 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
 
     private static final String BG_PREFIX = "gb:barb:broadcastGroup";
     private static final String OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup";
-    private static final String ITV_BG_PREFIX = "gb:barb:broadcastGroup:2:bcid";
-    private static final String ITV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:2:bcid";
-    private static final String STV_BG_PREFIX = "gb:barb:broadcastGroup:111:bcid";
-    private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111:bcid";
+    private static final String ITV_BG_PREFIX = "gb:barb:broadcastGroup:2";
+    private static final String ITV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:2";
+    private static final String STV_BG_PREFIX = "gb:barb:broadcastGroup:111";
+    private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111";
     private static final String C4_BCID_PREFIX = "C4:";
     private static final String C4_BG_NAMESPACE = "gb:barb:broadcastGroup:3:bcid";
 
@@ -220,13 +222,29 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
                     expandedAliases.add(bcidAliasFromParentBcid);
                     expandedAliases.add(aliasForNewNamespacePrefix(bcidAliasFromParentBcid, BG_PREFIX, OOBG_PREFIX));
                 }
+            } else if (T1_BROADCAST_GROUP_BCID_ALIAS_MAP.containsValue(alias.getNamespace())) {
+                String bgNamespace = T1_BROADCAST_GROUP_BCID_ALIAS_MAP.inverse().get(alias.getNamespace());
+                Alias bgAliasForCms = new Alias(
+                    bgNamespace,
+                    bgNamespace.equals(C4_BG_NAMESPACE) && !alias.getValue().startsWith(C4_BCID_PREFIX)
+                        ? C4_BCID_PREFIX.concat(alias.getValue())
+                        : alias.getValue()
+                );
+                expandedAliases.add(bgAliasForCms);
+                checkArgument(bgAliasForCms.getNamespace().startsWith(BG_PREFIX));
+                expandedAliases.add(
+                        aliasForNewNamespacePrefix(bgAliasForCms, BG_PREFIX, OOBG_PREFIX)
+                );
+                expandedAliases.add(
+                        aliasForNewNamespaceSuffix(bgAliasForCms, BCID_NAMESPACE_SUFFIX, PARENT_VERSION_BCID_NAMESPACE_SUFFIX)
+                );
             }
         }
 
         for (Alias alias : ImmutableSet.copyOf(expandedAliases)) {
             // if you have the ITV add the STV, and vs.
             // The previous block would have already expanded that for Originating Owner.
-            if (alias.getNamespace().equals(ITV_BG_PREFIX)) {
+            if (alias.getNamespace().startsWith(ITV_BG_PREFIX)) {
                 expandedAliases.add(aliasForNewNamespacePrefix(alias, ITV_BG_PREFIX, STV_BG_PREFIX));
             } else if (alias.getNamespace().startsWith(ITV_OOBG_PREFIX)) {
                 expandedAliases.add(aliasForNewNamespacePrefix(alias, ITV_OOBG_PREFIX, STV_OOBG_PREFIX));

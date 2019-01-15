@@ -3,7 +3,6 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.application.v3.DefaultApplication;
-import org.atlasapi.equiv.generators.AliasEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ExactTitleGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
@@ -35,7 +34,6 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 import java.util.Set;
 
@@ -79,12 +77,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)),
                                         true,
-                                        0), //only equiv on exact year, as agreed
-                                new AliasEquivalenceGenerator<>(
-                                        (MongoLookupEntryStore) dependencies.getLookupEntryStore(),
-                                        dependencies.getContentResolver(),
-                                        Item.class
-                                )
+                                        0) //only equiv on exact year, as agreed
                         )
                 )
                 .withScorers(

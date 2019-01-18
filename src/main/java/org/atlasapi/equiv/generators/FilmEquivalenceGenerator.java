@@ -139,6 +139,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         for (Film equivFilm : ImmutableSet.copyOf(foundFilms)) {
             //if the candidate film is the subject itself, ignore
             if(java.util.Objects.equals(equivFilm.getId(), item.getId())){
+                desc.appendText("Self ignored as potential candidate");
                 continue;
             }
 

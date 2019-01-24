@@ -1,21 +1,11 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.hash.Hashing;
-import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
-import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
-import com.metabroadcast.atlas.glycerin.model.Episode;
-import com.metabroadcast.atlas.glycerin.model.Format;
-import com.metabroadcast.atlas.glycerin.model.GenreGroup;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Synopses;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.time.Clock;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.atlasapi.feeds.youview.nitro.NitroIdGenerator;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.CrewMember;
@@ -27,16 +17,30 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
+
+import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
+import com.metabroadcast.atlas.glycerin.model.Episode;
+import com.metabroadcast.atlas.glycerin.model.Format;
+import com.metabroadcast.atlas.glycerin.model.GenreGroup;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.Synopses;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.time.Clock;
+
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Set;
 
 import static com.metabroadcast.atlas.glycerin.model.Brand.Contributions;
 
@@ -59,13 +63,7 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
     private static final String FILM_FORMAT_ID = "PT007";
     private static final String PID_ALIAS_NAMESPACE = "gb:bbc:nitro:prod:version:pid";
     private static final String CRID_ALIAS_NAMESPACE = "gb:yv:prod:version:crid";
-    private static final Predicate<Format> IS_FILM_FORMAT = new Predicate<Format>() {
-
-        @Override
-        public boolean apply(Format input) {
-            return FILM_FORMAT_ID.equals(input.getFormatId());
-        }
-    };
+    private static final Predicate<Format> IS_FILM_FORMAT = input -> FILM_FORMAT_ID.equals(input.getFormatId());
 
     private final ContentExtractor<List<GenreGroup>, Set<String>> genresExtractor = new NitroGenresExtractor();
 
@@ -74,8 +72,12 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
     private final NitroIdGenerator nitroIdGenerator = new NitroIdGenerator(Hashing.md5());
     private final QueuingPersonWriter personWriter;
 
-    public NitroEpisodeExtractor(Clock clock, QueuingPersonWriter personWriter) {
-        super(clock);
+    public NitroEpisodeExtractor(
+            Clock clock,
+            ContentResolver contentResolver,
+            QueuingPersonWriter personWriter
+    ) {
+        super(clock, contentResolver);
         this.personWriter = personWriter;
     }
 

@@ -11,6 +11,7 @@ import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 
 import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
@@ -60,6 +61,7 @@ public class NitroEpisodeExtractorTest {
     private static final String EPISODE_PID = "p01mv8m3";
     private final NitroEpisodeExtractor extractor = new NitroEpisodeExtractor(
             new SystemClock(),
+            Mockito.mock(ContentResolver.class),
             Mockito.mock(QueuingPersonWriter.class)
     );
 

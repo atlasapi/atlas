@@ -19,6 +19,7 @@ import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;

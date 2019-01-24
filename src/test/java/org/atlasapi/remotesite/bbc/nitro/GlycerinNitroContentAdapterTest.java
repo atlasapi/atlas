@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
@@ -45,6 +46,7 @@ public class GlycerinNitroContentAdapterTest {
     @Mock QueuingPersonWriter personWriter;
     @Mock Clock clock;
     @Mock GlycerinNitroClipsAdapter clipsAdapter;
+    @Mock ContentResolver contentResolver;
 
     @Mock GlycerinResponse<Programme> glycerinResponse;
     @Mock GlycerinResponse<Availability> availabilityResponse;
@@ -57,7 +59,8 @@ public class GlycerinNitroContentAdapterTest {
     @Before
     public void setUp() {
         contentAdapter = new GlycerinNitroContentAdapter(
-                glycerin, clipsAdapter, personWriter, clock, pageSize);
+                glycerin, clipsAdapter, contentResolver, personWriter, clock, pageSize
+        );
     }
 
     @Test

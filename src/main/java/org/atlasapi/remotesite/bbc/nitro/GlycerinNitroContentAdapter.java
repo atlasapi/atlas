@@ -21,6 +21,7 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
@@ -92,6 +93,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     public GlycerinNitroContentAdapter(
             Glycerin glycerin,
             GlycerinNitroClipsAdapter clipsAdapter,
+            ContentResolver contentResolver,
             QueuingPersonWriter peopleWriter,
             Clock clock,
             int pageSize
@@ -101,7 +103,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         this.clipsAdapter = checkNotNull(clipsAdapter);
         this.brandExtractor = new NitroBrandExtractor(clock);
         this.seriesExtractor = new NitroSeriesExtractor(clock);
-        this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
+        this.itemExtractor = new NitroEpisodeExtractor(clock, contentResolver, peopleWriter);
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
     }
 
@@ -224,8 +226,9 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(Iterable<PidReference> refs)
-            throws NitroException {
+    public Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(
+            Iterable<PidReference> refs
+    ) throws NitroException {
         try {
             Iterable<ProgrammesQuery> programmesQueries = makeProgrammeQueries(refs);
             Iterable<List<Programme>> currentProgrammes = fetchProgrammes(programmesQueries);
@@ -252,7 +255,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private Iterable<List<ModelWithPayload<Item>>> fetchEpisodesFromProgrammes(
             Iterable<List<Programme>> currentProgrammes,
             @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
-    ) throws NitroException, GlycerinException {
+    ) {
         Iterable<List<Episode>> programmesAsEpisodes = getAsEpisodes(currentProgrammes);
         return toItemsListIterable(programmesAsEpisodes, broadcasts);
     }
@@ -260,7 +263,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private Iterable<List<ModelWithPayload<Item>>> toItemsListIterable(
             Iterable<List<Episode>> episodes,
             @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
-    ) throws GlycerinException, NitroException {
+    ) {
         return new PaginatedNitroItemSources(
                 episodes,
                 executor,
@@ -285,17 +288,10 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private Iterable<List<Programme>> fetchProgrammes(Iterable<ProgrammesQuery> queries)
             throws GlycerinException {
-
         return new PaginatedProgrammeRequest(glycerin, queries);
     }
 
     private Iterable<String> toStrings(Iterable<PidReference> refs) {
-        return Iterables.transform(refs, new Function<PidReference, String>() {
-
-            @Override
-            public String apply(PidReference input) {
-                return input.getPid();
-            }
-        });
+        return Iterables.transform(refs, PidReference::getPid);
     }
 }

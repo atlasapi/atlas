@@ -56,8 +56,11 @@ public class ContentUpdatingNitroBroadcastHandler
 
     private final NitroBroadcastExtractor broadcastExtractor = new NitroBroadcastExtractor();
 
-    public ContentUpdatingNitroBroadcastHandler(ContentResolver resolver, ContentWriter writer,
-            LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher, GroupLock<String> lock) {
+    public ContentUpdatingNitroBroadcastHandler(
+            ContentWriter writer,
+            LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher,
+            GroupLock<String> lock
+    ) {
         this.writer = writer;
         this.localOrRemoteFetcher = localOrRemoteNitroFetcher;
         this.lock = lock;
@@ -66,15 +69,15 @@ public class ContentUpdatingNitroBroadcastHandler
     @Override
     public ImmutableList<Optional<ItemRefAndBroadcast>> handle(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
-            OwlReporter owlReporter) throws NitroException {
-
+            OwlReporter owlReporter
+    ) {
         Set<String> itemIds = itemIds(nitroBroadcasts);
         Set<String> containerIds = ImmutableSet.of();
 
         try {
             lock.lock(itemIds);
             ImmutableSet<ModelWithPayload<Item>> items =
-                    localOrRemoteFetcher.resolveOrFetchItem( nitroBroadcasts );
+                    localOrRemoteFetcher.resolveOrFetchItem(nitroBroadcasts);
 
             containerIds = topLevelContainerIds(items);
             lock.lock(containerIds);

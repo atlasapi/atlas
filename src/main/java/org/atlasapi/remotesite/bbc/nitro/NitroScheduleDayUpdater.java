@@ -1,9 +1,17 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
+import java.util.List;
+import java.util.Map;
+
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
+import org.atlasapi.reporting.OwlReporter;
+
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -11,20 +19,15 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.metabroadcast.common.time.DateTimeZones;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
-import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
-import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
-import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
-import org.atlasapi.reporting.OwlReporter;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -60,15 +63,20 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     }
 
     @Override
-    public UpdateProgress process(ChannelDay channelDay, OwlReporter owlReporter) throws Exception {
-
+    public UpdateProgress process(
+            ChannelDay channelDay,
+            OwlReporter owlReporter
+    ) throws Exception {
         String serviceId = BbcIonServices.services.inverse().get(channelDay.getChannel().getUri());
         DateTime from = channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZones.UTC);
         DateTime to = from.plusDays(1);
         log.debug("updating {}: {} -> {}", serviceId, from, to);
 
         ImmutableList<Broadcast> broadcasts = getBroadcasts(serviceId, from, to);
-        ImmutableList<Optional<ItemRefAndBroadcast>> processingResults = processBroadcasts(broadcasts, owlReporter);
+        ImmutableList<Optional<ItemRefAndBroadcast>> processingResults = processBroadcasts(
+                broadcasts,
+                owlReporter
+        );
         try {
             updateSchedule(
                     channelDay.getChannel(),
@@ -102,8 +110,14 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         scheduleWriter.replaceScheduleBlock(Publisher.BBC_NITRO, channel, processed);
     }
 
-    private ImmutableList<Optional<ItemRefAndBroadcast>> processBroadcasts(ImmutableList<Broadcast> broadcasts, OwlReporter owlReporter) throws NitroException {
-        return ImmutableList.copyOf(broadcastHandler.handle(broadcasts, owlReporter));
+    private ImmutableList<Optional<ItemRefAndBroadcast>> processBroadcasts(
+            ImmutableList<Broadcast> broadcasts,
+            OwlReporter owlReporter
+    ) throws NitroException {
+        return ImmutableList.copyOf(broadcastHandler.handle(
+                broadcasts,
+                owlReporter
+        ));
     }
 
     private Map<String, String> acceptableIds(Iterable<ItemRefAndBroadcast> processed) {

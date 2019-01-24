@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -23,6 +24,7 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -31,6 +33,8 @@ import org.joda.time.Duration;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Base extractor for extracting common properties of {@link Item}s from a
@@ -51,14 +55,15 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     private final NitroAvailabilityExtractor availabilityExtractor
             = new NitroAvailabilityExtractor();
 
-    public BaseNitroItemExtractor(Clock clock) {
-        super(clock);
+    public BaseNitroItemExtractor(Clock clock, ContentResolver contentResolver) {
+        super(clock, contentResolver);
     }
 
     @Override
     protected final void extractAdditionalFields(
             NitroItemSource<SOURCE> source,
             ITEM item,
+            Set<Location> existingLocations,
             DateTime now
     ) {
         ImmutableSetMultimap<String, Broadcast> broadcasts = extractBroadcasts(
@@ -76,12 +81,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             // fixed at some point by the beeb, so the next ingest job will pick them up.
             ImmutableList<AvailableVersions.Version> eligibleVersions =
                     FluentIterable.from(nitroVersions.getVersion())
-                        .filter(new Predicate<AvailableVersions.Version>() {
-                            @Override
-                            public boolean apply(@Nullable AvailableVersions.Version input) {
-                                return input.getDuration() != null;
-                            }
-                        })
+                        .filter(input -> input.getDuration() != null)
                         .toList();
             for (AvailableVersions.Version nitroVersion : eligibleVersions) {
 
@@ -93,7 +93,8 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                     encodingsBuilder.addAll(availabilityExtractor.extractFromMixin(
                             extractPid(source),
                             availabilities.getAvailableVersionsAvailability(),
-                            mediaType
+                            mediaType,
+                            existingLocations
                     ));
                 }
 

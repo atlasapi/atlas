@@ -8,10 +8,15 @@ import javax.annotation.Nullable;
 import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
@@ -20,11 +25,14 @@ import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.time.Clock;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +76,16 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
     private final Clock clock;
     private final NitroImageExtractor imageExtractor
             = new NitroImageExtractor(1024, 576);
+    private final ContentResolver contentResolver;
+
     public NitroContentExtractor(Clock clock) {
         this.clock = clock;
+        this.contentResolver = null;
+    }
+
+    public NitroContentExtractor(Clock clock, ContentResolver contentResolver) {
+        this.clock = clock;
+        this.contentResolver = contentResolver;
     }
 
     @Override
@@ -114,8 +130,37 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
                         pid , content.getCanonicalUri(), masterBrand.getMid());
             }
         }
+
+        if (content instanceof Episode || content instanceof Item) {
+            Maybe<Identified> existingEpisode = contentResolver.findByUris(
+                    ImmutableList.of(content.getCanonicalUri())
+            ).getFirstValue();
+
+            if (!existingEpisode.hasValue()) {
+                extractAdditionalFields(source, content, Sets.newHashSet(), now);
+                return content;
+            }
+
+            Set<Location> existingLocations = ((Episode) existingEpisode.requireValue())
+                    .getVersions()
+                    .iterator()
+                    .next()
+                    .getManifestedAs()
+                    .iterator()
+                    .next()
+                    .getAvailableAt();
+
+            extractAdditionalFields(
+                    source,
+                    content,
+                    existingLocations,
+                    now
+            );
+            return content;
+        }
+
         //TODO: genres from v2 API
-        extractAdditionalFields(source, content, now);
+        extractAdditionalFields(source, content, Sets.newHashSet(), now);
         return content;
     }
 
@@ -190,9 +235,18 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
      * @param content - the extracted content.
      * @param now     - the current time.
      */
-    protected void extractAdditionalFields(SOURCE source, CONTENT content, DateTime now) {
 
-    }
+    protected void extractAdditionalFields(
+            SOURCE source,
+            CONTENT content,
+            Set<Location> existingLocations,
+            DateTime now
+    ) { }
+
+    protected void extractAdditionalFields(
+            SOURCE source,
+            CONTENT content
+    ) { }
 
     private String longestSynopsis(Synopses synopses) {
         return Strings.emptyToNull(

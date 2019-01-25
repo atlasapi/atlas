@@ -132,7 +132,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         }
 
         if (content instanceof Episode || content instanceof Item) {
-            Maybe<Identified> existingEpisode = contentResolver.findByUris(
+            Maybe<Identified> existingEpisode = contentResolver.findByCanonicalUris(
                     ImmutableList.of(content.getCanonicalUri())
             ).getFirstValue();
 
@@ -141,22 +141,23 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
                 return content;
             }
 
-            Set<Location> existingLocations = ((Episode) existingEpisode.requireValue())
-                    .getVersions()
-                    .iterator()
-                    .next()
-                    .getManifestedAs()
-                    .iterator()
-                    .next()
-                    .getAvailableAt();
-
-            extractAdditionalFields(
-                    source,
-                    content,
-                    existingLocations,
-                    now
-            );
-            return content;
+            if (existingEpisode.requireValue() instanceof Episode) {
+                Episode episode = (Episode) existingEpisode.requireValue();
+                Set<Location> existingLocations = episode.getVersions()
+                        .iterator()
+                        .next()
+                        .getManifestedAs()
+                        .iterator()
+                        .next()
+                        .getAvailableAt();
+                extractAdditionalFields(
+                        source,
+                        content,
+                        existingLocations,
+                        now
+                );
+                return content;
+            }
         }
 
         //TODO: genres from v2 API

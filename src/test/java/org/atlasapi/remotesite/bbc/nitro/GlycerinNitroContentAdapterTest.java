@@ -1,10 +1,13 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.atlasapi.media.entity.Clip;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
@@ -20,6 +23,7 @@ import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.time.Clock;
 
 import com.google.api.client.util.Lists;
@@ -47,11 +51,14 @@ public class GlycerinNitroContentAdapterTest {
     @Mock Clock clock;
     @Mock GlycerinNitroClipsAdapter clipsAdapter;
     @Mock ContentResolver contentResolver;
+    @Mock ResolvedContent resolvedContent;
+    @Mock Maybe<Identified> resolvedIdentified;
 
     @Mock GlycerinResponse<Programme> glycerinResponse;
     @Mock GlycerinResponse<Availability> availabilityResponse;
     @Mock GlycerinResponse<Broadcast> broadcastResponse;
     @Mock GlycerinResponse<Version> versionResponse;
+
     private final int pageSize = 30;
 
     private NitroContentAdapter contentAdapter;
@@ -106,6 +113,9 @@ public class GlycerinNitroContentAdapterTest {
         when(glycerin.execute(any(AvailabilityQuery.class))).thenReturn(availabilityResponse);
         when(glycerin.execute(any(BroadcastsQuery.class))).thenReturn(broadcastResponse);
         when(glycerin.execute(any(VersionsQuery.class))).thenReturn(versionResponse);
+
+        when(contentResolver.findByCanonicalUris(any())).thenReturn(resolvedContent);
+        when(resolvedContent.getFirstValue()).thenReturn(resolvedIdentified);
 
         Iterable<List<ModelWithPayload<Item>>> items = contentAdapter.fetchEpisodes(query, null);
         Item item = Iterables.getFirst(items, null).get(0).getModel();

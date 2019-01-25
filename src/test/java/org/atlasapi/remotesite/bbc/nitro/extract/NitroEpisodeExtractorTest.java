@@ -8,10 +8,12 @@ import javax.xml.datatype.DatatypeFactory;
 
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 
 import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
@@ -26,6 +28,8 @@ import com.metabroadcast.atlas.glycerin.model.ProgrammeFormats;
 import com.metabroadcast.atlas.glycerin.model.Version;
 import com.metabroadcast.atlas.glycerin.model.WarningText;
 import com.metabroadcast.atlas.glycerin.model.Warnings;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.SystemClock;
 
 import com.google.common.base.Strings;
@@ -36,9 +40,13 @@ import org.hamcrest.Matchers;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
@@ -48,22 +56,35 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
-
+@RunWith(MockitoJUnitRunner.class)
 public class NitroEpisodeExtractorTest {
+
+    @Mock private QueuingPersonWriter personWriter;
+    @Mock private ContentResolver contentResolver;
+    @Mock private ResolvedContent resolvedContent;
+    @Mock private Maybe<Identified> resolvedIdentified;
+    @Mock private Clock clock;
 
     private static final String AUDIO_DESCRIBED_VERSION_PID = "p02ccx3g";
     private static final String NON_AUDIO_DESCRIBED_VERSION_PID = "p02ccx5g";
     private static final String WITH_WARNING_VERSION_PID = "p02ccx8g";
     private static final String VERSION_PID = "p02ccx7g";
+    private static final String EPISODE_PID = "p01mv8m3";
     private static final Duration VERSION_DURATION = Duration.standardMinutes(90);
 
-    private static final String EPISODE_PID = "p01mv8m3";
-    private final NitroEpisodeExtractor extractor = new NitroEpisodeExtractor(
-            new SystemClock(),
-            Mockito.mock(ContentResolver.class),
-            Mockito.mock(QueuingPersonWriter.class)
-    );
+    private NitroEpisodeExtractor extractor;
+
+    @Before
+    public void setUp() {
+        this.extractor = new NitroEpisodeExtractor(clock, contentResolver, personWriter);
+
+        when(contentResolver.findByCanonicalUris(any())).thenReturn(resolvedContent);
+        when(resolvedContent.getFirstValue()).thenReturn(resolvedIdentified);
+        when(resolvedIdentified.hasValue()).thenReturn(false);
+    }
 
     @Test
     public void testParentRefsForExtractedTopLevelItemAreEmpty() {

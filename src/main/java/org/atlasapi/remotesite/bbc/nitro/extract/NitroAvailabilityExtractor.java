@@ -283,7 +283,9 @@ public class NitroAvailabilityExtractor {
             }
         }
 
-        markStaleLocationsAsUnavailable(existingLocations, locations);
+        if (!existingLocations.isEmpty()) {
+            markStaleLocationsAsUnavailable(existingLocations, locations);
+        }
 
         return locations.build();
     }
@@ -292,23 +294,31 @@ public class NitroAvailabilityExtractor {
             Set<Location> existingLocations,
             ImmutableSet.Builder<Location> locations
     ) {
-        removeDuplicateLocations(existingLocations, locations);
+        Set<Location> dedupedLocations = removeDuplicateLocations(existingLocations, locations);
 
-        existingLocations.forEach(existingLocation -> {
-            existingLocation.setAvailable(false);
-            locations.add(existingLocation);
-        });
+        if (!dedupedLocations.isEmpty()) {
+            dedupedLocations.forEach(existingLocation -> {
+                existingLocation.setAvailable(false);
+                locations.add(existingLocation);
+            });
+        }
     }
 
-    private void removeDuplicateLocations(
+    private Set<Location> removeDuplicateLocations(
             Set<Location> existingLocations,
             ImmutableSet.Builder<Location> locations
     ) {
-        for (Location location : locations.build()) {
-            existingLocations.removeIf(existingLocation -> existingLocation.getCanonicalUri()
-                    .equals(location.getCanonicalUri())
-            );
+        Set<Location> dedupedLocations = Sets.newConcurrentHashSet(existingLocations);
+
+        for (Location existingLocation : dedupedLocations) {
+            for (Location location : locations.build()) {
+                if (existingLocation.getUri().equals(location.getUri())) {
+                    dedupedLocations.remove(existingLocation);
+                }
+            }
         }
+
+        return dedupedLocations;
     }
 
     private Location newLocation(

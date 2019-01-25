@@ -1,28 +1,38 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
+import java.util.Collections;
 import java.util.Set;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.atlasapi.media.TransportType;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Location;
+import org.atlasapi.media.entity.Policy;
+
+import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.AvailabilityOf;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions.Version.Availabilities;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions.Version.Availabilities.Availability.MediaSets;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet;
+import com.metabroadcast.common.intl.Countries;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.AvailabilityOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class NitroAvailabilityExtractorTest {
 
@@ -128,6 +138,98 @@ public class NitroAvailabilityExtractorTest {
     private Location getOnlyLocationFrom(Set<Encoding> encodings) {
         return Iterables.getOnlyElement(Iterables.getOnlyElement(encodings).getAvailableAt());
         
+    }
+
+    @Test
+    public void testLocationExistsInBothApiAndDatabase() {
+        Availabilities.Availability availability = getAvailability();
+        Location existingLocation = baseExistingLocation();
+
+        Set<Encoding> encodings = extractor.extractFromMixin(
+                "pid",
+                Collections.singleton(availability),
+                VIDEO_MEDIA_TYPE,
+                ImmutableSet.of(existingLocation)
+        );
+
+        Location extractedLocation = getOnlyLocationFrom(encodings);
+        assertEquals(extractedLocation.getUri(), existingLocation.getUri());
+        assertTrue(extractedLocation.getAvailable());
+    }
+
+    @Test
+    public void testNewLocationIsAdded() {
+        Availabilities.Availability availability = getAvailability();
+
+        Set<Encoding> encodings = extractor.extractFromMixin(
+                "pid",
+                Collections.singleton(availability),
+                VIDEO_MEDIA_TYPE,
+                Sets.newHashSet()
+        );
+
+        Location extractedLocation = getOnlyLocationFrom(encodings);
+        assertEquals(extractedLocation.getUri(), "http://www.bbc.co.uk/iplayer/episode/pid");
+        assertEquals(extractedLocation.getTransportType(), TransportType.LINK);
+        assertTrue(extractedLocation.getAvailable());
+
+        Policy extractedPolicy = extractedLocation.getPolicy();
+        assertEquals(extractedPolicy.getPlatform(), Policy.Platform.YOUVIEW_IPLAYER);
+        assertEquals(extractedPolicy.getAvailableCountries(), ImmutableSet.of(Countries.GB));
+    }
+
+    @Test
+    public void testExistingLocationIsMarkedUnavailable() {
+        Availabilities.Availability availability = getAvailability();
+        Location existingLocation = baseExistingLocation();
+        existingLocation.setUri("differentUri");
+
+        Set<Encoding> encodings = extractor.extractFromMixin(
+                "pid",
+                Collections.singleton(availability),
+                VIDEO_MEDIA_TYPE,
+                ImmutableSet.of(existingLocation)
+        );
+
+        Set<Location> extractedLocations = encodings.iterator().next().getAvailableAt();
+        assertEquals(extractedLocations.size(), 2);
+
+        extractedLocations.forEach(extractedLocation -> {
+            if (extractedLocation.getUri().equals("differentUri")) {
+                assertFalse(extractedLocation.getAvailable());
+            } else {
+                assertTrue(extractedLocation.getAvailable());
+            }
+        });
+    }
+
+    private Availabilities.Availability getAvailability() {
+        MediaSet mediaSet = new MediaSet();
+        mediaSet.setName("iptv-all");
+
+        MediaSets mediaSets = new MediaSets();
+        mediaSets.getMediaSet().add(mediaSet);
+
+        Availabilities.Availability availability = new Availabilities.Availability();
+        availability.setMediaSets(mediaSets);
+
+        return availability;
+    }
+
+    private Location baseExistingLocation() {
+        Location existingLocation = new Location();
+        existingLocation.setUri("http://www.bbc.co.uk/iplayer/episode/pid");
+        existingLocation.setTransportType(TransportType.LINK);
+        existingLocation.setPolicy(getBasePolicy());
+        existingLocation.setAvailable(true);
+        return existingLocation;
+    }
+
+    private Policy getBasePolicy() {
+        Policy policy = new Policy();
+        policy.setPlatform(Policy.Platform.YOUVIEW_IPLAYER);
+        policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
+        return policy;
     }
 
     private Availability baseAvailability(String episodePid, String versionPid) {

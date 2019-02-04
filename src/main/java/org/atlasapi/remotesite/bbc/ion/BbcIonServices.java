@@ -45,7 +45,7 @@ public class BbcIonServices {
             )
             .put("bbc_one_wales_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1778")
             .put("bbc_scotland", "http://nitro.bbc.co.uk/services/bbc_scotland_233a_133c")
-            .put("bbc_scotland", "http://nitro.bbc.co.uk/services/bbc_scotland_hd_233a_433c")
+            .put("bbc_scotland_hd", "http://nitro.bbc.co.uk/services/bbc_scotland_hd_233a_433c")
             //        .put("bbc_two", "http://www.bbc.co.uk/services/bbctwo")
             .put("bbc_two_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1782")
             .put("bbc_two_england", "http://www.bbc.co.uk/services/bbctwo/england")

@@ -44,7 +44,8 @@ public class BbcIonServices {
                     "http://ref.atlasapi.org/channels/pressassociation.com/1776"
             )
             .put("bbc_one_wales_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1778")
-
+            .put("bbc_scotland", "http://nitro.bbc.co.uk/services/bbc_scotland_233a_133c")
+            .put("bbc_scotland", "http://nitro.bbc.co.uk/services/bbc_scotland_hd_233a_433c")
             //        .put("bbc_two", "http://www.bbc.co.uk/services/bbctwo")
             .put("bbc_two_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1782")
             .put("bbc_two_england", "http://www.bbc.co.uk/services/bbctwo/england")
@@ -70,6 +71,7 @@ public class BbcIonServices {
             //        .put("bbc_hd",          "http://www.bbc.co.uk/services/bbchd")
             .put("cbbc", "http://www.bbc.co.uk/services/cbbc")
             .put("cbbc_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1849")
+            .put("cbbc_hd_scotland", "http://nitro.bbc.co.uk/services/cbbc_hd_scotland_233a_46fc")
             .put("cbeebies", "http://www.bbc.co.uk/services/cbeebies")
             .put("cbeebies_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1850")
             .build();

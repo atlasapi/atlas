@@ -319,6 +319,10 @@ public class NitroAvailabilityExtractor {
 
         if (!locations.build().isEmpty()) {
             for (Location existingLocation : dedupedLocations) {
+                if (!existingLocation.getAvailable()) {
+                    dedupedLocations.remove(existingLocation);
+                    continue;
+                }
                 for (Location location : locations.build()) {
                     if (existingLocation.getUri().equals(location.getUri())
                             && samePlatform(existingLocation, location)

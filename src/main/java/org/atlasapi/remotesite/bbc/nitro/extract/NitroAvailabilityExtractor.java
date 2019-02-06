@@ -289,9 +289,9 @@ public class NitroAvailabilityExtractor {
             }
         }
 
-        if (!existingLocations.isEmpty()) {
-            markStaleLocationsAsUnavailable(existingLocations, locations);
-        }
+//        if (!existingLocations.isEmpty()) {
+//            markStaleLocationsAsUnavailable(existingLocations, locations);
+//        }
 
         return locations.build();
     }
@@ -304,7 +304,10 @@ public class NitroAvailabilityExtractor {
 
         if (!dedupedLocations.isEmpty()) {
             dedupedLocations.forEach(existingLocation -> {
-                existingLocation.setAvailable(false);
+                if ((!Objects.isNull(existingLocation.getPolicy().getAvailabilityEnd())
+                        && existingLocation.getPolicy().getAvailabilityEnd().isBeforeNow())) {
+                    existingLocation.setAvailable(false);
+                }
                 log.info("Marking location with URI {} as unavailable", existingLocation.getUri());
                 locations.add(existingLocation);
             });
@@ -319,14 +322,8 @@ public class NitroAvailabilityExtractor {
 
         if (!locations.build().isEmpty()) {
             for (Location existingLocation : dedupedLocations) {
-                if (!existingLocation.getAvailable()) {
-                    dedupedLocations.remove(existingLocation);
-                    continue;
-                }
                 for (Location location : locations.build()) {
-                    if (existingLocation.getUri().equals(location.getUri())
-                            && samePlatform(existingLocation, location)
-                            && sameNetwork(existingLocation, location)) {
+                    if (locationsEqual(existingLocation, location)) {
                         dedupedLocations.remove(existingLocation);
                     }
                 }
@@ -334,6 +331,14 @@ public class NitroAvailabilityExtractor {
         }
 
         return dedupedLocations;
+    }
+
+    private boolean locationsEqual(Location existingLocation, Location location) {
+        return existingLocation.getUri().equals(location.getUri())
+                && existingLocation.getPolicy().getAvailabilityStart()
+                .isEqual(location.getPolicy().getAvailabilityStart())
+                && samePlatform(existingLocation, location)
+                && sameNetwork(existingLocation, location);
     }
 
     private boolean samePlatform(Location existingLocation, Location location) {

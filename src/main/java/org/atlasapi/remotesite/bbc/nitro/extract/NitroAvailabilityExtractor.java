@@ -13,6 +13,7 @@ import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Network;
 import org.atlasapi.media.entity.Policy.Platform;
+import org.atlasapi.query.content.ContentWriteExecutor;
 
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
@@ -35,6 +36,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -43,6 +46,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * {@link Availability}s.
  */
 public class NitroAvailabilityExtractor {
+
+    private static final Logger log = LoggerFactory.getLogger(ContentWriteExecutor.class);
 
     private static final LocationEquivalence LOCATION_EQUIVALENCE = new LocationEquivalence();
 
@@ -299,6 +304,7 @@ public class NitroAvailabilityExtractor {
         if (!dedupedLocations.isEmpty()) {
             dedupedLocations.forEach(existingLocation -> {
                 existingLocation.setAvailable(false);
+                log.info("Marking location with URI {} as unavailable", existingLocation.getUri());
                 locations.add(existingLocation);
             });
         }

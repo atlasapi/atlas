@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -320,8 +321,8 @@ public class NitroAvailabilityExtractor {
             for (Location existingLocation : dedupedLocations) {
                 for (Location location : locations.build()) {
                     if (existingLocation.getUri().equals(location.getUri())
-                            && existingLocation.getPolicy().getPlatform().key()
-                            .equals(location.getPolicy().getPlatform().key())) {
+                            && samePlatform(existingLocation, location)
+                            && sameNetwork(existingLocation, location)) {
                         dedupedLocations.remove(existingLocation);
                     }
                 }
@@ -329,6 +330,20 @@ public class NitroAvailabilityExtractor {
         }
 
         return dedupedLocations;
+    }
+
+    private boolean samePlatform(Location existingLocation, Location location) {
+        return existingLocation.getPolicy().getPlatform().key()
+        .equals(location.getPolicy().getPlatform().key());
+    }
+
+    private boolean sameNetwork(Location existingLocation, Location location) {
+        if (Objects.isNull(existingLocation.getPolicy().getNetwork())
+                && Objects.isNull(location.getPolicy().getNetwork())) {
+            return true;
+        }
+        return existingLocation.getPolicy().getNetwork().key()
+                .equals(location.getPolicy().getNetwork().key());
     }
 
     private Location newLocation(

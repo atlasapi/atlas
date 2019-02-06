@@ -316,10 +316,14 @@ public class NitroAvailabilityExtractor {
     ) {
         Set<Location> dedupedLocations = Sets.newConcurrentHashSet(existingLocations);
 
-        for (Location existingLocation : dedupedLocations) {
-            for (Location location : locations.build()) {
-                if (existingLocation.getUri().equals(location.getUri())) {
-                    dedupedLocations.remove(existingLocation);
+        if (!locations.build().isEmpty()) {
+            for (Location existingLocation : dedupedLocations) {
+                for (Location location : locations.build()) {
+                    if (existingLocation.getUri().equals(location.getUri())
+                            && existingLocation.getPolicy().getPlatform().key()
+                            .equals(location.getPolicy().getPlatform().key())) {
+                        dedupedLocations.remove(existingLocation);
+                    }
                 }
             }
         }

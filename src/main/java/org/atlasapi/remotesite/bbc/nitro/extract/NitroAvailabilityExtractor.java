@@ -322,6 +322,17 @@ public class NitroAvailabilityExtractor {
     ) {
         Set<Location> dedupedLocations = Sets.newConcurrentHashSet(existingLocations);
 
+        // We've seen duplicate locations already existing in the DB
+        for (Location existingLocation : dedupedLocations) {
+            for (Location location : existingLocations) {
+                if (locationsEqual(existingLocation, location)) {
+                    dedupedLocations.remove(existingLocation);
+                }
+            }
+        }
+
+        // Remove DB locations that exist in both Nitro API and in DB. This should leave us only
+        // with the DB locations not available in the Nitro API which should be marked as stale
         if (!locations.build().isEmpty()) {
             for (Location existingLocation : dedupedLocations) {
                 for (Location location : locations.build()) {

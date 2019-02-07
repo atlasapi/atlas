@@ -310,8 +310,8 @@ public class NitroAvailabilityExtractor {
                             "Marking location with URI {} as unavailable",
                             existingLocation.getUri()
                     );
-                    locations.add(existingLocation);
                 }
+                locations.add(existingLocation);
             });
         }
     }

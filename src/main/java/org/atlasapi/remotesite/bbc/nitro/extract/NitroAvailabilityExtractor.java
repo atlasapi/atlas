@@ -289,9 +289,9 @@ public class NitroAvailabilityExtractor {
             }
         }
 
-//        if (!existingLocations.isEmpty()) {
-//            markStaleLocationsAsUnavailable(existingLocations, locations);
-//        }
+        if (!existingLocations.isEmpty()) {
+            markStaleLocationsAsUnavailable(existingLocations, locations);
+        }
 
         return locations.build();
     }
@@ -304,8 +304,14 @@ public class NitroAvailabilityExtractor {
 
         if (!dedupedLocations.isEmpty()) {
             dedupedLocations.forEach(existingLocation -> {
-                log.info("Marking location with URI {} as unavailable", existingLocation.getUri());
-                locations.add(existingLocation);
+                if (existingLocation.getAvailable()) {
+                    existingLocation.setAvailable(false);
+                    log.info(
+                            "Marking location with URI {} as unavailable",
+                            existingLocation.getUri()
+                    );
+                    locations.add(existingLocation);
+                }
             });
         }
     }

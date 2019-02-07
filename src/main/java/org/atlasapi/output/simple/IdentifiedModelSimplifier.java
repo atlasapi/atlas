@@ -1,9 +1,9 @@
 package org.atlasapi.output.simple;
 
-import java.math.BigInteger;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
@@ -12,12 +12,9 @@ import org.atlasapi.media.entity.simple.Audit;
 import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.atlasapi.output.Annotation;
 
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import java.math.BigInteger;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class IdentifiedModelSimplifier<F extends Identified, T extends Aliased>
         implements ModelSimplifier<F, T> {
@@ -63,6 +60,10 @@ public abstract class IdentifiedModelSimplifier<F extends Identified, T extends 
             audit.setLastUpdated(identified.getLastUpdated());
             audit.setEquivalenceLastUdpated(identified.getEquivalenceUpdate());
             aliased.setAudit(audit);
+        }
+
+        if (annotations.contains(Annotation.CUSTOM_FIELDS)) {
+            aliased.setCustomFields(identified.getCustomFields());
         }
     }
 

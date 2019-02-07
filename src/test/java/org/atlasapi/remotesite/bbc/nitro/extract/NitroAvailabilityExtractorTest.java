@@ -14,7 +14,6 @@ import org.atlasapi.media.entity.Policy;
 
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.AvailabilityOf;
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions.Version.Availabilities;
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions.Version.Availabilities.Availability.MediaSets;
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet;
@@ -141,8 +140,12 @@ public class NitroAvailabilityExtractorTest {
     }
 
     @Test
-    public void testLocationExistsInBothApiAndDatabase() {
+    public void testLocationExistsInBothApiAndDatabase() throws DatatypeConfigurationException {
         Availabilities.Availability availability = getAvailability();
+        DateTime actualStart = DateTime.parse("2019-01-01").withZone(DateTimeZone.UTC);
+        XMLGregorianCalendar xmlStart = DatatypeFactory
+                .newInstance().newXMLGregorianCalendar(actualStart.toGregorianCalendar());
+        availability.setScheduledStart(xmlStart);
         Location existingLocation = baseExistingLocation();
 
         Set<Encoding> encodings = extractor.extractFromMixin(
@@ -158,7 +161,7 @@ public class NitroAvailabilityExtractorTest {
     }
 
     @Test
-    public void testNewLocationIsAdded() {
+    public void testNewLocationIsAdded() throws DatatypeConfigurationException {
         Availabilities.Availability availability = getAvailability();
 
         Set<Encoding> encodings = extractor.extractFromMixin(
@@ -183,6 +186,7 @@ public class NitroAvailabilityExtractorTest {
         Availabilities.Availability availability = getAvailability();
         Location existingLocation = baseExistingLocation();
         existingLocation.setUri("differentUri");
+        existingLocation.getPolicy().setAvailabilityEnd(DateTime.parse("2019-01-29"));
 
         Set<Encoding> encodings = extractor.extractFromMixin(
                 "pid",
@@ -227,6 +231,7 @@ public class NitroAvailabilityExtractorTest {
 
     private Policy getBasePolicy() {
         Policy policy = new Policy();
+        policy.setAvailabilityStart(DateTime.parse("2019-01-01"));
         policy.setPlatform(Policy.Platform.YOUVIEW_IPLAYER);
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
         return policy;

@@ -289,9 +289,9 @@ public class NitroAvailabilityExtractor {
             }
         }
 
-        if (!existingLocations.isEmpty()) {
-            markStaleLocationsAsUnavailable(existingLocations, locations);
-        }
+//        if (!existingLocations.isEmpty()) {
+//            markStaleLocationsAsUnavailable(existingLocations, locations);
+//        }
 
         return locations.build();
     }

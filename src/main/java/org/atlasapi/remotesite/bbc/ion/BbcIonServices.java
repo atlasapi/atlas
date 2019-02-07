@@ -71,7 +71,6 @@ public class BbcIonServices {
             //        .put("bbc_hd",          "http://www.bbc.co.uk/services/bbchd")
             .put("cbbc", "http://www.bbc.co.uk/services/cbbc")
             .put("cbbc_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1849")
-            .put("cbbc_hd_scotland", "http://nitro.bbc.co.uk/services/cbbc_hd_scotland_233a_46fc")
             .put("cbeebies", "http://www.bbc.co.uk/services/cbeebies")
             .put("cbeebies_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1850")
             .build();

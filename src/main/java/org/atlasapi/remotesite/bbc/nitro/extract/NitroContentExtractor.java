@@ -143,20 +143,26 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
 
             if (existingEpisode.requireValue() instanceof Episode) {
                 Episode episode = (Episode) existingEpisode.requireValue();
-                Set<Location> existingLocations = episode.getVersions()
+                if (!episode.getVersions()
                         .iterator()
                         .next()
                         .getManifestedAs()
-                        .iterator()
-                        .next()
-                        .getAvailableAt();
-                extractAdditionalFields(
-                        source,
-                        content,
-                        existingLocations,
-                        now
-                );
-                return content;
+                        .isEmpty()) {
+                    Set<Location> existingLocations = episode.getVersions()
+                            .iterator()
+                            .next()
+                            .getManifestedAs()
+                            .iterator()
+                            .next()
+                            .getAvailableAt();
+                    extractAdditionalFields(
+                            source,
+                            content,
+                            existingLocations,
+                            now
+                    );
+                    return content;
+                }
             }
         }
 

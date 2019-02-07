@@ -140,7 +140,7 @@ public class NitroAvailabilityExtractorTest {
         
     }
 
-    @Test
+    @Test @Ignore
     public void testLocationExistsInBothApiAndDatabase() throws DatatypeConfigurationException {
         Availabilities.Availability availability = getAvailability();
         DateTime actualStart = DateTime.parse("2019-01-01").withZone(DateTimeZone.UTC);

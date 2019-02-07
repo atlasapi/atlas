@@ -307,8 +307,8 @@ public class NitroAvailabilityExtractor {
                 if ((!Objects.isNull(existingLocation.getPolicy().getAvailabilityEnd())
                         && existingLocation.getPolicy().getAvailabilityEnd().isBeforeNow())) {
                     existingLocation.setAvailable(false);
+                    log.info("Marking location with URI {} as unavailable", existingLocation.getUri());
                 }
-                log.info("Marking location with URI {} as unavailable", existingLocation.getUri());
                 locations.add(existingLocation);
             });
         }

@@ -300,10 +300,12 @@ public class NitroAvailabilityExtractor {
             Set<Location> existingLocations,
             ImmutableSet.Builder<Location> locations
     ) {
-        Set<Location> dedupedLocations = removeDuplicateLocations(existingLocations, locations);
+        // Remove DB locations that exist in both Nitro API and in DB. This should leave us only
+        // with the DB locations not available in the Nitro API which should be marked as stale
+        existingLocations.removeAll(locations.build());
 
-        if (!dedupedLocations.isEmpty()) {
-            dedupedLocations.forEach(existingLocation -> {
+        if (!existingLocations.isEmpty()) {
+            existingLocations.forEach(existingLocation -> {
                 if (existingLocation.getAvailable()) {
                     existingLocation.setAvailable(false);
                     log.info(
@@ -314,68 +316,6 @@ public class NitroAvailabilityExtractor {
                 locations.add(existingLocation);
             });
         }
-    }
-
-    private Set<Location> removeDuplicateLocations(
-            Set<Location> existingLocations,
-            ImmutableSet.Builder<Location> locations
-    ) {
-        Set<Location> dedupedLocations = Sets.newConcurrentHashSet(existingLocations);
-
-        // We've seen duplicate locations already existing in the DB
-        for (Location existingLocation : dedupedLocations) {
-            for (Location location : existingLocations) {
-                if (locationsEqual(existingLocation, location)) {
-                    dedupedLocations.remove(existingLocation);
-                }
-            }
-        }
-
-        // Remove DB locations that exist in both Nitro API and in DB. This should leave us only
-        // with the DB locations not available in the Nitro API which should be marked as stale
-        if (!locations.build().isEmpty()) {
-            for (Location existingLocation : dedupedLocations) {
-                for (Location location : locations.build()) {
-                    if (locationsEqual(existingLocation, location)) {
-                        dedupedLocations.remove(existingLocation);
-                    }
-                }
-            }
-        }
-
-        return dedupedLocations;
-    }
-
-    private boolean locationsEqual(Location existingLocation, Location location) {
-        return existingLocation.getUri().equals(location.getUri())
-                && sameAvailabilityStart(existingLocation, location)
-                && sameAvailabilityEnd(existingLocation, location)
-                && samePlatform(existingLocation, location)
-                && sameNetwork(existingLocation, location);
-    }
-
-    private boolean sameAvailabilityEnd(Location existingLocation, Location location) {
-        return existingLocation.getPolicy().getAvailabilityEnd()
-                .isEqual(location.getPolicy().getAvailabilityEnd());
-    }
-
-    private boolean sameAvailabilityStart(Location existingLocation, Location location) {
-        return existingLocation.getPolicy().getAvailabilityStart()
-        .isEqual(location.getPolicy().getAvailabilityStart());
-    }
-
-    private boolean samePlatform(Location existingLocation, Location location) {
-        return existingLocation.getPolicy().getPlatform().key()
-        .equals(location.getPolicy().getPlatform().key());
-    }
-
-    private boolean sameNetwork(Location existingLocation, Location location) {
-        if (Objects.isNull(existingLocation.getPolicy().getNetwork())
-                && Objects.isNull(location.getPolicy().getNetwork())) {
-            return true;
-        }
-        return existingLocation.getPolicy().getNetwork().key()
-                .equals(location.getPolicy().getNetwork().key());
     }
 
     private Location newLocation(

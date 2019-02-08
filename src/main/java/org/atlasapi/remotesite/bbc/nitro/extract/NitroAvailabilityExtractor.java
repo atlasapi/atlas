@@ -313,9 +313,9 @@ public class NitroAvailabilityExtractor {
         // Remove locations that exist in both Nitro API and in DB. This should leave us only
         // with the DB locations not available in the Nitro API which should be marked as stale
         List<String> apiCanonicalUris = getCanonicalUrisFromLocations(locations);
-        existingLocations.removeIf(location -> apiCanonicalUris.contains(location.getCanonicalUri())
-                || !location.getAvailable()
-        );
+        existingLocations = existingLocations.stream()
+                .filter(location -> !apiCanonicalUris.contains(location.getCanonicalUri()))
+                .collect(Collectors.toSet());
 
         if (!existingLocations.isEmpty()) {
             existingLocations.forEach(existingLocation -> {

@@ -291,7 +291,7 @@ public class NitroAvailabilityExtractor {
             }
         }
 
-        if (!existingLocations.isEmpty()) {
+        if (!existingLocations.isEmpty() && !locations.isEmpty()) {
             markStaleLocationsAsUnavailable(existingLocations, locations);
         }
 

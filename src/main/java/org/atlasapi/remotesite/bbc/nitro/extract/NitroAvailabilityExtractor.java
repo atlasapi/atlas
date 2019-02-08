@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
@@ -157,7 +158,6 @@ public class NitroAvailabilityExtractor {
                     .stream()
                     .map(TO_WRAPPED_LOCATION::apply)
                     .collect(MoreCollectors.toImmutableList());
-
             if (MIXIN_IS_IPTV.apply(availability) && MIXIN_IS_HD.apply(availability)) {
                 hdLocations.addAll(locations);
                 // the mixin operates a bit differently and doesn't duplicate availabilities, so
@@ -291,8 +291,19 @@ public class NitroAvailabilityExtractor {
             }
         }
 
-        if (!existingLocations.isEmpty() && !locations.isEmpty()) {
-            markStaleLocationsAsUnavailable(existingLocations, locations);
+        // Since one Nitro episode can have more than one availability and each availability
+        // contains different platforms, we need to filter the existing locations based on the
+        // platforms contained in the processed availability. Otherwise, we end up marking locations
+        // as unavailable that are contained in others availability
+        Set<String> locationsPlatforms = locations.stream()
+                .map(location -> location.getPolicy().getPlatform().key())
+                .collect(Collectors.toSet());
+        Set<Location> filteredExistingLocations = existingLocations.stream()
+                .filter(location -> locationsPlatforms.contains(location.getPolicy().getPlatform().key()))
+                .collect(Collectors.toSet());
+
+        if (!filteredExistingLocations.isEmpty() && !locations.isEmpty()) {
+            markStaleLocationsAsUnavailable(filteredExistingLocations, locations);
         }
 
         return locations;
@@ -321,8 +332,8 @@ public class NitroAvailabilityExtractor {
             existingLocations.forEach(existingLocation -> {
                 existingLocation.setAvailable(false);
                 log.info(
-                        "Marking location with URI {} as unavailable",
-                        existingLocation.getUri()
+                        "Marking location with canonical URI {} as unavailable",
+                        existingLocation.getCanonicalUri()
                 );
                 locations.add(existingLocation);
             });

@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.pa.channels;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -11,6 +12,7 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
+import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.channel.Platform;
@@ -26,6 +28,7 @@ import org.atlasapi.remotesite.pa.channels.bindings.TvChannelData;
 
 import com.metabroadcast.common.base.Maybe;
 
+import com.amazonaws.util.CollectionUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -37,6 +40,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import static com.amazonaws.util.CollectionUtils.isNullOrEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class PaChannelDataHandler {
@@ -120,24 +124,6 @@ public class PaChannelDataHandler {
                         paPlatform.getEpg().getEpgContent(),
                         channelMap
                 );
-                paPlatform.getEpg().getEpgContent().forEach(epgContent -> {
-                    Channel channel = channelMap.get(PaChannelMap.createUriFromId(epgContent.getChannelId()));
-                    channel.getChannelNumbers().forEach(channelNumbering -> {
-                        Optional<ChannelGroup> channelGroupOptional = channelGroupResolver.channelGroupFor(
-                                channelNumbering.getChannelGroup());
-                        if (channelGroupOptional.isPresent() && channelGroupOptional.get()
-                                .getPublisher()
-                                .key()
-                                .equals("bt-channel-groups.metabroadcast.com")) {
-                            channelGroupOptional.get()
-                                    .getChannelNumberings()
-                                    .forEach(channelNumbering1 -> {
-                                        channelNumbering1.setChannelNumber(epgContent.getChannelNumber());
-                                    });
-                            createOrMerge(channelGroupOptional.get());
-                        }
-                    });
-                });
             } else {
                 Map<String, Region> writtenRegions = Maps.newHashMap();
                 for (Entry<String, Region> entry : channelGroupTree.getRegions().entrySet()) {

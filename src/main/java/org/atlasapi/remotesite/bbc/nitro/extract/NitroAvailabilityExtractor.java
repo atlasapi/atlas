@@ -362,9 +362,9 @@ public class NitroAvailabilityExtractor {
         Location location = new Location();
 
         location.setUri(IPLAYER_URL_BASE + checkNotNull(programmePid));
+        location.setPolicy(policy(availability, mediaSet, platform, network, mediaType));
         location.setCanonicalUri(createLocationCanonicalUri(location));
         location.setTransportType(TransportType.LINK);
-        location.setPolicy(policy(availability, mediaSet, platform, network, mediaType));
         location.setAvailable(!REVOKED.equals(availability.getStatus()));
 
         return location;

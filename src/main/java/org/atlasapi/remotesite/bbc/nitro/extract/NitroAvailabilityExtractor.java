@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -371,7 +372,7 @@ public class NitroAvailabilityExtractor {
             Network network,
             String locationUri
     ) {
-        String networkKey = Strings.isNullOrEmpty(network.key())
+        String networkKey = Objects.isNull(network)
                    ? ""
                    : String.format("/%s", network.key());
         return String.format(

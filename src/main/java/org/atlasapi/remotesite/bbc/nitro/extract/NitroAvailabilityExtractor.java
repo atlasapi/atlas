@@ -1,7 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,6 +29,7 @@ import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -289,9 +290,9 @@ public class NitroAvailabilityExtractor {
             }
         }
 
-        if (!existingLocations.isEmpty()) {
-            markStaleLocationsAsUnavailable(existingLocations, locations);
-        }
+//        if (!existingLocations.isEmpty()) {
+//            markStaleLocationsAsUnavailable(existingLocations, locations);
+//        }
 
         return locations.build();
     }
@@ -300,9 +301,10 @@ public class NitroAvailabilityExtractor {
             Set<Location> existingLocations,
             ImmutableSet.Builder<Location> locations
     ) {
-        // Remove DB locations that exist in both Nitro API and in DB. This should leave us only
+        // Remove locations that exist in both Nitro API and in DB. This should leave us only
         // with the DB locations not available in the Nitro API which should be marked as stale
-        existingLocations.removeAll(locations.build());
+        List<String> apiCanonicalUris = getCanonicalUrisFromLocations(locations.build());
+        existingLocations.removeIf(location -> apiCanonicalUris.contains(location.getCanonicalUri()));
 
         if (!existingLocations.isEmpty()) {
             existingLocations.forEach(existingLocation -> {
@@ -316,6 +318,16 @@ public class NitroAvailabilityExtractor {
                 locations.add(existingLocation);
             });
         }
+    }
+
+    private List<String> getCanonicalUrisFromLocations(Set<Location> locations) {
+        return locations.stream()
+                .map(location -> createLocationCanonicalUri(
+                        location.getPolicy().getPlatform(),
+                        location.getPolicy().getNetwork(),
+                        location.getUri()
+                ))
+                .collect(Collectors.toList());
     }
 
     private Location newLocation(
@@ -344,12 +356,30 @@ public class NitroAvailabilityExtractor {
     ) {
         Location location = new Location();
 
-        location.setUri(IPLAYER_URL_BASE + checkNotNull(programmePid));
+        String locationUri = IPLAYER_URL_BASE + checkNotNull(programmePid);
+        location.setUri(locationUri);
+        location.setCanonicalUri(createLocationCanonicalUri(platform, network, locationUri));
         location.setTransportType(TransportType.LINK);
         location.setPolicy(policy(availability, mediaSet, platform, network, mediaType));
         location.setAvailable(!REVOKED.equals(availability.getStatus()));
 
         return location;
+    }
+
+    private String createLocationCanonicalUri(
+            Platform platform,
+            Network network,
+            String locationUri
+    ) {
+        String networkKey = Strings.isNullOrEmpty(network.key())
+                   ? ""
+                   : String.format("/%s", network.key());
+        return String.format(
+                "%s/%s%s",
+                locationUri,
+                platform.key(),
+                networkKey
+        );
     }
 
     private Policy policy(Availability source, Platform platform, Network network,

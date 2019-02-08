@@ -37,6 +37,7 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
         output.setCurie(simple.getCurie());
         setEquivalents(output, simple);
         output.setAliases(transformV4Aliases(simple.getV4Aliases()));
+        output.setCustomFields(simple.getCustomFields());
         return output;
     }
 

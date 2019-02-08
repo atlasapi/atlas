@@ -194,6 +194,12 @@ public class ContentMerger {
         existing.setLanguages(update.getLanguages());
         existing.setCountriesOfOrigin(update.getCountriesOfOrigin());
 
+        if(merge) {
+            existing.addCustomFields(update.getCustomFields());
+        } else {
+            existing.setCustomFields(update.getCustomFields());
+        }
+
         if (existing instanceof Episode && update instanceof Episode) {
             episodeMerger.mergeEpisodes((Episode) existing, (Episode) update);
         }

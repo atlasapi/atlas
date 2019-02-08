@@ -321,8 +321,8 @@ public class NitroAvailabilityExtractor {
             existingLocations.forEach(existingLocation -> {
                 existingLocation.setAvailable(false);
                 log.info(
-                        "Marking location with URI {} as unavailable",
-                        existingLocation.getUri()
+                        "Marking location with canonical URI {} as unavailable",
+                        existingLocation.getCanonicalUri()
                 );
                 locations.add(existingLocation);
             });

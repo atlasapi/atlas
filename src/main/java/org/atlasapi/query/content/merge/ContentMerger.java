@@ -195,7 +195,7 @@ public class ContentMerger {
         existing.setCountriesOfOrigin(update.getCountriesOfOrigin());
 
         if(merge) {
-            existing.putCustomFields(update.getCustomFields());
+            existing.addCustomFields(update.getCustomFields());
         } else {
             existing.setCustomFields(update.getCustomFields());
         }

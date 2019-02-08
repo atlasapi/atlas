@@ -1,6 +1,5 @@
 package org.atlasapi.remotesite.pa.channels;
 
-import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,8 +7,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.common.collect.ImmutableList;
-import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -23,6 +20,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.remotesite.pa.PaChannelMap;
 import org.atlasapi.remotesite.pa.channels.bindings.Station;
 import org.atlasapi.remotesite.pa.channels.bindings.TvChannelData;
 
@@ -122,6 +120,24 @@ public class PaChannelDataHandler {
                         paPlatform.getEpg().getEpgContent(),
                         channelMap
                 );
+                paPlatform.getEpg().getEpgContent().forEach(epgContent -> {
+                    Channel channel = channelMap.get(PaChannelMap.createUriFromId(epgContent.getChannelId()));
+                    channel.getChannelNumbers().forEach(channelNumbering -> {
+                        Optional<ChannelGroup> channelGroupOptional = channelGroupResolver.channelGroupFor(
+                                channelNumbering.getChannelGroup());
+                        if (channelGroupOptional.isPresent() && channelGroupOptional.get()
+                                .getPublisher()
+                                .key()
+                                .equals("bt-channel-groups.metabroadcast.com")) {
+                            channelGroupOptional.get()
+                                    .getChannelNumberings()
+                                    .forEach(channelNumbering1 -> {
+                                        channelNumbering1.setChannelNumber(epgContent.getChannelNumber());
+                                    });
+                            createOrMerge(channelGroupOptional.get());
+                        }
+                    });
+                });
             } else {
                 Map<String, Region> writtenRegions = Maps.newHashMap();
                 for (Entry<String, Region> entry : channelGroupTree.getRegions().entrySet()) {

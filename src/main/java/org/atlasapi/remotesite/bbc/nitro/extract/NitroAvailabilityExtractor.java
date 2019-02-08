@@ -271,7 +271,7 @@ public class NitroAvailabilityExtractor {
             Set<Location> existingLocations,
             String mediaType
     ) {
-        ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
+        Set<Location> locations = Sets.newConcurrentHashSet();
 
         MediaSets mediaSets = availability.getMediaSets();
 
@@ -291,31 +291,39 @@ public class NitroAvailabilityExtractor {
             }
         }
 
-//        if (!existingLocations.isEmpty()) {
-//            markStaleLocationsAsUnavailable(existingLocations, locations);
-//        }
+        if (!existingLocations.isEmpty() && !locations.isEmpty()) {
+            markStaleLocationsAsUnavailable(existingLocations, locations);
+        }
 
-        return locations.build();
+        return locations;
     }
 
     private void markStaleLocationsAsUnavailable(
             Set<Location> existingLocations,
-            ImmutableSet.Builder<Location> locations
+            Set<Location> locations
     ) {
+        // Some DB locations might not have the new canonical URI, so we update them as well
+        // in order to be able to compare them against the ones ingested from the API
+        existingLocations.forEach(location -> {
+            if (Strings.isNullOrEmpty(location.getCanonicalUri())) {
+                location.setCanonicalUri(createLocationCanonicalUri(location));
+            }
+        });
+
         // Remove locations that exist in both Nitro API and in DB. This should leave us only
         // with the DB locations not available in the Nitro API which should be marked as stale
-        List<String> apiCanonicalUris = getCanonicalUrisFromLocations(locations.build());
-        existingLocations.removeIf(location -> apiCanonicalUris.contains(location.getCanonicalUri()));
+        List<String> apiCanonicalUris = getCanonicalUrisFromLocations(locations);
+        existingLocations = existingLocations.stream()
+                .filter(location -> !apiCanonicalUris.contains(location.getCanonicalUri()))
+                .collect(Collectors.toSet());
 
         if (!existingLocations.isEmpty()) {
             existingLocations.forEach(existingLocation -> {
-                if (existingLocation.getAvailable()) {
-                    existingLocation.setAvailable(false);
-                    log.info(
-                            "Marking location with URI {} as unavailable",
-                            existingLocation.getUri()
-                    );
-                }
+                existingLocation.setAvailable(false);
+                log.info(
+                        "Marking location with URI {} as unavailable",
+                        existingLocation.getUri()
+                );
                 locations.add(existingLocation);
             });
         }
@@ -323,11 +331,7 @@ public class NitroAvailabilityExtractor {
 
     private List<String> getCanonicalUrisFromLocations(Set<Location> locations) {
         return locations.stream()
-                .map(location -> createLocationCanonicalUri(
-                        location.getPolicy().getPlatform(),
-                        location.getPolicy().getNetwork(),
-                        location.getUri()
-                ))
+                .map(this::createLocationCanonicalUri)
                 .collect(Collectors.toList());
     }
 
@@ -357,28 +361,24 @@ public class NitroAvailabilityExtractor {
     ) {
         Location location = new Location();
 
-        String locationUri = IPLAYER_URL_BASE + checkNotNull(programmePid);
-        location.setUri(locationUri);
-        location.setCanonicalUri(createLocationCanonicalUri(platform, network, locationUri));
-        location.setTransportType(TransportType.LINK);
+        location.setUri(IPLAYER_URL_BASE + checkNotNull(programmePid));
         location.setPolicy(policy(availability, mediaSet, platform, network, mediaType));
+        location.setCanonicalUri(createLocationCanonicalUri(location));
+        location.setTransportType(TransportType.LINK);
         location.setAvailable(!REVOKED.equals(availability.getStatus()));
 
         return location;
     }
 
-    private String createLocationCanonicalUri(
-            Platform platform,
-            Network network,
-            String locationUri
-    ) {
-        String networkKey = Objects.isNull(network)
+    private String createLocationCanonicalUri(Location location) {
+        Policy policy = location.getPolicy();
+        String networkKey = Objects.isNull(policy.getNetwork())
                    ? ""
-                   : String.format("/%s", network.key());
+                   : String.format("/%s", policy.getNetwork().key());
         return String.format(
                 "%s/%s%s",
-                locationUri,
-                platform.key(),
+                location.getUri(),
+                policy.getPlatform().key(),
                 networkKey
         );
     }

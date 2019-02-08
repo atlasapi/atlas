@@ -101,7 +101,7 @@ public class BbcNitroModule {
                             "Nitro 15 day updater",
                             OwlTelescopeReporters.BBC_NITRO_INGEST_M7_7_DAY
                     ),
-                    RepetitionRules.every(Duration.standardHours(2))
+                    RepetitionRules.NEVER
             );
             scheduler.schedule(
                     nitroScheduleUpdateTask(
@@ -137,7 +137,7 @@ public class BbcNitroModule {
                             "Nitro full fetch -8 to -30 day updater",
                             OwlTelescopeReporters.BBC_NITRO_INGEST_M8_M30_FULL_FETCH
                     ),
-                    RepetitionRules.every(Duration.standardHours(12))
+                    RepetitionRules.NEVER
             );
             scheduler.schedule(
                     nitroScheduleUpdateTask(
@@ -149,7 +149,7 @@ public class BbcNitroModule {
                             "Nitro full fetch -7 to +3 day updater",
                             OwlTelescopeReporters.BBC_NITRO_INGEST_M7_3_FULL_FETCH
                     ),
-                    RepetitionRules.every(Duration.standardHours(2))
+                    RepetitionRules.NEVER
             );
             scheduler.schedule(
                     channelIngestTask().withName("Nitro channel updater"),
@@ -160,7 +160,7 @@ public class BbcNitroModule {
         if (offScheduleIngestEnabled) {
             scheduler.schedule(
                     nitroOffScheduleIngestTask().withName("Nitro off-schedule content updater"),
-                    RepetitionRules.every(Duration.standardHours(3))
+                    RepetitionRules.NEVER
             );
         }
     }

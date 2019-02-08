@@ -140,7 +140,7 @@ public class NitroAvailabilityExtractorTest {
         
     }
 
-    @Test @Ignore
+    @Test
     public void testLocationExistsInBothApiAndDatabase() throws DatatypeConfigurationException {
         Availabilities.Availability availability = getAvailability();
         DateTime actualStart = DateTime.parse("2019-01-01").withZone(DateTimeZone.UTC);
@@ -153,7 +153,7 @@ public class NitroAvailabilityExtractorTest {
                 "pid",
                 Collections.singleton(availability),
                 VIDEO_MEDIA_TYPE,
-                ImmutableSet.of(existingLocation)
+                Sets.newHashSet(existingLocation)
         );
 
         Location extractedLocation = getOnlyLocationFrom(encodings);
@@ -182,7 +182,7 @@ public class NitroAvailabilityExtractorTest {
         assertEquals(extractedPolicy.getAvailableCountries(), ImmutableSet.of(Countries.GB));
     }
 
-    @Test @Ignore
+    @Test
     public void testExistingLocationIsMarkedUnavailable() {
         Availabilities.Availability availability = getAvailability();
         Location existingLocation = baseExistingLocation();

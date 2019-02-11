@@ -13,9 +13,9 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
@@ -131,43 +131,34 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             }
         }
 
-        if (content instanceof Episode || content instanceof Item) {
+        if (content instanceof Item) {
             Maybe<Identified> existingEpisode = contentResolver.findByCanonicalUris(
                     ImmutableList.of(content.getCanonicalUri())
             ).getFirstValue();
 
-            if (!existingEpisode.hasValue()) {
-                extractAdditionalFields(source, content, Sets.newHashSet(), now);
-                return content;
-            }
-
-            if (existingEpisode.requireValue() instanceof Episode) {
+            if (existingEpisode.hasValue()) {
                 Episode episode = (Episode) existingEpisode.requireValue();
-                if (!episode.getVersions()
-                        .iterator()
-                        .next()
-                        .getManifestedAs()
-                        .isEmpty()) {
-                    Set<Location> existingLocations = episode.getVersions()
-                            .iterator()
-                            .next()
-                            .getManifestedAs()
-                            .iterator()
-                            .next()
-                            .getAvailableAt();
+                Set<Version> existingVersions = episode.getVersions();
+                if (!existingVersions.isEmpty()) {
                     extractAdditionalFields(
                             source,
                             content,
-                            existingLocations,
+                            existingVersions,
                             now
                     );
                     return content;
                 }
+
+                extractAdditionalFields(source, content, Sets.newHashSet(), now);
+                return content;
             }
+
+            extractAdditionalFields(source, content, Sets.newHashSet(), now);
+            return content;
         }
 
         //TODO: genres from v2 API
-        extractAdditionalFields(source, content, Sets.newHashSet(), now);
+        extractAdditionalFields(source, content);
         return content;
     }
 
@@ -246,7 +237,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
     protected void extractAdditionalFields(
             SOURCE source,
             CONTENT content,
-            Set<Location> existingLocations,
+            Set<Version> existingVersions,
             DateTime now
     ) { }
 

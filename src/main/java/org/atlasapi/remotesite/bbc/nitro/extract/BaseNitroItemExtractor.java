@@ -1,40 +1,46 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Film;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Location;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Policy;
+import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.media.entity.Specialization;
+import org.atlasapi.media.entity.Version;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.remotesite.bbc.BbcFeeds;
+
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.Programme;
+import com.metabroadcast.atlas.glycerin.model.WarningTexts;
+import com.metabroadcast.common.time.Clock;
+
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSetMultimap.Builder;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.model.WarningTexts;
-import com.metabroadcast.common.time.Clock;
-import org.atlasapi.media.entity.Broadcast;
-import org.atlasapi.media.entity.Encoding;
-import org.atlasapi.media.entity.Film;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Restriction;
-import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.Version;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.remotesite.bbc.BbcFeeds;
+import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base extractor for extracting common properties of {@link Item}s from a
@@ -45,6 +51,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         extends NitroContentExtractor<NitroItemSource<SOURCE>, ITEM> {
+
+    private static final Logger log = LoggerFactory.getLogger(BaseNitroItemExtractor.class);
 
     private static final String AUDIO_DESCRIBED_VERSION_TYPE = "DubbedAudioDescribed";
     private static final String SIGNED_VERSION_TYPE = "Signed";
@@ -63,7 +71,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     protected final void extractAdditionalFields(
             NitroItemSource<SOURCE> source,
             ITEM item,
-            Set<Location> existingLocations,
+            Set<Version> existingVersions,
             DateTime now
     ) {
         ImmutableSetMultimap<String, Broadcast> broadcasts = extractBroadcasts(
@@ -71,7 +79,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                 now
         );
 
-        ImmutableSet.Builder<Version> versions = ImmutableSet.builder();
+        Set<Version> versions = Sets.newConcurrentHashSet();
 
         AvailableVersions nitroVersions = extractVersions(source);
         if (nitroVersions != null) {
@@ -93,8 +101,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                     encodingsBuilder.addAll(availabilityExtractor.extractFromMixin(
                             extractPid(source),
                             availabilities.getAvailableVersionsAvailability(),
-                            mediaType,
-                            existingLocations
+                            mediaType
                     ));
                 }
 
@@ -119,7 +126,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             }
         }
 
-        item.setVersions(versions.build());
+        item.setVersions(mergeVersions(existingVersions, versions));
 
         if (item instanceof Film) {
             item.setMediaType(MediaType.VIDEO);
@@ -129,6 +136,115 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         }
 
         extractAdditionalItemFields(source, item, now);
+    }
+
+    private Set<Version> mergeVersions(
+            Set<Version> existingVersions,
+            Set<Version> ingestedVersions
+    ) {
+        Set<String> canonicalUris = existingVersions.stream()
+                .map(Identified::getCanonicalUri)
+                .collect(Collectors.toSet());
+        // get new versions
+        Set<Version> newVersions = ingestedVersions.stream()
+                .filter(version -> !canonicalUris.contains(version.getCanonicalUri()))
+                .collect(Collectors.toSet());
+
+        // merge common versions
+        for (Version existingVersion : existingVersions) {
+            for (Version ingestedVersion : ingestedVersions) {
+                if (existingVersion.getCanonicalUri().equals(ingestedVersion.getCanonicalUri())) {
+                    existingVersion.setManifestedAs(mergeEncodings(
+                            existingVersion.getManifestedAs(),
+                            ingestedVersion.getManifestedAs()
+                    ));
+                }
+            }
+        }
+
+        existingVersions.addAll(newVersions);
+
+        return existingVersions;
+    }
+
+    private Set<Encoding> mergeEncodings(
+            Set<Encoding> existingEncodings,
+            Set<Encoding> ingestedEncodings
+    ) {
+        for (Encoding existingEncoding : existingEncodings) {
+            for (Encoding ingestedEncoding : ingestedEncodings) {
+                if (existingEncoding.getVideoBitRate().equals(ingestedEncoding.getVideoBitRate())) {
+                    existingEncoding.setAvailableAt(mergeLocations(
+                            existingEncoding.getAvailableAt(),
+                            ingestedEncoding.getAvailableAt()
+                    ));
+                }
+            }
+        }
+
+        return existingEncodings;
+    }
+
+    private Set<Location> mergeLocations(
+            Set<Location> existingLocations,
+            Set<Location> ingestedLocations
+    ) {
+        // Some DB locations might not have the new canonical URI, so we update themas well in order
+        // to be able to compare them against the ones ingested from the API
+        setCanonicalUriOn(existingLocations);
+        Set<Location> staleLocations = getStaleLocations(
+                existingLocations,
+                ingestedLocations
+        );
+        staleLocations.addAll(ingestedLocations);
+        return staleLocations;
+    }
+
+    private Set<Location> getStaleLocations(
+            Set<Location> existingLocations,
+            Set<Location> ingestedLocations
+    ) {
+        Set<String> canonicalUris = ingestedLocations.stream()
+                .map(Identified::getCanonicalUri)
+                .collect(Collectors.toSet());
+
+        // Remove available locations that exist in both Nitro API and in DB. This should leave us
+        // only with the DB locations not available in the Nitro API which should be marked as stale
+        Set<Location> staleLocations = existingLocations.stream()
+                .filter(existingLocation -> !canonicalUris.contains(existingLocation.getCanonicalUri()))
+                .filter(Location::getAvailable)
+                .collect(Collectors.toSet());
+
+        staleLocations.forEach(staleLocation -> {
+            staleLocation.setAvailable(false);
+            log.info(
+                    "Marking location with canonical URI {} as unavailable",
+                    staleLocation.getCanonicalUri()
+            );
+        });
+
+        return staleLocations;
+    }
+
+    private void setCanonicalUriOn(Set<Location> existingLocations) {
+        existingLocations.forEach(location -> {
+            if (Strings.isNullOrEmpty(location.getCanonicalUri())) {
+                location.setCanonicalUri(createLocationCanonicalUri(location));
+            }
+        });
+    }
+
+    private String createLocationCanonicalUri(Location location) {
+        Policy policy = location.getPolicy();
+        String networkKey = Objects.isNull(policy.getNetwork())
+                            ? ""
+                            : String.format("/%s", policy.getNetwork().key());
+        return String.format(
+                "%s/%s%s",
+                location.getUri(),
+                policy.getPlatform().key(),
+                networkKey
+        );
     }
 
     private void setEncodingDetails(

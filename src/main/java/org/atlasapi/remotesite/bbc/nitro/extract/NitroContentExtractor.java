@@ -12,6 +12,7 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
@@ -130,7 +131,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             }
         }
 
-        if (content instanceof Episode) {
+        if (content instanceof Episode || content instanceof Item) {
             Maybe<Identified> existingEpisode = contentResolver.findByCanonicalUris(
                     ImmutableList.of(content.getCanonicalUri())
             ).getFirstValue();

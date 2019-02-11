@@ -1,8 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,14 +30,13 @@ import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import joptsimple.internal.Strings;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
 import org.slf4j.Logger;
@@ -51,14 +50,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class NitroAvailabilityExtractor {
 
-    private static final Logger log = LoggerFactory.getLogger(ContentWriteExecutor.class);
-
     private static final LocationEquivalence LOCATION_EQUIVALENCE = new LocationEquivalence();
 
     private static final Function<Location, Wrapper<Location>> TO_WRAPPED_LOCATION = LOCATION_EQUIVALENCE::wrap;
 
     private static final Function<Wrapper<Location>, Location> UNWRAP_LOCATION = Wrapper::get;
 
+    private static final String ENCODING_BASE_CANONICAL_URI = "http://www.bbc.co.uk/iplayer/encoding/%s/%s";
     private static final String IPLAYER_URL_BASE = "http://www.bbc.co.uk/iplayer/episode/";
     private static final String APPLE_IPHONE4_IPAD_HLS_3G = "apple-iphone4-ipad-hls-3g";
     private static final String APPLE_IPHONE4_HLS = "apple-iphone4-hls";
@@ -137,8 +135,7 @@ public class NitroAvailabilityExtractor {
     public Set<Encoding> extractFromMixin(
             String programmePid,
             Iterable<AvailableVersions.Version.Availabilities.Availability> availabilities,
-            String mediaType,
-            Set<Location> existingLocations
+            String mediaType
     ) {
         Set<Wrapper<Location>> hdLocations = Sets.newHashSet();
         Set<Wrapper<Location>> sdLocations = Sets.newHashSet();
@@ -152,7 +149,6 @@ public class NitroAvailabilityExtractor {
             ImmutableList<Wrapper<Location>> locations = getLocationsFor(
                     programmePid,
                     availability,
-                    existingLocations,
                     mediaType
             )
                     .stream()
@@ -230,8 +226,11 @@ public class NitroAvailabilityExtractor {
                 createEncoding(false, isSubtitled, sdLocations));
     }
 
-    private Encoding createEncoding(boolean isHd, boolean isSubtitled,
-            Set<Wrapper<Location>> wrappedLocations) {
+    private Encoding createEncoding(
+            boolean isHd,
+            boolean isSubtitled,
+            Set<Wrapper<Location>> wrappedLocations
+    ) {
         Encoding encoding = new Encoding();
 
         setHorizontalAndVerticalSize(encoding, isHd);
@@ -268,10 +267,9 @@ public class NitroAvailabilityExtractor {
     private Set<Location> getLocationsFor(
             String programmePid,
             AvailableVersions.Version.Availabilities.Availability availability,
-            Set<Location> existingLocations,
             String mediaType
     ) {
-        Set<Location> locations = Sets.newConcurrentHashSet();
+        ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
 
         MediaSets mediaSets = availability.getMediaSets();
 
@@ -291,59 +289,7 @@ public class NitroAvailabilityExtractor {
             }
         }
 
-        // Since one Nitro episode can have more than one availability and each availability
-        // contains different platforms, we need to filter the existing locations based on the
-        // platforms contained in the processed availability. Otherwise, we end up marking locations
-        // as unavailable that are contained in others availability
-        Set<String> locationsPlatforms = locations.stream()
-                .map(location -> location.getPolicy().getPlatform().key())
-                .collect(Collectors.toSet());
-        Set<Location> filteredExistingLocations = existingLocations.stream()
-                .filter(location -> locationsPlatforms.contains(location.getPolicy().getPlatform().key()))
-                .collect(Collectors.toSet());
-
-        if (!filteredExistingLocations.isEmpty() && !locations.isEmpty()) {
-            markStaleLocationsAsUnavailable(filteredExistingLocations, locations);
-        }
-
-        return locations;
-    }
-
-    private void markStaleLocationsAsUnavailable(
-            Set<Location> existingLocations,
-            Set<Location> locations
-    ) {
-        // Some DB locations might not have the new canonical URI, so we update them as well
-        // in order to be able to compare them against the ones ingested from the API
-        existingLocations.forEach(location -> {
-            if (Strings.isNullOrEmpty(location.getCanonicalUri())) {
-                location.setCanonicalUri(createLocationCanonicalUri(location));
-            }
-        });
-
-        // Remove locations that exist in both Nitro API and in DB. This should leave us only
-        // with the DB locations not available in the Nitro API which should be marked as stale
-        List<String> apiCanonicalUris = getCanonicalUrisFromLocations(locations);
-        existingLocations = existingLocations.stream()
-                .filter(location -> !apiCanonicalUris.contains(location.getCanonicalUri()))
-                .collect(Collectors.toSet());
-
-        if (!existingLocations.isEmpty()) {
-            existingLocations.forEach(existingLocation -> {
-                existingLocation.setAvailable(false);
-                log.info(
-                        "Marking location with canonical URI {} as unavailable",
-                        existingLocation.getCanonicalUri()
-                );
-                locations.add(existingLocation);
-            });
-        }
-    }
-
-    private List<String> getCanonicalUrisFromLocations(Set<Location> locations) {
-        return locations.stream()
-                .map(this::createLocationCanonicalUri)
-                .collect(Collectors.toList());
+        return locations.build();
     }
 
     private Location newLocation(

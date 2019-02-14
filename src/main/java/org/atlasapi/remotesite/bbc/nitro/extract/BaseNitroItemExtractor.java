@@ -208,10 +208,11 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                 .map(Identified::getCanonicalUri)
                 .collect(Collectors.toSet());
 
-        // Remove locations that exist in both Nitro API and in DB. This should leave us only with
-        // the DB locations not available in the Nitro API which should be marked as stale
+        // Remove available locations that exist in both Nitro API and in DB. This should leave us
+        // only with the DB locations not available in the Nitro API which should be marked as stale
         Set<Location> staleLocations = existingLocations.stream()
                 .filter(existingLocation -> !canonicalUris.contains(existingLocation.getCanonicalUri()))
+                .filter(Location::getAvailable)
                 .collect(Collectors.toSet());
 
         staleLocations.forEach(staleLocation -> {

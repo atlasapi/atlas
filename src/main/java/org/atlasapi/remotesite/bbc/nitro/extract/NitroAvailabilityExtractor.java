@@ -2,7 +2,6 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,7 +14,6 @@ import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Network;
 import org.atlasapi.media.entity.Policy.Platform;
-import org.atlasapi.query.content.ContentWriteExecutor;
 
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
@@ -36,11 +34,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import joptsimple.internal.Strings;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -56,7 +51,6 @@ public class NitroAvailabilityExtractor {
 
     private static final Function<Wrapper<Location>, Location> UNWRAP_LOCATION = Wrapper::get;
 
-    private static final String ENCODING_BASE_CANONICAL_URI = "http://www.bbc.co.uk/iplayer/encoding/%s/%s";
     private static final String IPLAYER_URL_BASE = "http://www.bbc.co.uk/iplayer/episode/";
     private static final String APPLE_IPHONE4_IPAD_HLS_3G = "apple-iphone4-ipad-hls-3g";
     private static final String APPLE_IPHONE4_HLS = "apple-iphone4-hls";

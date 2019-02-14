@@ -131,7 +131,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             }
         }
 
-        if (content instanceof Episode || content instanceof Item) {
+        if (content instanceof Item) {
             Maybe<Identified> existingEpisode = contentResolver.findByCanonicalUris(
                     ImmutableList.of(content.getCanonicalUri())
             ).getFirstValue();

@@ -142,6 +142,20 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             Set<Version> existingVersions,
             Set<Version> ingestedVersions
     ) {
+        // if no versions available in Nitro API, then mark all existing locations as unavailable
+        if (ingestedVersions.isEmpty()) {
+            existingVersions.forEach(existingVersion ->
+                    existingVersion.getManifestedAs().forEach(encoding ->
+                            encoding.getAvailableAt().forEach(location -> {
+                                if (location.getAvailable()) {
+                                    location.setAvailable(false);
+                                }
+                            })
+                    )
+            );
+            return existingVersions;
+        }
+
         Set<String> canonicalUris = existingVersions.stream()
                 .map(Identified::getCanonicalUri)
                 .collect(Collectors.toSet());
@@ -150,15 +164,28 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                 .filter(version -> !canonicalUris.contains(version.getCanonicalUri()))
                 .collect(Collectors.toSet());
 
-        // merge common versions
         for (Version existingVersion : existingVersions) {
+            boolean versionFound = false;
             for (Version ingestedVersion : ingestedVersions) {
+                // merge common versions
                 if (existingVersion.getCanonicalUri().equals(ingestedVersion.getCanonicalUri())) {
+                    versionFound = true;
                     existingVersion.setManifestedAs(mergeEncodings(
                             existingVersion.getManifestedAs(),
                             ingestedVersion.getManifestedAs()
                     ));
+                    break;
                 }
+            }
+            if (!versionFound) {
+                // mark stale versions as unavailable
+                existingVersion.getManifestedAs().forEach(encoding ->
+                        encoding.getAvailableAt().forEach(location -> {
+                            if (location.getAvailable()) {
+                                location.setAvailable(false);
+                            }
+                        })
+                );
             }
         }
 
@@ -171,16 +198,15 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             Set<Encoding> existingEncodings,
             Set<Encoding> ingestedEncodings
     ) {
-        for (Encoding existingEncoding : existingEncodings) {
-            for (Encoding ingestedEncoding : ingestedEncodings) {
-                if (existingEncoding.getVideoBitRate().equals(ingestedEncoding.getVideoBitRate())) {
-                    existingEncoding.setAvailableAt(mergeLocations(
-                            existingEncoding.getAvailableAt(),
-                            ingestedEncoding.getAvailableAt()
-                    ));
-                }
-            }
-        }
+        existingEncodings.forEach(existingEncoding -> ingestedEncodings.stream()
+                .filter(ingestedEncoding -> existingEncoding.getVideoBitRate()
+                        .equals(ingestedEncoding.getVideoBitRate())
+                )
+                .forEach(ingestedEncoding -> existingEncoding.setAvailableAt(mergeLocations(
+                        existingEncoding.getAvailableAt(),
+                        ingestedEncoding.getAvailableAt()
+                )))
+        );
 
         return existingEncodings;
     }

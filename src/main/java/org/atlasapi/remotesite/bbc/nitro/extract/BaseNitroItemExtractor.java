@@ -145,13 +145,18 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         // if no versions available in Nitro API, then mark all existing locations as unavailable
         if (ingestedVersions.isEmpty()) {
             existingVersions.forEach(existingVersion ->
-                    existingVersion.getManifestedAs().forEach(encoding ->
-                            encoding.getAvailableAt().forEach(location -> {
-                                if (location.getAvailable()) {
-                                    location.setAvailable(false);
-                                }
-                            })
-                    )
+                    existingVersion.getManifestedAs().forEach(encoding -> {
+                        setCanonicalUriOn(encoding.getAvailableAt());
+                        encoding.getAvailableAt().forEach(location -> {
+                            if (location.getAvailable()) {
+                                location.setAvailable(false);
+                                log.info(
+                                        "Marking location with canonical URI {} as unavailable",
+                                        location.getCanonicalUri()
+                                );
+                            }
+                        });
+                    })
             );
             return existingVersions;
         }

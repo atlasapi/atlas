@@ -145,29 +145,12 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         // if no versions available in Nitro API, then mark all existing locations as unavailable
         if (ingestedVersions.isEmpty()) {
             existingVersions.forEach(existingVersion ->
-                    existingVersion.getManifestedAs().forEach(encoding -> {
-                        setCanonicalUriOn(encoding.getAvailableAt());
-                        encoding.getAvailableAt().forEach(location -> {
-                            if (location.getAvailable()) {
-                                location.setAvailable(false);
-                                log.info(
-                                        "Marking location with canonical URI {} as unavailable",
-                                        location.getCanonicalUri()
-                                );
-                            }
-                        });
-                    })
+                    markEncodingsAsUnavailable(existingVersion.getManifestedAs())
             );
             return existingVersions;
         }
 
-        Set<String> canonicalUris = existingVersions.stream()
-                .map(Identified::getCanonicalUri)
-                .collect(Collectors.toSet());
-        // get new versions
-        Set<Version> newVersions = ingestedVersions.stream()
-                .filter(version -> !canonicalUris.contains(version.getCanonicalUri()))
-                .collect(Collectors.toSet());
+        Set<Version> newVersions = getNewVersions(existingVersions, ingestedVersions);
 
         for (Version existingVersion : existingVersions) {
             boolean versionFound = false;
@@ -183,14 +166,8 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                 }
             }
             if (!versionFound) {
-                // mark stale versions as unavailable
-                existingVersion.getManifestedAs().forEach(encoding ->
-                        encoding.getAvailableAt().forEach(location -> {
-                            if (location.getAvailable()) {
-                                location.setAvailable(false);
-                            }
-                        })
-                );
+                // mark stale version as unavailable
+                markEncodingsAsUnavailable(existingVersion.getManifestedAs());
             }
         }
 
@@ -198,12 +175,37 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
 
         return existingVersions;
     }
+    
+    private void markEncodingsAsUnavailable(Set<Encoding> existingEncodings) {
+        existingEncodings.forEach(encoding -> {
+            markLocationsAsUnavailable(encoding.getAvailableAt());
+            encoding.setAvailableAt(encoding.getAvailableAt()
+                    .stream()
+                    .filter(this::isLocationExpired)
+                    .collect(Collectors.toSet())
+            );
+        });
+    }
+
+    private Set<Version> getNewVersions(
+            Set<Version> existingVersions,
+            Set<Version> ingestedVersions
+    ) {
+        Set<String> canonicalUris = existingVersions.stream()
+                .map(Identified::getCanonicalUri)
+                .collect(Collectors.toSet());
+        // get new versions
+        return ingestedVersions.stream()
+                .filter(version -> !canonicalUris.contains(version.getCanonicalUri()))
+                .collect(Collectors.toSet());
+    }
 
     private Set<Encoding> mergeEncodings(
             Set<Encoding> existingEncodings,
             Set<Encoding> ingestedEncodings
     ) {
         existingEncodings.forEach(existingEncoding -> ingestedEncodings.stream()
+                // match the SD/HD encodings based on the videoBitRate
                 .filter(ingestedEncoding -> existingEncoding.getVideoBitRate()
                         .equals(ingestedEncoding.getVideoBitRate())
                 )
@@ -220,8 +222,8 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             Set<Location> existingLocations,
             Set<Location> ingestedLocations
     ) {
-        // Some DB locations might not have the new canonical URI, so we update themas well in order
-        // to be able to compare them against the ones ingested from the API
+        // Some DB locations might not have the new canonical URI, so we update them 
+        // in order to be able to compare them against the ones ingested from the API
         setCanonicalUriOn(existingLocations);
         Set<Location> staleLocations = getStaleLocations(
                 existingLocations,
@@ -235,26 +237,50 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             Set<Location> existingLocations,
             Set<Location> ingestedLocations
     ) {
+        Set<Location> staleLocations = filterStaleLocations(existingLocations, ingestedLocations);
+
+        markLocationsAsUnavailable(staleLocations);
+
+        return staleLocations.stream()
+                .filter(this::isLocationExpired)
+                .collect(Collectors.toSet());
+    }
+
+    private Set<Location> filterStaleLocations(
+            Set<Location> existingLocations,
+            Set<Location> ingestedLocations
+    ) {
         Set<String> canonicalUris = ingestedLocations.stream()
                 .map(Identified::getCanonicalUri)
                 .collect(Collectors.toSet());
-
         // Remove available locations that exist in both Nitro API and in DB. This should leave us
         // only with the DB locations not available in the Nitro API which should be marked as stale
-        Set<Location> staleLocations = existingLocations.stream()
+        return existingLocations.stream()
                 .filter(existingLocation -> !canonicalUris.contains(existingLocation.getCanonicalUri()))
-                .filter(Location::getAvailable)
                 .collect(Collectors.toSet());
+    }
 
+    private void markLocationsAsUnavailable(Set<Location> staleLocations) {
         staleLocations.forEach(staleLocation -> {
+            // Set location availability end if missing, so we can remove it completely after
+            // 1 week in order to keep the DB clean
+            if (Objects.isNull(staleLocation.getPolicy().getAvailabilityEnd())) {
+                staleLocation.getPolicy().setAvailabilityEnd(DateTime.now().withTimeAtStartOfDay());
+            }
             staleLocation.setAvailable(false);
             log.info(
                     "Marking location with canonical URI {} as unavailable",
                     staleLocation.getCanonicalUri()
             );
         });
+    }
 
-        return staleLocations;
+    private boolean isLocationExpired(Location location) {
+        Duration duration = new Duration(
+                location.getPolicy().getAvailabilityEnd(),
+                DateTime.now()
+        );
+        return duration.getStandardDays() < 7;
     }
 
     private void setCanonicalUriOn(Set<Location> existingLocations) {

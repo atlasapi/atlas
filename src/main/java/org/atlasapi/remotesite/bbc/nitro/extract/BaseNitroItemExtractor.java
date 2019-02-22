@@ -142,14 +142,6 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             Set<Version> existingVersions,
             Set<Version> ingestedVersions
     ) {
-        // if no versions available in Nitro API, then mark all existing locations as unavailable
-        if (ingestedVersions.isEmpty()) {
-            existingVersions.forEach(existingVersion ->
-                    markEncodingsAsUnavailable(existingVersion.getManifestedAs())
-            );
-            return existingVersions;
-        }
-
         Set<Version> newVersions = getNewVersions(existingVersions, ingestedVersions);
 
         for (Version existingVersion : existingVersions) {
@@ -171,17 +163,15 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             }
         }
 
-        existingVersions.addAll(newVersions);
-
-        return existingVersions;
+        return Sets.union(existingVersions, newVersions);
     }
     
-    private void markEncodingsAsUnavailable(Set<Encoding> existingEncodings) {
-        existingEncodings.forEach(encoding -> {
+    private void markEncodingsAsUnavailable(Set<Encoding> encodings) {
+        encodings.forEach(encoding -> {
             markLocationsAsUnavailable(encoding.getAvailableAt());
             encoding.setAvailableAt(encoding.getAvailableAt()
                     .stream()
-                    .filter(this::isLocationExpired)
+                    .filter(location -> !isLocationOld(location))
                     .collect(Collectors.toSet())
             );
         });
@@ -204,18 +194,26 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             Set<Encoding> existingEncodings,
             Set<Encoding> ingestedEncodings
     ) {
-        existingEncodings.forEach(existingEncoding -> ingestedEncodings.stream()
+        for (Encoding existingEncoding : existingEncodings) {
+            boolean encodingFound = false;
+            for (Encoding ingestedEncoding : ingestedEncodings) {
                 // match the SD/HD encodings based on the videoBitRate
-                .filter(ingestedEncoding -> existingEncoding.getVideoBitRate()
-                        .equals(ingestedEncoding.getVideoBitRate())
-                )
-                .forEach(ingestedEncoding -> existingEncoding.setAvailableAt(mergeLocations(
-                        existingEncoding.getAvailableAt(),
-                        ingestedEncoding.getAvailableAt()
-                )))
-        );
+                if (existingEncoding.getVideoBitRate().equals(ingestedEncoding.getVideoBitRate())) {
+                    encodingFound = true;
+                    existingEncoding.setAvailableAt(mergeLocations(
+                            existingEncoding.getAvailableAt(),
+                            ingestedEncoding.getAvailableAt()
+                    ));
+                    break;
+                }
+            }
+            if (!encodingFound) {
+                // mark stale version as unavailable
+                markEncodingsAsUnavailable(Sets.newHashSet(existingEncoding));
+            }
+        }
 
-        return existingEncodings;
+        return Sets.union(existingEncodings, ingestedEncodings);
     }
 
     private Set<Location> mergeLocations(
@@ -225,24 +223,19 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         // Some DB locations might not have the new canonical URI, so we update them 
         // in order to be able to compare them against the ones ingested from the API
         setCanonicalUriOn(existingLocations);
-        Set<Location> staleLocations = getStaleLocations(
-                existingLocations,
-                ingestedLocations
-        );
-        staleLocations.addAll(ingestedLocations);
-        return staleLocations;
-    }
-
-    private Set<Location> getStaleLocations(
-            Set<Location> existingLocations,
-            Set<Location> ingestedLocations
-    ) {
         Set<Location> staleLocations = filterStaleLocations(existingLocations, ingestedLocations);
 
         markLocationsAsUnavailable(staleLocations);
 
+        //don't carry over locations that expired long time, so they get deleted
+        Set<Location> recentStaleLocations = getRecentStaleLocations(staleLocations);
+
+        return Sets.union(recentStaleLocations,ingestedLocations);
+    }
+
+    private Set<Location> getRecentStaleLocations(Set<Location> staleLocations) {
         return staleLocations.stream()
-                .filter(this::isLocationExpired)
+                .filter(location -> !isLocationOld(location))
                 .collect(Collectors.toSet());
     }
 
@@ -250,13 +243,13 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             Set<Location> existingLocations,
             Set<Location> ingestedLocations
     ) {
-        Set<String> canonicalUris = ingestedLocations.stream()
+        Set<String> ingestedUris = ingestedLocations.stream()
                 .map(Identified::getCanonicalUri)
                 .collect(Collectors.toSet());
         // Remove available locations that exist in both Nitro API and in DB. This should leave us
         // only with the DB locations not available in the Nitro API which should be marked as stale
         return existingLocations.stream()
-                .filter(existingLocation -> !canonicalUris.contains(existingLocation.getCanonicalUri()))
+                .filter(existingLocation -> !ingestedUris.contains(existingLocation.getCanonicalUri()))
                 .collect(Collectors.toSet());
     }
 
@@ -275,12 +268,12 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         });
     }
 
-    private boolean isLocationExpired(Location location) {
+    private boolean isLocationOld(Location location) {
         Duration duration = new Duration(
                 location.getPolicy().getAvailabilityEnd(),
                 DateTime.now()
         );
-        return duration.getStandardDays() < 7;
+        return duration.getStandardDays() > 7;
     }
 
     private void setCanonicalUriOn(Set<Location> existingLocations) {

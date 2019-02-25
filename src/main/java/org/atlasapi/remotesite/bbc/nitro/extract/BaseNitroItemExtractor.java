@@ -168,6 +168,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     
     private void markEncodingsAsUnavailable(Set<Encoding> encodings) {
         encodings.forEach(encoding -> {
+            setCanonicalUriOn(encoding.getAvailableAt());
             markLocationsAsUnavailable(encoding.getAvailableAt());
             encoding.setAvailableAt(encoding.getAvailableAt()
                     .stream()

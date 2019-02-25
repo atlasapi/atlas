@@ -137,7 +137,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             ).getFirstValue();
 
             if (existingEpisode.hasValue()) {
-                Episode episode = (Episode) existingEpisode.requireValue();
+                Item episode = (Item) existingEpisode.requireValue();
                 Set<Version> existingVersions = episode.getVersions();
                 if (!existingVersions.isEmpty()) {
                     extractAdditionalFields(

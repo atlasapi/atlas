@@ -1,5 +1,29 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.remotesite.bbc.BbcFeeds;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroClipExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
+
+import com.metabroadcast.atlas.glycerin.Glycerin;
+import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.atlas.glycerin.GlycerinResponse;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.Clip;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.Programme;
+import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
+import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
+import com.metabroadcast.common.time.Clock;
+
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -13,29 +37,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.metabroadcast.atlas.glycerin.Glycerin;
-import com.metabroadcast.atlas.glycerin.GlycerinException;
-import com.metabroadcast.atlas.glycerin.GlycerinResponse;
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.Clip;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
-import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
-import com.metabroadcast.common.time.Clock;
-import org.atlasapi.remotesite.bbc.BbcFeeds;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroClipExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.AVAILABLE_VERSIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
@@ -71,9 +74,14 @@ public class GlycerinNitroClipsAdapter {
 
     private final ListeningExecutorService executor;
 
-    public GlycerinNitroClipsAdapter(Glycerin glycerin, Clock clock, int pageSize) {
+    public GlycerinNitroClipsAdapter(
+            Glycerin glycerin,
+            ContentResolver contentResolver,
+            Clock clock,
+            int pageSize
+    ) {
         this.glycerin = glycerin;
-        this.clipExtractor = new NitroClipExtractor(clock);
+        this.clipExtractor = new NitroClipExtractor(clock, contentResolver);
         this.pageSize = pageSize;
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(15));
     }

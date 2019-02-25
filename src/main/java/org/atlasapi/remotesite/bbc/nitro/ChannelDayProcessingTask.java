@@ -1,24 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.UpdateProgress;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.reporting.OwlReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
-import org.joda.time.LocalDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +9,28 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.reporting.OwlReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.UpdateProgress;
+
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -182,7 +185,10 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
         }
     }
 
-    private ListenableFuture<UpdateProgress> submitTask(final ChannelDay cd, OwlReporter owlReporter) {
+    private ListenableFuture<UpdateProgress> submitTask(
+            final ChannelDay cd,
+            OwlReporter owlReporter
+    ) {
         log.debug("submit: {}", cd);
         ListenableFuture<UpdateProgress> taskResult =
                 executor.submit(
@@ -217,14 +223,18 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
         private final ChannelDayProcessingTaskListener listener;
         private final OwlReporter owlReporter;
 
-        private ChannelDayProcessTask(ChannelDay cd, ChannelDayProcessingTaskListener listener, OwlReporter owlReporter) {
+        private ChannelDayProcessTask(
+                ChannelDay cd,
+                ChannelDayProcessingTaskListener listener,
+                OwlReporter owlReporter
+        ) {
             this.cd = cd;
             this.listener = listener;
             this.owlReporter = owlReporter;
         }
 
         @Override
-        public UpdateProgress call() throws Exception {
+        public UpdateProgress call() {
             log.info("Channel day processing task {}", Thread.currentThread().getName());
 
             if (!shouldContinue()) {

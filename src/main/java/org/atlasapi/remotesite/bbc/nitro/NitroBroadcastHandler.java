@@ -1,9 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.reporting.OwlReporter;
-
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import org.atlasapi.reporting.OwlReporter;
 
 /**
  * <p>

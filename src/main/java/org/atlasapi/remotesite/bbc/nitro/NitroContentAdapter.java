@@ -8,7 +8,6 @@ import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.persistence.content.ContentResolver;
 
 import java.util.List;
 

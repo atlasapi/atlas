@@ -9,8 +9,6 @@ import com.metabroadcast.common.time.Clock;
 
 import javax.annotation.Nullable;
 
-import org.atlasapi.persistence.content.ContentResolver;
-
 /**
  * Extracts a {@link org.atlasapi.media.entity.Clip Atlas Clip} from a
  * {@link Clip}.
@@ -21,8 +19,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 public class NitroClipExtractor
         extends BaseNitroItemExtractor<Clip, org.atlasapi.media.entity.Clip> {
 
-    public NitroClipExtractor(Clock clock, ContentResolver contentResolver) {
-        super(clock, contentResolver);
+    public NitroClipExtractor(Clock clock) {
+        super(clock);
     }
 
     @Override

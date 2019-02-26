@@ -1,18 +1,19 @@
 package org.atlasapi.remotesite.pa.channels;
 
+import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.google.common.collect.ImmutableList;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
-import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.channel.Platform;
@@ -22,13 +23,11 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.remotesite.pa.PaChannelMap;
 import org.atlasapi.remotesite.pa.channels.bindings.Station;
 import org.atlasapi.remotesite.pa.channels.bindings.TvChannelData;
 
 import com.metabroadcast.common.base.Maybe;
 
-import com.amazonaws.util.CollectionUtils;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -40,7 +39,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import static com.amazonaws.util.CollectionUtils.isNullOrEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class PaChannelDataHandler {

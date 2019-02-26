@@ -1,5 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Set;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -8,22 +13,16 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Location;
-
-import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.AvailabilityOf;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.AvailabilityOf;
 
 public class NitroAvailabilityExtractorTest {
 

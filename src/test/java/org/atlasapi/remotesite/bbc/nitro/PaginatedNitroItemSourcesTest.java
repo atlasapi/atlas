@@ -6,7 +6,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import org.atlasapi.media.entity.Item;
-import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
 
@@ -52,7 +51,6 @@ public class PaginatedNitroItemSourcesTest {
     private List<Episode> episodes;
     private final int pageSize = 30;
     private final String versionPid = "b07d2xrxb";
-    @Mock private ContentResolver contentResolver;
     @Mock private Clock clock;
     @Mock private QueuingPersonWriter personWriter;
     @Mock private ListenableFuture listenableFuture;
@@ -63,7 +61,7 @@ public class PaginatedNitroItemSourcesTest {
 
     @Before
     public void setUp() throws Exception {
-        this.nitroEpisodeExtractor = new NitroEpisodeExtractor(clock, contentResolver, personWriter);
+        this.nitroEpisodeExtractor = new NitroEpisodeExtractor(clock, personWriter);
         this.episodes = createEpisodes();
 
         this.paginatedNitroItemSources = new PaginatedNitroItemSources(

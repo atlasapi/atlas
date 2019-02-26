@@ -1,29 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.atlasapi.media.TransportType;
-import org.atlasapi.media.entity.Encoding;
-import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.Policy;
-import org.atlasapi.media.entity.Policy.Network;
-import org.atlasapi.media.entity.Policy.Platform;
-
-import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions.Version.Availabilities.Availability.MediaSets;
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet;
-import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.time.DateTimeZones;
-
+import com.google.common.base.Equivalence;
 import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -34,8 +11,26 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.time.DateTimeZones;
+import org.atlasapi.media.TransportType;
+import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Location;
+import org.atlasapi.media.entity.Policy;
+import org.atlasapi.media.entity.Policy.Network;
+import org.atlasapi.media.entity.Policy.Platform;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
+
+import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -47,9 +42,9 @@ public class NitroAvailabilityExtractor {
 
     private static final LocationEquivalence LOCATION_EQUIVALENCE = new LocationEquivalence();
 
-    private static final Function<Location, Wrapper<Location>> TO_WRAPPED_LOCATION = LOCATION_EQUIVALENCE::wrap;
+    private static final Function<Location, Equivalence.Wrapper<Location>> TO_WRAPPED_LOCATION = LOCATION_EQUIVALENCE::wrap;
 
-    private static final Function<Wrapper<Location>, Location> UNWRAP_LOCATION = Wrapper::get;
+    private static final Function<Equivalence.Wrapper<Location>, Location> UNWRAP_LOCATION = Wrapper::get;
 
     private static final String IPLAYER_URL_BASE = "http://www.bbc.co.uk/iplayer/episode/";
     private static final String APPLE_IPHONE4_IPAD_HLS_3G = "apple-iphone4-ipad-hls-3g";
@@ -72,7 +67,7 @@ public class NitroAvailabilityExtractor {
     private static final Predicate<Availability> IS_HD = input -> input.getMediaSet().contains("iptv-hd");
 
     private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_HD = input -> {
-        for (MediaSet mediaSet : input
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
                 .getMediaSets()
                 .getMediaSet()) {
             if ("iptv-hd".equals(mediaSet.getName())) {
@@ -86,8 +81,8 @@ public class NitroAvailabilityExtractor {
     private static final Predicate<Availability> IS_SUBTITLED = input -> input.getMediaSet().contains("captions");
 
     private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_SUBTITLED = input -> {
-        MediaSets mediaSets = input.getMediaSets();
-        for (MediaSet ms : mediaSets.getMediaSet()) {
+        AvailableVersions.Version.Availabilities.Availability.MediaSets mediaSets = input.getMediaSets();
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet ms : mediaSets.getMediaSet()) {
             if ("captions".equals(ms.getName())) {
                 return true;
             }
@@ -103,7 +98,7 @@ public class NitroAvailabilityExtractor {
     private static final Predicate<Availability> IS_IPTV = input -> input.getMediaSet().contains("iptv-all");
 
     private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_IPTV = input -> {
-        for (MediaSet mediaSet : input
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
                 .getMediaSets()
                 .getMediaSet()) {
             if ("iptv-all".equals(mediaSet.getName())) {
@@ -131,8 +126,8 @@ public class NitroAvailabilityExtractor {
             Iterable<AvailableVersions.Version.Availabilities.Availability> availabilities,
             String mediaType
     ) {
-        Set<Wrapper<Location>> hdLocations = Sets.newHashSet();
-        Set<Wrapper<Location>> sdLocations = Sets.newHashSet();
+        Set<Equivalence.Wrapper<Location>> hdLocations = Sets.newHashSet();
+        Set<Equivalence.Wrapper<Location>> sdLocations = Sets.newHashSet();
 
         boolean isSubtitled = Iterables.any(
                 availabilities,
@@ -148,6 +143,7 @@ public class NitroAvailabilityExtractor {
                     .stream()
                     .map(TO_WRAPPED_LOCATION::apply)
                     .collect(MoreCollectors.toImmutableList());
+
             if (MIXIN_IS_IPTV.apply(availability) && MIXIN_IS_HD.apply(availability)) {
                 hdLocations.addAll(locations);
                 // the mixin operates a bit differently and doesn't duplicate availabilities, so
@@ -163,8 +159,8 @@ public class NitroAvailabilityExtractor {
             } else {
                 sdLocations.addAll(locations);
             }
-        }
 
+        }
         // only create encodings if locations are present for HD/SD
         if (hdLocations.isEmpty()) {
             if (sdLocations.isEmpty()) {
@@ -188,8 +184,8 @@ public class NitroAvailabilityExtractor {
      * The provided collection of {@link Availability} must all be from the same version.
      */
     public Set<Encoding> extract(Iterable<Availability> availabilities, String mediaType) {
-        Set<Wrapper<Location>> hdLocations = Sets.newHashSet();
-        Set<Wrapper<Location>> sdLocations = Sets.newHashSet();
+        Set<Equivalence.Wrapper<Location>> hdLocations = Sets.newHashSet();
+        Set<Equivalence.Wrapper<Location>> sdLocations = Sets.newHashSet();
 
         boolean isSubtitled = Iterables.any(availabilities,
                 Predicates.and(IS_SUBTITLED, IS_AVAILABLE));
@@ -220,11 +216,8 @@ public class NitroAvailabilityExtractor {
                 createEncoding(false, isSubtitled, sdLocations));
     }
 
-    private Encoding createEncoding(
-            boolean isHd,
-            boolean isSubtitled,
-            Set<Wrapper<Location>> wrappedLocations
-    ) {
+    private Encoding createEncoding(boolean isHd, boolean isSubtitled,
+            Set<Equivalence.Wrapper<Location>> wrappedLocations) {
         Encoding encoding = new Encoding();
 
         setHorizontalAndVerticalSize(encoding, isHd);
@@ -265,21 +258,20 @@ public class NitroAvailabilityExtractor {
     ) {
         ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
 
-        MediaSets mediaSets = availability.getMediaSets();
+        AvailableVersions.Version.Availabilities.Availability.MediaSets mediaSets = availability.getMediaSets();
 
-        for (MediaSet ms : mediaSets.getMediaSet()) {
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet ms : mediaSets.getMediaSet()) {
             Platform platform = mediaSetPlatform.get(ms.getName());
 
             if (platform != null) {
-                Location newLocation = newLocation(
+                locations.add(newLocation(
                         programmePid,
                         availability,
                         ms,
                         platform,
                         mediaSetNetwork.get(ms.getName()),
                         mediaType
-                );
-                locations.add(newLocation);
+                ));
             }
         }
 
@@ -305,7 +297,7 @@ public class NitroAvailabilityExtractor {
     private Location newLocation(
             String programmePid,
             AvailableVersions.Version.Availabilities.Availability availability,
-            MediaSet mediaSet,
+            AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet,
             Platform platform,
             Network network,
             String mediaType
@@ -313,25 +305,11 @@ public class NitroAvailabilityExtractor {
         Location location = new Location();
 
         location.setUri(IPLAYER_URL_BASE + checkNotNull(programmePid));
-        location.setPolicy(policy(availability, mediaSet, platform, network, mediaType));
-        location.setCanonicalUri(createLocationCanonicalUri(location));
         location.setTransportType(TransportType.LINK);
+        location.setPolicy(policy(availability, mediaSet, platform, network, mediaType));
         location.setAvailable(!REVOKED.equals(availability.getStatus()));
 
         return location;
-    }
-
-    private String createLocationCanonicalUri(Location location) {
-        Policy policy = location.getPolicy();
-        String networkKey = Objects.isNull(policy.getNetwork())
-                   ? ""
-                   : String.format("/%s", policy.getNetwork().key());
-        return String.format(
-                "%s/%s%s",
-                location.getUri(),
-                policy.getPlatform().key(),
-                networkKey
-        );
     }
 
     private Policy policy(Availability source, Platform platform, Network network,
@@ -354,7 +332,7 @@ public class NitroAvailabilityExtractor {
 
     private Policy policy(
             AvailableVersions.Version.Availabilities.Availability source,
-            MediaSet mediaSet,
+            AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet,
             Platform platform,
             Network network,
             String mediaType
@@ -377,7 +355,7 @@ public class NitroAvailabilityExtractor {
 
     private boolean shouldIngestActualAvailabilityStart(
             AvailableVersions.Version.Availabilities.Availability source,
-            MediaSet mediaSet,
+            AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet,
             String mediaType,
             Policy policy
     ) {

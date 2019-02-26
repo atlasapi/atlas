@@ -6,16 +6,12 @@ import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Series;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
-
-import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
-import java.util.List;
-import java.util.Set;
 
 /**
  * A {@link NitroContentExtractor} for extracting
@@ -68,10 +64,8 @@ public class NitroSeriesExtractor
     }
 
     @Override
-    protected void extractAdditionalFields(
-            Series source,
-            org.atlasapi.media.entity.Series content
-    ) {
+    protected void extractAdditionalFields(Series source, org.atlasapi.media.entity.Series content,
+            DateTime now) {
         if (source.getSeriesOf() != null) {
             BigInteger position = source.getSeriesOf().getPosition();
             if (position != null) {

@@ -12,6 +12,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexEntry;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -20,8 +21,8 @@ import static org.mockito.Mockito.when;
 
 public class AmazonTitleGeneratorTest {
 
-    private final AmazonTitleIndexStore amazonTitleIndexStore = mock(AmazonTitleIndexStore.class);
-    private final ContentResolver resolver = mock(ContentResolver.class);
+    private @Mock final AmazonTitleIndexStore amazonTitleIndexStore = mock(AmazonTitleIndexStore.class);
+    private @Mock final ContentResolver resolver = mock(ContentResolver.class);
 
     private AmazonTitleGenerator<Item> itemGenerator = new AmazonTitleGenerator<>(
             amazonTitleIndexStore,

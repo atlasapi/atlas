@@ -1,15 +1,8 @@
 package org.atlasapi.remotesite.amazon;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
+import com.google.common.collect.Lists;
+import com.google.common.io.Resources;
+import com.metabroadcast.common.scheduling.UpdateProgress;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
@@ -21,11 +14,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentExtractor;
-
-import com.metabroadcast.common.scheduling.UpdateProgress;
-
-import com.google.common.collect.Lists;
-import com.google.common.io.Resources;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +24,15 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -64,6 +62,8 @@ public class AmazonContentWritingItemProcessorTest {
     @Captor
     private ArgumentCaptor<Container> containerArgumentCaptor;
 
+    @Mock private AmazonTitleIndexStore amazonTitleIndexStore = mock(AmazonTitleIndexStore.class);
+
     @Before
     public void setUp() {
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(ResolvedContent.builder()
@@ -75,7 +75,8 @@ public class AmazonContentWritingItemProcessorTest {
                 writer,
                 lister,
                 100,
-                brandProcessor
+                brandProcessor,
+                amazonTitleIndexStore
         );
     }
 

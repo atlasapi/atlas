@@ -34,7 +34,6 @@ import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -77,7 +76,6 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     private final Set<String> episodeUris = new HashSet<>();
     private final Set<ModelWithPayload<Episode>> episodesWithoutAvailableSeries = new HashSet<>();
 
-    private @Autowired AmazonTitleIndexStore amazonTitleIndexStore;
 
     private OwlTelescopeReporter telescope;
 
@@ -88,6 +86,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     private final int missingContentPercentage;
     private final AmazonBrandProcessor brandProcessor;
     private final ContentMerger contentMerger;
+    private final AmazonTitleIndexStore amazonTitleIndexStore;
 
     //Title Cleaning
 //    private final Pattern straySymbols = Pattern.compile("^[\\p{Pd}: ]+|[\\p{Pd}: ]+$");//p{Pd}=dashes
@@ -101,7 +100,8 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             ContentWriter writer,
             ContentLister lister,
             int missingContentPercentage,
-            AmazonBrandProcessor brandProcessor
+            AmazonBrandProcessor brandProcessor,
+            AmazonTitleIndexStore amazonTitleIndexStore
     ) {
         this.extractor = checkNotNull(extractor);
         this.resolver = checkNotNull(resolver);
@@ -114,6 +114,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                 MergeStrategy.REPLACE,
                 MergeStrategy.REPLACE
         );
+        this.amazonTitleIndexStore = checkNotNull(amazonTitleIndexStore);
     }
 
     @Override

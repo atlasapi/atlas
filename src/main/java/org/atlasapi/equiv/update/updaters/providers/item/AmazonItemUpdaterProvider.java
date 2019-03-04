@@ -35,16 +35,12 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
 
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 
 public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
-
-    private @Autowired AmazonTitleIndexStore amazonTitleIndexStore;
 
     private AmazonItemUpdaterProvider() {
     }
@@ -85,7 +81,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         0 //only equiv on exact year, as agreed
                                 ),
                                 new AmazonTitleGenerator<>(
-                                        amazonTitleIndexStore,
+                                        dependencies.getAmazonTitleIndexStore(),
                                         dependencies.getContentResolver(),
                                         Item.class,
                                         AMAZON_UNBOX

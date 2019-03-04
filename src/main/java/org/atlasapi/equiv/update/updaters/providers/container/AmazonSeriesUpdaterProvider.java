@@ -31,16 +31,12 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
 
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 
 public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
-
-    private @Autowired AmazonTitleIndexStore amazonTitleIndexStore;
 
     private AmazonSeriesUpdaterProvider() {
     }
@@ -70,7 +66,7 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                                         dependencies.getEquivSummaryStore()
                                 ),
                                 new AmazonTitleGenerator<>(
-                                        amazonTitleIndexStore,
+                                        dependencies.getAmazonTitleIndexStore(),
                                         dependencies.getContentResolver(),
                                         Container.class,
                                         AMAZON_UNBOX

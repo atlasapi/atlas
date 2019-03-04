@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -23,7 +23,7 @@ public class AmazonTitleGeneratorTest {
     private final AmazonTitleIndexStore amazonTitleIndexStore = mock(AmazonTitleIndexStore.class);
     private final ContentResolver resolver = mock(ContentResolver.class);
 
-    private AmazonTitleGenerator<Content> generator = new AmazonTitleGenerator<>(
+    private AmazonTitleGenerator<Item> itemGenerator = new AmazonTitleGenerator<>(
             amazonTitleIndexStore,
             resolver,
             Item.class,
@@ -48,7 +48,7 @@ public class AmazonTitleGeneratorTest {
                         .build()
                 );
 
-        ScoredCandidates<Content> scoredCandidates = generator.generate(
+        ScoredCandidates<Item> scoredCandidates = itemGenerator.generate(
                 item1,
                 new DefaultDescription(),
                 EquivToTelescopeResults.create("contentId", Publisher.AMAZON_UNBOX.key())
@@ -76,7 +76,7 @@ public class AmazonTitleGeneratorTest {
                         .build()
                 );
 
-        ScoredCandidates<Content> scoredCandidates = generator.generate(
+        ScoredCandidates<Item> scoredCandidates = itemGenerator.generate(
                 subject,
                 new DefaultDescription(),
                 EquivToTelescopeResults.create("contentId", Publisher.AMAZON_UNBOX.key())
@@ -105,7 +105,35 @@ public class AmazonTitleGeneratorTest {
                         .build()
                 );
 
-        ScoredCandidates<Content> scoredCandidates = generator.generate(
+        ScoredCandidates<Item> scoredCandidates = itemGenerator.generate(
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("contentId", Publisher.AMAZON_UNBOX.key())
+        );
+
+        assertThat(scoredCandidates.candidates().keySet(), is(ImmutableSet.of(item1, item2)));
+    }
+
+    @Test
+    public void testGenerationIgnoresDifferentContentType() {
+        String title = "title";
+        Item subject = item("uri", title);
+        Item item1 = item("uri1", title);
+        Item item2 = item("uri2", title);
+        Brand brand = brand("uri3", title);
+
+        when(amazonTitleIndexStore.getIndexEntry(title))
+                .thenReturn(new AmazonTitleIndexEntry(title, ImmutableSet.of("uri1", "uri2", "uri3")));
+
+        when(resolver.findByCanonicalUris(ImmutableSet.of("uri1", "uri2", "uri3")))
+                .thenReturn(ResolvedContent.builder()
+                        .put("uri1", item1)
+                        .put("uri2", item2)
+                        .put("uri3", brand)
+                        .build()
+                );
+
+        ScoredCandidates<Item> scoredCandidates = itemGenerator.generate(
                 subject,
                 new DefaultDescription(),
                 EquivToTelescopeResults.create("contentId", Publisher.AMAZON_UNBOX.key())
@@ -121,5 +149,13 @@ public class AmazonTitleGeneratorTest {
         item.setTitle(title);
         item.setPublisher(Publisher.AMAZON_UNBOX);
         return item;
+    }
+
+    private Brand brand(String uri, String title) {
+        Brand brand = new Brand();
+        brand.setCanonicalUri(uri);
+        brand.setTitle(title);
+        brand.setPublisher(Publisher.AMAZON_UNBOX);
+        return brand;
     }
 }

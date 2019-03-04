@@ -28,14 +28,15 @@ import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexEntry;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -75,6 +76,8 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     private final Set<String> seriesUris = new HashSet<>();
     private final Set<String> episodeUris = new HashSet<>();
     private final Set<ModelWithPayload<Episode>> episodesWithoutAvailableSeries = new HashSet<>();
+
+    private @Autowired AmazonTitleIndexStore amazonTitleIndexStore;
 
     private OwlTelescopeReporter telescope;
 
@@ -203,6 +206,8 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             );
         }
 
+        createTitleIndex();
+
         seenContainer.clear();
         cached.clear();
         topLevelSeries.clear();
@@ -238,6 +243,23 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                     assignImageToParent(series);
                 }
             }
+        }
+    }
+
+    private void createTitleIndex() {
+        //Title -> Set<Content> (stores object references instead of just uri to reduce memory use)
+        SetMultimap<String, Content> titleIndex = HashMultimap.create();
+        for (ModelWithPayload<Content> content : seenContent.values()) {
+            titleIndex.put(content.getModel().getTitle(), content.getModel());
+        }
+        Set<String> titles = titleIndex.keySet();
+        log.info("Creating title index for {} unique titles", titles.size());
+        for (String title : titles) {
+            Set<String> uris = titleIndex.get(title).stream()
+                    .map(Content::getTitle)
+                    .collect(Collectors.toSet());
+            AmazonTitleIndexEntry indexEntry = new AmazonTitleIndexEntry(title, uris);
+            amazonTitleIndexStore.createOrUpdateIndex(indexEntry);
         }
     }
 

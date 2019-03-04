@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.ExactTitleGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
+import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeMatchingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -30,10 +31,16 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
 
+import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
+
 public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
+
+    private @Autowired AmazonTitleIndexStore amazonTitleIndexStore;
 
     private AmazonContainerUpdaterProvider() {
     }
@@ -67,6 +74,12 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                                         Container.class,
                                         true,
                                         Publisher.AMAZON_UNBOX
+                                ),
+                                new AmazonTitleGenerator<>(
+                                        amazonTitleIndexStore,
+                                        dependencies.getContentResolver(),
+                                        Container.class,
+                                        AMAZON_UNBOX
                                 )
                         )
                 )

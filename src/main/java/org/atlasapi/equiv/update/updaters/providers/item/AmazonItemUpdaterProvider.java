@@ -6,6 +6,7 @@ import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ExactTitleGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
+import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -34,12 +35,16 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
 
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 
 public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+
+    private @Autowired AmazonTitleIndexStore amazonTitleIndexStore;
 
     private AmazonItemUpdaterProvider() {
     }
@@ -77,7 +82,14 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)),
                                         true,
-                                        0) //only equiv on exact year, as agreed
+                                        0 //only equiv on exact year, as agreed
+                                ),
+                                new AmazonTitleGenerator<>(
+                                        amazonTitleIndexStore,
+                                        dependencies.getContentResolver(),
+                                        Item.class,
+                                        AMAZON_UNBOX
+                                )
                         )
                 )
                 .withScorers(

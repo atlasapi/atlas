@@ -257,7 +257,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         log.info("Creating title index for {} unique titles", titles.size());
         for (String title : titles) {
             Set<String> uris = titleIndex.get(title).stream()
-                    .map(Content::getTitle)
+                    .map(Content::getCanonicalUri)
                     .collect(Collectors.toSet());
             AmazonTitleIndexEntry indexEntry = new AmazonTitleIndexEntry(title, uris);
             amazonTitleIndexStore.createOrUpdateIndex(indexEntry);

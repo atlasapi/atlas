@@ -14,6 +14,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentExtractor;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexEntry;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.junit.Before;
@@ -62,7 +63,10 @@ public class AmazonContentWritingItemProcessorTest {
     @Captor
     private ArgumentCaptor<Container> containerArgumentCaptor;
 
-    @Mock private AmazonTitleIndexStore amazonTitleIndexStore = mock(AmazonTitleIndexStore.class);
+    @Mock
+    private AmazonTitleIndexStore amazonTitleIndexStore = mock(AmazonTitleIndexStore.class);
+    @Captor
+    private ArgumentCaptor<AmazonTitleIndexEntry> amazonTitleIndexEntryArgumentCaptor;
 
     @Before
     public void setUp() {
@@ -108,6 +112,25 @@ public class AmazonContentWritingItemProcessorTest {
         }
         assertEquals(series, 2);
         assertEquals(brands, 1);
+    }
+
+    @Test
+    public void testIndexIsCreated() throws ParserConfigurationException, SAXException, IOException
+    {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser saxParser = factory.newSAXParser();
+        TestAmazonProcessor testProcessor = new TestAmazonProcessor();
+        AmazonContentHandler handler = new AmazonContentHandler(testProcessor);
+        saxParser.parse(getFileAsInputStream("duplicate_title.xml"), handler);
+
+        processor.prepare(telescope);
+        for (AmazonItem item : testProcessor.getItems()) {
+            processor.process(item);
+        }
+        processor.finish();
+
+        verify(amazonTitleIndexStore, times(2))
+                .createOrUpdateIndex(amazonTitleIndexEntryArgumentCaptor.capture());
     }
 
     private InputStream getFileAsInputStream(String fileName) throws IOException {

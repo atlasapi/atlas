@@ -262,6 +262,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             AmazonTitleIndexEntry indexEntry = new AmazonTitleIndexEntry(title, uris);
             amazonTitleIndexStore.createOrUpdateIndex(indexEntry);
         }
+        log.info("Title index creation finished");
     }
 
     private void assignImageToParent(Series series) {

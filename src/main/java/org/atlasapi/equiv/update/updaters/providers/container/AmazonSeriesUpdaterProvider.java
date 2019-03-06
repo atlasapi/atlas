@@ -3,8 +3,6 @@ package org.atlasapi.equiv.update.updaters.providers.container;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
-import org.atlasapi.equiv.generators.ExactTitleGenerator;
-import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
@@ -34,8 +32,6 @@ import org.atlasapi.media.entity.Publisher;
 
 import java.util.Set;
 
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
-
 public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
 
     private AmazonSeriesUpdaterProvider() {
@@ -55,21 +51,9 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                new ExactTitleGenerator<>(
-                                        dependencies.getSearchResolver(),
-                                        Container.class,
-                                        true,
-                                        AMAZON_UNBOX
-                                ),
                                 new ContainerCandidatesContainerEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore()
-                                ),
-                                new AmazonTitleGenerator<>(
-                                        dependencies.getAmazonTitleIndexStore(),
-                                        dependencies.getContentResolver(),
-                                        Container.class,
-                                        AMAZON_UNBOX
                                 )
                         )
                 )

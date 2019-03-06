@@ -11,8 +11,12 @@ import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexEntry;
@@ -32,17 +36,20 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
     private final ContentResolver resolver;
     private final Class<? extends T> cls;
     private final Set<Publisher> publishers;
+    private final boolean onlyIncludeTopLevelContent;
 
 
     public AmazonTitleGenerator(
             AmazonTitleIndexStore amazonTitleIndexStore,
             ContentResolver resolver,
             Class<? extends T> cls,
+            boolean onlyIncludeTopLevelContent,
             Publisher... publishers
     ) {
         this.amazonTitleIndexStore = checkNotNull(amazonTitleIndexStore);
         this.resolver = checkNotNull(resolver);
         this.cls = checkNotNull(cls);
+        this.onlyIncludeTopLevelContent = onlyIncludeTopLevelContent;
         this.publishers = ImmutableSet.copyOf(publishers);
     }
 
@@ -66,6 +73,7 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
                 .filter(cls::isInstance)
                 .map(cls::cast)
                 .filter(content -> publishers.contains(content.getPublisher()))
+                .filter(content -> !onlyIncludeTopLevelContent || topLevelContent(content))
                 .filter(content -> content.getTitle().equals(subject.getTitle())) //shouldn't be needed but included to be safe
                 .collect(MoreCollectors.toImmutableList());
 
@@ -76,6 +84,24 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
             scoredCandidates.addEquivalent(content, Score.nullScore());
         }
         return scoredCandidates.build();
+    }
+
+    private boolean topLevelContent(Content content) {
+        if(content instanceof Item) {
+            if (content instanceof Episode) {
+                return false;
+            }
+            if (((Item) content).getContainer() != null) {
+                return false;
+            }
+        } else if(content instanceof Container) {
+            if (content instanceof Series) {
+                if (((Series) content).getParent() != null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override

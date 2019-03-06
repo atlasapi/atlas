@@ -2,7 +2,6 @@ package org.atlasapi.equiv.update.updaters.providers.container;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.atlasapi.equiv.generators.ExactTitleGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
@@ -65,16 +64,11 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                                         2,
                                         true
                                 ),
-                                new ExactTitleGenerator<>(
-                                        dependencies.getSearchResolver(),
-                                        Container.class,
-                                        true,
-                                        Publisher.AMAZON_UNBOX
-                                ),
                                 new AmazonTitleGenerator<>(
                                         dependencies.getAmazonTitleIndexStore(),
                                         dependencies.getContentResolver(),
                                         Container.class,
+                                        true,
                                         AMAZON_UNBOX
                                 )
                         )

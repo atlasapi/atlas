@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
-import org.atlasapi.equiv.generators.ExactTitleGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
 import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
@@ -62,12 +61,6 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         //candidates which are the item itself (because there is no further filtering
                         //to remove them, whereas the Publisher filter used elsewhere does that).
                         ImmutableSet.of(
-                                new ExactTitleGenerator<>(
-                                        dependencies.getSearchResolver(),
-                                        Item.class,
-                                        true,
-                                        AMAZON_UNBOX
-                                ),
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore()
@@ -84,6 +77,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         dependencies.getAmazonTitleIndexStore(),
                                         dependencies.getContentResolver(),
                                         Item.class,
+                                        true,
                                         AMAZON_UNBOX
                                 )
                         )

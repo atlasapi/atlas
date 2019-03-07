@@ -26,6 +26,7 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.FilmYearScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
@@ -71,7 +72,11 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)),
                                         true,
-                                        0 //only equiv on exact year, as agreed
+                                        0, //only equiv on exact year, as agreed,
+                                        Score.nullScore(), //score with ItemYearScorer
+                                        Score.nullScore(),
+                                        Score.nullScore(),
+                                        Score.nullScore()
                                 ),
                                 new AmazonTitleGenerator<>(
                                         dependencies.getAmazonTitleIndexStore(),
@@ -86,7 +91,9 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(), // Scores 2 on exact match
                                 //DescriptionMatchingScorer.makeScorer(), TODO sometimes broken ATM
-                                new SequenceItemScorer(Score.ONE)
+                                new SequenceItemScorer(Score.ONE),
+                                //matches original behaviour of FilmEquivalenceGenerator scoring, has a 0 year difference tolerance
+                                new FilmYearScorer(Score.ONE, Score.ZERO, Score.ONE)
                         )
                 )
                 .withCombiner(

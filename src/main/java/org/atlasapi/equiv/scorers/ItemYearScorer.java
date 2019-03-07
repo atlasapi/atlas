@@ -16,10 +16,23 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
 
     private static final String NAME = "Item-Year";
 
-    private final Score matchScore;
+    private static final Score defaultMismatchScore = Score.ZERO;
+    private static final Score defaultNullYearScore = Score.nullScore();
+
+    protected final Score matchScore;
+    protected final Score mismatchScore;
+    protected final Score nullYearScore;
 
     public ItemYearScorer(Score matchScore) {
         this.matchScore = checkNotNull(matchScore);
+        this.mismatchScore = defaultMismatchScore;
+        this.nullYearScore = defaultNullYearScore;
+    }
+
+    public ItemYearScorer(Score matchScore, Score mismatchScore, Score nullYearScore) {
+        this.matchScore = checkNotNull(matchScore);
+        this.mismatchScore = checkNotNull(mismatchScore);
+        this.nullYearScore = checkNotNull(nullYearScore);
     }
 
     @Override
@@ -48,11 +61,11 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
         return scoredCandidates.build();
     }
 
-    private Score score(Item subject, Item candidate) {
+    protected Score score(Item subject, Item candidate) {
         if (subject.getYear() == null || candidate.getYear() == null) {
-            return Score.nullScore();
+            return nullYearScore;
         }
-        return subject.getYear().equals(candidate.getYear()) ? matchScore : Score.ZERO;
+        return subject.getYear().equals(candidate.getYear()) ? matchScore : mismatchScore;
     }
 
     @Override

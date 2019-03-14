@@ -63,6 +63,7 @@ public class ChannelGroupWriteExecutorTest {
     public void testUpdateExistingChannelGroup() {
         when(complexChannelGroup.getId()).thenReturn(17L);
         when(channelGroupStore.channelGroupFor(17L)).thenReturn(Optional.of(complexChannelGroup));
+        when(channelGroupStore.createOrUpdate(complexChannelGroup)).thenReturn(complexChannelGroup);
         when(complexChannelGroup.getChannelNumberings()).thenReturn(Sets.newHashSet(complexChannelNumbering));
         when(complexChannelNumbering.getChannel()).thenReturn(16L);
         when(channelResolver.fromId(anyLong())).thenReturn(Maybe.just(complexChannel));
@@ -77,19 +78,20 @@ public class ChannelGroupWriteExecutorTest {
                 channelResolver
         );
 
-        verify(channelGroupStore, times(2)).channelGroupFor(17L);
+        verify(channelGroupStore, times(1)).channelGroupFor(17L);
         verify(channelGroupStore, times(1)).createOrUpdate(complexChannelGroup);
         verify(channelStore, times(2)).createOrUpdate(complexChannel);
     }
 
     @Test
-    public void testWriteNewChanneLGroupAndUpdateChannelNumberings() {
+    public void testWriteNewChannelGroupAndUpdateChannelNumberings() {
         org.atlasapi.media.channel.ChannelGroup updatedChannelGroup = new Platform();
         updatedChannelGroup.setId(17L);
         updatedChannelGroup.setPublisher(Publisher.BT_TV_CHANNELS);
 
         when(complexChannelGroup.getId()).thenReturn(null);
         when(channelGroupStore.createOrUpdate(complexChannelGroup)).thenReturn(updatedChannelGroup);
+        when(channelGroupStore.createOrUpdate(updatedChannelGroup)).thenReturn(updatedChannelGroup);
         when(simpleChannelGroup.getChannels()).thenReturn(Lists.newArrayList(channelNumbering));
         when(channelNumbering.getChannel()).thenReturn(simpleChannel);
         when(simpleChannel.getId()).thenReturn("pnd");
@@ -105,7 +107,6 @@ public class ChannelGroupWriteExecutorTest {
         verify(channelGroupStore, times(1)).createOrUpdate(complexChannelGroup);
         verify(channelGroupStore, times(1)).createOrUpdate(updatedChannelGroup);
         verify(channelStore, times(1)).createOrUpdate(complexChannel);
-        verify(channelGroupStore, times(1)).channelGroupFor(17L);
     }
 
     @Test

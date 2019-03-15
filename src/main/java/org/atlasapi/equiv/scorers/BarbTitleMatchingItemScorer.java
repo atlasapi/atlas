@@ -1,10 +1,12 @@
 package org.atlasapi.equiv.scorers;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.base.Maybe;
-import org.apache.commons.lang3.StringUtils;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
@@ -19,11 +21,12 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
 
-import javax.annotation.Nullable;
-import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.metabroadcast.common.base.Maybe;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import org.apache.commons.lang3.StringUtils;
 
 import static com.google.api.client.repackaged.com.google.common.base.Preconditions.checkNotNull;
 
@@ -185,12 +188,21 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     private Score score(Item subject, Content suggestion) {
         String subjectTitle = subject.getTitle();
+        String suggestionTitle = suggestion.getTitle();
+
+        //TxLog titles are size capped, so truncate everything if we are equiving to txlogs
         if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
-                && subjectTitle.length() > TXLOG_TITLE_LENGTH) {
-            subjectTitle = subjectTitle.substring(0, TXLOG_TITLE_LENGTH);
+            || (subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS))) {
+
+            if (subjectTitle.length() > TXLOG_TITLE_LENGTH) {
+                subjectTitle = subjectTitle.substring(0, TXLOG_TITLE_LENGTH);
+            }
+            if (suggestionTitle.length() > TXLOG_TITLE_LENGTH) {
+                suggestionTitle = suggestionTitle.substring(0, TXLOG_TITLE_LENGTH);
+            }
         }
 
-        if (subjectTitle.equals(suggestion.getTitle())) {
+        if (subjectTitle.equals(suggestionTitle)) {
             return scoreOnPerfectMatch;
         }
 
@@ -202,7 +214,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         if (subjectType == suggestionType) {
             subjectTitle = removePostfix(subjectTitle, subject.getYear());
-            String suggestionTitle = removePostfix(suggestion.getTitle(), suggestion.getYear());
+            suggestionTitle = removePostfix(suggestionTitle, suggestion.getYear());
             return compareTitles(subjectTitle, suggestionTitle);
 
         }

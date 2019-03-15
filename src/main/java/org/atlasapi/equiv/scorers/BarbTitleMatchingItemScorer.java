@@ -39,9 +39,11 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     public static final String NAME = "Barb-Title";
     private static final ImmutableSet<String> PREFIXES = ImmutableSet.of(
-            "the ", "Live ", "FILM: ", "FILM:", "NEW: ", "NEW:", "LIVE: ", "LIVE:"
+            "the ", "live ", "film:", "new:", "live:"
     );
-    private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(Unrated\\)", "\\(Rated\\)");
+    private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(unrated\\)", "\\(rated\\)");
+    private static final Pattern TRAILING_YEAR_PATTERN = Pattern.compile("^(.*)\\(\\d{4}\\)$");
+
     private static final Pattern TRAILING_APOSTROPHE_PATTERN = Pattern.compile("\\w' ");
     private static final Score DEFAULT_SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
     private static final Score DEFAULT_SCORE_ON_PARTIAL_MATCH = Score.ONE;
@@ -114,20 +116,21 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         for (Item suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
-            //txlog titles are often just the title of the brand so score against suggestion's brand title
-            Optional<Score> parentScore = getParentScore(subject, desc, suggestion);
-            if (parentScore.isPresent()
-                    && parentScore.get().isRealScore()
-                    && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())
-                ) {
-                desc.appendText(String.format(
-                        "Parent for %s scored %.2f which is greater than its own score of %.2f",
-                        suggestion.getCanonicalUri(),
-                        parentScore.get().asDouble(),
-                        equivScore.asDouble()
-                ));
-                equivScore = parentScore.get();
+            if (equivScore != scoreOnPerfectMatch) {
+                //txlog titles are often just the title of the brand so score against suggestion's brand title
+                Optional<Score> parentScore = getParentScore(subject, desc, suggestion);
+                if (parentScore.isPresent() && parentScore.get().isRealScore()
+                    && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
+                    desc.appendText(String.format(
+                            "Parent for %s scored %.2f which is greater than its own score of %.2f",
+                            suggestion.getCanonicalUri(),
+                            parentScore.get().asDouble(),
+                            equivScore.asDouble()
+                    ));
+                    equivScore = parentScore.get();
+                }
             }
+
             equivalents.addEquivalent(suggestion, equivScore);
             if (suggestion.getId() != null) {
                 scorerComponent.addComponentResult(
@@ -186,9 +189,9 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    private Score score(Item subject, Content suggestion) {
-        String subjectTitle = subject.getTitle();
-        String suggestionTitle = suggestion.getTitle();
+    public Score score(Item subject, Content suggestion) {
+        String subjectTitle = subject.getTitle().trim().toLowerCase();
+        String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 
         //TxLog titles are size capped, so truncate everything if we are equiving to txlogs
         if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
@@ -202,6 +205,15 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             }
         }
 
+        //if either subject or candidate is txlog, strip the year from the end
+        if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)) {
+            suggestionTitle = removeArbitraryTrailingYear(suggestionTitle);
+        }
+        if (subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)) {
+            subjectTitle = removeArbitraryTrailingYear(subjectTitle);
+        }
+
+        //return early if you can.
         if (subjectTitle.equals(suggestionTitle)) {
             return scoreOnPerfectMatch;
         }
@@ -209,17 +221,21 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
 
-
-        Score score = Score.nullScore();
-
         if (subjectType == suggestionType) {
             subjectTitle = removePostfix(subjectTitle, subject.getYear());
             suggestionTitle = removePostfix(suggestionTitle, suggestion.getYear());
             return compareTitles(subjectTitle, suggestionTitle);
-
         }
 
-        return score;
+        return Score.nullScore();
+    }
+
+    private String removeArbitraryTrailingYear(String suggestionTitle) {
+        Matcher matcher = TRAILING_YEAR_PATTERN.matcher(suggestionTitle);
+        suggestionTitle = matcher.matches()
+                ? matcher.group(1)
+                : suggestionTitle;
+        return suggestionTitle;
     }
 
     private String removePostfix(String title, @Nullable Integer year) {
@@ -305,14 +321,14 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private String normalizeWithoutReplacing(String title) {
-        String withoutSequencePrefix = removeSequencePrefix(title);
-        String expandedTitle = titleExpander.expand(withoutSequencePrefix);
-        String withoutCommonPrefixes = removeCommonPrefixes(expandedTitle);
+        String withoutSequencePrefix = removeSequencePrefix(title).trim();
+        String expandedTitle = titleExpander.expand(withoutSequencePrefix).trim();
+        String withoutCommonPrefixes = removeCommonPrefixes(expandedTitle).trim();
         return StringUtils.stripAccents(withoutCommonPrefixes);
     }
 
     private String normalizeRegularExpression(String title) {
-        return regularExpressionReplaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title).toLowerCase()));
+        return regularExpressionReplaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title)));
     }
 
     private boolean appearsToBeWithApostrophe(String title) {
@@ -346,14 +362,22 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private String removeCommonPrefixes(String title) {
-        String titleWithoutPrefix = title;
-        for (String prefix : PREFIXES) {
-            if (titleWithoutPrefix.length() > prefix.length() &&
-                    titleWithoutPrefix.substring(0, prefix.length()).equalsIgnoreCase(prefix)) {
-                titleWithoutPrefix = titleWithoutPrefix.substring(prefix.length());
+        String remainingTitle = title;
+        boolean removedAtLeastOne;
+        do {
+            removedAtLeastOne = false;
+            for (String prefix : PREFIXES) {
+                if (remainingTitle.length() > prefix.length() &&
+                    remainingTitle.startsWith(prefix)) {
+                    remainingTitle = remainingTitle.substring(prefix.length()).trim();
+                    removedAtLeastOne = true;
+                    break;
+                }
             }
         }
-        return titleWithoutPrefix;
+        while (removedAtLeastOne);
+
+        return remainingTitle;
     }
 
     private boolean matchWithoutDashes(String subject, String suggestion) {

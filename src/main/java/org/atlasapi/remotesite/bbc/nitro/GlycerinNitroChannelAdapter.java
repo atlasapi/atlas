@@ -1,9 +1,18 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Optional;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelType;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
+
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -16,21 +25,16 @@ import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
 import com.metabroadcast.common.stream.MoreCollectors;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.ChannelType;
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
+
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.List;
-import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -51,6 +55,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     private static final String PID = "pid";
     private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrands/";
     private static final String MASTERBRAND = "masterbrand";
+    private static final String BBC_MASTERBRAND_ID = "bbc:masterbrand:id";
 
     private final NitroImageExtractor imageExtractor = new NitroImageExtractor(1024, 576);
     private final Glycerin glycerin;
@@ -288,6 +293,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             Channel parentChannel = parentUriToId.get(NITRO_MASTERBRAND_URI_PREFIX + parentMid);
             builder.withParent(parentChannel);
             builder.withImages(addMasterbrandAlias(parentChannel.getImages()));
+            builder.withAliases(Sets.newHashSet(new Alias(BBC_MASTERBRAND_ID, parentMid)));
             if (!Strings.isNullOrEmpty(parentChannel.getTitle())) {
                 String shortName = parentChannel.getTitle();
                 if (child.getSid().contains("_hd")) {

@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -290,21 +291,19 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                     child.getSid()
             );
         } else {
+            Set<Alias> aliases = Sets.newHashSet();
             Channel parentChannel = parentUriToId.get(NITRO_MASTERBRAND_URI_PREFIX + parentMid);
             builder.withParent(parentChannel);
             builder.withImages(addMasterbrandAlias(parentChannel.getImages()));
-            builder.withAliases(Sets.newHashSet(new Alias(BBC_MASTERBRAND_ID, parentMid)));
+            aliases.add(new Alias(BBC_MASTERBRAND_ID, parentMid));
             if (!Strings.isNullOrEmpty(parentChannel.getTitle())) {
                 String shortName = parentChannel.getTitle();
                 if (child.getSid().contains("_hd")) {
                     shortName += " HD";
                 }
-                builder.withAliases(
-                        ImmutableSet.of(
-                                new Alias(BBC_SERVICE_NAME_SHORT, shortName)
-                        )
-                );
+                aliases.add(new Alias(BBC_SERVICE_NAME_SHORT, shortName));
             }
+            builder.withAliases(aliases);
         }
     }
 

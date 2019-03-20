@@ -1,18 +1,19 @@
 package org.atlasapi.remotesite.pa.channels;
 
+import java.time.temporal.Temporal;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.google.common.collect.ImmutableList;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
-import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.channel.Platform;
@@ -22,8 +23,6 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.remotesite.pa.PaChannelMap;
-import org.atlasapi.remotesite.pa.channels.bindings.EpgContent;
 import org.atlasapi.remotesite.pa.channels.bindings.Station;
 import org.atlasapi.remotesite.pa.channels.bindings.TvChannelData;
 
@@ -39,21 +38,12 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class PaChannelDataHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(PaChannelDataHandler.class);
-
     private static final String PRESS_ASSOCIATION_URL = "http://pressassociation.com";
-    private static final String CUSTOM_BT_CHANNEL_GROUPS_SOURCE = "bt-channel-groups.metabroadcast.com";
-    private static final String BT_TV_PLATFORM_ID = "11";
     private static final Iterable<String> KNOWN_ALIAS_PREFIXES = Iterables.concat(
             ImmutableSet.of("http://pressassociation.com/"),
             PaChannelsIngester.YOUVIEW_SERVICE_ID_ALIAS_PREFIXES
@@ -67,7 +57,6 @@ public class PaChannelDataHandler {
         return false;
     };
     private static final Function<Region, String> REGION_TO_URI = Identified::getCanonicalUri;
-    private final DateTimeFormatter formatter = ISODateTimeFormat.date();
 
     private final PaChannelsIngester channelsIngester;
     private final PaChannelGroupsIngester channelGroupsIngester;
@@ -148,14 +137,6 @@ public class PaChannelDataHandler {
                 );
             }
 
-            // LCNs for BT's custom channel groups should come from the BT TV platform
-            if (paPlatform.getId().equals(BT_TV_PLATFORM_ID)) {
-                updateBtCustomChannelGroupsChannelNumbers(
-                        paPlatform.getEpg().getEpgContent(),
-                        channelMap
-                );
-            }
-
             removeExpiredRegionsFromPlatform(
                     ImmutableSet.copyOf(Iterables.transform(
                             channelGroupTree.getRegions().values(),
@@ -165,99 +146,11 @@ public class PaChannelDataHandler {
             );
         }
 
-        channelMap.values()
-                .parallelStream()
-                .forEach(this::createOrMerge);
-    }
-
-    // The custom channel groups created by BT through the channel grouping tool should contain the
-    // same channel numbers as the other channel groups received from PA. Therefore, when we ingest
-    // PA's channel group data, we need to update the channel numbers in the existing BT custom
-    // channel groups, too.
-    private void updateBtCustomChannelGroupsChannelNumbers(
-            List<EpgContent> epgContents,
-            Map<String, Channel> channelMap
-    ) {
-        Map<Long, ChannelGroup> allBtCustomChannelGroupsMap = geAllBtCustomChannelGroupsMap();
-
-        epgContents.forEach(epgContent -> {
-            String channelUri = PaChannelMap.createUriFromId(epgContent.getChannelId());
-
-            Channel newChannel = channelMap.get(channelUri);
-
-            Set<Long> channelBtCustomChannelGroupsIds = getBtCustomChannelGroupsIds(
-                    allBtCustomChannelGroupsMap,
-                    channelUri
-            );
-            if (channelBtCustomChannelGroupsIds.isEmpty()) {
-                return;
-            }
-            channelBtCustomChannelGroupsIds.forEach(id -> {
-                ChannelGroup channelGroup = allBtCustomChannelGroupsMap.get(id);
-                LocalDate startDate = formatter.parseLocalDate(epgContent.getStartDate());
-                LocalDate endDate = getEndDateFromEpgContent(epgContent);
-
-                newChannel.addChannelNumber(
-                        channelGroup,
-                        epgContent.getChannelNumber(),
-                        startDate,
-                        endDate
-                );
-            });
-        });
-    }
-
-    private Set<Long> getBtCustomChannelGroupsIds(
-            Map<Long, ChannelGroup> allBtCustomChannelGroupsMap,
-            String channelUri
-    ) {
-        Maybe<Channel> channelMaybe = channelResolver.forAlias(channelUri);
-        if (!channelMaybe.hasValue()) {
-            log.info("No channel found with URI {}", channelUri);
-            return Sets.newHashSet();
+        // write channels 
+        // TODO should this be multi-threaded? is slowest part by far...
+        for (Channel child : channelMap.values()) {
+            createOrMerge(child);
         }
-        Channel existingChannel = channelMaybe.requireValue();
-
-        return existingChannel.getChannelNumbers()
-                .stream()
-                .map(ChannelNumbering::getChannelGroup)
-                .filter(allBtCustomChannelGroupsMap::containsKey)
-                .collect(Collectors.toSet());
-    }
-
-    private Map<Long, ChannelGroup> geAllBtCustomChannelGroupsMap() {
-        Map<Long, ChannelGroup> allBtCustomChannelGroupsMap = Maps.newConcurrentMap();
-        StreamSupport.stream(channelGroupResolver.channelGroups().spliterator(), false)
-                .filter(this::isCustomBtChannelGroup)
-                .forEach(channelGroup -> allBtCustomChannelGroupsMap.put(
-                        channelGroup.getId(),
-                        channelGroup
-                ));
-        return allBtCustomChannelGroupsMap;
-    }
-
-    private Optional<ChannelGroup> resolveChannelGroup(Long channelGroup) {
-        return channelGroupResolver.channelGroupFor(channelGroup);
-    }
-
-    private boolean isCustomBtChannelGroup(ChannelGroup channelGroup) {
-        return channelGroup.getPublisher()
-                .key()
-                .equals(CUSTOM_BT_CHANNEL_GROUPS_SOURCE);
-    }
-
-    private LocalDate getEndDateFromEpgContent(EpgContent epgContent) {
-        LocalDate endDate;
-        // add a day, due to PA considering a date range to run from the start of startDate
-        // to the end of endDate, whereas we consider a range to run from the start of
-        // startDate to the start of endDate
-        if (epgContent.getEndDate() != null) {
-            endDate = formatter.parseLocalDate(epgContent.getEndDate());
-            endDate.plusDays(1);
-        } else {
-            endDate = null;
-        }
-        return endDate;
     }
 
     private Channel createOrMerge(Channel newChannel) {

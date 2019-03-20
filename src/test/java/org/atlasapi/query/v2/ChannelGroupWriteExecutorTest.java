@@ -1,26 +1,23 @@
 package org.atlasapi.query.v2;
 
+import java.util.Date;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.atlasapi.media.channel.ChannelGroupStore;
-import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.channel.ChannelStore;
 import org.atlasapi.media.channel.Platform;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.Channel;
 import org.atlasapi.media.entity.simple.ChannelGroup;
 import org.atlasapi.media.entity.simple.ChannelNumbering;
 
-import com.metabroadcast.common.base.Maybe;
-
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableList;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -28,15 +25,12 @@ import static org.mockito.Mockito.when;
 
 public class ChannelGroupWriteExecutorTest {
 
-    private Channel simpleChannel;
-    private org.atlasapi.media.channel.Channel complexChannel;
-    private ChannelResolver channelResolver;
-    private ChannelStore channelStore;
+    private Channel channel;
     private ChannelNumbering channelNumbering;
     private ChannelGroup simpleChannelGroup;
     private org.atlasapi.media.channel.ChannelGroup complexChannelGroup;
-    private org.atlasapi.media.channel.ChannelNumbering complexChannelNumbering;
-    private ChannelGroupStore channelGroupStore;
+    private org.atlasapi.media.channel.ChannelGroup existingComplexChannelGroup;
+    private ChannelGroupStore store;
     private HttpServletRequest request;
     private HttpServletResponse response;
 
@@ -44,82 +38,59 @@ public class ChannelGroupWriteExecutorTest {
 
     @Before
     public void setUp() {
-        simpleChannel = mock(Channel.class);
-        complexChannel = mock(org.atlasapi.media.channel.Channel.class);
-        channelResolver = mock(ChannelResolver.class);
-        channelStore = mock(ChannelStore.class);
+        channel = mock(Channel.class);
         channelNumbering = mock(ChannelNumbering.class);
         complexChannelGroup = mock(org.atlasapi.media.channel.ChannelGroup.class);
-        complexChannelNumbering = mock(org.atlasapi.media.channel.ChannelNumbering.class);
         simpleChannelGroup = mock(ChannelGroup.class);
-        channelGroupStore = mock(ChannelGroupStore.class);
+        store = mock(ChannelGroupStore.class);
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
 
-        executor = ChannelGroupWriteExecutor.create(channelGroupStore, channelStore);
+        executor = ChannelGroupWriteExecutor.create(store);
     }
 
     @Test
-    public void testUpdateExistingChannelGroup() {
+    public void testUpdateExistingChannelGroupLogic() {
         when(complexChannelGroup.getId()).thenReturn(17L);
-        when(channelGroupStore.channelGroupFor(17L)).thenReturn(Optional.of(complexChannelGroup));
-        when(complexChannelGroup.getChannelNumberings()).thenReturn(Sets.newHashSet(complexChannelNumbering));
-        when(complexChannelNumbering.getChannel()).thenReturn(16L);
-        when(channelResolver.fromId(anyLong())).thenReturn(Maybe.just(complexChannel));
-        when(simpleChannelGroup.getChannels()).thenReturn(Lists.newArrayList(channelNumbering));
-        when(channelNumbering.getChannel()).thenReturn(simpleChannel);
-        when(simpleChannel.getId()).thenReturn("pnd");
 
-        executor.createOrUpdateChannelGroup(
-                request,
-                complexChannelGroup,
-                simpleChannelGroup,
-                channelResolver
-        );
+        executor.createOrUpdateChannelGroup(request, complexChannelGroup, simpleChannelGroup);
 
-        verify(channelGroupStore, times(2)).channelGroupFor(17L);
-        verify(channelGroupStore, times(1)).createOrUpdate(complexChannelGroup);
-        verify(channelStore, times(2)).createOrUpdate(complexChannel);
+        verify(store, times(1)).createOrUpdate(complexChannelGroup);
     }
 
     @Test
     public void testWriteNewChanneLGroupAndUpdateChannelNumberings() {
-        org.atlasapi.media.channel.ChannelGroup updatedChannelGroup = new Platform();
-        updatedChannelGroup.setId(17L);
-        updatedChannelGroup.setPublisher(Publisher.BT_TV_CHANNELS);
+        existingComplexChannelGroup = new Platform();
+        existingComplexChannelGroup.setId(17L);
+        existingComplexChannelGroup.setPublisher(Publisher.BT_TV_CHANNELS);
 
         when(complexChannelGroup.getId()).thenReturn(null);
-        when(channelGroupStore.createOrUpdate(complexChannelGroup)).thenReturn(updatedChannelGroup);
-        when(simpleChannelGroup.getChannels()).thenReturn(Lists.newArrayList(channelNumbering));
-        when(channelNumbering.getChannel()).thenReturn(simpleChannel);
-        when(simpleChannel.getId()).thenReturn("pnd");
-        when(channelResolver.fromId(anyLong())).thenReturn(Maybe.just(complexChannel));
+        when(store.createOrUpdate(complexChannelGroup)).thenReturn(existingComplexChannelGroup);
+        when(store.channelGroupFor(17L)).thenReturn(Optional.of(existingComplexChannelGroup));
+        when(simpleChannelGroup.getChannels()).thenReturn(ImmutableList.of(channelNumbering));
+        when(channelNumbering.getChannel()).thenReturn(channel);
+        when(channel.getId()).thenReturn("bc");
 
-        executor.createOrUpdateChannelGroup(
-                request,
-                complexChannelGroup,
-                simpleChannelGroup,
-                channelResolver
-        );
+        Assert.assertTrue(complexChannelGroup.getChannelNumberings().isEmpty());
 
-        verify(channelGroupStore, times(1)).createOrUpdate(complexChannelGroup);
-        verify(channelGroupStore, times(1)).createOrUpdate(updatedChannelGroup);
-        verify(channelStore, times(1)).createOrUpdate(complexChannel);
-        verify(channelGroupStore, times(1)).channelGroupFor(17L);
+        executor.createOrUpdateChannelGroup(request, complexChannelGroup, simpleChannelGroup);
+
+        Assert.assertFalse(existingComplexChannelGroup.getChannelNumberings().isEmpty());
+
+        org.atlasapi.media.channel.ChannelNumbering channelNumbering = existingComplexChannelGroup.getChannelNumberings().iterator().next();
+        Assert.assertTrue(channelNumbering.getChannel() == 1L);
+        Assert.assertTrue(channelNumbering.getChannelGroup() == 17L);
+
+        verify(store, times(1)).createOrUpdate(complexChannelGroup);
+        verify(store, times(1)).createOrUpdate(existingComplexChannelGroup);
+        verify(store, times(1)).channelGroupFor(17L);
     }
 
     @Test
-    public void testDeleteExistingChannelGroup() {
-        when(channelGroupStore.channelGroupFor(17L)).thenReturn(Optional.of(complexChannelGroup));
-        when(complexChannelGroup.getChannelNumberings()).thenReturn(Sets.newHashSet(complexChannelNumbering));
-        when(complexChannelNumbering.getChannel()).thenReturn(16L);
-        when(channelResolver.fromId(16L)).thenReturn(Maybe.just(complexChannel));
+    public void testDeleteExistingChannelGroupLogic() {
+        executor.deletePlatform(request, response, 17L);
 
-        executor.deletePlatform(request, response, 17L, channelResolver);
-
-        verify(channelGroupStore, times(1)).channelGroupFor(17L);
-        verify(channelStore, times(1)).createOrUpdate(complexChannel);
-        verify(channelGroupStore, times(1)).deleteChannelGroupById(17L);
+        verify(store, times(1)).deleteChannelGroupById(17L);
     }
 
 }

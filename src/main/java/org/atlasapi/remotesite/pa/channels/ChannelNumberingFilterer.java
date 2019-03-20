@@ -42,19 +42,19 @@ public class ChannelNumberingFilterer {
     }
 
     public Iterable<ChannelNumbering> filterNotEqualToGroupPublisher(Iterable<ChannelNumbering> numberings, final Publisher publisher) {
-        return Iterables.filter(numberings, input -> {
-            try {
-                Publisher groupPublisher = groupPublisherCache.get(input.getChannelGroup());
-                if (groupPublisher == null) {
-                    return false;
+        return Iterables.filter(numberings, new Predicate<ChannelNumbering>() {
+            @Override
+            public boolean apply(ChannelNumbering input) {
+                try {
+                    Publisher groupPublisher = groupPublisherCache.get(input.getChannelGroup());
+                    if (groupPublisher == null) {
+                        return false;
+                    }
+                    return !publisher.equals(groupPublisher);
+                } catch (ExecutionException e) {
+                    log.error("Exception upon fetch of Publisher for Channel Group " + input.getChannelGroup(), e);
+                    return true;
                 }
-                if (groupPublisher.equals(Publisher.BT_TV_CHANNEL_GROUPS)) {
-                    return false;
-                }
-                return !publisher.equals(groupPublisher);
-            } catch (ExecutionException e) {
-                log.error("Exception upon fetch of Publisher for Channel Group " + input.getChannelGroup(), e);
-                return true;
             }
         });
     }

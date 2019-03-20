@@ -62,14 +62,14 @@ public class ChannelGroupWriteExecutor {
         try {
             if (complex.getId() != null) {
                 Set<Long> existingChannelIds = getChannelIdsForChannelGroupId(complex.getId());
-                ChannelGroup channelGroup = channelGroupStore.createOrUpdate(complex);
+                channelGroupStore.createOrUpdate(complex);
                 updateChannelGroupNumberings(
                         complex,
                         simple.getChannels(),
                         existingChannelIds,
                         channelResolver
                 );
-                return com.google.common.base.Optional.of(channelGroup);
+                return channelGroupStore.channelGroupFor(complex.getId());
             }
             //if it's a new group, create it, then update the canonicalUri that requires the ID
             ChannelGroup newChannelGroup = channelGroupStore.createOrUpdate(complex);
@@ -82,11 +82,11 @@ public class ChannelGroupWriteExecutor {
                     newChannelGroup.getPublisher().key(),
                     deerCodec.encode(BigInteger.valueOf(newChannelGroup.getId()))
             ));
-            newChannelGroup = channelGroupStore.createOrUpdate(newChannelGroup);
+            channelGroupStore.createOrUpdate(newChannelGroup);
 
-            addNewNumberingsToChannels(newChannelGroup, simple.getChannels(), channelResolver);
+            addNewChannelNumberingsToChannelGroup(complex, simple.getChannels(), channelResolver);
 
-            return com.google.common.base.Optional.of(newChannelGroup);
+            return channelGroupStore.channelGroupFor(newChannelGroup.getId());
         } catch (Exception e) {
             log.error(
                     "Error while creating/updating platform for request {}",
@@ -99,75 +99,54 @@ public class ChannelGroupWriteExecutor {
 
     private Set<Long> getChannelIdsForChannelGroupId(Long channelGroupId) {
         com.google.common.base.Optional<ChannelGroup> channelGroupOptional = channelGroupStore.channelGroupFor(channelGroupId);
-        if (!channelGroupOptional.isPresent()) {
-            log.info("Couldn't find channel group for ID {}", channelGroupId);
-            return Sets.newHashSet();
+        if (channelGroupOptional.isPresent()) {
+            return channelGroupOptional.get()
+                    .getChannelNumberings()
+                    .stream()
+                    .map(ChannelNumbering::getChannel)
+                    .collect(Collectors.toSet());
         }
 
-        return channelGroupOptional.get()
-                .getChannelNumberings()
-                .stream()
-                .map(ChannelNumbering::getChannel)
-                .collect(Collectors.toSet());
+        log.info("Couldn't find channel group for ID {}", channelGroupId);
+
+        return Sets.newHashSet();
     }
 
     private void updateChannelGroupNumberings(
             ChannelGroup complex,
-            List<org.atlasapi.media.entity.simple.ChannelNumbering> channelNumberings,
+            List<org.atlasapi.media.entity.simple.ChannelNumbering> newChannelNumberings,
             Set<Long> existingChannelIds,
             ChannelResolver channelResolver
     ) {
-        Set<Long> channelIds = channelNumberings.stream()
-                .map(channelNumbering -> decodeOwlChannelId(channelNumbering.getChannel().getId()))
-                .collect(Collectors.toSet());
+        if (!existingChannelIds.isEmpty()) {
+            Set<Long> newChannelIds = newChannelNumberings.stream()
+                    .map(channelNumbering -> decodeOwlChannelId(channelNumbering.getChannel().getId()))
+                    .collect(Collectors.toSet());
+            SetView<Long> staleChannelIds = Sets.difference(existingChannelIds, newChannelIds);
 
-        SetView<Long> staleChannelIds = Sets.difference(existingChannelIds, channelIds);
-        removeStaleChannelNumbersForChannels(
-                complex.getId(),
-                staleChannelIds,
-                channelResolver
-        );
+            removeStaleLinksFromChannelsToChannelGroup(
+                    complex.getId(),
+                    staleChannelIds,
+                    channelResolver
+            );
+        }
 
-        List<org.atlasapi.media.entity.simple.ChannelNumbering> newChannelNumberings = channelNumberings.stream()
-                .filter(channelNumbering -> !exist(existingChannelIds, channelNumbering))
-                .collect(Collectors.toList());
-        addNewNumberingsToChannels(complex, newChannelNumberings, channelResolver);
+        addNewChannelNumberingsToChannelGroup(complex, newChannelNumberings, channelResolver);
     }
 
-    private boolean exist(
-            Set<Long> existingChannelIds,
-            org.atlasapi.media.entity.simple.ChannelNumbering channelNumbering
-    ) {
-        return existingChannelIds.contains(
-                decodeOwlChannelId(channelNumbering.getChannel().getId())
-        );
-    }
-
-    private void addNewNumberingsToChannels(
-            ChannelGroup channelGroup,
+    private void addNewChannelNumberingsToChannelGroup(
+            ChannelGroup complex,
             List<org.atlasapi.media.entity.simple.ChannelNumbering> newChannelNumberings,
             ChannelResolver channelResolver
     ) {
         newChannelNumberings.forEach(numbering -> {
             long newChannelId = decodeOwlChannelId(numbering.getChannel().getId());
-            channelResolver.refreshCache();
             Maybe<Channel> resolvedChannel = channelResolver.fromId(newChannelId);
             if (!resolvedChannel.hasValue()) {
                 log.warn("Couldn't resolve channel for ID {}", newChannelId);
                 return;
             }
             Channel channel = resolvedChannel.requireValue();
-
-            if (channelContainsNumbering(channel, newChannelId, channelGroup.getId())) {
-                log.warn(
-                        "New channel numbering with channel group {} and channel {} already exist for channel {}",
-                        channelGroup.getId(),
-                        newChannelId,
-                        channel.getId()
-                );
-                return;
-            }
-
             LocalDate startDate = Objects.isNull(numbering.getStartDate())
                                   ? null
                                   : LocalDate.fromDateFields(numbering.getStartDate());
@@ -175,7 +154,7 @@ public class ChannelGroupWriteExecutor {
                                 ? null
                                 : LocalDate.fromDateFields(numbering.getEndDate());
             channel.addChannelNumber(
-                    channelGroup,
+                    complex,
                     numbering.getChannelNumber(),
                     startDate,
                     endDate
@@ -186,29 +165,16 @@ public class ChannelGroupWriteExecutor {
         });
     }
 
-    private boolean channelContainsNumbering(
-            Channel channel,
-            long newChannelId,
-            long channelGroupId
-    ) {
-        return channel.getChannelNumbers()
-                .stream()
-                .anyMatch(channelNumbering -> channelNumbering.getChannelGroup() == channelGroupId
-                        && channelNumbering.getChannel() == newChannelId
-                );
-    }
-
     private long decodeOwlChannelId(String channelId) {
         return idCodec.decode(channelId).longValue();
     }
 
-    private void removeStaleChannelNumbersForChannels(
+    private void removeStaleLinksFromChannelsToChannelGroup(
             Long channelGroupId,
-            Set<Long> staleChannelIds,
+            Set<Long> channelIds,
             ChannelResolver channelResolver
     ) {
-        staleChannelIds.forEach(channelId -> {
-            channelResolver.refreshCache();
+        channelIds.forEach(channelId -> {
             Maybe<Channel> resolvedChannel = channelResolver.fromId(channelId);
             if (!resolvedChannel.hasValue()) {
                 log.warn("Couldn't resolve channel for ID {}", channelId);
@@ -244,7 +210,7 @@ public class ChannelGroupWriteExecutor {
     ) {
         try {
             Set<Long> channelIds = getChannelIdsForChannelGroupId(channelGroupId);
-            removeStaleChannelNumbersForChannels(
+            removeStaleLinksFromChannelsToChannelGroup(
                     channelGroupId,
                     channelIds,
                     channelResolver

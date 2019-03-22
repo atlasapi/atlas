@@ -29,7 +29,7 @@ public class MultiStageAllOverOrEqThresholdExtractorTest {
 
 
     @Test
-    public void testExtractAllBetween3And4() {
+    public void testExtractFrom3ToBelow5() {
         Set<ScoredCandidate<Content>> expected =
                 ImmutableSet.of(
                         candidate(1, Score.valueOf(3.0)),
@@ -62,6 +62,24 @@ public class MultiStageAllOverOrEqThresholdExtractorTest {
                         candidate(3, Score.valueOf(4.9)),
                         candidate(4, Score.valueOf(1.0)),
                         candidate(5, Score.valueOf(0.0))
+                );
+        Set<ScoredCandidate<Content>> scoredCandidates = extractor.extract(
+                ImmutableList.<ScoredCandidate<Content>>builder().addAll(expected).addAll(notExpected).build(),
+                new Item(),
+                desc,
+                equivToTelescopeResults
+        );
+        assertThat(scoredCandidates, is(expected));
+    }
+
+    @Test
+    public void testExcludesScoresBelow1() {
+        Set<ScoredCandidate<Content>> expected =
+                ImmutableSet.of();
+        Set<ScoredCandidate<Content>> notExpected =
+                ImmutableSet.of(
+                        candidate(1, Score.valueOf(0.9)),
+                        candidate(2, Score.valueOf(0.0))
                 );
         Set<ScoredCandidate<Content>> scoredCandidates = extractor.extract(
                 ImmutableList.<ScoredCandidate<Content>>builder().addAll(expected).addAll(notExpected).build(),

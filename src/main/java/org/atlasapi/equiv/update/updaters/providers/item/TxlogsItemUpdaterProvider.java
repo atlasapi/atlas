@@ -12,7 +12,7 @@ import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
-import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
+import org.atlasapi.equiv.results.extractors.MultiStageAllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -24,7 +24,6 @@ import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
@@ -68,12 +67,6 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         Predicates.alwaysTrue(),
                                         3.0
                                 )
-//                                BarbTitleGenerator.barbTitleGenerator(
-//                                        ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
-//                                        dependencies.getContentResolver(),
-//                                        ImmutableSet.of(BarbTitleGenerator.BBC_BROADCAST_GROUP),
-//                                        Score.valueOf(5.0)
-//                                )
                         )
                 )
                 .withScorers(
@@ -106,7 +99,13 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(4)
+                        //If we equiv on bcid (scoring 10) then we don't want to equiv on broadcast time
+                        //This is due to an issue where some CMS and Txlog broadcasts have become incorrect
+                        //and we had ended up with txlogs equived on bcid to one piece of CMS content but to
+                        //another piece of CMS content (generally belonging to the same brand) on broadcast time.
+                        //Since BARB equivalence is primarily driven by bcid equiv this should not prove problematic
+                        //if we end up excluding some legitimate broadcast equiv since it will at least be equived on bcid
+                        new MultiStageAllOverOrEqThresholdExtractor<>(ImmutableSet.of(10D, 4D))
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

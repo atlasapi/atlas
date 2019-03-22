@@ -12,7 +12,7 @@ import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
-import org.atlasapi.equiv.results.extractors.MultiStageAllOverOrEqThresholdExtractor;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqHighestNonEmptyThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -105,7 +105,7 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         //another piece of CMS content (generally belonging to the same brand) on broadcast time.
                         //Since BARB equivalence is primarily driven by bcid equiv this should not prove problematic
                         //if we end up excluding some legitimate broadcast equiv since it will at least be equived on bcid
-                        new MultiStageAllOverOrEqThresholdExtractor<>(ImmutableSet.of(10D, 4D))
+                        new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

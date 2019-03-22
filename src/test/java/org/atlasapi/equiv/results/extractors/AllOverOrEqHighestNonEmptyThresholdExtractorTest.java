@@ -17,9 +17,9 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class MultiStageAllOverOrEqThresholdExtractorTest {
-    private final MultiStageAllOverOrEqThresholdExtractor<Content> extractor =
-            new MultiStageAllOverOrEqThresholdExtractor<>(
+public class AllOverOrEqHighestNonEmptyThresholdExtractorTest {
+    private final AllOverOrEqHighestNonEmptyThresholdExtractor<Content> extractor =
+            new AllOverOrEqHighestNonEmptyThresholdExtractor<>(
                     ImmutableSet.of(5D, 3D, 1D)
             );
 

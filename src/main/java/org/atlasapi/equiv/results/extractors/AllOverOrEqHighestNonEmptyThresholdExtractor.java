@@ -17,13 +17,13 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * This extractor will select all candidates which score over the first of a given set of thresholds for which any candidates match.
+ * This extractor will select all candidates which score over the highest threshold that would extract at least one candidate
  */
-public class MultiStageAllOverOrEqThresholdExtractor<T extends Content> implements EquivalenceExtractor<T> {
+public class AllOverOrEqHighestNonEmptyThresholdExtractor<T extends Content> implements EquivalenceExtractor<T> {
 
     private final SortedSet<Double> thresholds;
 
-    public MultiStageAllOverOrEqThresholdExtractor(Collection<Double> thresholds) {
+    public AllOverOrEqHighestNonEmptyThresholdExtractor(Collection<Double> thresholds) {
         this.thresholds = ImmutableSortedSet.copyOf(Comparator.reverseOrder(), thresholds); //highest first
     }
 

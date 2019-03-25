@@ -2,6 +2,7 @@ package org.atlasapi.equiv.channel.updaters;
 
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.columbus.telescope.client.EntityType;
+import joptsimple.internal.Strings;
 import org.atlasapi.equiv.ChannelRef;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -62,9 +63,9 @@ public class BarbForcedChannelEquivalenceUpdater extends SourceSpecificChannelEq
             return false;
         }
 
-        Optional<String> candidateUri = Optional.ofNullable(stationCodeToUri.get(subjectStationCode.get()));
+        String candidateUri = stationCodeToUri.get(subjectStationCode.get());
 
-        if (!candidateUri.isPresent()) {
+        if (Strings.isNullOrEmpty(candidateUri)) {
             // some things we don't force any equiv on
             log.info("No hardcoded equiv found for channel {}. Removing if present.", subject.getId());
             // check if we need to remove an equiv link though
@@ -72,11 +73,11 @@ public class BarbForcedChannelEquivalenceUpdater extends SourceSpecificChannelEq
             return true;
         }
 
-        Optional<Channel> optionalCandidate = channelResolver.fromUri(candidateUri.get()).toOptional();
+        Optional<Channel> optionalCandidate = channelResolver.fromUri(candidateUri).toOptional();
 
         if (!optionalCandidate.isPresent()) {
             // candidates should always exist if there's a url for them
-            log.error("No channel found for uri {}", candidateUri.get());
+            log.error("No channel found for uri {}", candidateUri);
             return false;
         }
 

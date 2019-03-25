@@ -44,8 +44,6 @@ public class BbcIonServices {
                     "http://ref.atlasapi.org/channels/pressassociation.com/1776"
             )
             .put("bbc_one_wales_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1778")
-            .put("bbc_scotland", "http://ref.atlasapi.org/channels/pressassociation.com/2232")
-            .put("bbc_scotland_hd", "http://ref.atlasapi.org/channels/pressassociation.com/2233")
             //        .put("bbc_two", "http://www.bbc.co.uk/services/bbctwo")
             .put("bbc_two_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1782")
             .put("bbc_two_england", "http://www.bbc.co.uk/services/bbctwo/england")
@@ -60,7 +58,8 @@ public class BbcIonServices {
             .put("bbc_three_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1852")
             .put("bbc_four", "http://www.bbc.co.uk/services/bbcfour")
             .put("bbc_four_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1851")
-
+            .put("bbc_scotland", "http://ref.atlasapi.org/channels/pressassociation.com/2232")
+            .put("bbc_scotland_hd", "http://ref.atlasapi.org/channels/pressassociation.com/2233")
             .put("bbc_alba", "http://ref.atlasapi.org/channels/bbcalba")
             .put("bbc_parliament", "http://www.bbc.co.uk/services/parliament")
             .put("bbc_news24", "http://www.bbc.co.uk/services/bbcnews")
@@ -110,7 +109,6 @@ public class BbcIonServices {
                     "http://ref.atlasapi.org/channels/pressassociation.com/stations/466"
             )
             .put("bbc_two", "http://ref.atlasapi.org/channels/pressassociation.com/stations/6")
-            .put("bbc_scotland", "http://ref.atlasapi.org/channels/pressassociation.com/stations/1332")
             .put("bbc_sport", "http://www.bbc.co.uk/services/bbc_sport")
             .put("bbc_webonly", "http://www.bbc.co.uk/services/bbc_webonly")
             .put("bbc_music", "http://www.bbc.co.uk/services/bbc_music")

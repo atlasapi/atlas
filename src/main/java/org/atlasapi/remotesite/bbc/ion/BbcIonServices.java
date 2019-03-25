@@ -110,6 +110,7 @@ public class BbcIonServices {
                     "http://ref.atlasapi.org/channels/pressassociation.com/stations/466"
             )
             .put("bbc_two", "http://ref.atlasapi.org/channels/pressassociation.com/stations/6")
+            .put("bbc_scotland", "http://ref.atlasapi.org/channels/pressassociation.com/stations/1332")
             .put("bbc_sport", "http://www.bbc.co.uk/services/bbc_sport")
             .put("bbc_webonly", "http://www.bbc.co.uk/services/bbc_webonly")
             .put("bbc_music", "http://www.bbc.co.uk/services/bbc_music")

@@ -112,7 +112,7 @@ public class ChannelEquivModule {
             // add to map even if no mapping. Need to know for removing equiv later
             lines.forEach(line -> {
                 String[] splitLine = line.split(",");
-                codeMap.put(splitLine[0], splitLine.length > 1 ? splitLine[1] : "");
+                codeMap.put(splitLine[0], splitLine.length > 1 ? splitLine[1] : null);
             });
 
             return ImmutableMap.copyOf(codeMap);

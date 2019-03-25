@@ -103,6 +103,10 @@ public class BarbForcedChannelEquivalenceUpdater extends SourceSpecificChannelEq
     }
 
     private void removeEquivalence(Channel subject, OwlTelescopeReporter telescope) {
+        if (subject.getSameAs().isEmpty()) {
+            return; //no equiv to remove
+        }
+        
         ChannelRef candidateRef = subject.getSameAs().iterator().next();
         Channel candidate = channelResolver.fromUri(candidateRef.getUri()).requireValue();
 

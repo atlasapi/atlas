@@ -17,7 +17,10 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * This extractor will select all candidates which score over the highest threshold that would extract at least one candidate
+ * This extractor will select all candidates which score over or equal to the highest threshold that manages
+ * to extract at least one candidate.
+ * For example "try to select everything over 6, if nothing scored over 6 then try everything over 3, and so on".
+ * Thresholds are attempted from highest to lowest.
  */
 public class AllOverOrEqHighestNonEmptyThresholdExtractor<T extends Content> implements EquivalenceExtractor<T> {
 

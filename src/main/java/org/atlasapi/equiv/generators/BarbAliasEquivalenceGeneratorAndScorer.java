@@ -39,7 +39,9 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     //This is so as to not match content with bad aliases together (such as alias contentId 1).
     private static final int MAXIMUM_ALIAS_MATCHES = 50;
     //Score on match.
-    private final double aliasMatchingScore;
+    private final Score aliasMatchingScore;
+
+    private final boolean includeUnpublishedContent;
 
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
     private static final String BCID_NAMESPACE_SUFFIX = "bcid";
@@ -66,27 +68,13 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     public BarbAliasEquivalenceGeneratorAndScorer(
             MongoLookupEntryStore lookupEntryStore,
             ContentResolver resolver,
-            double aliasMatchingScore
+            Score aliasMatchingScore,
+            boolean includeUnpublishedContent
     ) {
         this.lookupEntryStore = lookupEntryStore;
         this.resolver = resolver;
         this.aliasMatchingScore = aliasMatchingScore;
-    }
-
-    public static <T extends Content> EquivalenceGenerator<T> barbAliasResolvingGenerator(
-            MongoLookupEntryStore lookupEntryStore,
-            ContentResolver resolver,
-            double aliasMatchingScore
-    ) {
-        return new BarbAliasEquivalenceGeneratorAndScorer<>(lookupEntryStore, resolver, aliasMatchingScore);
-    }
-
-    public static <T extends Content> EquivalenceGenerator<T> barbAliasResolvingGenerator(
-            MongoLookupEntryStore lookupEntryStore,
-            ContentResolver resolver
-    ) {
-        //Since BCIDs might be the only thing we can rely on for equiv we have to score it high enough to equiv outright currently
-        return new BarbAliasEquivalenceGeneratorAndScorer<>(lookupEntryStore, resolver, 10.0);
+        this.includeUnpublishedContent = includeUnpublishedContent;
     }
 
     @Override
@@ -150,13 +138,13 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         resolved.getAllResolvedResults().stream()
                 .distinct()
                 .forEach(identified -> {
-                    equivalents.addEquivalent((T) identified, Score.valueOf(aliasMatchingScore));
+                    equivalents.addEquivalent((T) identified, aliasMatchingScore);
                     desc.appendText("Candidate %s", identified.getCanonicalUri());
 
                     // this if statement keeps lots of old tests happy
                     if (identified.getId() != null) {
-                        generatorComponent.addComponentResult(identified.getId(), String.valueOf(
-                                aliasMatchingScore));
+                        generatorComponent.addComponentResult(identified.getId(),
+                                aliasMatchingScore.toString());
                     }
                 });
 
@@ -274,7 +262,9 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private Iterable<LookupEntry> getLookupEntries(Alias alias) {
         return lookupEntryStore.entriesForAliases(
                 Optional.of(alias.getNamespace()),
-                ImmutableSet.of(alias.getValue()));
+                ImmutableSet.of(alias.getValue()),
+                includeUnpublishedContent
+        );
     }
 
     private Alias aliasForNewNamespacePrefix(Alias alias, String oldPrefix, String newPrefix) {

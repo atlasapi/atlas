@@ -58,9 +58,11 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                BarbAliasEquivalenceGeneratorAndScorer.barbAliasResolvingGenerator(
+                                new BarbAliasEquivalenceGeneratorAndScorer<>(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
-                                        dependencies.getContentResolver()
+                                        dependencies.getContentResolver(),
+                                        Score.valueOf(10.0),
+                                        false
                                 ),
                                 new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
@@ -108,7 +110,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         //since a different extractor will be needed to equiv to it correctly
                         ExcludePublisherThenExtractExtractor.create(
                                 BARB_TRANSMISSIONS,
-                                new AllOverOrEqThresholdExtractor<>(4D)
+                                AllOverOrEqThresholdExtractor.create(4)
                         )
                 )
                 .withHandler(

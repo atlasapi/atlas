@@ -55,9 +55,11 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                BarbAliasEquivalenceGeneratorAndScorer.barbAliasResolvingGenerator(
+                                new BarbAliasEquivalenceGeneratorAndScorer<>(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
-                                        dependencies.getContentResolver()
+                                        dependencies.getContentResolver(),
+                                        Score.valueOf(10.0),
+                                        false
                                 ),
                                 new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),

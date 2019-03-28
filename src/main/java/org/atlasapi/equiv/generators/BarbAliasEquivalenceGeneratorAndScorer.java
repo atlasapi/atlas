@@ -14,6 +14,7 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
@@ -39,8 +40,8 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     //This is so as to not match content with bad aliases together (such as alias contentId 1).
     private static final int MAXIMUM_ALIAS_MATCHES = 50;
     //Score on match.
+    private final Set<Publisher> publishers;
     private final Score aliasMatchingScore;
-
     private final boolean includeUnpublishedContent;
 
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
@@ -68,11 +69,13 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     public BarbAliasEquivalenceGeneratorAndScorer(
             MongoLookupEntryStore lookupEntryStore,
             ContentResolver resolver,
+            Set<Publisher> publishers,
             Score aliasMatchingScore,
             boolean includeUnpublishedContent
     ) {
         this.lookupEntryStore = lookupEntryStore;
         this.resolver = resolver;
+        this.publishers = publishers;
         this.aliasMatchingScore = aliasMatchingScore;
         this.includeUnpublishedContent = includeUnpublishedContent;
     }
@@ -118,6 +121,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
                 .map(this::getLookupEntries) //from atlas
                 .filter(Objects::nonNull)
                 .flatMap(MoreStreams::stream)
+                .filter(entry -> publishers.contains(entry.lookupRef().publisher()))
                 .collect(MoreCollectors.toImmutableSet());
 
         //whoever wrote this had trust issues and is rechecking that what he got back is actually

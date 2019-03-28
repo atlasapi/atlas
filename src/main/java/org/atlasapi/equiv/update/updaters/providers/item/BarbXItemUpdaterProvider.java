@@ -54,6 +54,7 @@ public class BarbXItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
                                 new BarbAliasEquivalenceGeneratorAndScorer<>(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
                                         dependencies.getContentResolver(),
+                                        targetPublishers,
                                         Score.valueOf(10.0),
                                         false
                                 )

@@ -33,8 +33,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,6 +53,10 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
     private static final String BG_PARENT_VERSION_BCID_NAMESPACE_FORMAT = "gb:barb:broadcastGroup:%d:parentVersionBcid";
     private static final String OOBG_BCID_NAMESPACE_FORMAT = "gb:barb:originatingOwner:broadcastGroup:%d:bcid";
 
+    private static final Set<Publisher> INCLUDED_PUBLISHERS = ImmutableSet.of(
+            Publisher.BBC_NITRO,
+            Publisher.BARB_TRANSMISSIONS
+    );
     private static final boolean INCLUDE_UNPUBLISHED_CONTENT = false;
 
     private static final ImmutableMap<Integer, String> CMS_BCID_NAMESPACE_MAP = ImmutableMap.of(
@@ -71,6 +77,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
             new BarbAliasEquivalenceGeneratorAndScorer<>(
                     aliasLookupEntryStore,
                     aliasResolver,
+                    INCLUDED_PUBLISHERS,
                     SCORE_ON_MATCH,
                     INCLUDE_UNPUBLISHED_CONTENT
             );
@@ -113,7 +120,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         LookupEntry lookupEntry = new LookupEntry(
                 "Uri for alias test",
                 22L,
-                new LookupRef("Uri for alias test", 23L, Publisher.PA, ContentCategory.CHILD_ITEM),
+                new LookupRef("Uri for alias test", 23L, Publisher.BARB_TRANSMISSIONS, ContentCategory.CHILD_ITEM),
                 ImmutableSet.of("Uri for alias test"),
                 aliasesForaliasIdentified1,
                 ImmutableSet.of(),
@@ -303,7 +310,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 new LookupRef(
                         content.getCanonicalUri(),
                         0L,
-                        Publisher.BARB_TRANSMISSIONS,
+                        content.getPublisher() != null ? content.getPublisher() : Publisher.BARB_TRANSMISSIONS,
                         ContentCategory.TOP_LEVEL_ITEM
                 ),
                 ImmutableSet.of(),
@@ -577,6 +584,46 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(parentBcidItem) == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(cmsItem));
+    }
+
+    @Test
+    public void excludesPublishersWithSameAlias() {
+        Alias alias = new Alias("bcid", "1");
+        Set<Alias> aliases = ImmutableSet.of(alias);
+        Item subject = new Item();
+        subject.setCanonicalUri("uri1");
+        subject.setAliases(aliases);
+
+        Item item = new Item();
+        item.setCanonicalUri("uri2");
+        item.setAliases(aliases);
+        item.setPublisher(Publisher.BARB_TRANSMISSIONS);
+
+        Item differentItem = new Item();
+        differentItem.setCanonicalUri("uri3");
+        differentItem.setAliases(aliases);
+        differentItem.setPublisher(Publisher.BBC);
+
+        when(aliasLookupEntryStore.entriesForAliases(
+                Optional.of(alias.getNamespace()),
+                ImmutableSet.of(alias.getValue()),
+                INCLUDE_UNPUBLISHED_CONTENT
+        )).thenReturn(ImmutableList.of(lookupEntryForContent(item), lookupEntryForContent(differentItem)));
+
+        ResolvedContent.ResolvedContentBuilder resolvedContentBuilder = ResolvedContent.builder();
+        resolvedContentBuilder.put("q", item);
+
+        when(aliasResolver.findByCanonicalUris(ImmutableSet.of(item.getCanonicalUri())))
+                .thenReturn(resolvedContentBuilder.build());
+
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                subject,
+                desc,
+                EquivToTelescopeResults.create("id", "publisher")
+        );
+        assertTrue(!scoredCandidates.candidates().containsKey(differentItem));
+        assertThat(scoredCandidates.candidates().get(item), is(SCORE_ON_MATCH));
     }
 
 }

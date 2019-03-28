@@ -58,6 +58,7 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                 new BarbAliasEquivalenceGeneratorAndScorer<>(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
                                         dependencies.getContentResolver(),
+                                        targetPublishers,
                                         Score.valueOf(10.0),
                                         false
                                 ),

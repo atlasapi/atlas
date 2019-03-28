@@ -19,6 +19,7 @@ import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
+import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -50,10 +51,11 @@ public class BarbXItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                BarbAliasEquivalenceGeneratorAndScorer.barbAliasResolvingGenerator(
+                                new BarbAliasEquivalenceGeneratorAndScorer<>(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
                                         dependencies.getContentResolver(),
-                                        10.0
+                                        Score.valueOf(10.0),
+                                        false
                                 )
                         )
                 )

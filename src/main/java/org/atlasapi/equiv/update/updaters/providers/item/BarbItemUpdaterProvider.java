@@ -13,6 +13,7 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
+import org.atlasapi.equiv.results.extractors.ExcludePublisherThenExtractExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -35,6 +36,8 @@ import org.joda.time.Duration;
 
 import java.util.Set;
 
+import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
+
 public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
 
@@ -55,9 +58,11 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                BarbAliasEquivalenceGeneratorAndScorer.barbAliasResolvingGenerator(
+                                new BarbAliasEquivalenceGeneratorAndScorer<>(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
-                                        dependencies.getContentResolver()
+                                        dependencies.getContentResolver(),
+                                        Score.valueOf(10.0),
+                                        false
                                 ),
                                 new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
@@ -99,7 +104,14 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(4)
+                        //The txlog publisher is excluded here just in case it is later added back to the equiv
+                        //configuration for publishers using this class
+                        //If it is added back then compare with the equiv logic from TxlogsItemUpdaterProvider
+                        //since a different extractor will be needed to equiv to it correctly
+                        ExcludePublisherThenExtractExtractor.create(
+                                BARB_TRANSMISSIONS,
+                                AllOverOrEqThresholdExtractor.create(4)
+                        )
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

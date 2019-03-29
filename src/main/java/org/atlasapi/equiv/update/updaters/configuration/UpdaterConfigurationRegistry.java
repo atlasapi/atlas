@@ -251,7 +251,7 @@ public class UpdaterConfigurationRegistry {
                 .withItemEquivalenceUpdater(
                         BARB_X_ITEM,
                         ImmutableSet.of(
-                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION
+                                BARB_MASTER
                         )
                 )
                 .withTopLevelContainerEquivalenceUpdater(

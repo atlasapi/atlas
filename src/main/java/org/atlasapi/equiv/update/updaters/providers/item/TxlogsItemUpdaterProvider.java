@@ -102,12 +102,15 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         ))
                 )
                 .withExtractor(
-                        //If we equiv on bcid (scoring 10) then we don't want to equiv on broadcast time
-                        //This is due to an issue where some CMS and Txlog broadcasts have become incorrect
-                        //and we had ended up with txlogs equived on bcid to one piece of CMS content but to
-                        //another piece of CMS content (generally belonging to the same brand) on broadcast time.
-                        //Since BARB equivalence is primarily driven by bcid equiv this should not prove problematic
-                        //if we end up excluding some legitimate broadcast equiv since it will at least be equived on bcid
+                        // If we equiv on bcid (scoring 10) then we don't want to equiv on broadcast time
+                        // This is due to an issue where some CMS and Txlog broadcasts have become incorrect
+                        // and we had ended up with txlogs equived on bcid to one piece of CMS content but to
+                        // another piece of CMS content (generally belonging to the same brand) on broadcast time.
+                        // Since BARB equivalence is primarily driven by bcid equiv this should not prove problematic
+                        // if we end up excluding some legitimate broadcast equiv since it will at least be equived on bcid
+                        //
+                        // N.B. extractors extract individually by publisher so if the highest threshold for
+                        // one source is 10, we can still extract other publishers whose highest threshold was 4
                         new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
                 )
                 .withHandler(

@@ -788,7 +788,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(FIVE)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD)
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
@@ -807,7 +807,15 @@ public class UpdaterConfigurationRegistry {
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
                         ImmutableSet.of(
-                                BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION, BARB_MASTER
+                                BBC_NITRO,
+                                ITV_CPS,
+                                UKTV,
+                                C4_PMLSD,
+                                C5_DATA_SUBMISSION,
+                                BARB_MASTER,
+                                BARB_TRANSMISSIONS,
+                                BARB_X_MASTER,
+                                BARB_CENSUS
                         )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
@@ -829,11 +837,11 @@ public class UpdaterConfigurationRegistry {
                         ImmutableSet.of(
                                 BBC_NITRO,
                                 ITV_CPS,
-                                BARB_MASTER,
                                 UKTV,
                                 C4_PMLSD,
                                 C5_DATA_SUBMISSION,
-                                BARB_TRANSMISSIONS
+                                BARB_TRANSMISSIONS,
+                                BARB_MASTER
                         )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
@@ -852,7 +860,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(ITV_CPS)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(PA, BBC_NITRO, UKTV)
+                        ImmutableSet.of(PA, BBC_NITRO, UKTV, BARB_TRANSMISSIONS, BARB_MASTER)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
@@ -870,7 +878,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BBC_NITRO)
                 .withItemEquivalenceUpdater(
                         STANDARD_ITEM,
-                        ImmutableSet.of(PA, UKTV)
+                        ImmutableSet.of(PA, UKTV, BARB_TRANSMISSIONS, BARB_MASTER)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
@@ -888,7 +896,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(C4_PMLSD)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(PA, RADIO_TIMES)
+                        ImmutableSet.of(PA, RADIO_TIMES, BARB_TRANSMISSIONS, BARB_MASTER)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
@@ -906,7 +914,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(UKTV)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(PA, RADIO_TIMES)
+                        ImmutableSet.of(PA, RADIO_TIMES, BARB_TRANSMISSIONS, BARB_MASTER)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
@@ -924,7 +932,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(C5_DATA_SUBMISSION)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(PA, RADIO_TIMES)
+                        ImmutableSet.of(PA, RADIO_TIMES, BARB_TRANSMISSIONS, BARB_MASTER)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,

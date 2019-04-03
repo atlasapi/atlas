@@ -2,17 +2,16 @@ package org.atlasapi.remotesite.barb.channels;
 
 import java.util.Set;
 
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.ImageModelTranslator;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
+
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Set;
-
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;

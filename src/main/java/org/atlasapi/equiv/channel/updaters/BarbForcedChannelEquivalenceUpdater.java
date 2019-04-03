@@ -1,22 +1,23 @@
 package org.atlasapi.equiv.channel.updaters;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.columbus.telescope.client.EntityType;
-import joptsimple.internal.Strings;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.atlasapi.equiv.ChannelRef;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+
+import com.metabroadcast.columbus.telescope.client.EntityType;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

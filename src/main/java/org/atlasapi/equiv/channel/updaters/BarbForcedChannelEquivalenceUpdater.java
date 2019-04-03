@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.channel.updaters;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.columbus.telescope.client.EntityType;
 import joptsimple.internal.Strings;

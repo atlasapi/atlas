@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.barb.channels;
 
+import java.util.Set;
+
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.ImageModelTranslator;
@@ -13,6 +15,7 @@ import java.util.Set;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class BarbStringToChannelTransformerTest {
@@ -37,7 +40,6 @@ public class BarbStringToChannelTransformerTest {
         Channel c = barbTransformer.transform(channelString);
 
         assertThat(c.getAliases().size(), is(2));
-        
         Set<Alias> aliases = c.getAliases();
         assertTrue(aliases.contains(new Alias("gb:barb:stationCode", "1234")));
         assertTrue(aliases.contains(new Alias("uri", c.getUri())));

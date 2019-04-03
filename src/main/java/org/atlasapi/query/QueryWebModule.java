@@ -354,7 +354,7 @@ public class QueryWebModule {
     }
 
     private ChannelGroupWriteExecutor channelGroupWriteExecutor() {
-        return ChannelGroupWriteExecutor.create(channelGroupStore);
+        return ChannelGroupWriteExecutor.create(channelGroupStore, channelStore);
     }
 
     @Bean

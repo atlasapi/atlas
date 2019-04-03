@@ -370,7 +370,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     private WriteResponseWithOldIds createOrUpdateChannelGroup(
             HttpServletRequest request,
             HttpServletResponse response,
-            String idFormat) {
+            String idFormat
+    ) {
         java.util.Optional<Application> possibleApplication;
         try {
             possibleApplication = applicationFetcher.applicationFor(request);
@@ -436,10 +437,11 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             );
         }
 
-        java.util.Optional<ChannelGroup> channelGroup = channelGroupWriteExecutor.createOrUpdateChannelGroup(
+        Optional<ChannelGroup> channelGroup = channelGroupWriteExecutor.createOrUpdateChannelGroup(
                 request,
                 complexChannelGroup,
-                simpleChannelGroup
+                simpleChannelGroup,
+                channelResolver
         );
 
         if (!channelGroup.isPresent()) {
@@ -459,7 +461,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     }
 
     private void convertFromDeerToOwlIds(
-            org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup) {
+            org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup
+    ) {
         simpleChannelGroup.getChannels().forEach(channelNumbering -> {
             String deerId = channelNumbering.getChannel().getId();
             String owlId = oldFormatIdCodec.encode(newFormatIdCodec.decode(deerId));
@@ -525,7 +528,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         java.util.Optional<AtlasErrorSummary> errorSummary = channelGroupWriteExecutor.deletePlatform(
                 request,
                 response,
-                channelGroupId
+                channelGroupId,
+                channelResolver
         );
 
         if (errorSummary.isPresent()) {

@@ -3,6 +3,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.atlasapi.equiv.generators.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
@@ -12,6 +13,7 @@ import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqHighestNonEmptyThresholdExtractor;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.extractors.ExcludePublisherThenExtractExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -104,14 +106,17 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                                 new UnpublishedContentFilter<>()
                         ))
                 )
-                .withExtractor(
-                        //The txlog publisher is excluded here just in case it is later added back to the equiv
-                        //configuration for publishers using this class
-                        //If it is added back then compare with the equiv logic from TxlogsItemUpdaterProvider
-                        //since a different extractor will be needed to equiv to it correctly
-                        ExcludePublisherThenExtractExtractor.create(
-                                BARB_TRANSMISSIONS,
-                                AllOverOrEqThresholdExtractor.create(4)
+                .withExtractors(
+                        ImmutableList.of(
+                                // The txlog publisher is excluded here due to the behaviour described in
+                                // TxlogsItemUpdaterProvider since a different extractor is needed to equiv to it correctly
+                                ExcludePublisherThenExtractExtractor.create(
+                                        BARB_TRANSMISSIONS,
+                                        AllOverOrEqThresholdExtractor.create(4)
+                                ),
+                                // N.B. extractors extract individually by publisher so if the highest threshold for
+                                // one source is 10, we can still extract other publishers whose highest threshold was 4
+                                new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
                         )
                 )
                 .withHandler(

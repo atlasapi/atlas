@@ -439,6 +439,16 @@ public class EquivTaskModule {
                 CDMF_EQUIVALENCE_DELTA_REPETITION
         );
         scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(BARB_MASTER)
+                        .forLast(new Period().withWeeks(2))
+                        .withName("BARB CDMF Delta Updater (last 2 weeks)"),
+                RepetitionRules.NEVER
+        );
+        scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_MASTER).withName("Barb CDMF Updater"),
                 CDMF_EQUIVALENCE_REPETITION
         );

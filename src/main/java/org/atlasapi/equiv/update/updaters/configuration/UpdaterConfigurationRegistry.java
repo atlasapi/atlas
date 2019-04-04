@@ -50,6 +50,7 @@ import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
+import static org.atlasapi.media.entity.Publisher.BARB_NLE;
 import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
@@ -143,7 +144,8 @@ public class UpdaterConfigurationRegistry {
                 makeBarbXMasterConfiguration(), //X-CDMF
                 makeImdbApiConfiguration(),
                 makeC5DataSubmissionConfiguration(),
-                makeBarbCensusConfiguration()
+                makeBarbCensusConfiguration(),
+                makeBarbNleConfiguration()
         );
 
         configurations.add(
@@ -815,7 +817,8 @@ public class UpdaterConfigurationRegistry {
                                 BARB_MASTER,
                                 BARB_TRANSMISSIONS,
                                 BARB_X_MASTER,
-                                BARB_CENSUS
+                                BARB_CENSUS,
+                                BARB_NLE
                         )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
@@ -948,6 +951,26 @@ public class UpdaterConfigurationRegistry {
     private static UpdaterConfiguration makeBarbCensusConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(BARB_CENSUS)
+                .withItemEquivalenceUpdater(
+                        BARB_ITEM,
+                        ImmutableSet.of(
+                                BARB_MASTER
+                        )
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        ImmutableSet.of()
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        ImmutableSet.of()
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeBarbNleConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(BARB_NLE)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
                         ImmutableSet.of(

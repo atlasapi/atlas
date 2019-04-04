@@ -82,6 +82,7 @@ import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
+import static org.atlasapi.media.entity.Publisher.BARB_NLE;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
 import static org.atlasapi.media.entity.Publisher.BBC;
@@ -170,20 +171,19 @@ public class EquivTaskModule {
             RepetitionRules.daily(new LocalTime(18, 0));
     private static final RepetitionRule BBC_MUSIC_EQUIVALENCE_REPETITION =
             RepetitionRules.every(Duration.standardHours(6));
-    private static final RepetitionRule TXLOGS_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule TXLOGS_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(9, 0));
-    private static final RepetitionRule XCDMF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule XCDMF_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(1, 30));
-    private static final RepetitionRule CDMF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule CDMF_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(9, 0));
     private static final RepetitionRule IMDB_API_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(5, 30));
     private static final RepetitionRule C5_DATA_SUBMISSION_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(3, 0));
-    private static final RepetitionRule BARB_CENSUS_EQUIVALENCE_REPETITION =
+    private static final RepetitionRule BARB_CENSUS_EQUIVALENCE_DELTA_REPETITION =
+            RepetitionRules.daily(new LocalTime(7, 0));
+    private static final RepetitionRule BARB_NLE_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(7, 0));
     private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
@@ -434,8 +434,8 @@ public class EquivTaskModule {
                         RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
                         ignored)
                         .forPublisher(BARB_MASTER)
-                        .forLast(new Period().withDays(2))
-                        .withName("BARB CDMF Delta Updater (last 48h)"),
+                        .forLast(new Period().withDays(3))
+                        .withName("BARB CDMF Delta Updater (last 72h)"),
                 CDMF_EQUIVALENCE_DELTA_REPETITION
         );
         scheduleEquivalenceJob(
@@ -450,7 +450,7 @@ public class EquivTaskModule {
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_MASTER).withName("Barb CDMF Updater"),
-                CDMF_EQUIVALENCE_REPETITION
+                RepetitionRules.NEVER
         );
         scheduleEquivalenceJob(
                 new DeltaContentEquivalenceUpdateTask(
@@ -458,13 +458,23 @@ public class EquivTaskModule {
                         RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
                         ignored)
                         .forPublisher(BARB_X_MASTER)
-                        .forLast(new Period().withDays(2))
-                        .withName("BARB XCDMF Delta Updater (last 48h)"),
+                        .forLast(new Period().withDays(3))
+                        .withName("BARB XCDMF Delta Updater (last 72h)"),
                 XCDMF_EQUIVALENCE_DELTA_REPETITION
         );
         scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(BARB_X_MASTER)
+                        .forLast(new Period().withWeeks(2))
+                        .withName("BARB XCDMF Delta Updater (last 2 weeks)"),
+                RepetitionRules.NEVER
+        );
+        scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_X_MASTER).withName("Barb XCDMF Updater"),
-                XCDMF_EQUIVALENCE_REPETITION
+                RepetitionRules.NEVER
         );
         scheduleEquivalenceJob(
                 new DeltaContentEquivalenceUpdateTask(
@@ -472,8 +482,8 @@ public class EquivTaskModule {
                         RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
                         ignored)
                         .forPublisher(BARB_TRANSMISSIONS)
-                        .forLast(new Period().withDays(2))
-                        .withName("TxLog Delta Updater (last 48h)"),
+                        .forLast(new Period().withDays(3))
+                        .withName("TxLog Delta Updater (last 72h)"),
                 TXLOGS_EQUIVALENCE_DELTA_REPETITION
         );
         scheduleEquivalenceJob(
@@ -488,7 +498,7 @@ public class EquivTaskModule {
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_TRANSMISSIONS).withName("Barb TxLogs Updater"),
-                TXLOGS_EQUIVALENCE_REPETITION
+                RepetitionRules.NEVER
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(ITV_CPS).withName("ITV CPS Updater"),
@@ -570,8 +580,55 @@ public class EquivTaskModule {
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(BARB_CENSUS)
+                        .forLast(new Period().withDays(3))
+                        .withName("BARB Census Delta Updater (last 72h)"),
+                BARB_CENSUS_EQUIVALENCE_DELTA_REPETITION
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(BARB_CENSUS)
+                        .forLast(new Period().withWeeks(2))
+                        .withName("BARB Census Delta Updater (last 2 weeks)"),
+                RepetitionRules.NEVER
+        );
+        scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_CENSUS).withName("BARB Census Updater"),
-                BARB_CENSUS_EQUIVALENCE_REPETITION,
+                RepetitionRules.NEVER,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored
+                )
+                        .forPublisher(BARB_NLE)
+                        .forLast(new Period().withDays(3))
+                        .withName("BARB NLE Delta Updater (last 72h)"),
+                BARB_NLE_EQUIVALENCE_DELTA_REPETITION
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored
+                )
+                        .forPublisher(BARB_NLE)
+                        .forLast(new Period().withWeeks(2))
+                        .withName("BARB NLE Delta Updater (last 2 weeks)"),
+                RepetitionRules.NEVER
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(BARB_NLE).withName("BARB NLE Updater"),
+                RepetitionRules.NEVER,
                 jobsAtStartup
         );
     }

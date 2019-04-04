@@ -4,11 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ExactTitleGenerator;
-import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
-import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
-import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighscoreAndPublisherExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
@@ -24,19 +19,18 @@ import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.scorers.SequenceContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
-import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
+import org.atlasapi.equiv.update.EquivalenceResultUpdater;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
 import java.util.Set;
 
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 
-public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
+public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
     private AmazonSeriesUpdaterProvider() {
     }
@@ -46,11 +40,11 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
     }
 
     @Override
-    public EquivalenceUpdater<Container> getUpdater(
+    public EquivalenceResultUpdater<Container> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceUpdater.<Container>builder()
+        return ContentEquivalenceResultUpdater.<Container>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
@@ -103,25 +97,27 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                                 )
                         )
                 )
-                .withHandler(
-                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-                                LookupWritingEquivalenceHandler.create(
-                                        dependencies.getLookupWriter()
-                                ),
-                                new ResultWritingEquivalenceHandler<>(
-                                        dependencies.getEquivalenceResultStore()
-                                ),
-                                new EquivalenceSummaryWritingHandler<>(
-                                        dependencies.getEquivSummaryStore()
-                                )
-                        ))
-                )
-                .withMessenger(
-                        QueueingEquivalenceResultMessenger.create(
-                                dependencies.getMessageSender(),
-                                dependencies.getLookupEntryStore()
-                        )
-                )
+//                .withHandler(
+//                        //standard
+//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
+//                                LookupWritingEquivalenceHandler.create(
+//                                        dependencies.getLookupWriter()
+//                                ),
+//                                new ResultWritingEquivalenceHandler<>(
+//                                        dependencies.getEquivalenceResultStore()
+//                                ),
+//                                new EquivalenceSummaryWritingHandler<>(
+//                                        dependencies.getEquivSummaryStore()
+//                                )
+//                        ))
+//                )
+//                .withMessenger(
+//                        //standard
+//                        QueueingEquivalenceResultMessenger.create(
+//                                dependencies.getMessageSender(),
+//                                dependencies.getLookupEntryStore()
+//                        )
+//                )
                 .build();
     }
 }

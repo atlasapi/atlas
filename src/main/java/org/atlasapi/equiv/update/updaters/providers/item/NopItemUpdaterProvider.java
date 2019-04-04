@@ -2,16 +2,19 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 
 import java.util.Set;
 
+import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.NopEquivalenceUpdaterMetadata;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
-public class NopItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+public class NopItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private NopItemUpdaterProvider() {
     }
@@ -20,21 +23,21 @@ public class NopItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> 
         return new NopItemUpdaterProvider();
     }
 
+    //TODO: return meaningful objects
     @Override
-    public EquivalenceUpdater<Item> getUpdater(
+    public EquivalenceResultUpdater<Item> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return new EquivalenceUpdater<Item>() {
-
+        return new EquivalenceResultUpdater<Item>() {
             @Override
-            public boolean updateEquivalences(Item subject, OwlTelescopeReporter telescope) {
-                return false;
+            public EquivalenceResult<Item> provideEquivalenceResult(Item subject, OwlTelescopeReporter telescope) {
+                return null;
             }
 
             @Override
-            public EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources) {
-                return NopEquivalenceUpdaterMetadata.create();
+            public EquivalenceUpdaterMetadata getMetadata() {
+                return null;
             }
         };
     }

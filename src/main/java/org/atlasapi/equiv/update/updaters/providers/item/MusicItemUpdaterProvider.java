@@ -1,31 +1,23 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import java.util.Set;
-
 import org.atlasapi.equiv.generators.SongTitleTransform;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
-import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
-import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
-import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.scorers.CrewMemberScorer;
 import org.atlasapi.equiv.scorers.SongCrewMemberExtractor;
-import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
+import org.atlasapi.equiv.update.EquivalenceResultUpdater;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Song;
 
-import com.google.common.collect.ImmutableList;
+import java.util.Set;
 
-public class MusicItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+public class MusicItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private MusicItemUpdaterProvider() {
     }
@@ -35,10 +27,10 @@ public class MusicItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
     }
 
     @Override
-    public EquivalenceUpdater<Item> getUpdater(
+    public EquivalenceResultUpdater<Item> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies, Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceUpdater.<Item>builder()
+        return ContentEquivalenceResultUpdater.<Item>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
@@ -64,28 +56,30 @@ public class MusicItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
                 .withExtractor(
                         new MusicEquivalenceExtractor()
                 )
-                .withHandler(
-                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-                                EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                        LookupWritingEquivalenceHandler.create(
-                                                dependencies.getLookupWriter()
-                                        ),
-                                        dependencies.getEquivSummaryStore()
-                                ),
-                                new ResultWritingEquivalenceHandler<>(
-                                        dependencies.getEquivalenceResultStore()
-                                ),
-                                new EquivalenceSummaryWritingHandler<>(
-                                        dependencies.getEquivSummaryStore()
-                                )
-                        ))
-                )
-                .withMessenger(
-                        QueueingEquivalenceResultMessenger.create(
-                                dependencies.getMessageSender(),
-                                dependencies.getLookupEntryStore()
-                        )
-                )
+//                .withHandler(
+//                        //standard
+//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
+//                                EpisodeFilteringEquivalenceResultHandler.relaxed(
+//                                        LookupWritingEquivalenceHandler.create(
+//                                                dependencies.getLookupWriter()
+//                                        ),
+//                                        dependencies.getEquivSummaryStore()
+//                                ),
+//                                new ResultWritingEquivalenceHandler<>(
+//                                        dependencies.getEquivalenceResultStore()
+//                                ),
+//                                new EquivalenceSummaryWritingHandler<>(
+//                                        dependencies.getEquivSummaryStore()
+//                                )
+//                        ))
+//                )
+//                .withMessenger(
+//                        //standard
+//                        QueueingEquivalenceResultMessenger.create(
+//                                dependencies.getMessageSender(),
+//                                dependencies.getLookupEntryStore()
+//                        )
+//                )
                 .build();
     }
 }

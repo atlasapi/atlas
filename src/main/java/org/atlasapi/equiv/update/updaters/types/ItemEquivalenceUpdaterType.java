@@ -1,6 +1,6 @@
 package org.atlasapi.equiv.update.updaters.types;
 
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbXItemUpdaterProvider;
@@ -9,7 +9,6 @@ import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterPro
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.ImdbApitemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.MusicItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.NopItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RoviItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RtItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RtUpcomingItemUpdaterProvider;
@@ -25,9 +24,6 @@ import org.atlasapi.media.entity.Item;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public enum ItemEquivalenceUpdaterType {
-    NOP_ITEM(
-            NopItemUpdaterProvider.create()
-    ),
     STANDARD_ITEM(
             StandardItemUpdaterProvider.create()
     ),
@@ -84,13 +80,13 @@ public enum ItemEquivalenceUpdaterType {
     )
     ;
 
-    private final EquivalenceUpdaterProvider<Item> provider;
+    private final EquivalenceResultUpdaterProvider<Item> provider;
 
-    ItemEquivalenceUpdaterType(EquivalenceUpdaterProvider<Item> provider) {
+    ItemEquivalenceUpdaterType(EquivalenceResultUpdaterProvider<Item> provider) {
         this.provider = checkNotNull(provider);
     }
 
-    public EquivalenceUpdaterProvider<Item> getProvider() {
+    public EquivalenceResultUpdaterProvider<Item> getProvider() {
         return provider;
     }
 }

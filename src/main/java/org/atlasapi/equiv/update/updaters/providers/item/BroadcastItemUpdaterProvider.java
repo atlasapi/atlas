@@ -5,12 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
-import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
-import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
-import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -29,9 +23,9 @@ import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
-import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
+import org.atlasapi.equiv.update.EquivalenceResultUpdater;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -39,7 +33,7 @@ import org.joda.time.Duration;
 
 import java.util.Set;
 
-public class BroadcastItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+public class BroadcastItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private BroadcastItemUpdaterProvider() {
     }
@@ -49,11 +43,11 @@ public class BroadcastItemUpdaterProvider implements EquivalenceUpdaterProvider<
     }
 
     @Override
-    public EquivalenceUpdater<Item> getUpdater(
+    public EquivalenceResultUpdater<Item> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceUpdater.<Item>builder()
+        return ContentEquivalenceResultUpdater.<Item>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
@@ -100,28 +94,30 @@ public class BroadcastItemUpdaterProvider implements EquivalenceUpdaterProvider<
                         PercentThresholdAboveNextBestMatchEquivalenceExtractor
                                 .atLeastNTimesGreater(1.5)
                 )
-                .withHandler(
-                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-                                EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                        LookupWritingEquivalenceHandler.create(
-                                                dependencies.getLookupWriter()
-                                        ),
-                                        dependencies.getEquivSummaryStore()
-                                ),
-                                new ResultWritingEquivalenceHandler<>(
-                                        dependencies.getEquivalenceResultStore()
-                                ),
-                                new EquivalenceSummaryWritingHandler<>(
-                                        dependencies.getEquivSummaryStore()
-                                )
-                        ))
-                )
-                .withMessenger(
-                        QueueingEquivalenceResultMessenger.create(
-                                dependencies.getMessageSender(),
-                                dependencies.getLookupEntryStore()
-                        )
-                )
+//                .withHandler(
+//                        //standard
+//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
+//                                EpisodeFilteringEquivalenceResultHandler.relaxed(
+//                                        LookupWritingEquivalenceHandler.create(
+//                                                dependencies.getLookupWriter()
+//                                        ),
+//                                        dependencies.getEquivSummaryStore()
+//                                ),
+//                                new ResultWritingEquivalenceHandler<>(
+//                                        dependencies.getEquivalenceResultStore()
+//                                ),
+//                                new EquivalenceSummaryWritingHandler<>(
+//                                        dependencies.getEquivSummaryStore()
+//                                )
+//                        ))
+//                )
+//                .withMessenger(
+//                        //standard
+//                        QueueingEquivalenceResultMessenger.create(
+//                                dependencies.getMessageSender(),
+//                                dependencies.getLookupEntryStore()
+//                        )
+//                )
                 .build();
     }
 }

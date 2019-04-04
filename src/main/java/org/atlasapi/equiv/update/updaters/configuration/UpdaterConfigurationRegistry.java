@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.update.updaters.configuration;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.collect.MoreSets;
@@ -833,26 +834,57 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(BARB_TRANSMISSIONS)
                 .withItemEquivalenceUpdater(
-                        TXLOGS_ITEM,
-                        ImmutableSet.of(
-                                BBC_NITRO,
-                                ITV_CPS,
-                                UKTV,
-                                C4_PMLSD,
-                                C5_DATA_SUBMISSION,
-                                BARB_TRANSMISSIONS,
-                                BARB_MASTER
-                        )
+                        ImmutableMap.of(
+                                TXLOGS_ITEM, ImmutableSet.of(
+                                        BBC_NITRO,
+                                        ITV_CPS,
+                                        UKTV,
+                                        C4_PMLSD,
+                                        C5_DATA_SUBMISSION,
+                                        BARB_TRANSMISSIONS,
+                                        BARB_MASTER
+                                )
+                        ),
+                        null,
+                        null
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        STANDARD_TOP_LEVEL_CONTAINER,
-                        ImmutableSet.of()
+                        ImmutableMap.of(STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of()),
+                        null,
+                        null
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        STANDARD_SERIES,
-                        ImmutableSet.of()
+                        ImmutableMap.of(STANDARD_SERIES, ImmutableSet.of()),
+                        null,
+                        null
                 )
                 .build();
+
+
+
+//        return UpdaterConfiguration.builder()
+//                .withSource(BARB_TRANSMISSIONS)
+//                .withItemEquivalenceUpdater(
+//                        TXLOGS_ITEM,
+//                        ImmutableSet.of(
+//                                BBC_NITRO,
+//                                ITV_CPS,
+//                                UKTV,
+//                                C4_PMLSD,
+//                                C5_DATA_SUBMISSION,
+//                                BARB_TRANSMISSIONS,
+//                                BARB_MASTER
+//                        )
+//                )
+//                .withTopLevelContainerEquivalenceUpdater(
+//                        STANDARD_TOP_LEVEL_CONTAINER,
+//                        ImmutableSet.of()
+//                )
+//                .withNonTopLevelContainerEquivalenceUpdater(
+//                        STANDARD_SERIES,
+//                        ImmutableSet.of()
+//                )
+//                .build();
     }
 
     private static UpdaterConfiguration makeItvCpsConfiguration() {

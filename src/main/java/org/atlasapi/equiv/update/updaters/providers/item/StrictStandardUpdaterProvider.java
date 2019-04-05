@@ -88,30 +88,6 @@ public class StrictStandardUpdaterProvider implements EquivalenceResultUpdaterPr
                         PercentThresholdAboveNextBestMatchEquivalenceExtractor
                                 .atLeastNTimesGreater(1.5)
                 )
-//                .withHandler(
-//                        //standard
-//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-//                                EpisodeFilteringEquivalenceResultHandler.relaxed(
-//                                        LookupWritingEquivalenceHandler.create(
-//                                                dependencies.getLookupWriter()
-//                                        ),
-//                                        dependencies.getEquivSummaryStore()
-//                                ),
-//                                new ResultWritingEquivalenceHandler<>(
-//                                        dependencies.getEquivalenceResultStore()
-//                                ),
-//                                new EquivalenceSummaryWritingHandler<>(
-//                                        dependencies.getEquivSummaryStore()
-//                                )
-//                        ))
-//                )
-//                .withMessenger(
-//                        //standard
-//                        QueueingEquivalenceResultMessenger.create(
-//                                dependencies.getMessageSender(),
-//                                dependencies.getLookupEntryStore()
-//                        )
-//                )
                 .build();
     }
 }

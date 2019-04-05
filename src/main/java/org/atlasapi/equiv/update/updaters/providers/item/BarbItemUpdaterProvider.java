@@ -112,30 +112,6 @@ public class BarbItemUpdaterProvider implements EquivalenceResultUpdaterProvider
                                 new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
                         )
                 )
-//                .withHandler(
-//                        //standard
-//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-//                                EpisodeFilteringEquivalenceResultHandler.relaxed(
-//                                        LookupWritingEquivalenceHandler.create(
-//                                                dependencies.getLookupWriter()
-//                                        ),
-//                                        dependencies.getEquivSummaryStore()
-//                                ),
-//                                new ResultWritingEquivalenceHandler<>(
-//                                        dependencies.getEquivalenceResultStore()
-//                                ),
-//                                new EquivalenceSummaryWritingHandler<>(
-//                                        dependencies.getEquivSummaryStore()
-//                                )
-//                        ))
-//                )
-//                .withMessenger(
-//                        //standard
-//                        QueueingEquivalenceResultMessenger.create(
-//                                dependencies.getMessageSender(),
-//                                dependencies.getLookupEntryStore()
-//                        )
-//                )
                 .build();
     }
 }

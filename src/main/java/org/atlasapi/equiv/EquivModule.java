@@ -18,6 +18,9 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
+import org.atlasapi.equiv.messengers.EquivalenceResultMessenger;
 import org.atlasapi.equiv.results.persistence.FileEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
@@ -34,6 +37,7 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
 import org.atlasapi.messaging.v3.JacksonMessageSerializer;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
@@ -50,6 +54,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import java.io.File;
+import java.util.Collection;
 
 @SuppressWarnings("PublicConstructor")
 @Configuration
@@ -94,60 +99,14 @@ public class EquivModule {
 
         for (UpdaterConfiguration configuration : registry.getUpdaterConfigurations()) {
 
-            ImmutableSet.Builder<EquivalenceResultUpdater<Item>> itemEquivalenceResultUpdaters
-                    = ImmutableSet.builder();
-            for (ItemEquivalenceUpdaterType updaterType : configuration.getItemEquivalenceUpdaters().keySet()) {
-                itemEquivalenceResultUpdaters.add(
-                        updaterType.getProvider().getUpdater(
-                                dependencies,
-                                configuration.getItemEquivalenceUpdaters().get(updaterType)
-                        )
-                );
-            }
+            ContentEquivalenceUpdater<Item> itemEquivalenceUpdater =
+                    createItemEquivalenceUpdater(configuration, dependencies);
 
-            ContentEquivalenceUpdater<Item> itemEquivalenceUpdater = ContentEquivalenceUpdater
-                    .<Item>builder()
-                    .withEquivalenceResultUpdaters(itemEquivalenceResultUpdaters.build())
-                    .withHandler(null)//TODO
-                    .withMessenger(null) //TODO
-                    .build();
+            ContentEquivalenceUpdater<Container> topLevelContainerEquivalenceUpdater =
+                    createTopLevelContainerEquivalenceUpdater(configuration, dependencies);
 
-            ImmutableSet.Builder<EquivalenceResultUpdater<Container>> topLevelContainerEquivalenceResultUpdaters
-                    = ImmutableSet.builder();
-            for (ContainerEquivalenceUpdaterType updaterType : configuration.getTopLevelContainerEquivalenceUpdaters().keySet()) {
-                topLevelContainerEquivalenceResultUpdaters.add(
-                        updaterType.getProvider().getUpdater(
-                                dependencies,
-                                configuration.getTopLevelContainerEquivalenceUpdaters().get(updaterType)
-                        )
-                );
-            }
-
-            ContentEquivalenceUpdater<Container> topLevelContainerEquivalenceUpdater = ContentEquivalenceUpdater
-                    .<Container>builder()
-                    .withEquivalenceResultUpdaters(topLevelContainerEquivalenceResultUpdaters.build())
-                    .withHandler(null)//TODO
-                    .withMessenger(null)//TODO
-                    .build();
-
-
-            ImmutableSet.Builder<EquivalenceResultUpdater<Container>> nonTopLevelContainerEquivalenceResultUpdaters
-                    = ImmutableSet.builder();
-            for (ContainerEquivalenceUpdaterType updaterType : configuration.getNonTopLevelContainerEquivalenceUpdaters().keySet()) {
-                nonTopLevelContainerEquivalenceResultUpdaters.add(
-                        updaterType.getProvider().getUpdater(
-                                dependencies,
-                                configuration.getNonTopLevelContainerEquivalenceUpdaters().get(updaterType)
-                        )
-                );
-            }
-
-            ContentEquivalenceUpdater<Container> nonTopLevelContainerEquivalenceUpdater = ContentEquivalenceUpdater
-                    .<Container>builder()
-                    .withEquivalenceResultUpdaters(nonTopLevelContainerEquivalenceResultUpdaters.build())
-                    .withHandler(null)//TODO
-                    .withMessenger(null)//TODO
-                    .build();
+            ContentEquivalenceUpdater<Container> nonTopLevelContainerEquivalenceUpdater =
+                    createNonTopLevelContainerEquivalenceUpdater(configuration, dependencies);
 
             updaters.register(
                     configuration.getSource(),
@@ -161,6 +120,126 @@ public class EquivModule {
         }
 
         return updaters;
+    }
+
+    private ContentEquivalenceUpdater<Item> createItemEquivalenceUpdater(
+            UpdaterConfiguration configuration,
+            EquivalenceUpdaterProviderDependencies dependencies
+    ) {
+        ImmutableSet.Builder<EquivalenceResultUpdater<Item>> itemEquivalenceResultUpdaters
+                = ImmutableSet.builder();
+        for (ItemEquivalenceUpdaterType updaterType : configuration.getItemEquivalenceUpdaters().keySet()) {
+            itemEquivalenceResultUpdaters.add(
+                    updaterType.getProvider().getUpdater(
+                            dependencies,
+                            configuration.getItemEquivalenceUpdaters().get(updaterType)
+                    )
+            );
+        }
+
+        ImmutableSet<Publisher> allItemTargetPublishers = configuration
+                .getItemEquivalenceUpdaters()
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(MoreCollectors.toImmutableSet());
+
+        EquivalenceResultHandler<Item> itemEquivalenceResultHandler =
+                configuration.getItemEquivalenceHandlerType()
+                        .getHandlerProvider()
+                        .getHandler(dependencies, allItemTargetPublishers);
+
+        EquivalenceResultMessenger<Item> itemEquivalenceResultMessenger =
+                configuration.getItemEquivalenceMessengerType()
+                        .getMessengerProvider()
+                        .getMessenger(dependencies, allItemTargetPublishers);
+
+        return ContentEquivalenceUpdater
+                .<Item>builder()
+                .withEquivalenceResultUpdaters(itemEquivalenceResultUpdaters.build())
+                .withHandler(itemEquivalenceResultHandler)
+                .withMessenger(itemEquivalenceResultMessenger)
+                .build();
+    }
+
+    private ContentEquivalenceUpdater<Container> createTopLevelContainerEquivalenceUpdater(
+            UpdaterConfiguration configuration,
+            EquivalenceUpdaterProviderDependencies dependencies
+    ) {
+        ImmutableSet.Builder<EquivalenceResultUpdater<Container>> topLevelEquivalenceResultUpdaters
+                = ImmutableSet.builder();
+        for (ContainerEquivalenceUpdaterType updaterType : configuration.getTopLevelContainerEquivalenceUpdaters().keySet()) {
+            topLevelEquivalenceResultUpdaters.add(
+                    updaterType.getProvider().getUpdater(
+                            dependencies,
+                            configuration.getTopLevelContainerEquivalenceUpdaters().get(updaterType)
+                    )
+            );
+        }
+
+        ImmutableSet<Publisher> allTopLevelContainerTargetPublishers = configuration
+                .getTopLevelContainerEquivalenceUpdaters()
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(MoreCollectors.toImmutableSet());
+
+        EquivalenceResultHandler<Container> topLevelContainerEquivalenceResultHandler =
+                configuration.getTopLevelContainerEquivalenceHandlerType()
+                        .getHandlerProvider()
+                        .getHandler(dependencies, allTopLevelContainerTargetPublishers);
+
+        EquivalenceResultMessenger<Container> topLevelContainerEquivalenceResultMessenger =
+                configuration.getTopLevelContainerEquivalenceMessengerType()
+                        .getMessengerProvider()
+                        .getMessenger(dependencies, allTopLevelContainerTargetPublishers);
+
+        return ContentEquivalenceUpdater
+                .<Container>builder()
+                .withEquivalenceResultUpdaters(topLevelEquivalenceResultUpdaters.build())
+                .withHandler(topLevelContainerEquivalenceResultHandler)
+                .withMessenger(topLevelContainerEquivalenceResultMessenger)
+                .build();
+    }
+
+    private ContentEquivalenceUpdater<Container> createNonTopLevelContainerEquivalenceUpdater(
+            UpdaterConfiguration configuration,
+            EquivalenceUpdaterProviderDependencies dependencies
+    ) {
+        ImmutableSet.Builder<EquivalenceResultUpdater<Container>> nonTopLevelEquivalenceResultUpdaters
+                = ImmutableSet.builder();
+        for (ContainerEquivalenceUpdaterType updaterType : configuration.getNonTopLevelContainerEquivalenceUpdaters().keySet()) {
+            nonTopLevelEquivalenceResultUpdaters.add(
+                    updaterType.getProvider().getUpdater(
+                            dependencies,
+                            configuration.getNonTopLevelContainerEquivalenceUpdaters().get(updaterType)
+                    )
+            );
+        }
+
+        ImmutableSet<Publisher> allNonTopLevelContainerTargetPublishers = configuration
+                .getNonTopLevelContainerEquivalenceUpdaters()
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .collect(MoreCollectors.toImmutableSet());
+
+        EquivalenceResultHandler<Container> nonTopLevelContainerEquivalenceResultHandler =
+                configuration.getNonTopLevelContainerEquivalenceHandlerType()
+                        .getHandlerProvider()
+                        .getHandler(dependencies, allNonTopLevelContainerTargetPublishers);
+
+        EquivalenceResultMessenger<Container> nonTopLevelContainerEquivalenceResultMessenger =
+                configuration.getNonTopLevelContainerEquivalenceMessengerType()
+                        .getMessengerProvider()
+                        .getMessenger(dependencies, allNonTopLevelContainerTargetPublishers);
+
+        return ContentEquivalenceUpdater
+                .<Container>builder()
+                .withEquivalenceResultUpdaters(nonTopLevelEquivalenceResultUpdaters.build())
+                .withHandler(nonTopLevelContainerEquivalenceResultHandler)
+                .withMessenger(nonTopLevelContainerEquivalenceResultMessenger)
+                .build();
     }
 
     @Bean

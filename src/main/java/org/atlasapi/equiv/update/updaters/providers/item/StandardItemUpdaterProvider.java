@@ -88,28 +88,6 @@ public class StandardItemUpdaterProvider implements EquivalenceResultUpdaterProv
                         PercentThresholdAboveNextBestMatchEquivalenceExtractor
                                 .atLeastNTimesGreater(1.5)
                 )
-//                .withHandler(
-//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-//                                EpisodeFilteringEquivalenceResultHandler.relaxed(
-//                                        LookupWritingEquivalenceHandler.create(
-//                                                dependencies.getLookupWriter()
-//                                        ),
-//                                        dependencies.getEquivSummaryStore()
-//                                ),
-//                                new ResultWritingEquivalenceHandler<>(
-//                                        dependencies.getEquivalenceResultStore()
-//                                ),
-//                                new EquivalenceSummaryWritingHandler<>(
-//                                        dependencies.getEquivSummaryStore()
-//                                )
-//                        ))
-//                )
-//                .withMessenger(
-//                        QueueingEquivalenceResultMessenger.create(
-//                                dependencies.getMessageSender(),
-//                                dependencies.getLookupEntryStore()
-//                        )
-//                )
                 .build();
     }
 }

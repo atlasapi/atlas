@@ -101,30 +101,6 @@ public class BtVodItemUpdaterProvider implements EquivalenceResultUpdaterProvide
                         PercentThresholdAboveNextBestMatchEquivalenceExtractor
                                 .atLeastNTimesGreater(1.5)
                 )
-//                .withHandler(
-//                        //TODO standard strict
-//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-//                                EpisodeFilteringEquivalenceResultHandler.strict(
-//                                        LookupWritingEquivalenceHandler.create(
-//                                                dependencies.getLookupWriter()
-//                                        ),
-//                                        dependencies.getEquivSummaryStore()
-//                                ),
-//                                new ResultWritingEquivalenceHandler<>(
-//                                        dependencies.getEquivalenceResultStore()
-//                                ),
-//                                new EquivalenceSummaryWritingHandler<>(
-//                                        dependencies.getEquivSummaryStore()
-//                                )
-//                        ))
-//                )
-//                .withMessenger(
-//                        //standard
-//                        QueueingEquivalenceResultMessenger.create(
-//                                dependencies.getMessageSender(),
-//                                dependencies.getLookupEntryStore()
-//                        )
-//                )
                 .build();
     }
 }

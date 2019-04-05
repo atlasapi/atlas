@@ -107,30 +107,6 @@ public class TxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                         // one source is 10, we can still extract other publishers whose highest threshold was 4
                         new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
                 )
-//                .withHandler(
-                //standard
-//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-//                                EpisodeFilteringEquivalenceResultHandler.relaxed(
-//                                        LookupWritingEquivalenceHandler.create(
-//                                                dependencies.getLookupWriter()
-//                                        ),
-//                                        dependencies.getEquivSummaryStore()
-//                                ),
-//                                new ResultWritingEquivalenceHandler<>(
-//                                        dependencies.getEquivalenceResultStore()
-//                                ),
-//                                new EquivalenceSummaryWritingHandler<>(
-//                                        dependencies.getEquivSummaryStore()
-//                                )
-//                        ))
-//                )
-//                .withMessenger(
-                //standard
-//                        QueueingEquivalenceResultMessenger.create(
-//                                dependencies.getMessageSender(),
-//                                dependencies.getLookupEntryStore()
-//                        )
-//                )
                 .build();
     }
 }

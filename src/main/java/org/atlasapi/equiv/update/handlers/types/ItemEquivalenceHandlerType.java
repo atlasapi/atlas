@@ -9,13 +9,13 @@ import org.atlasapi.media.entity.Item;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public enum ItemEquivalenceHandlerType {
-    NOP_ITEM(
+    NOP_ITEM_HANDLER(
             NopItemHandlerProvider.create()
     ),
-    STANDARD_ITEM(
+    STANDARD_ITEM_HANDLER(
             StandardItemHandlerProvider.create()
     ),
-    STRICT_EPISODE_ITEM(
+    STRICT_EPISODE_ITEM_HANDLER(
             StrictEpisodeItemHandlerProvider.create()
     )
     ;

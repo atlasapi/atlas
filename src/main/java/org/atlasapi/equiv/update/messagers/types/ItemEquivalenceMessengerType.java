@@ -8,10 +8,10 @@ import org.atlasapi.media.entity.Item;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public enum ItemEquivalenceMessengerType {
-    NOP_ITEM(
+    NOP_ITEM_MESSENGER(
             NopItemMessengerProvider.create()
     ),
-    STANDARD_ITEM(
+    STANDARD_ITEM_MESSENGER(
             StandardItemMessengerProvider.create()
     ),
     ;

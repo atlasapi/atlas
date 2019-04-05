@@ -96,31 +96,6 @@ public class StandardTopLevelContainerUpdaterProvider
                                         .atLeastNTimesGreater(1.5)
                         )
                 )
-//                .withHandler(
-//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-//                                LookupWritingEquivalenceHandler.create(
-//                                        dependencies.getLookupWriter()
-//                                ),
-//                                new EpisodeMatchingEquivalenceHandler(
-//                                        dependencies.getContentResolver(),
-//                                        dependencies.getEquivSummaryStore(),
-//                                        dependencies.getLookupWriter(),
-//                                        targetPublishers
-//                                ),
-//                                new ResultWritingEquivalenceHandler<>(
-//                                        dependencies.getEquivalenceResultStore()
-//                                ),
-//                                new EquivalenceSummaryWritingHandler<>(
-//                                        dependencies.getEquivSummaryStore()
-//                                )
-//                        ))
-//                )
-//                .withMessenger(
-//                        QueueingEquivalenceResultMessenger.create(
-//                                dependencies.getMessageSender(),
-//                                dependencies.getLookupEntryStore()
-//                        )
-//                )
                 .build();
     }
 }

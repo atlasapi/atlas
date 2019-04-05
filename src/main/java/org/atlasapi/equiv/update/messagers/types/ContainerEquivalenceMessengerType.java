@@ -9,13 +9,13 @@ import org.atlasapi.media.entity.Container;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public enum ContainerEquivalenceMessengerType {
-    NOP_CONTAINER(
+    NOP_CONTAINER_MESSENGER(
             NopContainerMessengerProvider.create()
     ),
-    STANDARD_TOP_LEVEL_CONTAINER(
+    STANDARD_CONTAINER_MESSENGER(
             StandardTopLevelContainerMessengerProvider.create()
     ),
-    STANDARD_SERIES(
+    STANDARD_SERIES_MESSENGER(
             StandardSeriesMessengerProvider.create()
     )
 

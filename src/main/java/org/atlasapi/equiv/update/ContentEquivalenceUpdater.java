@@ -65,7 +65,23 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         for(EquivalenceResultUpdater<T> equivalenceResultUpdater : equivalenceResultUpdaters) {
             EquivalenceResult<T> result = equivalenceResultUpdater.provideEquivalenceResult(content, telescope);
             rawScores.addAll(result.rawScores());
-            combinedScores.putAll(result.combinedEquivalences().candidates());
+            result.combinedEquivalences().candidates().forEach(
+                    (key, value) -> combinedScores.merge( //this value likely won't be used - we'll keep the largest one just in case
+                            key,
+                            value,
+                            (score1, score2) -> {
+                                if (!score1.isRealScore()) {
+                                    return score2;
+                                } else if (!score2.isRealScore()) {
+                                    return score1;
+                                } else if (score2.asDouble() > score1.asDouble()) {
+                                    return score2;
+                                } else {
+                                    return score1;
+                                }
+                            }
+                    )
+            );
             strongEquivalences.putAll(result.strongEquivalences());
             desc.appendText(result.description().toString());
         }
@@ -73,7 +89,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         EquivalenceResult<T> result = new EquivalenceResult<>(
                 content,
                 rawScores,
-                DefaultScoredCandidates.fromMappedEquivs("ContentEquivalenceUpdater", combinedScores),
+                DefaultScoredCandidates.fromMappedEquivs(getClass().getSimpleName(), combinedScores),
                 strongEquivalences,
                 desc
         );

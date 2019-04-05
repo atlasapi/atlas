@@ -97,27 +97,6 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProv
                                 )
                         )
                 )
-//                .withHandler(
-//                        //standard
-//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-//                                LookupWritingEquivalenceHandler.create(
-//                                        dependencies.getLookupWriter()
-//                                ),
-//                                new ResultWritingEquivalenceHandler<>(
-//                                        dependencies.getEquivalenceResultStore()
-//                                ),
-//                                new EquivalenceSummaryWritingHandler<>(
-//                                        dependencies.getEquivSummaryStore()
-//                                )
-//                        ))
-//                )
-//                .withMessenger(
-//                        //standard
-//                        QueueingEquivalenceResultMessenger.create(
-//                                dependencies.getMessageSender(),
-//                                dependencies.getLookupEntryStore()
-//                        )
-//                )
                 .build();
     }
 }

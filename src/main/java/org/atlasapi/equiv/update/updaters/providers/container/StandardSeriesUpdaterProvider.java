@@ -76,25 +76,6 @@ public class StandardSeriesUpdaterProvider implements EquivalenceResultUpdaterPr
                                 PercentThresholdEquivalenceExtractor.moreThanPercent(90)
                         )
                 )
-//                .withHandler(
-//                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-//                                LookupWritingEquivalenceHandler.create(
-//                                        dependencies.getLookupWriter()
-//                                ),
-//                                new ResultWritingEquivalenceHandler<>(
-//                                        dependencies.getEquivalenceResultStore()
-//                                ),
-//                                new EquivalenceSummaryWritingHandler<>(
-//                                        dependencies.getEquivSummaryStore()
-//                                )
-//                        ))
-//                )
-//                .withMessenger(
-//                        QueueingEquivalenceResultMessenger.create(
-//                                dependencies.getMessageSender(),
-//                                dependencies.getLookupEntryStore()
-//                        )
-//                )
                 .build();
     }
 }

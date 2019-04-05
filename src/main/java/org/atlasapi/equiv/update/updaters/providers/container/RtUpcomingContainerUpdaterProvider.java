@@ -95,34 +95,6 @@ public class RtUpcomingContainerUpdaterProvider
                                         .atLeastNTimesGreater(1.5)
                         )
                 )
-//                .withHandler(
-//                        //standard
-//                        new DelegatingEquivalenceResultHandler<>(
-//                                ImmutableList.of(
-//                                        LookupWritingEquivalenceHandler.create(
-//                                                dependencies.getLookupWriter()
-//                                        ),
-//                                        new EpisodeMatchingEquivalenceHandler(
-//                                                dependencies.getContentResolver(),
-//                                                dependencies.getEquivSummaryStore(),
-//                                                dependencies.getLookupWriter(),
-//                                                targetPublishers
-//                                        ),
-//                                        new ResultWritingEquivalenceHandler<>(
-//                                                dependencies.getEquivalenceResultStore()
-//                                        ),
-//                                        new EquivalenceSummaryWritingHandler<>(
-//                                                dependencies.getEquivSummaryStore()
-//                                        )
-//                                ))
-//                )
-//                .withMessenger(
-//                        //standard
-//                        QueueingEquivalenceResultMessenger.create(
-//                                dependencies.getMessageSender(),
-//                                dependencies.getLookupEntryStore()
-//                        )
-//                )
                 .build();
     }
 }

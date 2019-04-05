@@ -8,7 +8,6 @@ import org.atlasapi.equiv.generators.EquivalenceGenerators;
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.combining.ScoreCombiner;
-import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ReadableDescription;
 import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
@@ -70,9 +69,11 @@ public class ContentEquivalenceResultUpdater<T extends Content> implements Equiv
     }
 
     @Override
-    public EquivalenceResult<T> provideEquivalenceResult(T content, OwlTelescopeReporter telescope) {
-        ReadableDescription desc = new DefaultDescription();
-
+    public EquivalenceResult<T> provideEquivalenceResult(
+            T content,
+            OwlTelescopeReporter telescope,
+            ReadableDescription desc
+    ) {
         EquivToTelescopeResults resultsForTelescope = EquivToTelescopeResults.create(
                 String.valueOf(content.getId()),
                 content.getPublisher().toString()

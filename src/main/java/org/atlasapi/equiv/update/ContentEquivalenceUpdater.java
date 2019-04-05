@@ -63,7 +63,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         Multimap<Publisher, ScoredCandidate<T>> strongEquivalences = LinkedListMultimap.create();
 
         for(EquivalenceResultUpdater<T> equivalenceResultUpdater : equivalenceResultUpdaters) {
-            EquivalenceResult<T> result = equivalenceResultUpdater.provideEquivalenceResult(content, telescope);
+            EquivalenceResult<T> result = equivalenceResultUpdater.provideEquivalenceResult(content, telescope, desc);
             rawScores.addAll(result.rawScores());
             result.combinedEquivalences().candidates().forEach(
                     (key, value) -> combinedScores.merge( //this value likely won't be used - we'll keep the largest one just in case
@@ -83,7 +83,6 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                     )
             );
             strongEquivalences.putAll(result.strongEquivalences());
-            desc.appendText(result.description().toString());
         }
 
         EquivalenceResult<T> result = new EquivalenceResult<>(

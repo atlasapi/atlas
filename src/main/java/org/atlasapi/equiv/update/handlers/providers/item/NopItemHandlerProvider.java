@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.handlers.providers.item;
 
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
-import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.handlers.NopEquivalenceResultHandler;
 import org.atlasapi.equiv.update.handlers.providers.EquivalenceResultHandlerProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
@@ -24,11 +24,6 @@ public class NopItemHandlerProvider implements EquivalenceResultHandlerProvider<
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return new EquivalenceResultHandler<Item>() {
-            @Override
-            public boolean handle(EquivalenceResult<Item> result) {
-                return false;
-            }
-        };
+        return new NopEquivalenceResultHandler<>();
     }
 }

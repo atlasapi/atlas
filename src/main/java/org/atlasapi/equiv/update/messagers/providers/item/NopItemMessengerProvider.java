@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.messagers.providers.item;
 
 import org.atlasapi.equiv.messengers.EquivalenceResultMessenger;
-import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.messengers.NopEquivalenceResultMessenger;
 import org.atlasapi.equiv.update.messagers.providers.EquivalenceResultMessengerProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
@@ -23,11 +23,6 @@ public class NopItemMessengerProvider implements EquivalenceResultMessengerProvi
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return new EquivalenceResultMessenger<Item>() {
-            @Override
-            public void sendMessage(EquivalenceResult<Item> result) {
-
-            }
-        };
+        return new NopEquivalenceResultMessenger<>();
     }
 }

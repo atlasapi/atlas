@@ -155,10 +155,12 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 updateProgress(progressFrom(current));
             }
         } catch (Exception e) {
+            lastAccessTime = logAndReset("e", lastAccessTime);
             log.error(getName(), e);
             onFinish(false, null);
             log.info("JAMIETRACE - {} exception thrown after {} seconds", cHash, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
         }
+        lastAccessTime = logAndReset("f", lastAccessTime);
         log.info("JAMIETRACE - {} finished in {} seconds", cHash, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
         onFinish(shouldContinue(), null);
     }

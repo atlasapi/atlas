@@ -120,6 +120,9 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
     private void runAsyncronously(Iterator<Content> contents) {
         Content current = null;
+        long startTime = System.currentTimeMillis();
+        long cHash = contents.hashCode();
+        log.info("JAMIETRACE - {} starting", cHash);
         try {
             while (shouldContinue() && contents.hasNext()) {
                 //Normally this saves progress to the db every 10 items. With multithreading
@@ -150,7 +153,9 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         } catch (Exception e) {
             log.error(getName(), e);
             onFinish(false, null);
+            log.info("JAMIETRACE - {} exception thrown after {} seconds", cHash, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
         }
+        log.info("JAMIETRACE - {} finished in {} seconds", cHash, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
         onFinish(shouldContinue(), null);
     }
 

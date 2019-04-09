@@ -126,7 +126,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         log.info("JAMIETRACE - {} starting", cHash);
         try {
             while (shouldContinue() && contents.hasNext()) {
-                lastAccessTime = logAndReset("a", lastAccessTime);
+                lastAccessTime = logAndReset(cHash, "a", lastAccessTime);
                 //Normally this saves progress to the db every 10 items. With multithreading
                 //we need to make sure that when progress is written, everything before that item
                 //has completed successfully. The strategy chosen was to batch tasks into
@@ -135,9 +135,9 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 CountDownLatch latch = new CountDownLatch(SAVE_EVERY_BLOCK_SIZE);
                 int submitted = 0;
                 while (shouldContinue() && contents.hasNext() && submitted < SAVE_EVERY_BLOCK_SIZE) {
-                    lastAccessTime = logAndReset("b", lastAccessTime);
+                    lastAccessTime = logAndReset(cHash,"b", lastAccessTime);
                     current = contents.next();
-                    lastAccessTime = logAndReset("c", lastAccessTime);
+                    lastAccessTime = logAndReset(cHash,"c", lastAccessTime);
                     //We don't check the result of handle, because that was always true. If you
                     //ever need to check that result you probably need to refactor the code
                     //using invokeAll instead of the countdown latch.
@@ -155,18 +155,18 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 updateProgress(progressFrom(current));
             }
         } catch (Exception e) {
-            lastAccessTime = logAndReset("e", lastAccessTime);
+            lastAccessTime = logAndReset(cHash,"e", lastAccessTime);
             log.error(getName(), e);
             onFinish(false, null);
             log.info("JAMIETRACE - {} exception thrown after {} seconds", cHash, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
         }
-        lastAccessTime = logAndReset("f", lastAccessTime);
+        lastAccessTime = logAndReset(cHash,"f", lastAccessTime);
         log.info("JAMIETRACE - {} finished in {} seconds", cHash, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
         onFinish(shouldContinue(), null);
     }
     
-    private long logAndReset(String id, long lastAccessTime) {
-        log.info("JAMIETRACE - {} Since last access: {}s", id, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - lastAccessTime));
+    private long logAndReset(long cHash, String id, long lastAccessTime) {
+        log.info("JAMIETRACE - {} {} Since last access: {}s", cHash, id, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - lastAccessTime));
         return System.currentTimeMillis();
     }
 

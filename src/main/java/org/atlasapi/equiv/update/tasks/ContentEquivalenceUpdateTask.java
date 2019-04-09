@@ -122,9 +122,11 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         Content current = null;
         long startTime = System.currentTimeMillis();
         long cHash = contents.hashCode();
+        long lastAccessTime = 0;
         log.info("JAMIETRACE - {} starting", cHash);
         try {
             while (shouldContinue() && contents.hasNext()) {
+                lastAccessTime = logAndReset("a", lastAccessTime);
                 //Normally this saves progress to the db every 10 items. With multithreading
                 //we need to make sure that when progress is written, everything before that item
                 //has completed successfully. The strategy chosen was to batch tasks into
@@ -133,7 +135,9 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 CountDownLatch latch = new CountDownLatch(SAVE_EVERY_BLOCK_SIZE);
                 int submitted = 0;
                 while (shouldContinue() && contents.hasNext() && submitted < SAVE_EVERY_BLOCK_SIZE) {
+                    lastAccessTime = logAndReset("b", lastAccessTime);
                     current = contents.next();
+                    lastAccessTime = logAndReset("c", lastAccessTime);
                     //We don't check the result of handle, because that was always true. If you
                     //ever need to check that result you probably need to refactor the code
                     //using invokeAll instead of the countdown latch.
@@ -157,6 +161,11 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         }
         log.info("JAMIETRACE - {} finished in {} seconds", cHash, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime));
         onFinish(shouldContinue(), null);
+    }
+    
+    private long logAndReset(String id, long lastAccessTime) {
+        log.info("JAMIETRACE - {} Since last access: {}s", id, TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - lastAccessTime));
+        return System.currentTimeMillis();
     }
 
     private void runSyncronously(Iterator<Content> contents) {
@@ -223,7 +232,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         } else {
             if (content != null) {
                 updateProgress(progressFrom(content));
-                log.info("Stopped: {}", schedulingKey, content);
+                log.info("Stopped: {}, {}", schedulingKey, content);
             }
         }
     }

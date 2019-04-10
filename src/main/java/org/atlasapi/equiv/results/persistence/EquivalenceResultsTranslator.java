@@ -74,6 +74,7 @@ public class EquivalenceResultsTranslator {
         TranslatorUtils.from(dbo, ID, target.getCanonicalUri());
         TranslatorUtils.from(dbo, AID, target.getId());
         TranslatorUtils.from(dbo, TITLE, target.getTitle());
+        TranslatorUtils.from(dbo, PUBLISHER, target.getPublisher().title());
 
         BasicDBList resultList = new BasicDBList();
 
@@ -144,6 +145,7 @@ public class EquivalenceResultsTranslator {
         String targetId = TranslatorUtils.toString(dbo, ID);
         Long targetAid = TranslatorUtils.toLong(dbo, AID);
         String targetTitle = TranslatorUtils.toString(dbo, TITLE);
+        String targetPublisher = TranslatorUtils.toString(dbo, PUBLISHER);
 
 
         List<StoredEquivalenceResultTable> resultTables = new ArrayList<>();
@@ -176,6 +178,7 @@ public class EquivalenceResultsTranslator {
                 targetId,
                 codec.encode(BigInteger.valueOf(targetAid)),
                 targetTitle,
+                targetPublisher,
                 resultTables,
                 TranslatorUtils.toDateTime(dbo, TIMESTAMP),
                 description

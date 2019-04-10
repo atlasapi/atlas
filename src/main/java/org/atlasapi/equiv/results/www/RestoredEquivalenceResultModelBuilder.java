@@ -25,6 +25,7 @@ public class RestoredEquivalenceResultModelBuilder {
         model.put("id", target.id());
         model.put("encodedId", UrlEncoded.encodeString(target.id()));
         model.put("aid", target.getAid());
+        model.put("publisher", target.getPublisher());
         model.put("title", target.title());
         model.put("time", target.resultTime().toDateTime(DateTimeZones.LONDON).toString("YYYY-MM-dd HH:mm:ss"));
         

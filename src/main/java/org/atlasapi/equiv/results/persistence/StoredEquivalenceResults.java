@@ -15,6 +15,7 @@ public class StoredEquivalenceResults implements Serializable {
     private final String id;
     private final String aid;
     private final String title;
+    private final String publisher;
     private final List<StoredEquivalenceResultTable> resultTables;
     private final DateTime resultTime;
     private final List<Object> desc;
@@ -23,6 +24,7 @@ public class StoredEquivalenceResults implements Serializable {
             String targetId,
             String aid,
             String targetTitle,
+            String publisher,
             Collection<StoredEquivalenceResultTable> resultTables,
             DateTime resultTime,
             List<Object> desc
@@ -30,6 +32,7 @@ public class StoredEquivalenceResults implements Serializable {
         this.id = targetId;
         this.aid = aid;
         this.title = targetTitle;
+        this.publisher = publisher;
         this.resultTables = ImmutableList.copyOf(resultTables);
         this.resultTime = resultTime;
         this.desc = desc;
@@ -44,6 +47,7 @@ public class StoredEquivalenceResults implements Serializable {
                 result.id(),
                 "",
                 result.title(),
+                "",
                 ImmutableList.of(new StoredEquivalenceResultTable(result.sourceResults(), result.combinedResults(), result.description())),
                 result.resultTime(),
                 ImmutableList.of()
@@ -60,6 +64,10 @@ public class StoredEquivalenceResults implements Serializable {
 
     public String title() {
         return title;
+    }
+
+    public String getPublisher() {
+        return publisher;
     }
 
     public List<StoredEquivalenceResultTable> getResultTables() {

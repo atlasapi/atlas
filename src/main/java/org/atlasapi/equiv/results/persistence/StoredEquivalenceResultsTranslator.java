@@ -81,6 +81,7 @@ public class StoredEquivalenceResultsTranslator {
                 results.subject().getCanonicalUri(),
                 codec.encode(BigInteger.valueOf(results.subject().getId())),
                 results.subject().getTitle(),
+                results.subject().getPublisher().title(),
                 resultTables,
                 new DateTime(DateTimeZones.UTC),
                 results.description().parts()

@@ -7,6 +7,7 @@ import com.google.common.collect.Table;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.persistence.translator.TranslatorUtils;
+import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -28,10 +29,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import static com.google.common.collect.ImmutableSet.copyOf;
-import static com.google.common.collect.Iterables.transform;
 import static com.metabroadcast.common.persistence.mongo.MongoConstants.ID;
-import static org.atlasapi.media.entity.Identified.TO_URI;
 
 public class EquivalenceResultsTranslator {
     private static final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
@@ -82,7 +80,16 @@ public class EquivalenceResultsTranslator {
         for(EquivalenceResult<T> result : results.getResults()) {
             DBObject resultDbo = new BasicDBObject();
 
-            TranslatorUtils.fromSet(resultDbo, copyOf(transform(transform(result.strongEquivalences().values(), ScoredCandidate.<T>toCandidate()), TO_URI)), STRONG);
+            TranslatorUtils.fromSet(
+                    resultDbo,
+                    result.strongEquivalences().values().stream()
+                            .map(ScoredCandidate::candidate)
+                            .map(T::getId)
+                            .map(BigInteger::valueOf)
+                            .map(codec::encode)
+                            .collect(MoreCollectors.toImmutableSet()),
+                    STRONG
+            );
 
             BasicDBList equivList = new BasicDBList();
 
@@ -150,13 +157,14 @@ public class EquivalenceResultsTranslator {
             for (DBObject equivDbo : TranslatorUtils.toDBObjectList(resultDbo, EQUIVS)) {
                 String id = TranslatorUtils.toString(equivDbo, ID);
                 Long aid = TranslatorUtils.toLong(equivDbo, AID);
+                String encodedAid = codec.encode(BigInteger.valueOf(aid));
                 Double combined = equivDbo.containsField(COMBINED) ? TranslatorUtils.toDouble(equivDbo, COMBINED) : Double.NaN;
                 totals.add(
-                        new CombinedEquivalenceScore(id, TranslatorUtils.toString(equivDbo, TITLE), combined, strongs.contains(id), publisherName(equivDbo))
+                        new CombinedEquivalenceScore(encodedAid, TranslatorUtils.toString(equivDbo, TITLE), combined, strongs.contains(encodedAid), publisherName(equivDbo))
                 );
                 for (DBObject scoreDbo : TranslatorUtils.toDBObjectList(equivDbo, SCORES)) {
                     Double score = TranslatorUtils.toDouble(scoreDbo, SCORE);
-                    results.put(codec.encode(BigInteger.valueOf(aid)), TranslatorUtils.toString(scoreDbo, SOURCE), score == null ? Double.NaN : score);
+                    results.put(encodedAid, TranslatorUtils.toString(scoreDbo, SOURCE), score == null ? Double.NaN : score);
                 }
             }
 

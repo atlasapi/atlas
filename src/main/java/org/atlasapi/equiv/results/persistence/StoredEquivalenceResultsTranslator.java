@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Table;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.DateTimeZones;
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.EquivalenceResults;
@@ -20,10 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import static com.google.common.collect.ImmutableSet.copyOf;
-import static com.google.common.collect.Iterables.transform;
-import static org.atlasapi.media.entity.Identified.TO_URI;
 
 public class StoredEquivalenceResultsTranslator {
     private static final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
@@ -54,19 +51,26 @@ public class StoredEquivalenceResultsTranslator {
             ImmutableList.Builder<CombinedEquivalenceScore> totals = ImmutableList.builder();
             Table<String, String, Double> resultTable = HashBasedTable.create();
 
-            Set<String> strongEquivalences = copyOf(transform(transform(result.strongEquivalences().values(), ScoredCandidate.<T>toCandidate()), TO_URI));
+            Set<String> strongEquivalences = result.strongEquivalences().values().stream()
+                    .map(ScoredCandidate::candidate)
+                    .map(T::getId)
+                    .map(BigInteger::valueOf)
+                    .map(codec::encode)
+                    .collect(MoreCollectors.toImmutableSet());
 
             for (Entry<T, Score> combinedEquiv : equivalenceResultOrdering.sortedCopy(result.combinedEquivalences().candidates().entrySet())) {
 
                 T content = combinedEquiv.getKey();
 
+                String aid = codec.encode(BigInteger.valueOf(content.getId()));
+
                 Double combinedScore = combinedEquiv.getValue().isRealScore() ? combinedEquiv.getValue().asDouble() : Double.NaN;
-                totals.add(new CombinedEquivalenceScore(content.getCanonicalUri(), content.getTitle(), combinedScore, strongEquivalences.contains(content.getCanonicalUri()), content.getPublisher().title()));
+                totals.add(new CombinedEquivalenceScore(aid, content.getTitle(), combinedScore, strongEquivalences.contains(aid), content.getPublisher().title()));
                 for (ScoredCandidates<T> source : result.rawScores()) {
 
                     Score sourceScore = source.candidates().get(content);
                     Double score = sourceScore != null && sourceScore.isRealScore() ? sourceScore.asDouble() : Double.NaN;
-                    resultTable.put(codec.encode(BigInteger.valueOf(content.getId())), source.source(), score);
+                    resultTable.put(aid, source.source(), score);
                 }
 
             }

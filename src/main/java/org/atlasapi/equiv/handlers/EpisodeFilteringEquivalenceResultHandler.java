@@ -1,12 +1,15 @@
 package org.atlasapi.equiv.handlers;
 
-import java.util.Collection;
-import java.util.Map.Entry;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.equiv.EquivalenceSummary;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
 import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.equiv.results.description.ReadableDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
@@ -14,10 +17,9 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
 
 /**
  * Filter candidate equivalent episodes based on their parents. 
@@ -59,14 +61,14 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
     }
 
     @Override
-    public boolean handle(EquivalenceResult<Item> result) {
-        ResultDescription desc = result.description()
+    public boolean handle(EquivalenceResults<Item> results) {
+        ResultDescription desc = results.description()
             .startStage("Episode parent filter");
         
-        ParentRef container = result.subject().getContainer();
+        ParentRef container = results.subject().getContainer();
         if (container == null) {
             desc.appendText("Item has no Container").finishStage();
-            return delegate.handle(result);
+            return delegate.handle(results);
         }
         
         String containerUri = container.getUri();
@@ -76,20 +78,28 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
         
         if (!possibleSummary.isPresent()) {
             desc.appendText("Item Container summary not found").finishStage();
-            throw new ContainerSummaryRequiredException(result.subject());
+            throw new ContainerSummaryRequiredException(results.subject());
         }
 
         EquivalenceSummary summary = possibleSummary.get();
         Multimap<Publisher,ContentRef> equivalents = summary.getEquivalents();
-        Multimap<Publisher, ScoredCandidate<Item>> strongEquivalences
-                = filter(result.strongEquivalences(), equivalents, desc);
-        
+        List<EquivalenceResult<Item>> filteredEquivalenceResults = results.getResults().stream()
+                .map(result ->
+                        new EquivalenceResult<>(
+                                result.subject(),
+                                result.rawScores(),
+                                result.combinedEquivalences(),
+                                filter(result.strongEquivalences(), equivalents, desc),
+                                (ReadableDescription) desc
+                        )
+                )
+                .collect(MoreCollectors.toImmutableList());
+
         desc.finishStage();
 
-        return delegate.handle(new EquivalenceResult<>(result.subject(),
-                result.rawScores(),
-                result.combinedEquivalences(),
-                strongEquivalences,
+        return delegate.handle(new EquivalenceResults<>(
+                results.subject(),
+                filteredEquivalenceResults,
                 (ReadableDescription) desc
         ));
     }

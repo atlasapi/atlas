@@ -1,30 +1,7 @@
 package org.atlasapi.equiv.handlers;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.atlasapi.equiv.ContentRef;
-import org.atlasapi.equiv.EquivalenceSummary;
-import org.atlasapi.equiv.EquivalenceSummaryStore;
-import org.atlasapi.equiv.results.EquivalenceResult;
-import org.atlasapi.equiv.results.description.ReadableDescription;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.media.entity.ChildRef;
-import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
-import org.atlasapi.persistence.lookup.LookupWriter;
-
-import com.metabroadcast.common.collect.OptionalMap;
-
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
@@ -33,13 +10,28 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import com.metabroadcast.common.collect.OptionalMap;
+import org.atlasapi.equiv.ContentRef;
+import org.atlasapi.equiv.EquivalenceSummary;
+import org.atlasapi.equiv.EquivalenceSummaryStore;
+import org.atlasapi.equiv.results.EquivalenceResults;
+import org.atlasapi.equiv.results.description.ReadableDescription;
+import org.atlasapi.media.entity.ChildRef;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.lookup.LookupWriter;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import static org.atlasapi.media.entity.ChildRef.TO_URI;
 
 public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandler<Container> {
-
-    private final static Function<ScoredCandidate<Container>, Container> TO_CONTAINER =
-            ScoredCandidate.<Container>toCandidate();
     
     private final EquivalenceSummaryStore summaryStore;
     private final ContentResolver contentResolver;
@@ -59,17 +51,15 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
     }
     
     @Override
-    public boolean handle(EquivalenceResult<Container> result) {
-        result.description().startStage("Episode sequence stitching");
+    public boolean handle(EquivalenceResults<Container> results) {
+        results.description().startStage("Episode sequence stitching");
         
-        Collection<Container> equivalentContainers = Collections2.transform(
-                result.strongEquivalences().values(),
-                TO_CONTAINER
-        );
-        Iterable<Episode> subjectsChildren = childrenOf(result.subject());
+        Set<Container> equivalentContainers = results.strongEquivalences();
+
+        Iterable<Episode> subjectsChildren = childrenOf(results.subject());
         Multimap<Container, Episode> equivalentsChildren = childrenOf(equivalentContainers);
         OptionalMap<String,EquivalenceSummary> childSummaries = summaryStore.summariesForUris(
-                Iterables.transform(result.subject().getChildRefs(), ChildRef.TO_URI)
+                Iterables.transform(results.subject().getChildRefs(), ChildRef.TO_URI)
         );
         Map<String, EquivalenceSummary> summaryMap = summaryMap(childSummaries);
         
@@ -77,10 +67,10 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
                 subjectsChildren,
                 summaryMap,
                 equivalentsChildren,
-                result.description()
+                results.description()
         );
         
-        result.description().finishStage();
+        results.description().finishStage();
 
         return handledWithStateChange;
     }

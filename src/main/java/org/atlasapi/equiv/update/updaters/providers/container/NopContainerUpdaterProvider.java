@@ -3,7 +3,7 @@ package org.atlasapi.equiv.update.updaters.providers.container;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import org.atlasapi.equiv.results.EquivalenceResult;
-import org.atlasapi.equiv.results.description.ReadableDescription;
+import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
@@ -34,8 +34,7 @@ public class NopContainerUpdaterProvider implements EquivalenceResultUpdaterProv
             @Override
             public EquivalenceResult<Container> provideEquivalenceResult(
                     Container subject,
-                    OwlTelescopeReporter telescope,
-                    ReadableDescription desc
+                    OwlTelescopeReporter telescope
             ) {
                 return new EquivalenceResult<>(
                         subject,
@@ -44,7 +43,7 @@ public class NopContainerUpdaterProvider implements EquivalenceResultUpdaterProv
                                 .<Container>fromSource(getClass().getSimpleName())
                                 .build(),
                         ImmutableMultimap.of(),
-                        desc
+                        new DefaultDescription()
                     );
             }
 

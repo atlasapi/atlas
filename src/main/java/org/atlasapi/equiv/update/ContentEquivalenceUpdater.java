@@ -1,16 +1,13 @@
 package org.atlasapi.equiv.update;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
 import org.atlasapi.equiv.messengers.EquivalenceResultMessenger;
 import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ReadableDescription;
-import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.ContentEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
@@ -19,9 +16,6 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,45 +52,18 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 content.getPublisher().toString()
         );
 
-        List<ScoredCandidates<T>> rawScores = new ArrayList<>();
-        Map<T, Score> combinedScores = new HashMap<>();
-        Multimap<Publisher, ScoredCandidate<T>> strongEquivalences = LinkedListMultimap.create();
+        ImmutableList.Builder<EquivalenceResult<T>> resultsBuilder = ImmutableList.builder();
 
         for(EquivalenceResultUpdater<T> equivalenceResultUpdater : equivalenceResultUpdaters) {
-            EquivalenceResult<T> result = equivalenceResultUpdater.provideEquivalenceResult(content, telescope, desc);
-            rawScores.addAll(result.rawScores());
-            result.combinedEquivalences().candidates().forEach(
-                    (key, value) -> combinedScores.merge( //this value likely won't be used - we'll keep the largest one just in case
-                            key,
-                            value,
-                            (score1, score2) -> {
-                                if (!score1.isRealScore()) {
-                                    return score2;
-                                } else if (!score2.isRealScore()) {
-                                    return score1;
-                                } else if (score2.asDouble() > score1.asDouble()) {
-                                    return score2;
-                                } else {
-                                    return score1;
-                                }
-                            }
-                    )
-            );
-            strongEquivalences.putAll(result.strongEquivalences());
+            resultsBuilder.add(equivalenceResultUpdater.provideEquivalenceResult(content, telescope));
         }
 
-        EquivalenceResult<T> result = new EquivalenceResult<>(
-                content,
-                rawScores,
-                DefaultScoredCandidates.fromMappedEquivs(getClass().getSimpleName(), combinedScores),
-                strongEquivalences,
-                desc
-        );
+        EquivalenceResults<T> results = new EquivalenceResults<>(content, resultsBuilder.build(), desc);
 
-        boolean handledWithStateChange = handler.handle(result);
+        boolean handledWithStateChange = handler.handle(results);
 
         if (handledWithStateChange) {
-            messenger.sendMessage(result);
+            messenger.sendMessage(results);
         }
 
         telescope.reportSuccessfulEvent(
@@ -106,7 +73,11 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 resultsForTelescope
         );
 
-        return !result.combinedEquivalences().candidates().isEmpty();
+        return !results.getResults()
+                .stream()
+                .map(EquivalenceResult::combinedEquivalences)
+                .map(ScoredCandidates::candidates)
+                .allMatch(Map::isEmpty);
     }
 
     @Override

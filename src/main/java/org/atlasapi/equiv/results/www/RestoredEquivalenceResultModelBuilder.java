@@ -1,25 +1,25 @@
 package org.atlasapi.equiv.results.www;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.atlasapi.equiv.results.persistence.CombinedEquivalenceScore;
-import org.atlasapi.equiv.results.persistence.StoredEquivalenceResult;
-import org.atlasapi.equiv.results.probe.EquivalenceResultProbe;
-import org.eclipse.jetty.util.UrlEncoded;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.model.SimpleModel;
 import com.metabroadcast.common.model.SimpleModelList;
 import com.metabroadcast.common.time.DateTimeZones;
+import org.atlasapi.equiv.results.persistence.CombinedEquivalenceScore;
+import org.atlasapi.equiv.results.persistence.StoredEquivalenceResultTable;
+import org.atlasapi.equiv.results.persistence.StoredEquivalenceResults;
+import org.atlasapi.equiv.results.probe.EquivalenceResultProbe;
+import org.eclipse.jetty.util.UrlEncoded;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class RestoredEquivalenceResultModelBuilder {
 
-    public SimpleModel build(StoredEquivalenceResult target, EquivalenceResultProbe probe) {
+    public SimpleModel build(StoredEquivalenceResults target, EquivalenceResultProbe probe) {
         SimpleModel model = new SimpleModel();
         
         model.put("id", target.id());
@@ -28,34 +28,49 @@ public class RestoredEquivalenceResultModelBuilder {
         model.put("time", target.resultTime().toDateTime(DateTimeZones.LONDON).toString("YYYY-MM-dd HH:mm:ss"));
         
         boolean hasStrong = false;
-        
-        Map<String, Double> totals = Maps.newHashMap();
-        totals.put("combined", null);
-        for (String source : target.sourceResults().columnKeySet()) {
-            totals.put(source, null);
+
+        SimpleModelList resultTables = new SimpleModelList();
+
+        for (StoredEquivalenceResultTable resultTable : target.getResultTables()) {
+            SimpleModel resultTableModel = new SimpleModel();
+            Map<String, Double> totals = Maps.newHashMap();
+            totals.put("combined", null);
+            for (String source : resultTable.sourceResults().columnKeySet()) {
+                totals.put(source, null);
+            }
+
+            SimpleModelList equivalences = new SimpleModelList();
+            for (CombinedEquivalenceScore equivalence : resultTable.combinedResults()) {
+                SimpleModel equivModel = new SimpleModel();
+
+                equivModel.put("id",equivalence.id());
+                equivModel.put("encodedId",UrlEncoded.encodeString(equivalence.id()));
+                equivModel.put("title", equivalence.title());
+                equivModel.put("strong", equivalence.strong());
+                equivModel.put("publisher", equivalence.publisher());
+                equivModel.put("scores", scores(equivalence.score(), resultTable.sourceResults().row(equivalence.id()), totals));
+
+                hasStrong |= equivalence.strong();
+
+                equivModel.put("expected", expected(equivalence, probe));
+
+                equivalences.add(equivModel);
+            }
+            resultTableModel.put("totals", model(totals));
+
+            resultTableModel.put("equivalences", equivalences);
+            resultTableModel.putStrings("sources", resultTable.sourceResults().columnKeySet());
+
+            if (resultTable.description() != null) {
+                model.put("desc", modelDesc(resultTable.description()));
+            }
+
+            resultTables.add(resultTableModel);
         }
-        
-        SimpleModelList equivalences = new SimpleModelList();
-        for (CombinedEquivalenceScore equivalence : target.combinedResults()) {
-            SimpleModel equivModel = new SimpleModel();
-            
-            equivModel.put("id",equivalence.id());
-            equivModel.put("encodedId",UrlEncoded.encodeString(equivalence.id()));
-            equivModel.put("title", equivalence.title());
-            equivModel.put("strong", equivalence.strong());
-            equivModel.put("publisher", equivalence.publisher());
-            equivModel.put("scores", scores(equivalence.score(), target.sourceResults().row(equivalence.id()), totals));
-            
-            hasStrong |= equivalence.strong();
-            
-            equivModel.put("expected", expected(equivalence, probe));
-            
-            equivalences.add(equivModel);
-        }
-        model.put("totals", model(totals));
+
+        model.put("resultTables", resultTables);
+
         model.put("hasStrong", hasStrong);
-        model.put("equivalences", equivalences);
-        model.putStrings("sources", target.sourceResults().columnKeySet());
 
         if (target.description() != null) {
             model.put("desc", modelDesc(target.description()));

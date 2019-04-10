@@ -1,9 +1,8 @@
 package org.atlasapi.equiv.handlers;
 
-import org.atlasapi.equiv.results.EquivalenceResult;
-import org.atlasapi.media.entity.Item;
-
 import com.google.common.collect.ImmutableList;
+import org.atlasapi.equiv.results.EquivalenceResults;
+import org.atlasapi.media.entity.Item;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +18,7 @@ public class DelegatingEquivalenceResultHandlerTest {
 
     @Mock private EquivalenceResultHandler<Item> firstDelegate;
     @Mock private EquivalenceResultHandler<Item> secondDelegate;
-    @Mock private EquivalenceResult<Item> result;
+    @Mock private EquivalenceResults<Item> result;
 
     private DelegatingEquivalenceResultHandler<Item> handler;
 

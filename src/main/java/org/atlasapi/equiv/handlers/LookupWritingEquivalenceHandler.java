@@ -1,15 +1,5 @@
 package org.atlasapi.equiv.handlers;
 
-import java.util.Set;
-
-import org.atlasapi.equiv.ContentRef;
-import org.atlasapi.equiv.results.EquivalenceResult;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.lookup.LookupWriter;
-import org.atlasapi.persistence.lookup.entry.LookupEntry;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
@@ -17,7 +7,15 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.atlasapi.equiv.ContentRef;
+import org.atlasapi.equiv.results.EquivalenceResults;
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.lookup.LookupWriter;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.joda.time.Duration;
+
+import java.util.Set;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -64,25 +62,21 @@ public class LookupWritingEquivalenceHandler<T extends Content>
     }
 
     @Override
-    public boolean handle(EquivalenceResult<T> result) {
-        Iterable<T> equivs = Iterables.transform(
-                result.strongEquivalences().values(),
-                ScoredCandidate.toCandidate()
-        );
+    public boolean handle(EquivalenceResults<T> results) {
         
         // abort writing if seens as equiv and not equiv to anything
-        if(seenAsEquiv.asMap().containsKey(result.subject().getCanonicalUri())
-                && Iterables.isEmpty(equivs)) {
+        if(seenAsEquiv.asMap().containsKey(results.subject().getCanonicalUri())
+                && results.strongEquivalences().isEmpty()) {
             return false;
         }
         
-        for (T equiv : equivs) {
+        for (T equiv : results.strongEquivalences()) {
             seenAsEquiv.getUnchecked(equiv.getCanonicalUri());
         }
 
         Optional<Set<LookupEntry>> writtenLookups = writer.writeLookup(
-                ContentRef.valueOf(result.subject()),
-                Iterables.transform(equivs, ContentRef.FROM_CONTENT),
+                ContentRef.valueOf(results.subject()),
+                Iterables.transform(results.strongEquivalences(), ContentRef.FROM_CONTENT),
                 publishers
         );
 

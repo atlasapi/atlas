@@ -1,14 +1,12 @@
 package org.atlasapi.equiv.handlers;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.Multimap;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.equiv.EquivalenceSummary;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
 import org.atlasapi.equiv.results.EquivalenceResult;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
@@ -17,11 +15,10 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 public class EquivalenceSummaryWritingHandler<T extends Content>
         implements EquivalenceResultHandler<T> {
@@ -33,16 +30,16 @@ public class EquivalenceSummaryWritingHandler<T extends Content>
     }
 
     @Override
-    public boolean handle(EquivalenceResult<T> result) {
-        equivSummaryStore.store(summaryOf(result));
+    public boolean handle(EquivalenceResults<T> results) {
+        equivSummaryStore.store(summaryOf(results));
         return false;
     }
 
-    private EquivalenceSummary summaryOf(EquivalenceResult<T> result) {
-        String canonicalUri = result.subject().getCanonicalUri();
-        String parent = parentOf(result.subject());
-        List<String> candidates = candidatesFrom(result.combinedEquivalences());
-        Multimap<Publisher, ContentRef> equivalents = equivalentsFrom(result.strongEquivalences());
+    private EquivalenceSummary summaryOf(EquivalenceResults<T> results) {
+        String canonicalUri = results.subject().getCanonicalUri();
+        String parent = parentOf(results.subject());
+        Set<String> candidates = candidatesFrom(results);
+        Multimap<Publisher, ContentRef> equivalents = equivalentsFrom(results);
         return new EquivalenceSummary(canonicalUri,parent,candidates,equivalents);
     }
 
@@ -62,20 +59,27 @@ public class EquivalenceSummaryWritingHandler<T extends Content>
         return null;
     }
 
-    private List<String> candidatesFrom(ScoredCandidates<T> combinedEquivalences) {
-        return ImmutableList.copyOf(Iterables.transform(
-                combinedEquivalences.candidates().keySet(),
-                Identified.TO_URI
-        ));
+    private Set<String> candidatesFrom(EquivalenceResults<T> results) {
+        return results.getResults().stream()
+                .map(EquivalenceResult::combinedEquivalences)
+                .map(ScoredCandidates::candidates)
+                .map(Map::keySet)
+                .flatMap(Set::stream)
+                .map(Identified::getCanonicalUri)
+                .collect(MoreCollectors.toImmutableSet());
     }
 
     private Multimap<Publisher, ContentRef> equivalentsFrom(
-            Multimap<Publisher, ScoredCandidate<T>> strongEquivalences
+            EquivalenceResults<T> results
     ) {
-        return ImmutableMultimap.copyOf(Multimaps.transformValues(
-                strongEquivalences,
-                input -> contentRefFrom(input.candidate())
-        ));
+        return results.getResults().stream()
+                .map(EquivalenceResult::strongEquivalences)
+                .map(Multimap::entries)
+                .flatMap(Collection::stream)
+                .collect(MoreCollectors.toImmutableSetMultiMap(
+                        Map.Entry::getKey,
+                        entry -> contentRefFrom(entry.getValue().candidate())
+                ));
     }
     
     private ContentRef contentRefFrom(T candidate) {

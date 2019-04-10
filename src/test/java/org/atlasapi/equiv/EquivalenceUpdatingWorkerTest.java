@@ -154,7 +154,7 @@ public class EquivalenceUpdatingWorkerTest {
         when(resolver.findByCanonicalUris(ImmutableSet.of(eid)))
             .thenReturn(ResolvedContent.builder().put(eid, item).build());
         when(resultStore.forId(eid))
-                .thenReturn(new StoredEquivalenceResults(eid, "title",
+                .thenReturn(new StoredEquivalenceResults(eid, eid, "title",
                         ImmutableList.of(
                                 new StoredEquivalenceResultTable(
 

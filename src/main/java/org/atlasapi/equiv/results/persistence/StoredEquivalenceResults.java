@@ -13,6 +13,7 @@ public class StoredEquivalenceResults implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String id;
+    private final String aid;
     private final String title;
     private final List<StoredEquivalenceResultTable> resultTables;
     private final DateTime resultTime;
@@ -20,12 +21,14 @@ public class StoredEquivalenceResults implements Serializable {
 
     public StoredEquivalenceResults(
             String targetId,
+            String aid,
             String targetTitle,
             Collection<StoredEquivalenceResultTable> resultTables,
             DateTime resultTime,
             List<Object> desc
     ) {
         this.id = targetId;
+        this.aid = aid;
         this.title = targetTitle;
         this.resultTables = ImmutableList.copyOf(resultTables);
         this.resultTime = resultTime;
@@ -39,6 +42,7 @@ public class StoredEquivalenceResults implements Serializable {
     public StoredEquivalenceResults(StoredEquivalenceResult result) {
         this(
                 result.id(),
+                "",
                 result.title(),
                 ImmutableList.of(new StoredEquivalenceResultTable(result.sourceResults(), result.combinedResults(), result.description())),
                 result.resultTime(),
@@ -48,6 +52,10 @@ public class StoredEquivalenceResults implements Serializable {
 
     public String id() {
         return id;
+    }
+
+    public String getAid() {
+        return aid;
     }
 
     public String title() {

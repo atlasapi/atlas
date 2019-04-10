@@ -4,6 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Table;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.time.DateTimeZones;
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.EquivalenceResults;
@@ -13,6 +14,7 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Content;
 import org.joda.time.DateTime;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -24,6 +26,7 @@ import static com.google.common.collect.Iterables.transform;
 import static org.atlasapi.media.entity.Identified.TO_URI;
 
 public class StoredEquivalenceResultsTranslator {
+    private static final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     public <T extends Content> StoredEquivalenceResults toStoredEquivalenceResults(EquivalenceResults<T> results) {
 
@@ -63,7 +66,7 @@ public class StoredEquivalenceResultsTranslator {
 
                     Score sourceScore = source.candidates().get(content);
                     Double score = sourceScore != null && sourceScore.isRealScore() ? sourceScore.asDouble() : Double.NaN;
-                    resultTable.put(content.getCanonicalUri(), source.source(), score);
+                    resultTable.put(codec.encode(BigInteger.valueOf(content.getId())), source.source(), score);
                 }
 
             }
@@ -72,6 +75,7 @@ public class StoredEquivalenceResultsTranslator {
         
         return new StoredEquivalenceResults(
                 results.subject().getCanonicalUri(),
+                codec.encode(BigInteger.valueOf(results.subject().getId())),
                 results.subject().getTitle(),
                 resultTables,
                 new DateTime(DateTimeZones.UTC),

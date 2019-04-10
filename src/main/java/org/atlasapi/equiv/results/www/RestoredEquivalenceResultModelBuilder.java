@@ -24,10 +24,13 @@ public class RestoredEquivalenceResultModelBuilder {
         
         model.put("id", target.id());
         model.put("encodedId", UrlEncoded.encodeString(target.id()));
+        model.put("aid", target.getAid());
         model.put("title", target.title());
         model.put("time", target.resultTime().toDateTime(DateTimeZones.LONDON).toString("YYYY-MM-dd HH:mm:ss"));
         
         boolean hasStrong = false;
+
+        int equivalencesCount = 0;
 
         SimpleModelList resultTables = new SimpleModelList();
 
@@ -51,6 +54,7 @@ public class RestoredEquivalenceResultModelBuilder {
                 equivModel.put("scores", scores(equivalence.score(), resultTable.sourceResults().row(equivalence.id()), totals));
 
                 hasStrong |= equivalence.strong();
+                equivalencesCount++;
 
                 equivModel.put("expected", expected(equivalence, probe));
 
@@ -62,13 +66,15 @@ public class RestoredEquivalenceResultModelBuilder {
             resultTableModel.putStrings("sources", resultTable.sourceResults().columnKeySet());
 
             if (resultTable.description() != null) {
-                model.put("desc", modelDesc(resultTable.description()));
+                resultTableModel.put("desc", modelDesc(resultTable.description()));
             }
 
             resultTables.add(resultTableModel);
         }
 
         model.put("resultTables", resultTables);
+
+        model.put("equivalences", equivalencesCount);
 
         model.put("hasStrong", hasStrong);
 

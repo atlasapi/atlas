@@ -24,8 +24,8 @@
 {template .tableResult}
 <tr>
     <td>{$result.time}</td>
-    <td title="{$result.id}"><a href="/system/equivalence/result?uri={$result.encodedId}">{$result.title}</a></td>
-    <td>{length($result.equivalences)}</td>
+    <td title="{$result.id}"><a href="/system/equivalence/result?id={$result.encodedId}">{$result.title}</a></td>
+    <td>"{$result.equivalences}"</td>
     <td>{if $result.hasStrong}✔{else}✘{/if}</td>
 </tr>
 {/template}
@@ -34,7 +34,7 @@
  * @param result
  */
 {template .result}
-<h2>{$result.title} - <span class="target-uri">{$result.id}</span> <a style="margin-left:5px;vertical-align:middle" href="{$result.id}"><img src="/static/images/external.png"></a></h2>
+<h2>{$result.title} - <span class="target-uri">{$result.id}</span> <a style="margin-left:5px;vertical-align:middle" href="{$result.aid}"><img src="/static/images/external.png"></a></h2>
 {if length($result.resultTables) <= 0}
 <p>No suggested equivalences</p>
 {/if}
@@ -57,7 +57,7 @@
     {foreach $equivalence in $resultTable.equivalences}
       <tr id="{$equivalence.id}"{if $equivalence.strong} class="strong"{/if}>
         <td>{if $equivalence.strong}✔{else}✘{/if}</td>
-        <td><a href="?uri={$equivalence.encodedId}">{$equivalence.title} ({$equivalence.publisher})</a></td>
+        <td><a href="?id={$equivalence.encodedId}">{$equivalence.title} ({$equivalence.publisher})</a></td>
         <td><a href="{$equivalence.id}"><img src="/static/images/external.png"></a></td>
         {if $equivalence.scores['combined'] == false}
             <td>N/A</td>

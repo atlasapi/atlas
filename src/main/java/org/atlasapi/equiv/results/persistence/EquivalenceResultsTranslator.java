@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Table;
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.persistence.translator.TranslatorUtils;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.mongodb.BasicDBList;
@@ -20,6 +21,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -32,6 +34,7 @@ import static com.metabroadcast.common.persistence.mongo.MongoConstants.ID;
 import static org.atlasapi.media.entity.Identified.TO_URI;
 
 public class EquivalenceResultsTranslator {
+    private static final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private static final String TIMESTAMP = "timestamp";
     private static final String TITLE = "title";
@@ -44,7 +47,9 @@ public class EquivalenceResultsTranslator {
     private static final String SCORES = "scores";
     private static final String SOURCE = "source";
     private static final String SCORE = "score";
-    public static final String DESC = "desc";
+    private static final String DESC = "desc";
+
+    private static final String AID = "aid";
 
 
     public <T extends Content> DBObject toDBObject(EquivalenceResults<T> results) {
@@ -69,6 +74,7 @@ public class EquivalenceResultsTranslator {
 
         T target = results.subject();
         TranslatorUtils.from(dbo, ID, target.getCanonicalUri());
+        TranslatorUtils.from(dbo, AID, target.getId());
         TranslatorUtils.from(dbo, TITLE, target.getTitle());
 
         BasicDBList resultList = new BasicDBList();
@@ -86,6 +92,7 @@ public class EquivalenceResultsTranslator {
                 T content = combinedEquiv.getKey();
 
                 TranslatorUtils.from(equivDbo, ID, content.getCanonicalUri());
+                TranslatorUtils.from(equivDbo, AID, content.getId());
                 TranslatorUtils.from(equivDbo, TITLE, content.getTitle());
                 TranslatorUtils.from(equivDbo, PUBLISHER, content.getPublisher().key());
                 TranslatorUtils.from(equivDbo, COMBINED, combinedEquiv.getValue().isRealScore() ? combinedEquiv.getValue().asDouble() : null);
@@ -128,6 +135,7 @@ public class EquivalenceResultsTranslator {
         }
         
         String targetId = TranslatorUtils.toString(dbo, ID);
+        Long targetAid = TranslatorUtils.toLong(dbo, AID);
         String targetTitle = TranslatorUtils.toString(dbo, TITLE);
 
 
@@ -141,13 +149,14 @@ public class EquivalenceResultsTranslator {
 
             for (DBObject equivDbo : TranslatorUtils.toDBObjectList(resultDbo, EQUIVS)) {
                 String id = TranslatorUtils.toString(equivDbo, ID);
+                Long aid = TranslatorUtils.toLong(equivDbo, AID);
                 Double combined = equivDbo.containsField(COMBINED) ? TranslatorUtils.toDouble(equivDbo, COMBINED) : Double.NaN;
                 totals.add(
                         new CombinedEquivalenceScore(id, TranslatorUtils.toString(equivDbo, TITLE), combined, strongs.contains(id), publisherName(equivDbo))
                 );
                 for (DBObject scoreDbo : TranslatorUtils.toDBObjectList(equivDbo, SCORES)) {
                     Double score = TranslatorUtils.toDouble(scoreDbo, SCORE);
-                    results.put(id, TranslatorUtils.toString(scoreDbo, SOURCE), score == null ? Double.NaN : score);
+                    results.put(codec.encode(BigInteger.valueOf(aid)), TranslatorUtils.toString(scoreDbo, SOURCE), score == null ? Double.NaN : score);
                 }
             }
 
@@ -157,6 +166,7 @@ public class EquivalenceResultsTranslator {
         @SuppressWarnings("unchecked") List<Object> description = (List<Object>)dbo.get(DESC);
         return new StoredEquivalenceResults(
                 targetId,
+                codec.encode(BigInteger.valueOf(targetAid)),
                 targetTitle,
                 resultTables,
                 TranslatorUtils.toDateTime(dbo, TIMESTAMP),

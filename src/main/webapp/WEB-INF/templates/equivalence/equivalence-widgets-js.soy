@@ -42,7 +42,6 @@
     {if length($result.resultTables) > 1}
         <p class="resultTableLinks">
             <a name="{index($resultTable) + 1}"></a>
-            <br>
             {for $i in range(length($result.resultTables))}
               <a href="#{$i + 1}">{$i + 1}</a>
               {if ($i + 1) < length($result.resultTables)}<span> | </span>{/if}

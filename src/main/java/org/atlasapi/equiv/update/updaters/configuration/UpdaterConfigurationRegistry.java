@@ -1069,10 +1069,10 @@ public class UpdaterConfigurationRegistry {
                                         C4_PMLSD,
                                         C5_DATA_SUBMISSION,
                                         BARB_MASTER,
-                                        BARB_TRANSMISSIONS,
                                         BARB_X_MASTER,
                                         BARB_CENSUS
-                                )
+                                ),
+                                TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS) //TODO: remove after testing
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

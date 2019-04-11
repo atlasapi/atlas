@@ -65,6 +65,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111";
     private static final String C4_BCID_PREFIX = "C4:";
     private static final String C4_BG_NAMESPACE = "gb:barb:broadcastGroup:3:bcid";
+    private static final String BARB_CONTENT_ID_NAMESPACE = "gb:barb:contentid";
 
     public BarbAliasEquivalenceGeneratorAndScorer(
             MongoLookupEntryStore lookupEntryStore,
@@ -160,6 +161,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private boolean acceptedAlias(Alias alias) {
         if(alias.getNamespace().endsWith(BCID_NAMESPACE_SUFFIX)
                 || alias.getNamespace().endsWith(PARENT_VERSION_BCID_NAMESPACE_SUFFIX)
+                || alias.getNamespace().equalsIgnoreCase(BARB_CONTENT_ID_NAMESPACE)
         ) {
             return true;
         }

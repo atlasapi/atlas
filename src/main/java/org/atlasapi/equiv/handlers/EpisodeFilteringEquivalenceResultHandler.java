@@ -90,7 +90,7 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
                                 result.rawScores(),
                                 result.combinedEquivalences(),
                                 filter(result.strongEquivalences(), equivalents, desc),
-                                (ReadableDescription) desc
+                                result.description()
                         )
                 )
                 .collect(MoreCollectors.toImmutableList());

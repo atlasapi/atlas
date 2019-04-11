@@ -39,6 +39,15 @@
 <p>No suggested equivalences</p>
 {/if}
 {foreach $resultTable in $result.resultTables}
+    {if length($result.resultTables) > 1}
+        <p class="resultTableLinks">
+            {for $i in range(length($result.resultTables))}
+              <a href="#{$i + 1}">{$i + 1}</a>
+            {/for}
+            <br>
+            <a name="index($resultTable) + 1"></a>
+        </p>
+    {/if}
     {if length($resultTable.equivalences) > 0}
     <table>
         <tr>

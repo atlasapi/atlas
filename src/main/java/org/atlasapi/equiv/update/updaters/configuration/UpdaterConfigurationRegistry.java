@@ -1162,7 +1162,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BBC_NITRO)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_ITEM, ImmutableSet.of(PA, UKTV, BARB_MASTER),
+                                STANDARD_ITEM, ImmutableSet.of(PA, UKTV, BARB_TRANSMISSIONS, BARB_MASTER), //TODO: revert changes before merging
                                 TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,

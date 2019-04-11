@@ -1069,6 +1069,7 @@ public class UpdaterConfigurationRegistry {
                                         C4_PMLSD,
                                         C5_DATA_SUBMISSION,
                                         BARB_MASTER,
+                                        BARB_TRANSMISSIONS,
                                         BARB_X_MASTER,
                                         BARB_CENSUS
                                 ),

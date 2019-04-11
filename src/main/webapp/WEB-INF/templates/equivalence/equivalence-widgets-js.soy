@@ -42,10 +42,10 @@
     {if length($result.resultTables) > 1}
         <p class="resultTableLinks">
             {for $i in range(length($result.resultTables))}
-              <a href="#{$i + 1}">{$i + 1}</a>
+              <span> | </span><a href="#{$i + 1}">{$i + 1}</a>
             {/for}
             <br>
-            <a name="index($resultTable) + 1"></a>
+            <a name="{index($resultTable) + 1}"></a>
         </p>
     {/if}
     {if length($resultTable.equivalences) > 0}

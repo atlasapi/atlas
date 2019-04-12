@@ -10,6 +10,7 @@ import junit.framework.TestCase;
 import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.EquivalenceResults;
+import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
@@ -194,22 +195,60 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
 
     }
 
-    private EquivalenceResults<Item> equivResultsFor(Item content, Iterable<Item> equivalents) {
+    @Test
+    public void
+    testWritesAllLookupsFromMultipleEquivalenceResults() {
+        when(lookupWriter.writeLookup(
+                Matchers.any(ContentRef.class),
+                anyCollectionOf(ContentRef.class),
+                anySetOf(Publisher.class)
+        ))
+                .thenReturn(Optional.of(ImmutableSet.of()));
+
+        EquivalenceResult<Item> equivResult1 = equivResultFor(
+                content,
+                ImmutableList.of(equiv1)
+        );
+
+        EquivalenceResult<Item> equivResult2 = equivResultFor(
+                content,
+                ImmutableList.<Item>of(equiv2)
+        );
+
+        EquivalenceResults<Item> equivResults = new EquivalenceResults<>(
+                content,
+                ImmutableList.of(equivResult1, equivResult2),
+                new DefaultDescription()
+        );
+
+        updater.handle(equivResults);
+
+        verify(lookupWriter).writeLookup(
+                argThat(is(contentRef)),
+                argThat(hasItems(equiv1Ref, equiv2Ref)),
+                argThat(is(publishers))
+        );
+    }
+
+    private EquivalenceResult<Item> equivResultFor(Item content, Iterable<Item> equivalents) {
         Multimap<Publisher, ScoredCandidate<Item>> strong = Multimaps.transformValues(Multimaps
                 .index(
-                equivalents,
+                        equivalents,
                         Described::getPublisher
-        ), RANDOM_SCORE);
-        EquivalenceResult<Item> result = new EquivalenceResult<Item>(
+                ), RANDOM_SCORE);
+        return new EquivalenceResult<>(
                 content,
                 ImmutableList.<ScoredCandidates<Item>>of(),
                 null,
                 strong,
                 null
         );
+    }
+
+    private EquivalenceResults<Item> equivResultsFor(Item content, Iterable<Item> equivalents) {
         return new EquivalenceResults<>(
                 content,
-                ImmutableList.of(result),
+                ImmutableList.of(equivResultFor(content, equivalents)),
                 null
         );
     }

@@ -65,18 +65,20 @@ public class LookupWritingEquivalenceHandler<T extends Content>
     public boolean handle(EquivalenceResults<T> results) {
         
         // abort writing if seens as equiv and not equiv to anything
+        Set<T> strongEquivalences = results.strongEquivalences();
+
         if(seenAsEquiv.asMap().containsKey(results.subject().getCanonicalUri())
-                && results.strongEquivalences().isEmpty()) {
+                && strongEquivalences.isEmpty()) {
             return false;
         }
         
-        for (T equiv : results.strongEquivalences()) {
+        for (T equiv : strongEquivalences) {
             seenAsEquiv.getUnchecked(equiv.getCanonicalUri());
         }
 
         Optional<Set<LookupEntry>> writtenLookups = writer.writeLookup(
                 ContentRef.valueOf(results.subject()),
-                Iterables.transform(results.strongEquivalences(), ContentRef.FROM_CONTENT),
+                Iterables.transform(strongEquivalences, ContentRef.FROM_CONTENT),
                 publishers
         );
 

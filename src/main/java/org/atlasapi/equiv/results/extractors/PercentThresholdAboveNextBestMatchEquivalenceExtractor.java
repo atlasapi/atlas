@@ -97,6 +97,8 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractor<T>
         
         desc.appendText("%s not extracted. Strongest score of %s doesn't beat next best from %s of %s.", strongest.candidate(), strongest.score(), 
                     nextBest.candidate(), nextBest.score());
+
+        desc.finishStage();
         
         return ImmutableSet.of();
     }

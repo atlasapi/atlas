@@ -1,10 +1,10 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.Set;
-
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+
+import java.util.Set;
 
 public interface EquivalenceScorer<T> {
 
@@ -23,7 +23,7 @@ public interface EquivalenceScorer<T> {
             T subject,
             Set<? extends T> candidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     );
     
 }

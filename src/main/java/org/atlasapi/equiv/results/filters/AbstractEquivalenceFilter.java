@@ -1,14 +1,12 @@
 package org.atlasapi.equiv.results.filters;
 
-import java.util.List;
-
-import org.atlasapi.equiv.results.description.ResultDescription;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Equiv;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import org.atlasapi.equiv.results.description.ResultDescription;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+
+import java.util.List;
 
 public abstract class AbstractEquivalenceFilter<T> implements EquivalenceFilter<T> {
 
@@ -17,12 +15,12 @@ public abstract class AbstractEquivalenceFilter<T> implements EquivalenceFilter<
             Iterable<ScoredCandidate<T>> candidates,
             final T subject,
             final ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         desc.startStage(toString());
         Builder<ScoredCandidate<T>> results = ImmutableList.builder();
         for (ScoredCandidate<T> candidate : candidates) {
-            if (doFilter(candidate, subject, desc, equivToTelescopeResults)) {
+            if (doFilter(candidate, subject, desc, equivToTelescopeResult)) {
                 results.add(candidate);
             }
         }
@@ -34,7 +32,7 @@ public abstract class AbstractEquivalenceFilter<T> implements EquivalenceFilter<
             ScoredCandidate<T> input,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     );
 
     @Override

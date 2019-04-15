@@ -1,29 +1,25 @@
 package org.atlasapi.equiv.results.extractors;
 
+import com.google.common.collect.ImmutableList;
+import org.atlasapi.equiv.results.description.DefaultDescription;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
+import org.junit.Test;
+
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.atlasapi.equiv.results.description.DefaultDescription;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-
-import com.google.common.collect.ImmutableSet;
-import org.junit.Test;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-
 
 public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
 
-    private final EquivToTelescopeResults equivToTelescopeResults =
-            EquivToTelescopeResults.create("id", "publisher");
+    private final EquivToTelescopeResult equivToTelescopeResult =
+            EquivToTelescopeResult.create("id", "publisher");
 
     @Test
     public void testExtractsWhenStrongBeatsNextBestByThreshold() {
@@ -35,7 +31,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
                 strong,
                 ScoredCandidate.valueOf(new Item("test2","cur2",Publisher.BBC), Score.valueOf(0.5))
         ), null, new DefaultDescription(),
-                equivToTelescopeResults);
+                equivToTelescopeResult);
         ScoredCandidate<Item> extract = extractSet.iterator().next();
 
         assertTrue("Strong extracted", !extractSet.isEmpty());
@@ -58,7 +54,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
                 ),
                 null,
                 new DefaultDescription(),
-                equivToTelescopeResults);
+                equivToTelescopeResult);
         assertFalse("Strong should not be extracted", !extractSet.isEmpty());
     } 
     
@@ -72,7 +68,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
                 ImmutableList.<ScoredCandidate<Item>>of(strong),
                 null,
                 new DefaultDescription(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
 
         ScoredCandidate<Item> extract = extractSet.iterator().next();

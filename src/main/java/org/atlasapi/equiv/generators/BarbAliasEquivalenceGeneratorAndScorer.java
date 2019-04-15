@@ -11,7 +11,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
@@ -84,13 +84,13 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     public ScoredCandidates<T> generate(
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         DefaultScoredCandidates.Builder<T> equivalents =
                 DefaultScoredCandidates.fromSource("Barb Alias");
 
         if (!(subject.getAliases().isEmpty())) {
-            equivalents = findByCommonAlias(subject, equivalents, desc, equivToTelescopeResults);
+            equivalents = findByCommonAlias(subject, equivalents, desc, equivToTelescopeResult);
         }
 
         return equivalents.build();
@@ -101,7 +101,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
             T subject,
             DefaultScoredCandidates.Builder<T> equivalents,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
 
         desc.startStage("Resolving Barb Aliases:");
@@ -152,7 +152,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
                     }
                 });
 
-        equivToTelescopeResults.addGeneratorResult(generatorComponent);
+        equivToTelescopeResult.addGeneratorResult(generatorComponent);
 
         return equivalents;
     }

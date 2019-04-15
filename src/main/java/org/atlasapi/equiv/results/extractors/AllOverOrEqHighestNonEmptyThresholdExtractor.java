@@ -6,7 +6,7 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 
 import java.util.Collection;
@@ -35,7 +35,7 @@ public class AllOverOrEqHighestNonEmptyThresholdExtractor<T extends Content> imp
             List<ScoredCandidate<T>> candidates,
             T target,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName("All over >= " + thresholds.toString());
@@ -65,7 +65,7 @@ public class AllOverOrEqHighestNonEmptyThresholdExtractor<T extends Content> imp
             }
         }
 
-        equivToTelescopeResults.addExtractorResult(extractorComponent);
+        equivToTelescopeResult.addExtractorResult(extractorComponent);
         return allowedCandidatesBuilder.build();
     }
 

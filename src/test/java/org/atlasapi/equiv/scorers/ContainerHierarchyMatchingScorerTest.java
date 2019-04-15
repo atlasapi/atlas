@@ -1,6 +1,34 @@
 package org.atlasapi.equiv.scorers;
 
-import static org.hamcrest.Matchers.equalTo;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.time.DateTimeZones;
+import org.atlasapi.equiv.results.description.DefaultDescription;
+import org.atlasapi.equiv.results.description.ResultDescription;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.ChildRef;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.EntityType;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.SeriesRef;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
+import org.joda.time.DateTime;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.List;
+import java.util.Map;
+
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -9,40 +37,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-import java.util.Map;
-
-import org.atlasapi.equiv.results.description.DefaultDescription;
-import org.atlasapi.equiv.results.description.ResultDescription;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.ChildRef;
-import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.EntityType;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Identified;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.SeriesRef;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
-import org.atlasapi.persistence.content.ResolvedContent.ResolvedContentBuilder;
-import org.hamcrest.core.IsNull;
-import org.joda.time.DateTime;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.time.DateTimeZones;
-
 @RunWith(MockitoJUnitRunner.class)
 public class ContainerHierarchyMatchingScorerTest {
 
@@ -50,8 +44,8 @@ public class ContainerHierarchyMatchingScorerTest {
     private SubscriptionCatchupBrandDetector subscriptionCatchupBrandDetector = mock(SubscriptionCatchupBrandDetector.class);
     
     private final ContainerHierarchyMatchingScorer scorer = new ContainerHierarchyMatchingScorer(contentResolver, Score.negativeOne(), subscriptionCatchupBrandDetector);
-    private final EquivToTelescopeResults equivToTelescopeResults =
-            EquivToTelescopeResults.create("id", "publisher");
+    private final EquivToTelescopeResult equivToTelescopeResult =
+            EquivToTelescopeResult.create("id", "publisher");
 
     @Test
     @SuppressWarnings("unchecked")
@@ -61,7 +55,7 @@ public class ContainerHierarchyMatchingScorerTest {
                 brandWithChildren(5),
                 ImmutableSet.<Container>of(brandWithChildren(7)),
                 desc(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
@@ -76,7 +70,7 @@ public class ContainerHierarchyMatchingScorerTest {
                 brandWithChildren(7),
                 ImmutableSet.<Container>of(brandWithChildren(7)),
                 desc(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.ONE));
@@ -99,7 +93,7 @@ public class ContainerHierarchyMatchingScorerTest {
                 subject,
                 ImmutableSet.<Container>of(candidate),
                 desc(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
@@ -120,7 +114,7 @@ public class ContainerHierarchyMatchingScorerTest {
                 subject,
                 ImmutableSet.<Container>of(candidate),
                 desc(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.ONE));
@@ -157,7 +151,7 @@ public class ContainerHierarchyMatchingScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 desc(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.negativeOne()));
@@ -176,7 +170,7 @@ public class ContainerHierarchyMatchingScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 desc(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
@@ -195,7 +189,7 @@ public class ContainerHierarchyMatchingScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 desc(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
@@ -214,7 +208,7 @@ public class ContainerHierarchyMatchingScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 desc(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));

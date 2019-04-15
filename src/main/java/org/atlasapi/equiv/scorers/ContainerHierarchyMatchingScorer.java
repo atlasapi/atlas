@@ -1,22 +1,5 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.List;
-import java.util.Set;
-
-import org.atlasapi.equiv.results.description.ResultDescription;
-import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
-import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Identified;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.SeriesRef;
-import org.atlasapi.persistence.content.ContentResolver;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -24,6 +7,22 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.PeekingIterator;
+import org.atlasapi.equiv.results.description.ResultDescription;
+import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
+import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.SeriesRef;
+import org.atlasapi.persistence.content.ContentResolver;
+
+import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -49,7 +48,7 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
             Container subj,
             Set<? extends Container> candidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Container Hierarchy Matching Scorer");
@@ -117,7 +116,7 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
             }
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
         
         desc.finishStage();
         return results.build();

@@ -1,17 +1,16 @@
 package org.atlasapi.equiv.results.filters;
 
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import java.util.Map;
+import java.util.Set;
 
 public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilter<T> {
 
@@ -25,7 +24,7 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
             ScoredCandidate<T> candidate,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
         filterComponent.setComponentName("Publisher Filter");
@@ -35,7 +34,7 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
                     candidate.candidate().getId(),
                     "Removing because target and source have the same publisher."
             );
-            equivToTelescopeResults.addFilterResult(filterComponent);
+            equivToTelescopeResult.addFilterResult(filterComponent);
             return false;
         }
         Set<Publisher> unacceptable = unacceptablePublishers.get(subject.getPublisher());
@@ -44,7 +43,7 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
                     candidate.candidate().getId(),
                     "Went through."
             );
-            equivToTelescopeResults.addFilterResult(filterComponent);
+            equivToTelescopeResult.addFilterResult(filterComponent);
             return true;
         }
 
@@ -70,7 +69,7 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
             );
         }
 
-        equivToTelescopeResults.addFilterResult(filterComponent);
+        equivToTelescopeResult.addFilterResult(filterComponent);
 
         return passes;
     }

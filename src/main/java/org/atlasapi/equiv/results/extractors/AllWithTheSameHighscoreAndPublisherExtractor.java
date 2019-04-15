@@ -1,15 +1,14 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This extractor will select all candidates at the best score from the publisher of the target
@@ -32,7 +31,7 @@ public class AllWithTheSameHighscoreAndPublisherExtractor<T extends Content> imp
             List<ScoredCandidate<T>> candidates,
             T target,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName("All at the top from the content's publisher and >= "
@@ -71,7 +70,7 @@ public class AllWithTheSameHighscoreAndPublisherExtractor<T extends Content> imp
             }
         }
 
-        equivToTelescopeResults.addExtractorResult(extractorComponent);
+        equivToTelescopeResult.addExtractorResult(extractorComponent);
         return allowedCandidatesBuilder.build();
     }
 }

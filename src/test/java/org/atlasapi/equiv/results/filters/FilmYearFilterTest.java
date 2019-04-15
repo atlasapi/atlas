@@ -4,7 +4,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
 import org.junit.Test;
@@ -15,8 +15,8 @@ import static org.junit.Assert.assertTrue;
 public class FilmYearFilterTest {
 
     private final FilmYearFilter underTest = new FilmYearFilter();
-    private final EquivToTelescopeResults equivToTelescopeResults =
-            EquivToTelescopeResults.create("id", "publisher");
+    private final EquivToTelescopeResult equivToTelescopeResult =
+            EquivToTelescopeResult.create("id", "publisher");
 
     @Test
     public void testDoesntFilterNonFilms() {
@@ -30,7 +30,7 @@ public class FilmYearFilterTest {
                         ScoredCandidate.valueOf(candidate, Score.ONE),
                         subject,
                         result,
-                        equivToTelescopeResults
+                        equivToTelescopeResult
                 )
         );
     }
@@ -47,7 +47,7 @@ public class FilmYearFilterTest {
                         ScoredCandidate.valueOf(candidate, Score.ONE),
                         subject,
                         result,
-                        equivToTelescopeResults
+                        equivToTelescopeResult
                 )
         );
     }
@@ -67,19 +67,19 @@ public class FilmYearFilterTest {
                 ScoredCandidate.valueOf(candidate2015, Score.ONE),
                 subject,
                 result,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         assertTrue(underTest.doFilter(
                 ScoredCandidate.valueOf(candidate2016, Score.ONE),
                 subject,
                 result,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         assertTrue(underTest.doFilter(
                 ScoredCandidate.valueOf(candidate2017, Score.ONE),
                 subject,
                 result,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
@@ -93,7 +93,7 @@ public class FilmYearFilterTest {
                 ScoredCandidate.valueOf(candidate, Score.ONE),
                 subject,
                 result,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
 
     }

@@ -1,19 +1,17 @@
 package org.atlasapi.equiv.scorers;
 
-import static com.google.common.collect.ImmutableSet.of;
+import com.google.common.collect.Iterables;
 import junit.framework.TestCase;
-
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer.TitleType;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-
 import org.junit.Test;
 
-import com.google.common.collect.Iterables;
+import static com.google.common.collect.ImmutableSet.of;
 
 public class TitleMatchingItemScorerTest extends TestCase {
 
@@ -44,20 +42,20 @@ public class TitleMatchingItemScorerTest extends TestCase {
     public void testGenerateEquivalences() {
 
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
 
-        score(2.0, scorer.score(itemWithTitle("09/10/2011"), of(itemWithTitle("09/10/2011")), desc, equivToTelescopeResults));
+        score(2.0, scorer.score(itemWithTitle("09/10/2011"), of(itemWithTitle("09/10/2011")), desc, equivToTelescopeResult));
         
-        score(0, scorer.score(itemWithTitle("19/10/2011"), of(itemWithTitle("09/10/2011")), desc, equivToTelescopeResults));
-        score(0, scorer.score(itemWithTitle("Countdown"), of(itemWithTitle("Out of Time")), desc, equivToTelescopeResults));
-        score(0, scorer.score(itemWithTitle("Episode: 3"), of(itemWithTitle("Episode 5")), desc, equivToTelescopeResults));
+        score(0, scorer.score(itemWithTitle("19/10/2011"), of(itemWithTitle("09/10/2011")), desc, equivToTelescopeResult));
+        score(0, scorer.score(itemWithTitle("Countdown"), of(itemWithTitle("Out of Time")), desc, equivToTelescopeResult));
+        score(0, scorer.score(itemWithTitle("Episode: 3"), of(itemWithTitle("Episode 5")), desc, equivToTelescopeResult));
         
-        score(0, scorer.score(itemWithTitle("19/10/2011"), of(itemWithTitle("Different")), desc, equivToTelescopeResults));
-        score(0, scorer.score(itemWithTitle("Episode 1"), of(itemWithTitle("19/10/2011")), desc, equivToTelescopeResults));
-        score(0, scorer.score(itemWithTitle("Episode 1"), of(itemWithTitle("Different")), desc, equivToTelescopeResults));
+        score(0, scorer.score(itemWithTitle("19/10/2011"), of(itemWithTitle("Different")), desc, equivToTelescopeResult));
+        score(0, scorer.score(itemWithTitle("Episode 1"), of(itemWithTitle("19/10/2011")), desc, equivToTelescopeResult));
+        score(0, scorer.score(itemWithTitle("Episode 1"), of(itemWithTitle("Different")), desc, equivToTelescopeResult));
         
     }
 
@@ -65,15 +63,15 @@ public class TitleMatchingItemScorerTest extends TestCase {
     public void testSeqTitleTypes() {
 
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
         
-        score(2, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2. Kinross")), desc, equivToTelescopeResults));
-        score(2, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2: Kinross")), desc, equivToTelescopeResults));
-        score(2, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2 - Kinross")), desc, equivToTelescopeResults));
-        score(0, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2. Different")), desc, equivToTelescopeResults));
+        score(2, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2. Kinross")), desc, equivToTelescopeResult));
+        score(2, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2: Kinross")), desc, equivToTelescopeResult));
+        score(2, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2 - Kinross")), desc, equivToTelescopeResult));
+        score(0, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2. Different")), desc, equivToTelescopeResult));
         
     }
 
@@ -85,7 +83,7 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Gabriel Iglesias vs. Randy Couture"),
                 of(itemWithTitle("Gabriel Iglesias v Randy Couture")
 
-                        ), desc, EquivToTelescopeResults.create(
+                        ), desc, EquivToTelescopeResult.create(
                         "id",
                         "publisher"
                 )));
@@ -95,14 +93,14 @@ public class TitleMatchingItemScorerTest extends TestCase {
     public void testMatchingWithAmpersands() {
         
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
 
-        score(2, scorer.score(itemWithTitle("Rosencrantz & Guildenstern Are Dead"), of(itemWithTitle("Rosencrantz and Guildenstern Are Dead")), desc, equivToTelescopeResults));
-        score(2, scorer.score(itemWithTitle("Bill & Ben"), of(itemWithTitle("2. Bill and Ben")), desc, equivToTelescopeResults));
-        score(0, scorer.score(itemWithTitle("B&Q"), of(itemWithTitle("BandQ")), desc, equivToTelescopeResults));
+        score(2, scorer.score(itemWithTitle("Rosencrantz & Guildenstern Are Dead"), of(itemWithTitle("Rosencrantz and Guildenstern Are Dead")), desc, equivToTelescopeResult));
+        score(2, scorer.score(itemWithTitle("Bill & Ben"), of(itemWithTitle("2. Bill and Ben")), desc, equivToTelescopeResult));
+        score(0, scorer.score(itemWithTitle("B&Q"), of(itemWithTitle("BandQ")), desc, equivToTelescopeResult));
 
     }
 
@@ -115,14 +113,14 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Foo / Bar"),
                 of(itemWithTitle("Foo/Bar")),
                 desc,
-                EquivToTelescopeResults.create("id", "publisher"))
+                EquivToTelescopeResult.create("id", "publisher"))
         );
     }
     
     @Test
     public void testMatchingWithThePrefix() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -131,62 +129,62 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Funny People"),
                 of(itemWithTitle("Funny People (Unrated)")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Unrated People"),
                 of(itemWithTitle("Unrated People")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Sports"),
                 of(itemWithTitle("Live Sports")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("The Great Escape"),
                 of(itemWithTitle("Great Escape")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("the Great Escape"),
                 of(itemWithTitle("Great Escape")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(0, scorer.score(
                 itemWithTitle("Theatreland"),
                 of(itemWithTitle("The atreland")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(0, scorer.score(
                 itemWithTitle("theatreland"),
                 of(itemWithTitle("the atreland")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(0, scorer.score(
                 itemWithTitle("liveandnotlive live"),
                 of(itemWithTitle("live")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(0, scorer.score(
                 itemWithTitle("Funny People"),
                 of(itemWithTitle("Funny People Unrated")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
     
     @Test
     public void testMatchingSports() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -197,25 +195,25 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Live Porto v Chelsea"),
                 of(itemWithTitle("FC Porto v Chelsea")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Live Maccabi Tel-Aviv v D' Kiev"),
                 of(itemWithTitle("Maccabi Tel Aviv v Dynamo Kiev")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Live Maccabi Tel-Aviv v D' Kiev"),
                 of(itemWithTitle("Maccabi Tel Aviv v D' Kiev")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Live Maccabi Tel-Aviv v Dynamo Kiev"),
                 of(itemWithTitle("Maccabi Tel Aviv v D' Kiev")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
@@ -224,7 +222,7 @@ public class TitleMatchingItemScorerTest extends TestCase {
         //This test case covers cases when non-abbrivating apostrophe is used in the end of the word
         // like "Girls' Night In" with "Girls' Night In"
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -233,32 +231,32 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Girls' Night In"),
                 of(itemWithTitle("Girls' Night In")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Girls Night In"),
                 of(itemWithTitle("Girls' Night In")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Girls' Night In"),
                 of(itemWithTitle("Girls Night In")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Girls Night In"),
                 of(itemWithTitle("Girls Night In")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
     @Test
     public void testMatchingWithPunctuation() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -267,44 +265,44 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("48 hrs"),
                 of(itemWithTitle("48 HRS.")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("The 7:51"),
                 of(itemWithTitle("The 7.51")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Mr. & Mrs. Smith"),
                 of(itemWithTitle("Mr & Mrs Smith")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("The way, way back"),
                 of(itemWithTitle("The way way back")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("The weekend"),
                 of(itemWithTitle("The week-end")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("'Allo 'Allo!"),
                 of(itemWithTitle("Allo Allo")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
     @Test
     public void testMatchingTitlesWithYearsInTitles() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -313,19 +311,19 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Cold Comes the Night (2013)"),
                 of(itemWithTitle("Cold Comes the Night")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Get Carter (2013)"),
                 of(itemWithTitle("Get Carter")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(0, scorer.score(
                 itemWithTitle("Space Odessey 2013"),
                 of(itemWithTitle("Space Odessey")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
@@ -336,7 +334,7 @@ public class TitleMatchingItemScorerTest extends TestCase {
         //This test case covers cases when non-abbrivating apostrophe is used within a word
         // like Charlies Big Catch" with "Charlie's Big Catch"
 
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -345,56 +343,56 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Charlies Big Catch"),
                 of(itemWithTitle("Charlie's Big Catch")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Charlie's Big Catch"),
                 of(itemWithTitle("Charlie's Big Catch")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Charlie's Big Catch"),
                 of(itemWithTitle("Charlies Big Catch")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Charlies Big Catch"),
                 of(itemWithTitle("Charlies Big Catch")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("C'harlies Big Catch"),
                 of(itemWithTitle("Charlies Big Catch")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Charlies Big Catch"),
                 of(itemWithTitle("C'harlies Big Catch")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("C'harlies Big Catch"),
                 of(itemWithTitle("C'harlies Big Catch")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(0, scorer.score(
                 itemWithTitle("C'harlie Big Catch"),
                 of(itemWithTitle("C'harlies Big Catch")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
     @Test
     public void testMatchingWithDifferentSpacing() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -403,19 +401,19 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("HouseBusters"),
                 of(itemWithTitle("House Busters")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("House  Busters  "),
                 of(itemWithTitle("  House Busters")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Iron Man 3"),
                 of(itemWithTitle("IronMan 3")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
     
@@ -423,7 +421,7 @@ public class TitleMatchingItemScorerTest extends TestCase {
     public void testMachingWithDifferentNumberingSystem(){
         //do not change romans anywhere but the end of a sentence
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -432,25 +430,25 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Iron Man 3"),
                 of(itemWithTitle("Iron Man III")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("The world and I"),
                 of(itemWithTitle("The world and one")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         )); //sideeffect
         score(0, scorer.score(
                 itemWithTitle("V for vendetta"),
                 of(itemWithTitle("Five for Vendetta")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(0, scorer.score(
                 itemWithTitle("Three v Five"),
                 of(itemWithTitle("Three Five Five")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
     
@@ -462,14 +460,14 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("British Harbor"),
                 of(itemWithTitle("British Harbour")),
                 desc,
-                EquivToTelescopeResults.create("id", "publisher"))
+                EquivToTelescopeResult.create("id", "publisher"))
         );
     }
 
     @Test
     public void testMatchingWithDifferentAccents() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -478,26 +476,26 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("En Equilibre"),
                 of(itemWithTitle("En équilibre")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Vie héroïque"),
                 of(itemWithTitle("Vie heroique")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("François Cluzet"),
                 of(itemWithTitle("Francois Cluzet")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
     @Test
     public void testPartialMatchAfterSemicolon() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -506,32 +504,32 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Storage Hunters"),
                 of(itemWithTitle("Storage Hunters: UK")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(1, scorer.score(
                 itemWithTitle("Storage Hunters: UK"),
                 of(itemWithTitle("Storage Hunters")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(1, scorer.score(
                 itemWithTitle("CSI: NY"),
                 of(itemWithTitle("CSI: New York")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(1, scorer.score(
                 itemWithTitle("CSI: NY"),
                 of(itemWithTitle("CSI")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
     @Test
     public void testForOutOfBoundsException() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -540,20 +538,20 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Storage Hunters"),
                 of(itemWithTitle(":Storage Hunters: UK")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Storage Hunters"),
                 of(itemWithTitle(":Storage Hunters:")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
     @Test
     public void testForMultipleColonsToStart() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -562,20 +560,20 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Storage Hunters"),
                 of(itemWithTitle("::::Storage Hunters: UK")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Storage Hunters"),
                 of(itemWithTitle("::::Storage Hunters")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
 
     @Test
     public void testForPrefixRemovalBug() {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create(
+        EquivToTelescopeResult equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -584,13 +582,13 @@ public class TitleMatchingItemScorerTest extends TestCase {
                 itemWithTitle("Storage: Bunters"),
                 of(itemWithTitle(" 5 : Storage Hunters")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
         score(2, scorer.score(
                 itemWithTitle("Storage: Hunters"),
                 of(itemWithTitle(" 5 : Storage Hunters")),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ));
     }
     

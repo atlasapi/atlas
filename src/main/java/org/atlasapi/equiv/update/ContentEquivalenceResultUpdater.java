@@ -17,6 +17,7 @@ import org.atlasapi.equiv.results.scores.ScoredEquivalentsMerger;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
 import org.atlasapi.equiv.scorers.EquivalenceScorers;
 import org.atlasapi.equiv.update.metadata.ContentEquivalenceResultProviderMetadata;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
@@ -75,10 +76,15 @@ public class ContentEquivalenceResultUpdater<T extends Content> implements Equiv
     ) {
         ReadableDescription desc = new DefaultDescription();
 
+        EquivToTelescopeResult resultForTelescope = EquivToTelescopeResult.create(
+                String.valueOf(content.getId()),
+                content.getPublisher().toString()
+        );
+
         List<ScoredCandidates<T>> generatedScores = generators.generate(
                 content,
                 desc,
-                resultsForTelescope
+                resultForTelescope
         );
 
         Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
@@ -87,7 +93,7 @@ public class ContentEquivalenceResultUpdater<T extends Content> implements Equiv
                 content,
                 candidates,
                 desc,
-                resultsForTelescope
+                resultForTelescope
         );
         
         List<ScoredCandidates<T>> mergedScores = merger.merge(
@@ -99,8 +105,11 @@ public class ContentEquivalenceResultUpdater<T extends Content> implements Equiv
                 content,
                 mergedScores,
                 desc,
-                resultsForTelescope
+                resultForTelescope
         );
+
+        resultsForTelescope.addResult(resultForTelescope);
+
         return result;
     }
 

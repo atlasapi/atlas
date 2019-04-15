@@ -1,20 +1,17 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.List;
-import java.util.Set;
-
-import org.atlasapi.equiv.results.description.ResultDescription;
-import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Content;
-
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.api.client.util.Lists;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.equiv.results.description.ResultDescription;
+import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Content;
+
+import java.util.List;
+import java.util.Set;
 
 public class EquivalenceGenerators<T extends Content> {
 
@@ -45,7 +42,7 @@ public class EquivalenceGenerators<T extends Content> {
     public List<ScoredCandidates<T>> generate(
             T content,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         desc.startStage("Generating equivalences");
         Builder<ScoredCandidates<T>> generatedScores = ImmutableList.builder();
@@ -68,7 +65,7 @@ public class EquivalenceGenerators<T extends Content> {
         for (EquivalenceGenerator<T> generator : generators) {
             try {
                 desc.startStage(generator.toString());
-                generatedScores.add(generator.generate(content, desc, equivToTelescopeResults));
+                generatedScores.add(generator.generate(content, desc, equivToTelescopeResult));
                 desc.finishStage();
             } catch (Exception e) {
                 throw new RuntimeException(String.format("Exception running %s for %s", generator, content), e);

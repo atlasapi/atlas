@@ -3,7 +3,7 @@ package org.atlasapi.equiv.results.filters;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 
@@ -14,7 +14,7 @@ public class DummyContainerFilter<T extends Content> extends AbstractEquivalence
             ScoredCandidate<T> input,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
         filterComponent.setComponentName("Dummy Container Filter");
@@ -24,7 +24,7 @@ public class DummyContainerFilter<T extends Content> extends AbstractEquivalence
                     input.candidate().getId(),
                     "Went through, not a container."
             );
-            equivToTelescopeResults.addFilterResult(filterComponent);
+            equivToTelescopeResult.addFilterResult(filterComponent);
             return true;
         }
 
@@ -53,7 +53,7 @@ public class DummyContainerFilter<T extends Content> extends AbstractEquivalence
             );
         }
 
-        equivToTelescopeResults.addFilterResult(filterComponent);
+        equivToTelescopeResult.addFilterResult(filterComponent);
 
         return retain;
     }

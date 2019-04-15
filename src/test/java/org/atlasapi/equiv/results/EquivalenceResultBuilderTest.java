@@ -1,10 +1,9 @@
 package org.atlasapi.equiv.results;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.ScoreCombiner;
 import org.atlasapi.equiv.results.description.DefaultDescription;
@@ -16,17 +15,14 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class EquivalenceResultBuilderTest {
 
@@ -58,7 +54,7 @@ public class EquivalenceResultBuilderTest {
                 item,
                 equivalents,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
 
         ScoredCandidates<Item> equivalences = result.combinedEquivalences();

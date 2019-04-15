@@ -1,14 +1,13 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.Set;
-
+import com.google.common.base.Function;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScaledScoredEquivalents;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 
-import com.google.common.base.Function;
+import java.util.Set;
 
 public class ScalingEquivalenceScorer<T extends Content> implements EquivalenceScorer<T> {
 
@@ -43,13 +42,13 @@ public class ScalingEquivalenceScorer<T extends Content> implements EquivalenceS
             T content,
             Set<? extends T> suggestions,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         return ScaledScoredEquivalents.<T>scale(delegate.score(
                 content,
                 suggestions,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ), scalingFunction);
     }
  

@@ -6,7 +6,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -24,8 +24,8 @@ public class AllOverOrEqHighestNonEmptyThresholdExtractorTest {
             );
 
     private final ResultDescription desc = new DefaultDescription();
-    private final EquivToTelescopeResults equivToTelescopeResults =
-            EquivToTelescopeResults.create("id", "publisher");
+    private final EquivToTelescopeResult equivToTelescopeResult =
+            EquivToTelescopeResult.create("id", "publisher");
 
 
     @Test
@@ -45,7 +45,7 @@ public class AllOverOrEqHighestNonEmptyThresholdExtractorTest {
                 ImmutableList.<ScoredCandidate<Content>>builder().addAll(expected).addAll(notExpected).build(),
                 new Item(),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         assertThat(scoredCandidates, is(expected));
     }
@@ -67,7 +67,7 @@ public class AllOverOrEqHighestNonEmptyThresholdExtractorTest {
                 ImmutableList.<ScoredCandidate<Content>>builder().addAll(expected).addAll(notExpected).build(),
                 new Item(),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         assertThat(scoredCandidates, is(expected));
     }
@@ -85,7 +85,7 @@ public class AllOverOrEqHighestNonEmptyThresholdExtractorTest {
                 ImmutableList.<ScoredCandidate<Content>>builder().addAll(expected).addAll(notExpected).build(),
                 new Item(),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         assertThat(scoredCandidates, is(expected));
     }
@@ -106,7 +106,7 @@ public class AllOverOrEqHighestNonEmptyThresholdExtractorTest {
                 ImmutableList.<ScoredCandidate<Content>>builder().addAll(expected).addAll(notExpected).build(),
                 new Item(),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         assertThat(scoredCandidates, is(expected));
     }

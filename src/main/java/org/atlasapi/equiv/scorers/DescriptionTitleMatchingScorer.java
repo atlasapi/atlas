@@ -1,22 +1,20 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
-
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
 
-import com.google.common.base.Strings;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
 
@@ -45,7 +43,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
             Item subject,
             Set<? extends Item> suggestions,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Description Title Matching Scorer");
@@ -64,7 +62,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
             }
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

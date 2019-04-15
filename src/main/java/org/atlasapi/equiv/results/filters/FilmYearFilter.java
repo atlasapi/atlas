@@ -3,7 +3,7 @@ package org.atlasapi.equiv.results.filters;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Film;
 
@@ -17,7 +17,7 @@ public class FilmYearFilter<T extends Content> extends AbstractEquivalenceFilter
             ScoredCandidate<T> input,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
         filterComponent.setComponentName("Film Year Filter");
@@ -27,7 +27,7 @@ public class FilmYearFilter<T extends Content> extends AbstractEquivalenceFilter
                     input.candidate().getId(),
                     "Went through, not a film."
             );
-            equivToTelescopeResults.addFilterResult(filterComponent);
+            equivToTelescopeResult.addFilterResult(filterComponent);
             return true;
         }
 
@@ -42,7 +42,7 @@ public class FilmYearFilter<T extends Content> extends AbstractEquivalenceFilter
                     input.candidate().getId(),
                     "Went through, subject or candidate film year is null; not applying film year filter."
             );
-            equivToTelescopeResults.addFilterResult(filterComponent);
+            equivToTelescopeResult.addFilterResult(filterComponent);
             return true;
         }
 
@@ -72,7 +72,7 @@ public class FilmYearFilter<T extends Content> extends AbstractEquivalenceFilter
             );
         }
 
-        equivToTelescopeResults.addFilterResult(filterComponent);
+        equivToTelescopeResult.addFilterResult(filterComponent);
 
         return shouldRetain;
     }

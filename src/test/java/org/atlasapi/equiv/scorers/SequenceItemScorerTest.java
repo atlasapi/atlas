@@ -1,30 +1,29 @@
 package org.atlasapi.equiv.scorers;
 
-import static org.atlasapi.equiv.results.scores.Score.NULL_SCORE;
-import static org.atlasapi.equiv.results.scores.Score.ONE;
-import static org.junit.Assert.assertEquals;
-
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
+import static org.atlasapi.equiv.results.scores.Score.NULL_SCORE;
+import static org.atlasapi.equiv.results.scores.Score.ONE;
+import static org.junit.Assert.assertEquals;
 
 public class SequenceItemScorerTest {
 
     private final SequenceItemScorer scorer = new SequenceItemScorer(Score.ONE);
     private final ResultDescription desc = new DefaultDescription();
-    private final EquivToTelescopeResults equivToTelescopeResults =
-            EquivToTelescopeResults.create("id", "publisher");
+    private final EquivToTelescopeResult equivToTelescopeResult =
+            EquivToTelescopeResult.create("id", "publisher");
 
     @Test
     public void testScoresNullWhenSubjectNotEpisode() {
@@ -34,7 +33,7 @@ public class SequenceItemScorerTest {
         ScoredCandidates<Item> scores = scorer.score(
                 subject, set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
 
         assertEquals("should score null if subject not episode",
@@ -50,7 +49,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
 
         assertEquals("should score null if candidate not episode",
@@ -66,7 +65,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertEquals("should score null if episode and series number absent",
@@ -82,7 +81,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertEquals("should score null if episode number absent and series number match",
@@ -98,7 +97,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertEquals("should score null if episode number absent and series number differs",
@@ -114,7 +113,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
 
         assertEquals("should score null if series number differs",
@@ -130,7 +129,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
 
         assertEquals("should score null if episode number differs",
@@ -147,7 +146,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertEquals("should score null if series number absent and episode numbers differ",
@@ -163,7 +162,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertEquals("should score null if series number and episode numbers differ",
@@ -179,7 +178,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertEquals("should score one if series number absent and episode numbers match",
@@ -195,7 +194,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertEquals("should score one if series number absent and episode numbers match",
@@ -212,7 +211,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertEquals("should score null if subject child of top-level series and candidate not",
@@ -230,7 +229,7 @@ public class SequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertEquals("should score null if candidate child of top-level series and subject not",

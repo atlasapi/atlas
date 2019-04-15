@@ -1,13 +1,12 @@
 package org.atlasapi.equiv.results.persistence;
 
-import java.util.List;
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Table.Cell;
+import com.mongodb.DBObject;
 import junit.framework.TestCase;
-
-import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
+import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.EquivalenceResultBuilder;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.ScoreCombiner;
@@ -19,15 +18,13 @@ import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Table.Cell;
-import com.mongodb.DBObject;
+import java.util.List;
+import java.util.Set;
 
 public class EquivalenceResultTranslatorTest extends TestCase {
 
@@ -43,8 +40,8 @@ public class EquivalenceResultTranslatorTest extends TestCase {
     public final Item equivalent2 = target("equivalent2", "Equivalent2", Publisher.BBC);
     public final Item equivalent3 = target("equivalent3", "Equivalent3", Publisher.C4);
     private static final DefaultDescription desc = new DefaultDescription();
-    private final EquivToTelescopeResults equivToTelescopeResults =
-            EquivToTelescopeResults.create("id", "publisher");
+    private final EquivToTelescopeResult equivToTelescopeResult =
+            EquivToTelescopeResult.create("id", "publisher");
     
     private Item target(String name, String title, Publisher publisher) {
         Item target = new Item(name+"Uri", name+"Curie", publisher);
@@ -60,7 +57,7 @@ public class EquivalenceResultTranslatorTest extends TestCase {
                 target,
                 scores,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         DBObject dbo = translator.toDBObject(itemResult);
@@ -84,7 +81,7 @@ public class EquivalenceResultTranslatorTest extends TestCase {
                 target,
                 scores,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         DBObject dbo = translator.toDBObject(itemResult);
@@ -124,7 +121,7 @@ public class EquivalenceResultTranslatorTest extends TestCase {
                 target,
                 scores,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         DBObject dbo = translator.toDBObject(itemResult);
@@ -162,7 +159,7 @@ public class EquivalenceResultTranslatorTest extends TestCase {
                 target,
                 scores,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         DBObject dbo = translator.toDBObject(itemResult);

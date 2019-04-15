@@ -1,18 +1,17 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.Set;
-
+import com.google.common.collect.Iterables;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
-import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
+import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Series;
 
-import com.google.common.collect.Iterables;
+import java.util.Set;
 
 
 public class SequenceContainerScorer implements EquivalenceScorer<Container> {
@@ -22,7 +21,7 @@ public class SequenceContainerScorer implements EquivalenceScorer<Container> {
             Container subject,
             Set<? extends Container> candidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Sequence Container Scorer");

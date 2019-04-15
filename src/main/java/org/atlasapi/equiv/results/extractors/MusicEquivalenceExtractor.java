@@ -1,17 +1,16 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
 
@@ -23,7 +22,7 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
             List<ScoredCandidate<Item>> candidates,
             Item subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName("Music Equivalence Extractor");

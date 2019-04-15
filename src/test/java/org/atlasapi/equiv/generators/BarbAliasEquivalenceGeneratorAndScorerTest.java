@@ -11,7 +11,7 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
@@ -177,7 +177,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         ScoredCandidates scoredCandidates = generator.generate(
                 subject,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
 
         Content identified = new Item();
@@ -208,7 +208,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         ScoredCandidates scoredCandidates = aliasGenerator.generate(
                 aliasIdentified2,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
 
         System.out.println(desc.toString());
@@ -335,7 +335,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         ScoredCandidates<Content> scoredCandidates = aliasGenerator.generate(
                 bgItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(!scoredCandidates.candidates().containsKey(bgItem));
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
@@ -354,7 +354,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         ScoredCandidates<Content> scoredCandidates = aliasGenerator.generate(
                 oobgItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(bgItem) == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(oobgItem));
@@ -373,7 +373,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         ScoredCandidates<Content> scoredCandidates = aliasGenerator.generate(
                 parentBcidItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(bgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
@@ -392,7 +392,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         ScoredCandidates<Content> scoredCandidates = aliasGenerator.generate(
                 cmsItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(bgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
@@ -424,7 +424,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 stvOobgItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(stvBgItem) == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(stvOobgItem));
@@ -437,7 +437,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 stvBgItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(!scoredCandidates.candidates().containsKey(stvBgItem));
         assertTrue(scoredCandidates.candidates().get(stvOobgItem) == SCORE_ON_MATCH);
@@ -450,7 +450,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 stvParentBcidItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(stvBgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(stvOobgItem) == SCORE_ON_MATCH);
@@ -485,7 +485,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 itvBgItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(stvBgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(stvOobgItem) == SCORE_ON_MATCH);
@@ -498,7 +498,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 itvOobgItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(stvBgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(stvOobgItem) == SCORE_ON_MATCH);
@@ -511,7 +511,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 itvParentBcidItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(stvBgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(stvOobgItem) == SCORE_ON_MATCH);
@@ -524,7 +524,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 itvCmsItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(stvBgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(stvOobgItem) == SCORE_ON_MATCH);
@@ -548,7 +548,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 bgItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(!scoredCandidates.candidates().containsKey(bgItem));
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
@@ -558,7 +558,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 oobgItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(bgItem) == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(oobgItem));
@@ -568,7 +568,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 parentBcidItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(bgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
@@ -578,7 +578,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 cmsItem,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().get(bgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
@@ -620,7 +620,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         scoredCandidates = aliasGenerator.generate(
                 subject,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(!scoredCandidates.candidates().containsKey(differentItem));
         assertThat(scoredCandidates.candidates().get(item), is(SCORE_ON_MATCH));

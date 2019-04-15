@@ -1,28 +1,24 @@
 package org.atlasapi.equiv.generators;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.base.Maybe;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class RadioTimesFilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
 
@@ -39,7 +35,7 @@ public class RadioTimesFilmEquivalenceGenerator implements EquivalenceGenerator<
     public ScoredCandidates<Item> generate(
             Item content,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         checkArgument(content instanceof Film, "Content not Film:" + content.getCanonicalUri());
 

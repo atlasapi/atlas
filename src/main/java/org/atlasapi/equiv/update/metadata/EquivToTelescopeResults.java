@@ -8,6 +8,7 @@ public class EquivToTelescopeResults {
 
     private String contentId;
     private String publisher;
+    //TODO: combine these into a single object and store a list of such objects - this is due to there now being multiple equiv providers per equiv run
     private List<EquivToTelescopeComponent> generators;
     private List<EquivToTelescopeComponent> scorers;
     private List<EquivToTelescopeComponent> combiners;

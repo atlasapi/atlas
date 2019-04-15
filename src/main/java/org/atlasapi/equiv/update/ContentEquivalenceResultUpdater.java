@@ -20,7 +20,6 @@ import org.atlasapi.equiv.update.metadata.ContentEquivalenceResultProviderMetada
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import java.util.List;
 import java.util.Set;
@@ -72,13 +71,9 @@ public class ContentEquivalenceResultUpdater<T extends Content> implements Equiv
     @Override
     public EquivalenceResult<T> provideEquivalenceResult(
             T content,
-            OwlTelescopeReporter telescope
+            EquivToTelescopeResults resultsForTelescope
     ) {
         ReadableDescription desc = new DefaultDescription();
-        EquivToTelescopeResults resultsForTelescope = EquivToTelescopeResults.create(
-                String.valueOf(content.getId()),
-                content.getPublisher().toString()
-        );
 
         List<ScoredCandidates<T>> generatedScores = generators.generate(
                 content,

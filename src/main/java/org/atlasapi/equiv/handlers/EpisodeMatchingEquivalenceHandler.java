@@ -23,6 +23,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.LookupWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
@@ -31,7 +33,17 @@ import java.util.Set;
 
 import static org.atlasapi.media.entity.ChildRef.TO_URI;
 
+/**
+ * This handler will resolve all the children of the subject container and its strong equivalences
+ * If any child A of the subject container matches on both series number and episode number to a child B
+ * of the strong equivalences (and it is a publisher for which child A has no strong equivalences)
+ * then child A will have its equivalences updated to include child B.
+ * N.B. this has the consequence that directly running equiv on child A will remove the link to child B until
+ * equivalence is rerun on child A's container. This came as quite a surprise to some of us years down the line since
+ * this hadn't been documented!
+ */
 public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandler<Container> {
+    private final Logger log = LoggerFactory.getLogger(EpisodeMatchingEquivalenceHandler.class);
     
     private final EquivalenceSummaryStore summaryStore;
     private final ContentResolver contentResolver;
@@ -52,7 +64,7 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
     
     @Override
     public boolean handle(EquivalenceResults<Container> results) {
-        results.description().startStage("Episode sequence stitching");
+        results.description().startStage("Episode equivalence updater using series & episode numbers");
         
         Set<Container> equivalentContainers = results.strongEquivalences();
 
@@ -100,7 +112,7 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
             ReadableDescription desc
     ) {
         String subjectUri = subjectEpisode.getCanonicalUri();
-        desc.startStage(subjectUri);
+        desc.startStage("Checking child: " + subjectUri);
         Multimap<Publisher, ContentRef> equivalents = equivalenceSummary.getEquivalents();
 
         Set<ContentRef> additionalEquivs = Sets.newHashSet();
@@ -118,7 +130,8 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
                                 equivChild
                         );
                     } else {
-                        desc.appendText("adding %s (%s)", equivChild, container);
+                        log.info("Adding {} as an equiv for child {}", equivChild, subjectEpisode);
+                        desc.appendText("adding %s (%s) as an equiv for this child", equivChild, container);
                         additionalEquivs.add(ContentRef.valueOf(equivChild));
                     }
                     break;

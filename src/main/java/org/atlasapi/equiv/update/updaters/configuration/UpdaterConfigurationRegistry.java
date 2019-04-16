@@ -1072,8 +1072,7 @@ public class UpdaterConfigurationRegistry {
                                         BARB_TRANSMISSIONS,
                                         BARB_X_MASTER,
                                         BARB_CENSUS
-                                ),
-                                TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS) //TODO: remove after testing
+                                )
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -1162,8 +1161,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BBC_NITRO)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_ITEM, ImmutableSet.of(PA, UKTV, BARB_TRANSMISSIONS, BARB_MASTER), //TODO: revert changes before merging
-                                TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
+                                STANDARD_ITEM, ImmutableSet.of(PA, UKTV, BARB_TRANSMISSIONS, BARB_MASTER)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

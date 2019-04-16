@@ -1143,7 +1143,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(ITV_CPS)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                BARB_ITEM, ImmutableSet.of(PA, BBC_NITRO, UKTV, BARB_TRANSMISSIONS, BARB_MASTER)
+                                BARB_ITEM, ImmutableSet.of(PA, BBC_NITRO, UKTV, BARB_MASTER),
+                                TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -1170,7 +1171,9 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BBC_NITRO)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_ITEM, ImmutableSet.of(PA, UKTV, BARB_TRANSMISSIONS, BARB_MASTER)
+                                STANDARD_ITEM, ImmutableSet.of(PA, UKTV),
+                                BARB_ITEM, ImmutableSet.of(BARB_MASTER),
+                                TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -1197,7 +1200,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(C4_PMLSD)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                BARB_ITEM, ImmutableSet.of(PA, RADIO_TIMES, BARB_TRANSMISSIONS, BARB_MASTER)
+                                BARB_ITEM, ImmutableSet.of(PA, RADIO_TIMES, BARB_MASTER),
+                                TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -1224,7 +1228,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(UKTV)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                BARB_ITEM, ImmutableSet.of(PA, RADIO_TIMES, BARB_TRANSMISSIONS, BARB_MASTER)
+                                BARB_ITEM, ImmutableSet.of(PA, RADIO_TIMES, BARB_MASTER),
+                                TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -1251,7 +1256,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(C5_DATA_SUBMISSION)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                BARB_ITEM, ImmutableSet.of(PA, RADIO_TIMES, BARB_TRANSMISSIONS, BARB_MASTER)
+                                BARB_ITEM, ImmutableSet.of(PA, RADIO_TIMES, BARB_MASTER),
+                                TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

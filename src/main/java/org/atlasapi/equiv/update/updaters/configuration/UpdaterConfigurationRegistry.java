@@ -62,6 +62,7 @@ import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
+import static org.atlasapi.media.entity.Publisher.BARB_NLE;
 import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
@@ -155,7 +156,8 @@ public class UpdaterConfigurationRegistry {
                 makeBarbXMasterConfiguration(), //X-CDMF
                 makeImdbApiConfiguration(),
                 makeC5DataSubmissionConfiguration(),
-                makeBarbCensusConfiguration()
+                makeBarbCensusConfiguration(),
+                makeBarbNleConfiguration()
         );
 
         configurations.add(
@@ -225,12 +227,16 @@ public class UpdaterConfigurationRegistry {
                         STANDARD_ITEM_MESSENGER
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        ImmutableMap.of(STANDARD_TOP_LEVEL_CONTAINER, MoreSets.add(TARGET_SOURCES, LOVEFILM)),
+                        ImmutableMap.of(
+                                STANDARD_TOP_LEVEL_CONTAINER, MoreSets.add(TARGET_SOURCES, LOVEFILM)
+                        ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        ImmutableMap.of(STANDARD_SERIES, TARGET_SOURCES),
+                        ImmutableMap.of(
+                                STANDARD_SERIES, TARGET_SOURCES
+                        ),
                         STANDARD_SERIES_HANDLER,
                         STANDARD_SERIES_MESSENGER
                 )
@@ -282,7 +288,9 @@ public class UpdaterConfigurationRegistry {
                         STANDARD_ITEM_MESSENGER
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        ImmutableMap.of(STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of()), //there are no
+                        ImmutableMap.of(
+                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of()
+                        ), //there are no
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
                 )
@@ -1071,7 +1079,8 @@ public class UpdaterConfigurationRegistry {
                                         BARB_MASTER,
                                         BARB_TRANSMISSIONS,
                                         BARB_X_MASTER,
-                                        BARB_CENSUS
+                                        BARB_CENSUS,
+                                        BARB_NLE
                                 )
                         ),
                         STANDARD_ITEM_HANDLER,
@@ -1284,6 +1293,33 @@ public class UpdaterConfigurationRegistry {
                 .withNonTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
                                 STANDARD_SERIES, ImmutableSet.of()
+                        ),
+                        STANDARD_SERIES_HANDLER,
+                        STANDARD_SERIES_MESSENGER
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeBarbNleConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(BARB_NLE)
+                .withItemEquivalenceUpdater(
+                        ImmutableMap.of(
+                                BARB_ITEM, ImmutableSet.of(BARB_MASTER)
+                        ),
+                        STANDARD_ITEM_HANDLER,
+                        STANDARD_ITEM_MESSENGER
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of()
+                        ),
+                        STANDARD_CONTAINER_HANDLER,
+                        STANDARD_CONTAINER_MESSENGER
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                            STANDARD_SERIES, ImmutableSet.of()
                         ),
                         STANDARD_SERIES_HANDLER,
                         STANDARD_SERIES_MESSENGER

@@ -9,6 +9,7 @@ import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
+import static org.atlasapi.media.entity.Publisher.BARB_NLE;
 import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
@@ -123,7 +124,8 @@ public class DefaultConfiguration {
                             BARB_X_MASTER,
                             IMDB_API,
                             C5_DATA_SUBMISSION,
-                            BARB_CENSUS
+                            BARB_CENSUS,
+                            BARB_NLE
                     )
             )
             .addAll(MUSIC_SOURCES)

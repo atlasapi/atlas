@@ -1,22 +1,15 @@
 package org.atlasapi.equiv.generators;
 
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.joda.time.Duration.standardMinutes;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.DateTimeZones;
 import junit.framework.TestCase;
-
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Broadcast;
@@ -32,13 +25,18 @@ import org.joda.time.Interval;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.DateTimeZones;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.atlasapi.media.entity.Publisher.BBC;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.joda.time.Duration.standardMinutes;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BroadcastMatchingItemEquivalenceGeneratorAndScorerTest extends TestCase {
@@ -73,7 +71,7 @@ public class BroadcastMatchingItemEquivalenceGeneratorAndScorerTest extends Test
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         
         Map<Item, Score> scoreMap = equivalents.candidates();
@@ -100,7 +98,7 @@ public class BroadcastMatchingItemEquivalenceGeneratorAndScorerTest extends Test
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         
         Map<Item, Score> scoreMap = equivalents.candidates();
@@ -132,7 +130,7 @@ public class BroadcastMatchingItemEquivalenceGeneratorAndScorerTest extends Test
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         
         Map<Item, Score> scoreMap = equivalents.candidates();
@@ -178,7 +176,7 @@ public class BroadcastMatchingItemEquivalenceGeneratorAndScorerTest extends Test
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
 
         Map<Item, Score> scoreMap = equivalents.candidates();

@@ -1,19 +1,17 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.List;
-import java.util.Set;
-
-import org.atlasapi.equiv.results.description.ResultDescription;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Content;
-
-import com.metabroadcast.common.stream.MoreCollectors;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.equiv.results.description.ResultDescription;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Content;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * This extractor will select all candidates from the first extractor, then remove them from the
@@ -39,7 +37,7 @@ public class RemoveAndCombineExtractor<T extends Content> implements Equivalence
             List<ScoredCandidate<T>> candidates,
             T target,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         if (candidates.isEmpty()) {
             return ImmutableSet.of();
@@ -49,10 +47,10 @@ public class RemoveAndCombineExtractor<T extends Content> implements Equivalence
         extractorComponent.setComponentName("Get the results from first extractor, then remove them from the set, then get the results from second.");
 
         //we wont be adding any results for presentation, we expect the underlying extractors to do that.
-        equivToTelescopeResults.addExtractorResult(extractorComponent);
+        equivToTelescopeResult.addExtractorResult(extractorComponent);
 
         Set<ScoredCandidate<T>> firstResults
-                = first.extract(candidates, target, desc, equivToTelescopeResults);
+                = first.extract(candidates, target, desc, equivToTelescopeResult);
 
         //remove the results, then get the results of the second extractor.
         ImmutableList<ScoredCandidate<T>> reducedCandidates
@@ -60,7 +58,7 @@ public class RemoveAndCombineExtractor<T extends Content> implements Equivalence
                 .filter(c -> !firstResults.contains(c))
                 .collect(MoreCollectors.toImmutableList());
         Set<ScoredCandidate<T>> secondResults
-                = second.extract(reducedCandidates, target, desc, equivToTelescopeResults);
+                = second.extract(reducedCandidates, target, desc, equivToTelescopeResult);
 
         return Sets.union(firstResults, secondResults);
     }

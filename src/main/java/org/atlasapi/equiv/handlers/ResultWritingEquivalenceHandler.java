@@ -1,6 +1,6 @@
 package org.atlasapi.equiv.handlers;
 
-import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.equiv.results.persistence.EquivalenceResultStore;
 import org.atlasapi.media.entity.Content;
 
@@ -14,8 +14,8 @@ public class ResultWritingEquivalenceHandler<T extends Content>
     }
     
     @Override
-    public boolean handle(EquivalenceResult<T> result) {
-        store.store(result);
+    public boolean handle(EquivalenceResults<T> results) {
+        store.store(results);
         return false;
     }
 }

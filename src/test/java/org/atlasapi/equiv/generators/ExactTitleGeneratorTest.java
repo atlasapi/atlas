@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -54,7 +54,7 @@ public class ExactTitleGeneratorTest {
         ScoredCandidates<Item> candidates = generator.generate(
                 subject,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("c", "unbox.amazon.co.uk")
+                EquivToTelescopeResult.create("c", "unbox.amazon.co.uk")
         );
 
         Set<Item> candMap = candidates.candidates().keySet();
@@ -80,7 +80,7 @@ public class ExactTitleGeneratorTest {
         ScoredCandidates<Item> candidates = generator.generate(
                 subject,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("c", "unbox.amazon.co.uk")
+                EquivToTelescopeResult.create("c", "unbox.amazon.co.uk")
         );
 
         Set<Item> candMap = candidates.candidates().keySet();
@@ -106,7 +106,7 @@ public class ExactTitleGeneratorTest {
         ScoredCandidates<Item> candidates = generator.generate(
                 subject,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("c", "unbox.amazon.co.uk")
+                EquivToTelescopeResult.create("c", "unbox.amazon.co.uk")
         );
 
         Set<Item> candMap = candidates.candidates().keySet();
@@ -123,7 +123,7 @@ public class ExactTitleGeneratorTest {
         ScoredCandidates<Item> candidates = generator.generate(
                 subject,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("c", "unbox.amazon.co.uk")
+                EquivToTelescopeResult.create("c", "unbox.amazon.co.uk")
         );
 
         assertThat(candidates.candidates().isEmpty(), is(true));
@@ -137,7 +137,7 @@ public class ExactTitleGeneratorTest {
         ScoredCandidates<Item> candidates = generator.generate(
                 subject,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("c", "unbox.amazon.co.uk")
+                EquivToTelescopeResult.create("c", "unbox.amazon.co.uk")
         );
 
         assertThat(candidates.candidates().isEmpty(), is(true));

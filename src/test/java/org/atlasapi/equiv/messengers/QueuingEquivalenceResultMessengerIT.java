@@ -1,12 +1,26 @@
 package org.atlasapi.equiv.messengers;
 
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.queue.MessageSerializer;
+import com.metabroadcast.common.queue.Worker;
+import com.metabroadcast.common.queue.kafka.KafkaConsumer;
+import kafka.admin.AdminUtils;
+import kafka.server.KafkaConfig;
+import kafka.server.KafkaServer;
+import kafka.utils.SystemTime$;
+import kafka.utils.TestUtils;
+import kafka.utils.ZKStringSerializer$;
+import kafka.zk.EmbeddedZookeeper;
+import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ReadableDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
@@ -21,27 +35,6 @@ import org.atlasapi.messaging.v3.JacksonMessageSerializer;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.messaging.v3.MessagingModule;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.queue.MessageSerializer;
-import com.metabroadcast.common.queue.Worker;
-import com.metabroadcast.common.queue.kafka.KafkaConsumer;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import kafka.admin.AdminUtils;
-import kafka.server.KafkaConfig;
-import kafka.server.KafkaServer;
-import kafka.utils.SystemTime$;
-import kafka.utils.TestUtils;
-import kafka.utils.ZKStringSerializer$;
-import kafka.zk.EmbeddedZookeeper;
-import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,6 +45,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 import scala.Option;
 import scala.collection.JavaConversions;
 import scala.collection.mutable.Buffer;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -155,7 +154,15 @@ public class QueuingEquivalenceResultMessengerIT {
                 .build();
         consumer.startAsync().awaitRunning(10, TimeUnit.SECONDS);
 
-        handler.sendMessage(new EquivalenceResult<>(subject, scores, combined, strong, desc));
+        EquivalenceResult<Item> result = new EquivalenceResult<>(subject, scores, combined, strong, desc);
+
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
+        handler.sendMessage(results);
         assertTrue("message not received", latch.await(5, TimeUnit.SECONDS));
         
         ContentEquivalenceAssertionMessage assertionMessage = message.get();

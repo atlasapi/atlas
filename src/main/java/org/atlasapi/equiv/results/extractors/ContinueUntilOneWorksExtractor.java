@@ -1,15 +1,14 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This extractor will attempt the delegates one by one, until one of them provides at least one
@@ -34,7 +33,7 @@ public class ContinueUntilOneWorksExtractor<T extends Content> implements Equiva
             List<ScoredCandidate<T>> candidates,
             T target,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         if (candidates.isEmpty()) {
             return ImmutableSet.of();
@@ -48,16 +47,16 @@ public class ContinueUntilOneWorksExtractor<T extends Content> implements Equiva
                     candidates,
                     target,
                     desc,
-                    equivToTelescopeResults
+                    equivToTelescopeResult
             );
             if(!extracted.isEmpty()){
-                equivToTelescopeResults.addExtractorResult(extractorComponent);
+                equivToTelescopeResult.addExtractorResult(extractorComponent);
                 return extracted;
             }
         }
 
         //we wont be adding any results for presentation, we expect the underlying extractors to do that.
-        equivToTelescopeResults.addExtractorResult(extractorComponent);
+        equivToTelescopeResult.addExtractorResult(extractorComponent);
 
         return ImmutableSet.of();
     }

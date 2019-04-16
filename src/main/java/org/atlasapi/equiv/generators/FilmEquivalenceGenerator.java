@@ -1,10 +1,13 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.query.Selection;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -13,7 +16,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -21,14 +24,9 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.query.Selection;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.google.common.collect.Iterables.filter;
 
@@ -85,7 +83,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     public ScoredCandidates<Item> generate(
             Item item,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         Builder<Item> scores = DefaultScoredCandidates.fromSource("Film");
 
@@ -100,13 +98,13 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         
         if (!acceptNullYears && film.getYear() == null ) {
             desc.appendText("Can't generate: null year");
-            equivToTelescopeResults.addGeneratorResult(generatorComponent);
+            equivToTelescopeResult.addGeneratorResult(generatorComponent);
             return scores.build();
         }
         
         if (Strings.isNullOrEmpty(film.getTitle())) {
             desc.appendText("Can't generate: title '%s'", film.getTitle()).finishStage();
-            equivToTelescopeResults.addGeneratorResult(generatorComponent);
+            equivToTelescopeResult.addGeneratorResult(generatorComponent);
             return scores.build();
         } else {
             desc.appendText("Using year %s, title %s", film.getYear(), film.getTitle());
@@ -178,7 +176,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             }
         }
 
-        equivToTelescopeResults.addGeneratorResult(generatorComponent);
+        equivToTelescopeResult.addGeneratorResult(generatorComponent);
         return scores.build();
     }
 

@@ -1,16 +1,14 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Selects the candidate with the highest score, so long as its score
@@ -38,7 +36,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractor<T>
             List<ScoredCandidate<T>> candidates,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         desc.startStage(NAME);
 
@@ -59,7 +57,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractor<T>
                         String.valueOf(candidates.get(0).score().asDouble())
                 );
             }
-            equivToTelescopeResults.addExtractorResult(extractorComponent);
+            equivToTelescopeResult.addExtractorResult(extractorComponent);
             desc.appendText("%s extracted. Only candidate.", candidates.get(0));
             return ImmutableSet.of(candidates.get(0));
         }
@@ -78,7 +76,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractor<T>
                     ((Content) strongest.candidate()).getId(),
                     String.valueOf(strongest.score().asDouble())
             );
-            equivToTelescopeResults.addExtractorResult(extractorComponent);
+            equivToTelescopeResult.addExtractorResult(extractorComponent);
             return ImmutableSet.of(strongest);
         }
         
@@ -91,12 +89,14 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractor<T>
                         String.valueOf(strongest.score().asDouble())
                 );
             }
-            equivToTelescopeResults.addExtractorResult(extractorComponent);
+            equivToTelescopeResult.addExtractorResult(extractorComponent);
             return ImmutableSet.of(strongest);
         }
         
         desc.appendText("%s not extracted. Strongest score of %s doesn't beat next best from %s of %s.", strongest.candidate(), strongest.score(), 
                     nextBest.candidate(), nextBest.score());
+
+        desc.finishStage();
         
         return ImmutableSet.of();
     }

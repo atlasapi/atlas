@@ -14,7 +14,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Publisher;
@@ -63,7 +63,7 @@ public class ExactTitleGenerator<T extends Content> implements EquivalenceGenera
     public ScoredCandidates<T> generate(
             T content,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("Exact Title Generator");

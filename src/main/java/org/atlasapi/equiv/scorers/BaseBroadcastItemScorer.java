@@ -1,37 +1,29 @@
 package org.atlasapi.equiv.scorers;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
+import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import java.util.Set;
+import java.util.TreeSet;
 
-import com.metabroadcast.common.base.Maybe;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * <p>Specialized {@link EquivalenceScorer} for "broadcast items", i.e. those that
@@ -185,7 +177,7 @@ public abstract class BaseBroadcastItemScorer implements EquivalenceScorer<Item>
             Item subject,
             Set<? extends Item> candidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName(getName());
@@ -206,7 +198,7 @@ public abstract class BaseBroadcastItemScorer implements EquivalenceScorer<Item>
             }
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

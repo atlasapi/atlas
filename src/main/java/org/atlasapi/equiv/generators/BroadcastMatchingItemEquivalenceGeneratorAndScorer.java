@@ -1,7 +1,13 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.Set;
-
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Maps.EntryTransformer;
+import com.google.common.collect.Sets;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.DateTimeZones;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -10,7 +16,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Broadcast;
@@ -20,18 +26,10 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.DateTimeZones;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Maps.EntryTransformer;
-import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+
+import java.util.Set;
 
 public class BroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item>{
 
@@ -105,7 +103,7 @@ public class BroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equiv
     public ScoredCandidates<Item> generate(
             Item content,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
 
         Builder<Item> scores = DefaultScoredCandidates.fromSource("broadcast");
@@ -139,7 +137,7 @@ public class BroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equiv
             }
         }
 
-        equivToTelescopeResults.addGeneratorResult(generatorComponent);
+        equivToTelescopeResult.addGeneratorResult(generatorComponent);
 
         desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
 

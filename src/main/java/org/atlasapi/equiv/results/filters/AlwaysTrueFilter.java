@@ -3,8 +3,7 @@ package org.atlasapi.equiv.results.filters;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Content;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Identified;
 
 public class AlwaysTrueFilter<T> extends AbstractEquivalenceFilter<T> {
@@ -24,7 +23,7 @@ public class AlwaysTrueFilter<T> extends AbstractEquivalenceFilter<T> {
             ScoredCandidate<T> input,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
         filterComponent.setComponentName("Always True Filter");
@@ -35,7 +34,7 @@ public class AlwaysTrueFilter<T> extends AbstractEquivalenceFilter<T> {
                     "Always True"
             );
         }
-        equivToTelescopeResults.addFilterResult(filterComponent);
+        equivToTelescopeResult.addFilterResult(filterComponent);
         return true;
     }
 

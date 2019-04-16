@@ -1,15 +1,14 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This extractor will select all candidates that tie at the top score, over or equal to the
@@ -32,7 +31,7 @@ public class AllThatTieAtTopExtractor<T extends Content> implements EquivalenceE
             List<ScoredCandidate<T>> candidates,
             T target,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName("All that tie at the top and >= " + threshold);
@@ -66,7 +65,7 @@ public class AllThatTieAtTopExtractor<T extends Content> implements EquivalenceE
                     );
                 }
             }
-            equivToTelescopeResults.addExtractorResult(extractorComponent);
+            equivToTelescopeResult.addExtractorResult(extractorComponent);
             return allowedCandidates;
         } else {
             return ImmutableSet.of();

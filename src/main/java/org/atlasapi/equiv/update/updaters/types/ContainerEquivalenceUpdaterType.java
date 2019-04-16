@@ -1,6 +1,6 @@
 package org.atlasapi.equiv.update.updaters.types;
 
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.AmazonContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.AmazonSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BroadcastItemContainerUpdaterProvider;
@@ -60,13 +60,13 @@ public enum ContainerEquivalenceUpdaterType {
     ),
     ;
 
-    private final EquivalenceUpdaterProvider<Container> provider;
+    private final EquivalenceResultUpdaterProvider<Container> provider;
 
-    ContainerEquivalenceUpdaterType(EquivalenceUpdaterProvider<Container> provider) {
+    ContainerEquivalenceUpdaterType(EquivalenceResultUpdaterProvider<Container> provider) {
         this.provider = checkNotNull(provider);
     }
 
-    public EquivalenceUpdaterProvider<Container> getProvider() {
+    public EquivalenceResultUpdaterProvider<Container> getProvider() {
         return provider;
     }
 }

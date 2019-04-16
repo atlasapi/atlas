@@ -1,18 +1,16 @@
 package org.atlasapi.equiv.results.filters;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Identified;
 
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 
 public class ExclusionListFilter<T extends Identified> extends AbstractEquivalenceFilter<T> {
@@ -39,7 +37,7 @@ public class ExclusionListFilter<T extends Identified> extends AbstractEquivalen
             ScoredCandidate<T> candidate,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
         filterComponent.setComponentName("Exclusion List Filter");
@@ -60,7 +58,7 @@ public class ExclusionListFilter<T extends Identified> extends AbstractEquivalen
             );
         }
 
-        equivToTelescopeResults.addFilterResult(filterComponent);
+        equivToTelescopeResult.addFilterResult(filterComponent);
 
         return result;
     }

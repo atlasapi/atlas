@@ -8,7 +8,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Item;
 
@@ -31,7 +31,7 @@ public class BroadcastAliasScorer implements EquivalenceScorer<Item> {
             Item subject,
             Set<? extends Item> candidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Broadcast Alias Scorer");
@@ -48,7 +48,7 @@ public class BroadcastAliasScorer implements EquivalenceScorer<Item> {
             );
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

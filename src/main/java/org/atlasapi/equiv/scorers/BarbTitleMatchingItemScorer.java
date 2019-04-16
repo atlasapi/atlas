@@ -1,19 +1,17 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.base.Maybe;
+import org.apache.commons.lang3.StringUtils;
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -21,12 +19,11 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
 
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import org.apache.commons.lang3.StringUtils;
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.google.api.client.repackaged.com.google.common.base.Preconditions.checkNotNull;
 
@@ -103,7 +100,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             Item subject,
             Set<? extends Item> suggestions,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Barb Title Matching Item Scorer");
@@ -140,7 +137,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             }
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

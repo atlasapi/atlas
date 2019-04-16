@@ -5,12 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
-import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
-import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
-import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -23,16 +17,16 @@ import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.ItemYearScorer;
-import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
+import org.atlasapi.equiv.update.EquivalenceResultUpdater;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
 import java.util.Set;
 
-public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<Item> {
+public class WikipediaItemUpdateProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private WikipediaItemUpdateProvider() {
 
@@ -43,11 +37,11 @@ public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<I
     }
 
     @Override
-    public EquivalenceUpdater<Item> getUpdater(
+    public EquivalenceResultUpdater<Item> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceUpdater.<Item>builder()
+        return ContentEquivalenceResultUpdater.<Item>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
@@ -96,28 +90,6 @@ public class WikipediaItemUpdateProvider implements EquivalenceUpdaterProvider<I
                 )
                 .withExtractor(
                         AllOverOrEqThresholdExtractor.create(3D)
-                )
-                .withHandler(
-                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-                                EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                        LookupWritingEquivalenceHandler.create(
-                                                dependencies.getLookupWriter()
-                                        ),
-                                        dependencies.getEquivSummaryStore()
-                                ),
-                                new ResultWritingEquivalenceHandler<>(
-                                        dependencies.getEquivalenceResultStore()
-                                ),
-                                new EquivalenceSummaryWritingHandler<>(
-                                        dependencies.getEquivSummaryStore()
-                                )
-                        ))
-                )
-                .withMessenger(
-                        QueueingEquivalenceResultMessenger.create(
-                                dependencies.getMessageSender(),
-                                dependencies.getLookupEntryStore()
-                        )
                 )
                 .build();
     }

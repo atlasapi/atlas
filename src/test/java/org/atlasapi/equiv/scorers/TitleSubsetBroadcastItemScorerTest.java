@@ -1,23 +1,21 @@
 package org.atlasapi.equiv.scorers;
 
-import static org.junit.Assert.assertEquals;
-
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.testing.StubContentResolver;
-
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableSet;
+import static org.junit.Assert.assertEquals;
 
 public class TitleSubsetBroadcastItemScorerTest {
 
@@ -122,14 +120,14 @@ public class TitleSubsetBroadcastItemScorerTest {
 
     private Score score(Item subject, Item candidate) {
         DefaultDescription desc = new DefaultDescription();
-        EquivToTelescopeResults equivToTelescopeResults =
-                EquivToTelescopeResults.create("id", "publisher");
+        EquivToTelescopeResult equivToTelescopeResult =
+                EquivToTelescopeResult.create("id", "publisher");
 
         ScoredCandidates<Item> scores = scorer.score(
                 subject,
                 ImmutableSet.of(candidate),
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         return scores.candidates().get(candidate);
     }

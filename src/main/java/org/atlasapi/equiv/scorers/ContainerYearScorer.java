@@ -5,7 +5,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Container;
 
 import java.util.Set;
@@ -27,7 +27,7 @@ public class ContainerYearScorer implements EquivalenceScorer<Container> {
             Container subject,
             Set<? extends Container> candidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Container Year Scorer");
@@ -43,7 +43,7 @@ public class ContainerYearScorer implements EquivalenceScorer<Container> {
             );
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return scoredCandidates.build();
     }

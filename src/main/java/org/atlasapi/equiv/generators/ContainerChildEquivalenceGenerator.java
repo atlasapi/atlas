@@ -1,5 +1,13 @@
 package org.atlasapi.equiv.generators;
 
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicates;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multiset;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.collect.OptionalMap;
 import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.equiv.EquivalenceSummary;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
@@ -9,21 +17,12 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
-
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicates;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multiset;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.collect.OptionalMap;
 
 public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<Container> {
     
@@ -51,7 +50,7 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
     public ScoredCandidates<Container> generate(
             Container content,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
 
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
@@ -70,7 +69,7 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
                 parents,
                 childSummaries.size(),
                 desc,
-                equivToTelescopeResults,
+                equivToTelescopeResult,
                 generatorComponent
         );
     }
@@ -79,7 +78,7 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
             Multiset<String> parents,
             int children,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults,
+            EquivToTelescopeResult equivToTelescopeResult,
             EquivToTelescopeComponent generatorComponent
     ) {
         Builder<Container> candidates = DefaultScoredCandidates.fromSource(NAME);
@@ -118,7 +117,7 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
             }
         }
 
-        equivToTelescopeResults.addGeneratorResult(generatorComponent);
+        equivToTelescopeResult.addGeneratorResult(generatorComponent);
         
         return candidates.build();
     }

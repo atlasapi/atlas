@@ -1,25 +1,21 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Series;
-
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This extractor attempts to get multiple candidates for the same publisher. It will only do this
@@ -50,7 +46,7 @@ public class MultipleCandidateExtractor<T extends Content> implements Equivalenc
             List<ScoredCandidate<T>> candidates,
             T target,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName("Multiple Candidate Extractor");
@@ -93,7 +89,7 @@ public class MultipleCandidateExtractor<T extends Content> implements Equivalenc
                 }
         );
 
-        equivToTelescopeResults.addExtractorResult(extractorComponent);
+        equivToTelescopeResult.addExtractorResult(extractorComponent);
 
         if (allowedCandidates.size() > 1) {
             return allowedCandidates;

@@ -1,10 +1,14 @@
 package org.atlasapi.equiv.update.updaters.configuration;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType;
+import org.atlasapi.equiv.update.handlers.types.ItemEquivalenceHandlerType;
+import org.atlasapi.equiv.update.messagers.types.ContainerEquivalenceMessengerType;
+import org.atlasapi.equiv.update.messagers.types.ItemEquivalenceMessengerType;
 import org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType;
 import org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType;
 import org.atlasapi.media.entity.Publisher;
-
-import com.google.common.collect.ImmutableSet;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -12,40 +16,40 @@ public class UpdaterConfiguration {
 
     private final Publisher source;
 
-    private final ItemEquivalenceUpdaterType itemEquivalenceUpdaterType;
-    private final ImmutableSet<Publisher> itemEquivalenceTargetSources;
+    private final ImmutableMap<ItemEquivalenceUpdaterType, ImmutableSet<Publisher>> itemEquivalenceUpdaters;
+    private final ItemEquivalenceHandlerType itemEquivalenceHandlerType;
+    private final ItemEquivalenceMessengerType itemEquivalenceMessengerType;
 
-    private final ContainerEquivalenceUpdaterType topLevelContainerEquivalenceUpdaterType;
-    private final ImmutableSet<Publisher> topLevelContainerTargetSources;
+    private final ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> topLevelContainerEquivalenceUpdaters;
+    private final ContainerEquivalenceHandlerType topLevelContainerEquivalenceHandlerType;
+    private final ContainerEquivalenceMessengerType topLevelContainerEquivalenceMessengerType;
 
-    private final ContainerEquivalenceUpdaterType nonTopLevelContainerEquivalenceUpdaterType;
-    private final ImmutableSet<Publisher> nonTopLevelContainerTargetSources;
+    private final ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> nonTopLevelContainerEquivalenceUpdaters;
+    private final ContainerEquivalenceHandlerType nonTopLevelContainerEquivalenceHandlerType;
+    private final ContainerEquivalenceMessengerType nonTopLevelContainerEquivalenceMessengerType;
 
     private UpdaterConfiguration(
             Publisher source,
-            ItemEquivalenceUpdaterType itemEquivalenceUpdaterType,
-            ImmutableSet<Publisher> itemEquivalenceTargetSources,
-            ContainerEquivalenceUpdaterType topLevelContainerEquivalenceUpdaterType,
-            ImmutableSet<Publisher> topLevelContainerTargetSources,
-            ContainerEquivalenceUpdaterType nonTopLevelContainerEquivalenceUpdaterType,
-            ImmutableSet<Publisher> nonTopLevelContainerTargetSources
+            ImmutableMap<ItemEquivalenceUpdaterType, ImmutableSet<Publisher>> itemEquivalenceUpdaters,
+            ItemEquivalenceHandlerType itemEquivalenceHandlerType,
+            ItemEquivalenceMessengerType itemEquivalenceMessengerType,
+            ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> topLevelContainerEquivalenceUpdaters,
+            ContainerEquivalenceHandlerType topLevelContainerEquivalenceHandlerType,
+            ContainerEquivalenceMessengerType topLevelContainerEquivalenceMessengerType,
+            ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> nonTopLevelContainerEquivalenceUpdaters,
+            ContainerEquivalenceHandlerType nonTopLevelContainerEquivalenceHandlerType,
+            ContainerEquivalenceMessengerType nonTopLevelContainerEquivalenceMessengerType
     ) {
         this.source = checkNotNull(source);
-
-        this.itemEquivalenceUpdaterType = checkNotNull(itemEquivalenceUpdaterType);
-        this.itemEquivalenceTargetSources = ImmutableSet.copyOf(itemEquivalenceTargetSources);
-
-        this.topLevelContainerEquivalenceUpdaterType = checkNotNull(
-                topLevelContainerEquivalenceUpdaterType
-        );
-        this.topLevelContainerTargetSources = ImmutableSet.copyOf(topLevelContainerTargetSources);
-
-        this.nonTopLevelContainerEquivalenceUpdaterType = checkNotNull(
-                nonTopLevelContainerEquivalenceUpdaterType
-        );
-        this.nonTopLevelContainerTargetSources = ImmutableSet.copyOf(
-                nonTopLevelContainerTargetSources
-        );
+        this.itemEquivalenceUpdaters = ImmutableMap.copyOf(itemEquivalenceUpdaters);
+        this.itemEquivalenceHandlerType = checkNotNull(itemEquivalenceHandlerType);
+        this.itemEquivalenceMessengerType = checkNotNull(itemEquivalenceMessengerType);
+        this.topLevelContainerEquivalenceUpdaters = ImmutableMap.copyOf(topLevelContainerEquivalenceUpdaters);
+        this.topLevelContainerEquivalenceHandlerType = checkNotNull(topLevelContainerEquivalenceHandlerType);
+        this.topLevelContainerEquivalenceMessengerType = checkNotNull(topLevelContainerEquivalenceMessengerType);
+        this.nonTopLevelContainerEquivalenceUpdaters = ImmutableMap.copyOf(nonTopLevelContainerEquivalenceUpdaters);
+        this.nonTopLevelContainerEquivalenceHandlerType = checkNotNull(nonTopLevelContainerEquivalenceHandlerType);
+        this.nonTopLevelContainerEquivalenceMessengerType = checkNotNull(nonTopLevelContainerEquivalenceMessengerType);
     }
 
     public static SourceStep builder() {
@@ -56,28 +60,40 @@ public class UpdaterConfiguration {
         return source;
     }
 
-    public ItemEquivalenceUpdaterType getItemEquivalenceUpdaterType() {
-        return itemEquivalenceUpdaterType;
+    public ImmutableMap<ItemEquivalenceUpdaterType, ImmutableSet<Publisher>> getItemEquivalenceUpdaters() {
+        return itemEquivalenceUpdaters;
     }
 
-    public ImmutableSet<Publisher> getItemEquivalenceTargetSources() {
-        return itemEquivalenceTargetSources;
+    public ItemEquivalenceHandlerType getItemEquivalenceHandlerType() {
+        return itemEquivalenceHandlerType;
     }
 
-    public ContainerEquivalenceUpdaterType getTopLevelContainerEquivalenceUpdaterType() {
-        return topLevelContainerEquivalenceUpdaterType;
+    public ItemEquivalenceMessengerType getItemEquivalenceMessengerType() {
+        return itemEquivalenceMessengerType;
     }
 
-    public ImmutableSet<Publisher> getTopLevelContainerTargetSources() {
-        return topLevelContainerTargetSources;
+    public ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> getTopLevelContainerEquivalenceUpdaters() {
+        return topLevelContainerEquivalenceUpdaters;
     }
 
-    public ContainerEquivalenceUpdaterType getNonTopLevelContainerEquivalenceUpdaterType() {
-        return nonTopLevelContainerEquivalenceUpdaterType;
+    public ContainerEquivalenceHandlerType getTopLevelContainerEquivalenceHandlerType() {
+        return topLevelContainerEquivalenceHandlerType;
     }
 
-    public ImmutableSet<Publisher> getNonTopLevelContainerTargetSources() {
-        return nonTopLevelContainerTargetSources;
+    public ContainerEquivalenceMessengerType getTopLevelContainerEquivalenceMessengerType() {
+        return topLevelContainerEquivalenceMessengerType;
+    }
+
+    public ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> getNonTopLevelContainerEquivalenceUpdaters() {
+        return nonTopLevelContainerEquivalenceUpdaters;
+    }
+
+    public ContainerEquivalenceHandlerType getNonTopLevelContainerEquivalenceHandlerType() {
+        return nonTopLevelContainerEquivalenceHandlerType;
+    }
+
+    public ContainerEquivalenceMessengerType getNonTopLevelContainerEquivalenceMessengerType() {
+        return nonTopLevelContainerEquivalenceMessengerType;
     }
 
     public interface SourceStep {
@@ -88,24 +104,27 @@ public class UpdaterConfiguration {
     public interface ItemEquivalenceUpdaterStep {
 
         TopLevelContainerEquivalenceUpdaterStep withItemEquivalenceUpdater(
-                ItemEquivalenceUpdaterType itemEquivalenceUpdaterType,
-                ImmutableSet<Publisher> itemEquivalenceTargetSources
+                ImmutableMap<ItemEquivalenceUpdaterType, ImmutableSet<Publisher>> itemEquivalenceUpdaters,
+                ItemEquivalenceHandlerType itemEquivalenceHandlerType,
+                ItemEquivalenceMessengerType itemEquivalenceMessengerType
         );
     }
 
     public interface TopLevelContainerEquivalenceUpdaterStep {
 
         NonTopLevelContainerEquivalenceUpdaterStep withTopLevelContainerEquivalenceUpdater(
-                ContainerEquivalenceUpdaterType topLevelContainerEquivalenceUpdaterType,
-                ImmutableSet<Publisher> topLevelContainerTargetSources
+                ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> topLevelContainerEquivalenceUpdaters,
+                ContainerEquivalenceHandlerType topLevelContainerEquivalenceHandlerType,
+                ContainerEquivalenceMessengerType topLevelContainerEquivalenceMessengerType
         );
     }
 
     public interface NonTopLevelContainerEquivalenceUpdaterStep {
 
         BuildStep withNonTopLevelContainerEquivalenceUpdater(
-                ContainerEquivalenceUpdaterType nonTopLevelContainerEquivalenceUpdaterType,
-                ImmutableSet<Publisher> nonTopLevelContainerTargetSources
+                ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> nonTopLevelContainerEquivalenceUpdaters,
+                ContainerEquivalenceHandlerType nonTopLevelContainerEquivalenceHandlerType,
+                ContainerEquivalenceMessengerType nonTopLevelContainerEquivalenceMessengerType
         );
     }
 
@@ -120,12 +139,15 @@ public class UpdaterConfiguration {
             BuildStep {
 
         private Publisher source;
-        private ItemEquivalenceUpdaterType itemEquivalenceUpdaterType;
-        private ImmutableSet<Publisher> itemEquivalenceTargetSources;
-        private ContainerEquivalenceUpdaterType topLevelContainerEquivalenceUpdaterType;
-        private ImmutableSet<Publisher> topLevelContainerTargetSources;
-        private ContainerEquivalenceUpdaterType nonTopLevelContainerEquivalenceUpdaterType;
-        private ImmutableSet<Publisher> nonTopLevelContainerTargetSources;
+        private ImmutableMap<ItemEquivalenceUpdaterType, ImmutableSet<Publisher>> itemEquivalenceUpdaters;
+        private ItemEquivalenceHandlerType itemEquivalenceHandlerType;
+        private ItemEquivalenceMessengerType itemEquivalenceMessengerType;
+        private ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> topLevelContainerEquivalenceUpdaters;
+        private ContainerEquivalenceHandlerType topLevelContainerEquivalenceHandlerType;
+        private ContainerEquivalenceMessengerType topLevelContainerEquivalenceMessengerType;
+        private ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> nonTopLevelContainerEquivalenceUpdaters;
+        private ContainerEquivalenceHandlerType nonTopLevelContainerEquivalenceHandlerType;
+        private ContainerEquivalenceMessengerType nonTopLevelContainerEquivalenceMessengerType;
 
         private Builder() {
         }
@@ -138,32 +160,37 @@ public class UpdaterConfiguration {
 
         @Override
         public TopLevelContainerEquivalenceUpdaterStep withItemEquivalenceUpdater(
-                ItemEquivalenceUpdaterType itemEquivalenceUpdaterType,
-                ImmutableSet<Publisher> itemEquivalenceTargetSources
+                ImmutableMap<ItemEquivalenceUpdaterType, ImmutableSet<Publisher>> itemEquivalenceUpdaters,
+                ItemEquivalenceHandlerType itemEquivalenceHandlerType,
+                ItemEquivalenceMessengerType itemEquivalenceMessengerType
         ) {
-            this.itemEquivalenceUpdaterType = itemEquivalenceUpdaterType;
-            this.itemEquivalenceTargetSources = itemEquivalenceTargetSources;
+            this.itemEquivalenceUpdaters = itemEquivalenceUpdaters;
+            this.itemEquivalenceHandlerType = itemEquivalenceHandlerType;
+            this.itemEquivalenceMessengerType = itemEquivalenceMessengerType;
             return this;
         }
 
         @Override
         public NonTopLevelContainerEquivalenceUpdaterStep withTopLevelContainerEquivalenceUpdater(
-                ContainerEquivalenceUpdaterType topLevelContainerEquivalenceUpdaterType,
-                ImmutableSet<Publisher> topLevelContainerTargetSources
+                ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> topLevelContainerEquivalenceUpdaters,
+                ContainerEquivalenceHandlerType topLevelContainerEquivalenceHandlerType,
+                ContainerEquivalenceMessengerType topLevelContainerEquivalenceMessengerType
         ) {
-            this.topLevelContainerEquivalenceUpdaterType = topLevelContainerEquivalenceUpdaterType;
-            this.topLevelContainerTargetSources = topLevelContainerTargetSources;
+            this.topLevelContainerEquivalenceUpdaters = topLevelContainerEquivalenceUpdaters;
+            this.topLevelContainerEquivalenceHandlerType = topLevelContainerEquivalenceHandlerType;
+            this.topLevelContainerEquivalenceMessengerType = topLevelContainerEquivalenceMessengerType;
             return this;
         }
 
         @Override
         public BuildStep withNonTopLevelContainerEquivalenceUpdater(
-                ContainerEquivalenceUpdaterType nonTopLevelContainerEquivalenceUpdaterType,
-                ImmutableSet<Publisher> nonTopLevelContainerTargetSources
+                ImmutableMap<ContainerEquivalenceUpdaterType, ImmutableSet<Publisher>> nonTopLevelContainerEquivalenceUpdaters,
+                ContainerEquivalenceHandlerType nonTopLevelContainerEquivalenceHandlerType,
+                ContainerEquivalenceMessengerType nonTopLevelContainerEquivalenceMessengerType
         ) {
-            this.nonTopLevelContainerEquivalenceUpdaterType =
-                    nonTopLevelContainerEquivalenceUpdaterType;
-            this.nonTopLevelContainerTargetSources = topLevelContainerTargetSources;
+            this.nonTopLevelContainerEquivalenceUpdaters = nonTopLevelContainerEquivalenceUpdaters;
+            this.nonTopLevelContainerEquivalenceHandlerType = nonTopLevelContainerEquivalenceHandlerType;
+            this.nonTopLevelContainerEquivalenceMessengerType = nonTopLevelContainerEquivalenceMessengerType;
             return this;
         }
 
@@ -171,12 +198,15 @@ public class UpdaterConfiguration {
         public UpdaterConfiguration build() {
             return new UpdaterConfiguration(
                     this.source,
-                    this.itemEquivalenceUpdaterType,
-                    this.itemEquivalenceTargetSources,
-                    this.topLevelContainerEquivalenceUpdaterType,
-                    this.topLevelContainerTargetSources,
-                    this.nonTopLevelContainerEquivalenceUpdaterType,
-                    this.nonTopLevelContainerTargetSources
+                    this.itemEquivalenceUpdaters,
+                    this.itemEquivalenceHandlerType,
+                    this.itemEquivalenceMessengerType,
+                    this.topLevelContainerEquivalenceUpdaters,
+                    this.topLevelContainerEquivalenceHandlerType,
+                    this.topLevelContainerEquivalenceMessengerType,
+                    this.nonTopLevelContainerEquivalenceUpdaters,
+                    this.nonTopLevelContainerEquivalenceHandlerType,
+                    this.nonTopLevelContainerEquivalenceMessengerType
             );
         }
     }

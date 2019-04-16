@@ -1,20 +1,12 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
-
-import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
-import scala.actors.threadpool.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -138,7 +130,7 @@ public class DescriptionTitleMatchingScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         return scores.candidates().get(candidate);
     }

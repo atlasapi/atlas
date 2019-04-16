@@ -1,15 +1,14 @@
 package org.atlasapi.equiv.scorers;
 
 import com.google.common.collect.Sets;
-
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Item;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Item;
 
 import java.util.Set;
 
@@ -30,7 +29,7 @@ public class ContentAliasScorer implements EquivalenceScorer<Item> {
             Item subject,
             Set<? extends Item> candidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         DefaultScoredCandidates.Builder<Item> equivalents =
                 DefaultScoredCandidates.fromSource(NAME);
@@ -50,7 +49,7 @@ public class ContentAliasScorer implements EquivalenceScorer<Item> {
             }
         });
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

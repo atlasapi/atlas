@@ -1,6 +1,14 @@
 package org.atlasapi.equiv.messengers;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Longs;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.time.Timestamp;
+import com.metabroadcast.common.time.Timestamper;
 import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.media.entity.Item;
@@ -9,15 +17,6 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.time.Timestamp;
-import com.metabroadcast.common.time.Timestamper;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.primitives.Longs;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +66,12 @@ public class QueueingEquivalenceResultMessengerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         when(lookupEntryStore.entriesForIds(ImmutableSet.of(subject.getId())))
                 .thenReturn(ImmutableList.of(
                         LookupEntry.lookupEntryFrom(graphItemWithLowestId)
@@ -75,7 +80,7 @@ public class QueueingEquivalenceResultMessengerTest {
                                 ))
                 ));
 
-        resultHandler.sendMessage(result);
+        resultHandler.sendMessage(results);
 
         verify(sender).sendMessage(
                 any(ContentEquivalenceAssertionMessage.class),
@@ -94,10 +99,16 @@ public class QueueingEquivalenceResultMessengerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         when(lookupEntryStore.entriesForIds(ImmutableSet.of(subject.getId())))
                 .thenReturn(ImmutableList.of());
 
-        resultHandler.sendMessage(result);
+        resultHandler.sendMessage(results);
 
         verify(sender).sendMessage(
                 any(ContentEquivalenceAssertionMessage.class),

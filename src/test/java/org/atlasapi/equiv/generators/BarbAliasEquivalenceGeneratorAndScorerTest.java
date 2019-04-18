@@ -254,7 +254,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 bcid
         );
         Item bgItem = new Item();
-        String bgUri = "bgUri" + bgid;
+        String bgUri = "bgUri" + bgid + bcid;
         bgItem.setCanonicalUri(bgUri);
         bgItem.setAliases(ImmutableSet.of(bgAlias));
         return bgItem;
@@ -537,12 +537,35 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     @Test
     public void c4AliasesMatchCmsWithoutBcidPrefix() {
-        String bcid = "bcid";
-        String c4Bcid = "C4:" + bcid;
-        Item bgItem = bgItemForBgid(3, c4Bcid);
-        Item oobgItem = oobgItemForBgid(3, c4Bcid);
-        Item parentBcidItem = parentBcidItemForBgid(3, c4Bcid);
-        Item cmsItem = cmsItemForBgid(3, bcid);
+        String cmsBcid = "bcid";
+        String bgBcid = "C4:" + cmsBcid;
+        
+        channel4AliasesMatchCmsWithoutBcidPrefix(cmsBcid, bgBcid);
+    }
+
+    @Test
+    public void e4AliasesMatchCmsWithoutBcidPrefix() {
+        String cmsBcid = "bcid";
+        String bgBcid = "E4:" + cmsBcid;
+
+        channel4AliasesMatchCmsWithoutBcidPrefix(cmsBcid, bgBcid);
+    }
+
+    @Test
+    public void m4AliasesMatchCmsWithoutBcidPrefix() {
+        String cmsBcid = "bcid";
+        String bgBcid = "M4:" + cmsBcid;
+
+        channel4AliasesMatchCmsWithoutBcidPrefix(cmsBcid, bgBcid);
+    }
+    
+    
+
+    private void channel4AliasesMatchCmsWithoutBcidPrefix(String cmsBcid, String bgBcid) {
+        Item bgItem = bgItemForBgid(3, bgBcid);
+        Item oobgItem = oobgItemForBgid(3, bgBcid);
+        Item parentBcidItem = parentBcidItemForBgid(3, bgBcid);
+        Item cmsItem = cmsItemForBgid(3, cmsBcid);
         setUpContentResolving(ImmutableSet.of(bgItem, oobgItem, parentBcidItem, cmsItem));
         ScoredCandidates<Content> scoredCandidates;
         scoredCandidates = aliasGenerator.generate(
@@ -584,6 +607,50 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(parentBcidItem) == SCORE_ON_MATCH);
         assertTrue(!scoredCandidates.candidates().containsKey(cmsItem));
+    }
+
+    @Test
+    public void channel4BgAliasesMatchWithBothPrefixedP1() {
+        Item item1 = bgItemForBgid(3, "C4:bcid");
+        Item item2 = bgItemForBgid(3, "E4:bcid");
+
+        channel4BgAliasesMatchWithBothPrefixed(item1, item2);
+    }
+
+    @Test
+    public void channel4BgAliasesMatchWithBothPrefixedP2() {
+        Item item1 = bgItemForBgid(3, "C4:bcid");
+        Item item2 = parentBcidItemForBgid(3, "M4:bcid");
+
+        channel4BgAliasesMatchWithBothPrefixed(item1, item2);
+    }
+
+    @Test
+    public void channel4BgAliasesMatchWithBothPrefixedP3() {
+        Item item1 = oobgItemForBgid(3, "E4:bcid");
+        Item item2 = parentBcidItemForBgid(3, "M4:bcid");
+
+        channel4BgAliasesMatchWithBothPrefixed(item1, item2);
+    }
+
+    private void channel4BgAliasesMatchWithBothPrefixed(Item item1, Item item2) {
+        setUpContentResolving(ImmutableSet.of(item1, item2));
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                item1,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+        assertTrue(!scoredCandidates.candidates().containsKey(item1));
+        assertTrue(scoredCandidates.candidates().get(item2) == SCORE_ON_MATCH);
+
+        scoredCandidates = aliasGenerator.generate(
+                item2,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+        assertTrue(!scoredCandidates.candidates().containsKey(item2));
+        assertTrue(scoredCandidates.candidates().get(item1) == SCORE_ON_MATCH);
     }
 
     @Test

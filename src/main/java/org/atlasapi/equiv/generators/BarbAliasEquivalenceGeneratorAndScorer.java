@@ -23,11 +23,9 @@ import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import static com.google.gdata.util.common.base.Preconditions.checkArgument;
+import static java.lang.String.format;
 
 /**
  * Query for each alias. For each alias get a list of candidates, and score them as well (?).
@@ -66,6 +64,8 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private static final String ITV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:2";
     private static final String STV_BG_PREFIX = "gb:barb:broadcastGroup:111";
     private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111";
+    private static final String SKY_BG_PREFIX = "gb:barb:broadcastGroup:5";
+    private static final String SKY_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:5";
     private static final String BARB_CONTENT_ID_NAMESPACE = "gb:barb:contentid";
     
     private static final Set<String> C4_NAMESPACES = ImmutableSet.of(
@@ -281,6 +281,14 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
             }
             
             addPrefixedC4Aliases(expandedAliases, alias.getNamespace(), value);
+        }
+
+        // sky has bad data so ignore the parents in favour of the originating broadcaster if exists and isnt sky
+        if (expandedAliases.stream().anyMatch(alias -> alias.getNamespace().startsWith(SKY_BG_PREFIX)) &&
+                expandedAliases.stream()
+                        .map(Alias::getNamespace)
+                        .anyMatch(ns -> ns.startsWith(OOBG_PREFIX) && !ns.startsWith(SKY_OOBG_PREFIX))) {
+            expandedAliases.removeIf(alias -> alias.getNamespace().endsWith(PARENT_VERSION_BCID_NAMESPACE_SUFFIX));
         }
         
         return expandedAliases;

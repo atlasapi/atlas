@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.String.format;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -250,7 +251,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     private Item bgItemForBgid(int bgid, String bcid) {
         Alias bgAlias = new Alias(
-                String.format(BG_BCID_NAMESPACE_FORMAT, bgid),
+                format(BG_BCID_NAMESPACE_FORMAT, bgid),
                 bcid
         );
         Item bgItem = new Item();
@@ -262,7 +263,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     private Item oobgItemForBgid(int bgid, String bcid) {
         Alias bgAlias = new Alias(
-                String.format(OOBG_BCID_NAMESPACE_FORMAT, bgid),
+                format(OOBG_BCID_NAMESPACE_FORMAT, bgid),
                 bcid
         );
         Item oobgItem = new Item();
@@ -274,7 +275,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     private Item parentBcidItemForBgid(int bgid, String bcid) {
         Alias bgAlias = new Alias(
-                String.format(BG_PARENT_VERSION_BCID_NAMESPACE_FORMAT, bgid),
+                format(BG_PARENT_VERSION_BCID_NAMESPACE_FORMAT, bgid),
                 bcid
         );
         Item parentBcidItem = new Item();
@@ -691,6 +692,33 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         );
         assertTrue(!scoredCandidates.candidates().containsKey(differentItem));
         assertThat(scoredCandidates.candidates().get(item), is(SCORE_ON_MATCH));
+    }
+    
+    @Test
+    public void skyIgnoresParentBcidsIfOobgidExists() throws Exception {
+        String bcid = "1234";
+        Alias oobgidBcid = new Alias(format(OOBG_BCID_NAMESPACE_FORMAT, 3), bcid);
+        
+        Item skyItem = bgItemForBgid(5, bcid);
+        skyItem.addAlias(oobgidBcid);
+        
+        Item oobgItem = oobgItemForBgid(3, bcid);
+        Item parentBcidItem = parentBcidItemForBgid(5, bcid);
+        Item cmsItem = cmsItemForBgid(3, bcid);
+        
+        setUpContentResolving(ImmutableSet.of(skyItem, oobgItem, parentBcidItem, cmsItem));
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                skyItem,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+        
+        assertTrue(!scoredCandidates.candidates().containsKey(skyItem));
+        assertTrue(!scoredCandidates.candidates().containsKey(parentBcidItem));
+        assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(cmsItem) == SCORE_ON_MATCH);
+        
     }
 
 }

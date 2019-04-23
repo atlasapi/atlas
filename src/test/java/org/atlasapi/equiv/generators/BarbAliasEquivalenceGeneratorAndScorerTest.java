@@ -720,4 +720,30 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         assertTrue(scoredCandidates.candidates().get(cmsItem) == SCORE_ON_MATCH);
     }
 
+    @Test
+    public void doesNotIgnoreParentsIfContentIsNotSky() throws Exception {
+        String bcid = "1234";
+        Alias oobgidBcid = new Alias(format(OOBG_BCID_NAMESPACE_FORMAT, 5), bcid);
+
+        Item c4Item = bgItemForBgid(1, bcid);
+        c4Item.addAlias(oobgidBcid);
+
+        Item oobgItem = oobgItemForBgid(5, bcid);
+        Item parentBcidItem = parentBcidItemForBgid(1, bcid);
+        Item cmsItem = cmsItemForBgid(1, bcid);
+
+        setUpContentResolving(ImmutableSet.of(c4Item, oobgItem, parentBcidItem, cmsItem));
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                c4Item,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertTrue(!scoredCandidates.candidates().containsKey(c4Item));
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem) == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(cmsItem) == SCORE_ON_MATCH);
+    }
+
 }

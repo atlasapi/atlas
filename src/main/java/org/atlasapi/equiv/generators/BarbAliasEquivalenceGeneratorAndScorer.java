@@ -283,7 +283,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         }
 
         // sky has bad data so ignore the parents in favour of the originating broadcaster if exists and isnt sky
-        if (expandedAliases.stream().anyMatch(alias -> alias.getNamespace().startsWith(SKY_BG_PREFIX)) &&
+        if (aliases.stream().anyMatch(alias -> alias.getNamespace().startsWith(SKY_BG_PREFIX)) &&
                 expandedAliases.stream()
                         .map(Alias::getNamespace)
                         .anyMatch(ns -> ns.startsWith(OOBG_PREFIX) && !ns.startsWith(SKY_OOBG_PREFIX))) {

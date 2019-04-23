@@ -718,7 +718,6 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         assertTrue(!scoredCandidates.candidates().containsKey(parentBcidItem));
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(cmsItem) == SCORE_ON_MATCH);
-        
     }
 
 }

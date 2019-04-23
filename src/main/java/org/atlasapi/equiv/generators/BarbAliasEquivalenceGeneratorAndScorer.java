@@ -25,7 +25,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.google.gdata.util.common.base.Preconditions.checkArgument;
-import static java.lang.String.format;
 
 /**
  * Query for each alias. For each alias get a list of candidates, and score them as well (?).

@@ -725,25 +725,54 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         String bcid = "1234";
         Alias oobgidBcid = new Alias(format(OOBG_BCID_NAMESPACE_FORMAT, 5), bcid);
 
-        Item c4Item = bgItemForBgid(1, bcid);
-        c4Item.addAlias(oobgidBcid);
+        Item bbcItem = bgItemForBgid(1, bcid);
+        bbcItem.addAlias(oobgidBcid);
 
         Item oobgItem = oobgItemForBgid(5, bcid);
         Item parentBcidItem = parentBcidItemForBgid(1, bcid);
         Item cmsItem = cmsItemForBgid(1, bcid);
 
-        setUpContentResolving(ImmutableSet.of(c4Item, oobgItem, parentBcidItem, cmsItem));
+        setUpContentResolving(ImmutableSet.of(bbcItem, oobgItem, parentBcidItem, cmsItem));
         ScoredCandidates<Content> scoredCandidates;
         scoredCandidates = aliasGenerator.generate(
-                c4Item,
+                bbcItem,
                 desc,
                 EquivToTelescopeResult.create("id", "publisher")
         );
 
-        assertTrue(!scoredCandidates.candidates().containsKey(c4Item));
+        assertTrue(!scoredCandidates.candidates().containsKey(bbcItem));
         assertTrue(scoredCandidates.candidates().get(parentBcidItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
         assertTrue(scoredCandidates.candidates().get(cmsItem) == SCORE_ON_MATCH);
+    }
+
+    @Test
+    public void skyItemWithNonSkyOobgidMatchesNonSkyParent() throws Exception {
+        String bcidOne = "1234";
+        String bcidTwo = "6789";
+        String bcidThree = "9999";
+        String bcidFour = "1111";
+        
+        Item skyItem = bgItemForBgid(5, bcidOne);
+        Alias oobgidBcid = new Alias(format(OOBG_BCID_NAMESPACE_FORMAT, 1), bcidTwo);
+        Alias parentBgid = new Alias(format(BG_PARENT_VERSION_BCID_NAMESPACE_FORMAT, 5), bcidThree);
+        skyItem.addAlias(oobgidBcid);
+        skyItem.addAlias(parentBgid);
+
+        Item parentBcidItem = parentBcidItemForBgid(1, bcidTwo);
+        Alias bbcBgid = new Alias(format(BG_BCID_NAMESPACE_FORMAT, 1), bcidFour);
+        parentBcidItem.addAlias(bbcBgid);
+
+        setUpContentResolving(ImmutableSet.of(skyItem, parentBcidItem));
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                skyItem,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertTrue(!scoredCandidates.candidates().containsKey(skyItem));
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem) == SCORE_ON_MATCH);
     }
 
 }

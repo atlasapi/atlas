@@ -35,6 +35,7 @@
  */
 {template .result}
 <h2>{$result.title} ({$result.publisher}) - <span class="target-uri">{$result.id}</span> <span class="target-id">({$result.aid})</span></h2>
+<p class="time">{$result.time}</p>
 {if length($result.resultTables) <= 0}
 <p>No suggested equivalences</p>
 {/if}
@@ -120,7 +121,7 @@
         </div>
     {/if}
 {/foreach}
-<p class="time">{$result.time}</p>
+<hr>
 {if $result.desc}
     <div id="desc">
         {call atlas.templates.equivalence.widgets.description}

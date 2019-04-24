@@ -65,6 +65,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111";
     private static final String SKY_BG_PREFIX = "gb:barb:broadcastGroup:5";
     private static final String SKY_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:5";
+    private static final String SKY_PARENT_BCID_SUFFIX = "5:parentVersionBcid";
     private static final String BARB_CONTENT_ID_NAMESPACE = "gb:barb:contentid";
     
     private static final Set<String> C4_NAMESPACES = ImmutableSet.of(
@@ -284,10 +285,10 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
 
         // sky has bad data so ignore the parents in favour of the originating broadcaster if exists and isnt sky
         if (aliases.stream().anyMatch(alias -> alias.getNamespace().startsWith(SKY_BG_PREFIX)) &&
-                expandedAliases.stream()
+                aliases.stream()
                         .map(Alias::getNamespace)
                         .anyMatch(ns -> ns.startsWith(OOBG_PREFIX) && !ns.startsWith(SKY_OOBG_PREFIX))) {
-            expandedAliases.removeIf(alias -> alias.getNamespace().endsWith(PARENT_VERSION_BCID_NAMESPACE_SUFFIX));
+            expandedAliases.removeIf(alias -> alias.getNamespace().endsWith(SKY_PARENT_BCID_SUFFIX));
         }
         
         return expandedAliases;

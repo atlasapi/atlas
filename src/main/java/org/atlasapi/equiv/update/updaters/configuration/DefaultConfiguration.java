@@ -224,6 +224,11 @@ public class DefaultConfiguration {
             .addAll(VF_SOURCES)
             .build();
 
+    // This was changed from being a Sets.difference of all publishers and a select set of publishers
+    // to a hardcoded list of what that Sets.difference actually was.
+    // As a result there may be sources in here that aren't really desired or used.
+    // The change was to prevent new sources being added automatically being included in equivalence results
+    // inadvertently.
     public static final ImmutableSet<Publisher> TARGET_SOURCES = ImmutableSet.<Publisher>builder()
             .addAll(
                     ImmutableSet.of(

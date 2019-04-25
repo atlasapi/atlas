@@ -122,15 +122,18 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("Barb Alias Equivalence Generator");
 
-        subject.getAliases().forEach(alias -> desc.appendText(
+
+        Set<Alias> expandedAliases = getExpandedAliases(subject.getAliases())
+                .stream()
+                .filter(this::acceptedAlias)
+                .collect(MoreCollectors.toImmutableSet());
+
+        expandedAliases.forEach(alias -> desc.appendText(
                 "namespace: " + alias.getNamespace() + ", value: " + alias.getValue()
         ));
         desc.finishStage();
 
-        Set<Alias> expandedAliases = getExpandedAliases(subject.getAliases());
-
         Set<LookupEntry> potentialCandidatesSet = expandedAliases.parallelStream()
-                .filter(this::acceptedAlias)
                 .map(this::getLookupEntries) //from atlas
                 .filter(Objects::nonNull)
                 .flatMap(MoreStreams::stream)
@@ -140,7 +143,6 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         //whoever wrote this had trust issues and is rechecking that what he got back is actually
         //matching content. We assume he had good reason, but might as well be pointless.
         Set<LookupEntry> candidatesSet = expandedAliases.parallelStream()
-                .filter(this::acceptedAlias)
                 //for each alias of the subject, look in the potentialCandidatesSet and get those that match
                 .map(alias -> getAllThatMatch(alias, potentialCandidatesSet, subject))
                 .filter(collection -> collection.size() <= MAXIMUM_ALIAS_MATCHES) //avoids equiving on aliases which are too common

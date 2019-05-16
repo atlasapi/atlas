@@ -14,6 +14,7 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
@@ -42,6 +43,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     //Score on match.
     private final Set<Publisher> publishers;
     private final Score aliasMatchingScore;
+    private final Score aliasMismatchScore;
     private final boolean includeUnpublishedContent;
 
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
@@ -65,6 +67,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111";
     private static final String SKY_BG_PREFIX = "gb:barb:broadcastGroup:5";
     private static final String SKY_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:5";
+    private static final String SKY_BCID_NAMESPACE = "gb:barb:broadcastGroup:5:bcid";
     private static final String SKY_PARENT_BCID_NAMESPACE = "gb:barb:broadcastGroup:5:parentVersionBcid";
     private static final String BARB_CONTENT_ID_NAMESPACE = "gb:barb:contentid";
     
@@ -84,12 +87,14 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
             ContentResolver resolver,
             Set<Publisher> publishers,
             Score aliasMatchingScore,
+            Score aliasMismatchScore,
             boolean includeUnpublishedContent
     ) {
         this.lookupEntryStore = lookupEntryStore;
         this.resolver = resolver;
         this.publishers = publishers;
         this.aliasMatchingScore = aliasMatchingScore;
+        this.aliasMismatchScore = aliasMismatchScore;
         this.includeUnpublishedContent = includeUnpublishedContent;
     }
 
@@ -109,7 +114,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         return equivalents.build();
     }
 
-    //Only equiving on BCID aliases due to txnumber and transmission aliases both leading to bad candidates
+    //Only equiving on BCID and barb contentId aliases due to txnumber and transmission aliases both leading to bad candidates
     private DefaultScoredCandidates.Builder<T> findByCommonAlias(
             T subject,
             DefaultScoredCandidates.Builder<T> equivalents,
@@ -154,13 +159,14 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
 
         resolved.getAllResolvedResults().stream()
                 .distinct()
-                .forEach(identified -> {
-                    equivalents.addEquivalent((T) identified, aliasMatchingScore);
-                    desc.appendText("Candidate %s", identified.getCanonicalUri());
+                .forEach(candidate -> {
+                    Score score = score(subject, candidate, expandedAliases);
+                    equivalents.addEquivalent((T) candidate, score);
+                    desc.appendText("Candidate %s", candidate.getCanonicalUri());
 
                     // this if statement keeps lots of old tests happy
-                    if (identified.getId() != null) {
-                        generatorComponent.addComponentResult(identified.getId(),
+                    if (candidate.getId() != null) {
+                        generatorComponent.addComponentResult(candidate.getId(),
                                 aliasMatchingScore.toString());
                     }
                 });
@@ -168,6 +174,69 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         equivToTelescopeResult.addGeneratorResult(generatorComponent);
 
         return equivalents;
+    }
+
+    private Score score(T subject, Identified candidate, Set<Alias> expandedAliases) {
+        boolean subjectIsSkyWithNonSkyOobgid = skyWithNonSkyOobgid(subject);
+        boolean candidateIsSkyWithNonSkyOobgid = skyWithNonSkyOobgid(candidate);
+        boolean eitherIsSkyWithNonSkyOobgid = subjectIsSkyWithNonSkyOobgid || candidateIsSkyWithNonSkyOobgid;
+        for (Alias alias : candidate.getAliases()) {
+            // Sky parent version bcids should be ignored if the originating owner of the content is non-Sky
+            // According to Sky the parent version bcids in these cases can (and have been observed) to be incorrect
+            // and would equiv content that should not be equived together.
+            // As a result if either the subject or candidate is such a piece of sky content we have to be careful
+            // to avoid equiving through the parent version bcid incorrectly.
+            // We can't prevent generating the candidates since we don't know until we resolve whether the candidate
+            // has a non-Sky originating owner, and as such do this in the scoring step.
+            if (eitherIsSkyWithNonSkyOobgid && alias.getNamespace().startsWith(SKY_BG_PREFIX)) {
+                if (alias.getNamespace().equals(SKY_PARENT_BCID_NAMESPACE)) {
+                    if(!candidateIsSkyWithNonSkyOobgid) { //the parent bcid should be used, but the subject's parent bcid should be ignored
+                        Alias bcidAlias = aliasForNewNamespaceSuffix(
+                                alias,
+                                PARENT_VERSION_BCID_NAMESPACE_SUFFIX,
+                                BCID_NAMESPACE_SUFFIX
+                        );
+                        if (subject.getAliases().contains(bcidAlias)) {
+                            return aliasMatchingScore;
+                        }
+                    }
+                } else if (alias.getNamespace().equals(SKY_BCID_NAMESPACE)) {
+                    if (subject.getAliases().contains(alias)) {
+                        return aliasMatchingScore;
+                    } else if (!subjectIsSkyWithNonSkyOobgid) { //the subject's parent bcid should be considered
+                        Alias parentBcidAlias = aliasForNewNamespaceSuffix(
+                                alias,
+                                BCID_NAMESPACE_SUFFIX,
+                                PARENT_VERSION_BCID_NAMESPACE_SUFFIX
+                        );
+                        if (subject.getAliases().contains(parentBcidAlias)) {
+                            return aliasMatchingScore;
+                        }
+                    }
+                }
+            } else {
+                if (expandedAliases.contains(alias)) {
+                    return aliasMatchingScore;
+                }
+            }
+        }
+        return aliasMismatchScore;
+    }
+
+    private boolean skyWithNonSkyOobgid(Identified subject) {
+        boolean isSky = false;
+        boolean isNonSkyOobgid = false;
+        for(Alias alias : subject.getAliases()) {
+            if(alias.getNamespace().startsWith(SKY_BG_PREFIX)) {
+                isSky = true;
+            } else if(alias.getNamespace().startsWith(OOBG_PREFIX) && !alias.getNamespace().equals(SKY_OOBG_PREFIX)) {
+                isNonSkyOobgid = true;
+            }
+            if(isSky && isNonSkyOobgid) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean acceptedAlias(Alias alias) {
@@ -281,14 +350,6 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
             }
             
             addPrefixedC4Aliases(expandedAliases, alias.getNamespace(), value);
-        }
-
-        // sky has bad data so ignore the parents in favour of the originating broadcaster if exists and isnt sky
-        if (aliases.stream().anyMatch(alias -> alias.getNamespace().startsWith(SKY_BG_PREFIX)) &&
-                aliases.stream()
-                        .map(Alias::getNamespace)
-                        .anyMatch(ns -> ns.startsWith(OOBG_PREFIX) && !ns.startsWith(SKY_OOBG_PREFIX))) {
-            expandedAliases.removeIf(alias -> alias.getNamespace().equals(SKY_PARENT_BCID_NAMESPACE));
         }
         
         return expandedAliases;

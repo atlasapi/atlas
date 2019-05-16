@@ -58,6 +58,7 @@ public class BarbItemUpdaterProvider implements EquivalenceResultUpdaterProvider
                                         dependencies.getContentResolver(),
                                         targetPublishers,
                                         Score.valueOf(10.0),
+                                        Score.ZERO,
                                         false
                                 ),
                                 new BroadcastMatchingItemEquivalenceGeneratorAndScorer(

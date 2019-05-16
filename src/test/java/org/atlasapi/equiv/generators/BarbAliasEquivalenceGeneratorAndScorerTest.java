@@ -47,6 +47,7 @@ import static org.mockito.Mockito.when;
 public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     private static final Score SCORE_ON_MATCH = Score.valueOf(10.0);
+    private static final Score SCORE_ON_MISMATCH = Score.ZERO;
 
     private static final String BBC_CMS_BCID_NAMESPACE = "gb:bbc:nitro:prod:version:pid";
     private static final String C4_CMS_BCID_NAMESPACE = "gb:channel4:prod:pmlsd:programmeId";
@@ -82,6 +83,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                     aliasResolver,
                     INCLUDED_PUBLISHERS,
                     SCORE_ON_MATCH,
+                    SCORE_ON_MISMATCH,
                     INCLUDE_UNPUBLISHED_CONTENT
             );
 
@@ -748,32 +750,6 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         assertTrue(!scoredCandidates.candidates().containsKey(differentItem));
         assertThat(scoredCandidates.candidates().get(item), is(SCORE_ON_MATCH));
     }
-    
-    @Test
-    public void skyIgnoresParentBcidsIfOobgidExists() throws Exception {
-        String bcid = "1234";
-        Alias oobgidBcid = new Alias(format(OOBG_BCID_NAMESPACE_FORMAT, 3), bcid);
-        
-        Item skyItem = bgItemForBgid(5, bcid);
-        skyItem.addAlias(oobgidBcid);
-        
-        Item oobgItem = oobgItemForBgid(3, bcid);
-        Item parentBcidItem = parentBcidItemForBgid(5, bcid);
-        Item cmsItem = cmsItemForBgid(3, bcid);
-        
-        setUpContentResolving(ImmutableSet.of(skyItem, oobgItem, parentBcidItem, cmsItem));
-        ScoredCandidates<Content> scoredCandidates;
-        scoredCandidates = aliasGenerator.generate(
-                skyItem,
-                desc,
-                EquivToTelescopeResult.create("id", "publisher")
-        );
-        
-        assertTrue(!scoredCandidates.candidates().containsKey(skyItem));
-        assertTrue(!scoredCandidates.candidates().containsKey(parentBcidItem));
-        assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
-        assertTrue(scoredCandidates.candidates().get(cmsItem) == SCORE_ON_MATCH);
-    }
 
     @Test
     public void doesNotIgnoreParentsIfContentIsNotSky() throws Exception {
@@ -861,9 +837,10 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         );
 
         assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
-        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
         assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
         assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
 
         scoredCandidates = aliasGenerator.generate(
                 item2,
@@ -871,9 +848,11 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 EquivToTelescopeResult.create("id", "publisher")
         );
 
-        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
         assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
-        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MISMATCH));
 
         scoredCandidates = aliasGenerator.generate(
                 item3,
@@ -882,9 +861,10 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         );
 
         assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
-        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
         assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
         assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
     }
 
     @Test
@@ -924,9 +904,10 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         );
 
         assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
-        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
         assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
         assertThat(scoredCandidates.candidates().containsKey(item4), is(false));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
         assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MATCH));
 
         scoredCandidates = aliasGenerator.generate(
@@ -935,10 +916,11 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 EquivToTelescopeResult.create("id", "publisher")
         );
 
-        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
         assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
         assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
         assertThat(scoredCandidates.candidates().containsKey(item4), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
         assertThat(scoredCandidates.candidates().get(item4), is(SCORE_ON_MATCH));
 
         scoredCandidates = aliasGenerator.generate(
@@ -997,8 +979,10 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         );
 
         assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
-        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
-        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MISMATCH));
 
         scoredCandidates = aliasGenerator.generate(
                 item2,
@@ -1006,9 +990,12 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 EquivToTelescopeResult.create("id", "publisher")
         );
 
-        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
         assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
-        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MISMATCH));
+
 
         scoredCandidates = aliasGenerator.generate(
                 item3,
@@ -1016,9 +1003,11 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 EquivToTelescopeResult.create("id", "publisher")
         );
 
-        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
-        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
         assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
     }
 
 }

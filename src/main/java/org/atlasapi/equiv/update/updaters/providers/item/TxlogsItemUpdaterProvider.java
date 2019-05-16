@@ -54,6 +54,7 @@ public class TxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         dependencies.getContentResolver(),
                                         targetPublishers,
                                         Score.valueOf(10.0),
+                                        Score.ZERO,
                                         false
                                 ),
                                 new BroadcastMatchingItemEquivalenceGeneratorAndScorer(

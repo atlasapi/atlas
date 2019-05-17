@@ -50,6 +50,7 @@ public class BarbXItemUpdaterProvider implements EquivalenceResultUpdaterProvide
                                         dependencies.getContentResolver(),
                                         targetPublishers,
                                         Score.valueOf(10.0),
+                                        Score.ZERO,
                                         false
                                 )
                         )

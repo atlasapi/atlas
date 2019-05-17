@@ -1,9 +1,11 @@
 package org.atlasapi.equiv.generators;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.results.description.DefaultDescription;
@@ -33,6 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.String.format;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -44,6 +47,7 @@ import static org.mockito.Mockito.when;
 public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     private static final Score SCORE_ON_MATCH = Score.valueOf(10.0);
+    private static final Score SCORE_ON_MISMATCH = Score.ZERO;
 
     private static final String BBC_CMS_BCID_NAMESPACE = "gb:bbc:nitro:prod:version:pid";
     private static final String C4_CMS_BCID_NAMESPACE = "gb:channel4:prod:pmlsd:programmeId";
@@ -79,6 +83,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                     aliasResolver,
                     INCLUDED_PUBLISHERS,
                     SCORE_ON_MATCH,
+                    SCORE_ON_MISMATCH,
                     INCLUDE_UNPUBLISHED_CONTENT
             );
 
@@ -223,12 +228,22 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
     }
 
     private void setUpContentResolving(Collection<Content> contents) {
-        for(Content content : contents) {
+        SetMultimap<Alias, Content> aliasContentMultimap = HashMultimap.create();
+        for (Content content : contents) {
+            for (Alias alias : content.getAliases()) {
+                aliasContentMultimap.put(alias, content);
+            }
+        }
+        for (Alias alias : aliasContentMultimap.keySet()) {
             when(aliasLookupEntryStore.entriesForAliases(
-                    Optional.of(getAlias(content).getNamespace()),
-                    ImmutableSet.of(getAlias(content).getValue()),
+                    Optional.of(alias.getNamespace()),
+                    ImmutableSet.of(alias.getValue()),
                     INCLUDE_UNPUBLISHED_CONTENT
-            )).thenReturn(ImmutableList.of(lookupEntryForContent(content)));
+            )).thenReturn(
+                    aliasContentMultimap.get(alias).stream()
+                            .map(this::lookupEntryForContent)
+                            .collect(MoreCollectors.toImmutableList())
+            );
         }
 
         Set<Set<Content>> powerSet = Sets.powerSet(ImmutableSet.copyOf(contents));
@@ -250,11 +265,11 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     private Item bgItemForBgid(int bgid, String bcid) {
         Alias bgAlias = new Alias(
-                String.format(BG_BCID_NAMESPACE_FORMAT, bgid),
+                format(BG_BCID_NAMESPACE_FORMAT, bgid),
                 bcid
         );
         Item bgItem = new Item();
-        String bgUri = "bgUri" + bgid + bcid;
+        String bgUri = "bgUri:" + bgid  + "-" + bcid;
         bgItem.setCanonicalUri(bgUri);
         bgItem.setAliases(ImmutableSet.of(bgAlias));
         return bgItem;
@@ -262,11 +277,11 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     private Item oobgItemForBgid(int bgid, String bcid) {
         Alias bgAlias = new Alias(
-                String.format(OOBG_BCID_NAMESPACE_FORMAT, bgid),
+                format(OOBG_BCID_NAMESPACE_FORMAT, bgid),
                 bcid
         );
         Item oobgItem = new Item();
-        String bgUri = "oobgUri" + bgid;
+        String bgUri = "oobgUri:" + bgid + "-" + bcid;
         oobgItem.setCanonicalUri(bgUri);
         oobgItem.setAliases(ImmutableSet.of(bgAlias));
         return oobgItem;
@@ -274,11 +289,11 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
 
     private Item parentBcidItemForBgid(int bgid, String bcid) {
         Alias bgAlias = new Alias(
-                String.format(BG_PARENT_VERSION_BCID_NAMESPACE_FORMAT, bgid),
+                format(BG_PARENT_VERSION_BCID_NAMESPACE_FORMAT, bgid),
                 bcid
         );
         Item parentBcidItem = new Item();
-        String bgUri = "parentBcidUri" + bgid;
+        String bgUri = "parentBcidUri:" + bgid + "-" + bcid;
         parentBcidItem.setCanonicalUri(bgUri);
         parentBcidItem.setAliases(ImmutableSet.of(bgAlias));
         return parentBcidItem;
@@ -290,10 +305,52 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 bcid
         );
         Item cmsItem = new Item();
-        String bgUri = "cmsUri" + bgid;
+        String bgUri = "cmsUri:" + bgid + "-" + bcid;
         cmsItem.setCanonicalUri(bgUri);
         cmsItem.setAliases(ImmutableSet.of(bgAlias));
         return cmsItem;
+    }
+
+    private Item item(
+            String uri,
+            String title,
+            @Nullable Integer bgid, @Nullable String bcid, @Nullable String parentVersionBcid,
+            @Nullable Integer oobgid, @Nullable String oobcid
+    ) {
+        ImmutableSet.Builder<Alias> aliases = ImmutableSet.builder();
+        if (bgid != null) {
+            if (bcid != null) {
+                aliases.add(
+                        new Alias(
+                                format(BG_BCID_NAMESPACE_FORMAT, bgid),
+                                bcid
+                        )
+                );
+            }
+            if (parentVersionBcid != null) {
+                aliases.add(
+                        new Alias(
+                                format(BG_PARENT_VERSION_BCID_NAMESPACE_FORMAT, bgid),
+                                parentVersionBcid
+                        )
+                );
+            }
+        }
+        if (oobgid != null) {
+            if (oobcid != null) {
+                aliases.add(
+                        new Alias(
+                                format(OOBG_BCID_NAMESPACE_FORMAT, oobgid),
+                                oobcid
+                        )
+                );
+            }
+        }
+        Item item = new Item();
+        item.setCanonicalUri(uri);
+        item.setAliases(aliases.build());
+        item.setTitle(title);
+        return item;
     }
 
     @Nullable
@@ -691,6 +748,353 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         );
         assertTrue(!scoredCandidates.candidates().containsKey(differentItem));
         assertThat(scoredCandidates.candidates().get(item), is(SCORE_ON_MATCH));
+    }
+
+    @Test
+    public void doesNotIgnoreParentsIfContentIsNotSky() throws Exception {
+        String bcid = "1234";
+        Alias oobgidBcid = new Alias(format(OOBG_BCID_NAMESPACE_FORMAT, 5), bcid);
+
+        Item bbcItem = bgItemForBgid(1, bcid);
+        bbcItem.addAlias(oobgidBcid);
+
+        Item oobgItem = oobgItemForBgid(5, bcid);
+        Item parentBcidItem = parentBcidItemForBgid(1, bcid);
+        Item cmsItem = cmsItemForBgid(1, bcid);
+
+        setUpContentResolving(ImmutableSet.of(bbcItem, oobgItem, parentBcidItem, cmsItem));
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                bbcItem,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertTrue(!scoredCandidates.candidates().containsKey(bbcItem));
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem) == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(oobgItem) == SCORE_ON_MATCH);
+        assertTrue(scoredCandidates.candidates().get(cmsItem) == SCORE_ON_MATCH);
+    }
+
+    @Test
+    public void skyItemWithNonSkyOobgidMatchesNonSkyParent() throws Exception {
+        String bcidOne = "1234";
+        String bcidTwo = "6789";
+        String bcidThree = "9999";
+        String bcidFour = "1111";
+        
+        Item skyItem = bgItemForBgid(5, bcidOne);
+        Alias oobgidBcid = new Alias(format(OOBG_BCID_NAMESPACE_FORMAT, 1), bcidTwo);
+        Alias parentBgid = new Alias(format(BG_PARENT_VERSION_BCID_NAMESPACE_FORMAT, 5), bcidThree);
+        skyItem.addAlias(oobgidBcid);
+        skyItem.addAlias(parentBgid);
+
+        Item parentBcidItem = parentBcidItemForBgid(1, bcidTwo);
+        Alias bbcBgid = new Alias(format(BG_BCID_NAMESPACE_FORMAT, 1), bcidFour);
+        parentBcidItem.addAlias(bbcBgid);
+
+        setUpContentResolving(ImmutableSet.of(skyItem, parentBcidItem));
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                skyItem,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertTrue(!scoredCandidates.candidates().containsKey(skyItem));
+        assertTrue(scoredCandidates.candidates().get(parentBcidItem) == SCORE_ON_MATCH);
+    }
+
+    @Test
+    public void testSkyItemWithNonSkyOobgidRealExample() {
+        Item item1 = item(
+                "1",
+                "Good Morning Britain (2018), Series 5, Episode 232",
+                5, "A", null,
+                2, "X"
+        );
+        Item item2 = item(
+                "2",
+                "Lorraine, Series 10, Episode 232",
+                5, "B", "A",
+                2, "Y"
+        );
+        Item item3 = item(
+                "3",
+                "Good Morning Britain (2018), Series 5, Episode 232",
+                5, "C", "A",
+                2, "X"
+        );
+        setUpContentResolving(ImmutableSet.of(item1, item2, item3));
+        //equiv should be item1 <-> item3 on oobcid, item2 without any equivs
+
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                item1,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item2,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MISMATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item3,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+    }
+
+    @Test
+    public void testSkyItemWithNonSkyOobgidRealExample2() {
+        Item item1 = item(
+                "1",
+                "Great British Bake Off: Extra Slice, Series 1, Episode 9",
+                5, "A", "P",
+                3, "X"
+        );
+        Item item2 = item(
+                "2",
+                "999: On the Frontline, Series 1, Episode 9",
+                5, "B", "P",
+                3, "Y"
+        );
+        Item item3 = item(
+                "3",
+                "The Great British Bake Off: An Extra Slice, Series 1, Episode 9",
+                3, "X", null,
+                null, null
+        );
+        Item item4 = item(
+                "4",
+                "999: On the Frontline, Series 1, Episode 9",
+                3, "Y", null,
+                null, null
+        );
+        setUpContentResolving(ImmutableSet.of(item1, item2, item3, item4));
+        //equiv should be item1 <-> item3 on oobcid, item2 <-> item4 on oobcid, item1 <-/-> item2 on parentVersion
+
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                item1,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(false));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item2,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item4), is(SCORE_ON_MATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item3,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(false));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item4,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(false));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MATCH));
+    }
+
+    @Test
+    public void testSkyItemWithNonSkyOobgidProblematicExample() {
+        Item item1 = item(
+                "1",
+                "Correct Title",
+                5, "A", null,
+                2, "X"
+        );
+        Item item2 = item(
+                "2",
+                "Wrong Title",
+                5, "B", "A",
+                2, "Y"
+        );
+        Item item3 = item(
+                "3",
+                "Correct Title",
+                5, "C", "A",
+                2, "Z"
+        );
+        setUpContentResolving(ImmutableSet.of(item1, item2, item3));
+        //item1 and item3 should not equiv unless we factor in titles
+
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                item1,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MISMATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item2,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MISMATCH));
+
+
+        scoredCandidates = aliasGenerator.generate(
+                item3,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+    }
+
+    @Test
+    public void testSkyOobcidOnlyMatchesSkyWithNonSkyOobgidParentVersionBcid() {
+        Item item1 = item(
+                "1",
+                "Correct Title",
+                1, "A", null,
+                5, "X"
+        );
+        Item item2 = item(
+                "2",
+                "Wrong Title",
+                5, "B", "X",
+                2, "Y"
+        );
+        Item item3 = item(
+                "3",
+                "Correct Title",
+                5, "C", "X",
+                null, null
+        );
+        Item item4 = item(
+                "4",
+                "Correct Title",
+                5, "X", null,
+                null, null
+        );
+        setUpContentResolving(ImmutableSet.of(item1, item2, item3, item4));
+        //item1 and item3 should not equiv unless we factor in titles
+
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                item1,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(true));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item4), is(SCORE_ON_MATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item2,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item4), is(SCORE_ON_MISMATCH));
+
+
+        scoredCandidates = aliasGenerator.generate(
+                item3,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item4), is(SCORE_ON_MATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item4,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(false));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MATCH));
     }
 
 }

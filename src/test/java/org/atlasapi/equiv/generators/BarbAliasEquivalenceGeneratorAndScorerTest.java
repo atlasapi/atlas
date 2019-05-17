@@ -234,7 +234,6 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 aliasContentMultimap.put(alias, content);
             }
         }
-        ImmutableList.copyOf(aliasContentMultimap.get(null));
         for (Alias alias : aliasContentMultimap.keySet()) {
             when(aliasLookupEntryStore.entriesForAliases(
                     Optional.of(alias.getNamespace()),

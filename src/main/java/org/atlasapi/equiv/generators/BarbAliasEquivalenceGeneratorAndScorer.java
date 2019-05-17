@@ -66,6 +66,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private static final String STV_BG_PREFIX = "gb:barb:broadcastGroup:111";
     private static final String STV_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:111";
     private static final String SKY_BG_PREFIX = "gb:barb:broadcastGroup:5";
+    private static final String SKY_OOBG_PREFIX = "gb:barb:originatingOwner:broadcastGroup:5";
     private static final String SKY_OOBCID_NAMESPACE = "gb:barb:originatingOwner:broadcastGroup:5:bcid";
     private static final String SKY_BCID_NAMESPACE = "gb:barb:broadcastGroup:5:bcid";
     private static final String SKY_PARENT_BCID_NAMESPACE = "gb:barb:broadcastGroup:5:parentVersionBcid";
@@ -279,7 +280,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         for(Alias alias : subject.getAliases()) {
             if(alias.getNamespace().startsWith(SKY_BG_PREFIX)) {
                 isSky = true;
-            } else if(alias.getNamespace().startsWith(OOBG_PREFIX) && !alias.getNamespace().equals(SKY_OOBCID_NAMESPACE)) {
+            } else if(alias.getNamespace().startsWith(OOBG_PREFIX) && !alias.getNamespace().startsWith(SKY_OOBG_PREFIX)) {
                 isNonSkyOobgid = true;
             }
             if(isSky && isNonSkyOobgid) {

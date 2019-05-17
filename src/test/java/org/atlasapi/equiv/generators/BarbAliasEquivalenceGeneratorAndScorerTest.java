@@ -1010,4 +1010,92 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
     }
 
+    @Test
+    public void testSkyOobcidOnlyMatchesSkyWithNonSkyOobgidParentVersionBcid() {
+        Item item1 = item(
+                "1",
+                "Correct Title",
+                1, "A", null,
+                5, "X"
+        );
+        Item item2 = item(
+                "2",
+                "Wrong Title",
+                5, "B", "X",
+                2, "Y"
+        );
+        Item item3 = item(
+                "3",
+                "Correct Title",
+                5, "C", "X",
+                null, null
+        );
+        Item item4 = item(
+                "4",
+                "Correct Title",
+                5, "X", null,
+                null, null
+        );
+        setUpContentResolving(ImmutableSet.of(item1, item2, item3, item4));
+        //item1 and item3 should not equiv unless we factor in titles
+
+        ScoredCandidates<Content> scoredCandidates;
+        scoredCandidates = aliasGenerator.generate(
+                item1,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(true));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item4), is(SCORE_ON_MATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item2,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item4), is(SCORE_ON_MISMATCH));
+
+
+        scoredCandidates = aliasGenerator.generate(
+                item3,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(true));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item4), is(SCORE_ON_MATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                item4,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(item1), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item2), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item3), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(item4), is(false));
+        assertThat(scoredCandidates.candidates().get(item1), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(item2), is(SCORE_ON_MISMATCH));
+        assertThat(scoredCandidates.candidates().get(item3), is(SCORE_ON_MATCH));
+    }
+
 }

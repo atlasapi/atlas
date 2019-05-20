@@ -1,10 +1,13 @@
 package org.atlasapi.query.content;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.List;
+import java.util.Set;
+
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
@@ -32,17 +35,15 @@ import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.VersionMerger;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 
+import com.metabroadcast.common.base.Maybe;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.List;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;

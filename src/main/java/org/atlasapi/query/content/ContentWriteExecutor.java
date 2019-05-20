@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -159,12 +158,7 @@ public class ContentWriteExecutor {
         if (updatedContent instanceof Item) {
             Item item = (Item) updatedContent;
             writer.createOrUpdate(item);
-
-            if (content.getPublisher().key().equals(Publisher.BT_SPORT_EBS.key())) {
-                updateEbsSchedule(content, item);
-            } else {
-                updateSchedule(item);
-            }
+            updateSchedule(content, item);
         } else {
             writer.createOrUpdate((Container) updatedContent);
         }
@@ -175,7 +169,7 @@ public class ContentWriteExecutor {
         }
     }
 
-    private void updateEbsSchedule(Content content, Item item) {
+    private void updateSchedule(Content content, Item item) {
         for (Broadcast broadcast : content.getVersions()
                 .iterator()
                 .next()
@@ -190,10 +184,10 @@ public class ContentWriteExecutor {
 
             ImmutableMap<String, String> acceptableIds = ImmutableMap.of(
                     broadcast.getSourceId(),
-                    content.getCanonicalUri()
+                    item.getCanonicalUri()
             );
 
-            trimmer.trimBroadcasts(broadcastInterval, channel, acceptableIds);
+            trimmer.trimBroadcasts(item.getPublisher(), broadcastInterval, channel, acceptableIds);
 
             scheduleWriter.replaceScheduleBlock(
                     item.getPublisher(),

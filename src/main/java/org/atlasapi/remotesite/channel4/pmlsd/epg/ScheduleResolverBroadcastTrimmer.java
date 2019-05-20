@@ -58,7 +58,7 @@ public class ScheduleResolverBroadcastTrimmer implements BroadcastTrimmer {
             Channel channel,
             Map<String, String> acceptableIds
     ) {
-        trimBroadcasts(defaultPublisher.get(), scheduleInterval, channel, acceptableIds);
+        trimBroadcasts(null, scheduleInterval, channel, acceptableIds);
     }
 
     @Override

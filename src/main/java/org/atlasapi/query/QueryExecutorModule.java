@@ -158,7 +158,6 @@ public class QueryExecutorModule {
 
     private BroadcastTrimmer broadcastTrimmer() {
         return new ScheduleResolverBroadcastTrimmer(
-                null,
                 scheduleResolver,
                 contentResolver,
                 contentWriter

@@ -1,16 +1,11 @@
 package org.atlasapi.query;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.ServiceManager;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.MessageConsumerFactory;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.queue.MessageSenderFactory;
-import com.metabroadcast.common.queue.kafka.KafkaConsumer;
-import com.metabroadcast.common.time.SystemClock;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import org.atlasapi.input.BrandModelTransformer;
 import org.atlasapi.input.ClipModelTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
@@ -19,7 +14,6 @@ import org.atlasapi.input.ItemModelTransformer;
 import org.atlasapi.input.SegmentModelTransformer;
 import org.atlasapi.input.SeriesModelTransformer;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.segment.SegmentWriter;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -42,17 +36,24 @@ import org.atlasapi.query.worker.ContentWriteWorker;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
 
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageConsumerFactory;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.queue.MessageSenderFactory;
+import com.metabroadcast.common.queue.kafka.KafkaConsumer;
+import com.metabroadcast.common.time.SystemClock;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.ServiceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
@@ -155,10 +156,8 @@ public class QueryExecutorModule {
         );
     }
 
-    @Bean
-    BroadcastTrimmer broadcastTrimmer() {
+    private BroadcastTrimmer broadcastTrimmer() {
         return new ScheduleResolverBroadcastTrimmer(
-                Publisher.BT_SPORT_EBS,
                 scheduleResolver,
                 contentResolver,
                 contentWriter

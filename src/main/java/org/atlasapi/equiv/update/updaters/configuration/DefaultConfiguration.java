@@ -11,6 +11,7 @@ import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.ARCHIVE_ORG;
 import static org.atlasapi.media.entity.Publisher.ARQIVA;
 import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
+import static org.atlasapi.media.entity.Publisher.BARB_EDITOR_OVERRIDES;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
 import static org.atlasapi.media.entity.Publisher.BARB_NLE;
 import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
@@ -216,7 +217,8 @@ public class DefaultConfiguration {
                             IMDB_API,
                             C5_DATA_SUBMISSION,
                             BARB_CENSUS,
-                            BARB_NLE
+                            BARB_NLE,
+                            BARB_EDITOR_OVERRIDES
                     )
             )
             .addAll(MUSIC_SOURCES)

@@ -3,10 +3,9 @@ package org.atlasapi.equiv.update.tasks;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -15,9 +14,9 @@ import org.atlasapi.equiv.update.RootEquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
+import org.atlasapi.persistence.content.listing.SelectedContentLister;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
@@ -28,7 +27,6 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +45,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
      * run on the callers thread.
      */
     private final @Nullable ExecutorService executor;
-    private final ContentLister contentLister;
+    private final SelectedContentLister contentLister;
     private final ScheduleTaskProgressStore progressStore;
     private final EquivalenceUpdater<Content> updater;    
     private final Set<String> ignored;
@@ -59,15 +57,17 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
     private List<Publisher> publishers;
     private UpdateProgress progress = UpdateProgress.START;
 
-    public ContentEquivalenceUpdateTask(ContentLister contentLister, ContentResolver contentResolver, ScheduleTaskProgressStore progressStore, EquivalenceUpdater<Content> updater, Set<String> ignored) {
-       this(contentLister, contentResolver, null, progressStore, updater, ignored);
+    public ContentEquivalenceUpdateTask(SelectedContentLister contentLister,
+            ContentResolver contentResolver, ScheduleTaskProgressStore progressStore,
+            EquivalenceUpdater<Content> updater, Set<String> ignored) {
+        this(contentLister, contentResolver, null, progressStore, updater, ignored);
     }
 
     /**
      * @param executor        If the executor is null all equiv will run on the callers thread.
      */
     public ContentEquivalenceUpdateTask(
-            ContentLister contentLister,
+            SelectedContentLister contentLister,
             ContentResolver contentResolver,
             @Nullable ExecutorService executor,
             ScheduleTaskProgressStore progressStore,
@@ -86,7 +86,9 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
     public ContentEquivalenceUpdateTask forPublishers(Publisher... publishers) {
         this.publishers = ImmutableList.copyOf(publishers);
-        this.schedulingKey = Joiner.on("-").join(Iterables.transform(this.publishers, Publisher.TO_KEY))+"-equivalence";
+        this.schedulingKey = Joiner.on("-").join(this.publishers.stream()
+                .map(Publisher.TO_KEY::apply)
+                .collect(Collectors.toList()))+"-equivalence";
         return this;
     }
 
@@ -109,12 +111,12 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
         onStart(progress);
 
-        Iterator<Content> contents = filter(contentLister.listContent(listingCriteria(progress)));
+        List<Content> contents = contentLister.listContent(listingCriteria(progress), true);
 
         if (executor == null) {
-            runSyncronously(contents);
+            runSyncronously(contents.iterator());
         } else {
-            runAsyncronously(contents);
+            runAsyncronously(contents.iterator());
         }
     }
 

@@ -1,19 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.Clock;
-import com.metabroadcast.common.time.SystemClock;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Container;
@@ -28,14 +19,26 @@ import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.Clock;
+import com.metabroadcast.common.time.SystemClock;
+
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -349,19 +352,10 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     }
 
     private ImmutableMap<String, Broadcast> previousBroadcasts(Set<Version> prevVersions) {
-        Iterable<Broadcast> allBroadcasts = Iterables.concat(Iterables.transform(prevVersions, new Function<Version, Iterable<Broadcast>>() {
-            @Override
-            public Iterable<Broadcast> apply(Version input) {
-                return input.getBroadcasts();
-            }
-        }));
-        return Maps.uniqueIndex(allBroadcasts, new Function<Broadcast, String>() {
-
-            @Override
-            public String apply(Broadcast input) {
-                return input.getSourceId();
-            }
-        });
+        Iterable<Broadcast> allBroadcasts = Iterables.concat(prevVersions.stream()
+                .map(Version::getBroadcasts)
+                .collect(Collectors.toList()));
+        return Maps.uniqueIndex(allBroadcasts, Broadcast::getSourceId);
     }
 
     private boolean itemsEqual(Item prevItem, Item item) {

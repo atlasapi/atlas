@@ -13,8 +13,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.Executor;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -32,10 +33,10 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
+import org.atlasapi.persistence.content.listing.SelectedContentLister;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.util.AlwaysBlockingQueue;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -57,17 +58,21 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
 
-    private final ContentLister listerForContent(final Multimap<Publisher, Content> contents) {
-        return new ContentLister() {
+    private final SelectedContentLister listerForContent(final Multimap<Publisher, Content> contents) {
+        return new SelectedContentLister() {
+
+            @Override
+            public List<Content> listContent(ContentListingCriteria criteria, boolean b) {
+                Iterator<Content> iterator = listContent(criteria);
+                List<Content> allContent = new ArrayList<>();
+                iterator.forEachRemaining(allContent::add);
+                return allContent;
+            }
+
             @Override
             public Iterator<Content> listContent(ContentListingCriteria criteria) {
-                return Iterators.concat(Iterators.transform(criteria.getPublishers().iterator(), 
-                    new Function<Publisher, Iterator<Content>>() {
-                        @Override
-                        public Iterator<Content> apply(Publisher input) {
-                            return contents.get(input).iterator();
-                        }
-                    }
+                return Iterators.concat(Iterators.transform(criteria.getPublishers().iterator(),
+                        input -> contents.get(input).iterator()
                 ));
             }
         };
@@ -85,7 +90,7 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         Episode paEp = new Episode("episode", "episode", Publisher.PA);
         paBrand.setChildRefs(ImmutableList.of(paEp.childRef()));
 
-        ContentLister contentLister = listerForContent(ImmutableMultimap.<Publisher,Content>builder()
+        SelectedContentLister contentLister = listerForContent(ImmutableMultimap.<Publisher,Content>builder()
             .putAll(PA, paItemOne, paBrand)
             .putAll(BBC, bbcItemOne, bbcItemTwo, bbcItemThree)
             .putAll(C4, c4ItemOne)

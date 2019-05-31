@@ -26,6 +26,7 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,6 +122,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         }
     }
 
+    //TODO: switch to List<String> (a list of URIs)
     private void runAsyncronously(List<Content> contents) {
         Content current = null;
         try {
@@ -135,6 +137,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 while (shouldContinue() && !contents.isEmpty() && submitted < SAVE_EVERY_BLOCK_SIZE) {
                     current = contents.get(0);
                     contents.remove(0);
+                    //TODO: add resolver to executor?
                     //We don't check the result of handle, because that was always true. If you
                     //ever need to check that result you probably need to refactor the code
                     //using invokeAll instead of the countdown latch.
@@ -153,7 +156,8 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
             }
         } catch (Exception e) {
             log.error(getName(), e);
-            onFinish(false, null);  //TODO: why lastProcessed this not "current"?
+            onFinish(false, null);  //pass null so as to not persist state
+            Throwables.propagate(e);    //in order to set the task as failed
         }
         onFinish(shouldContinue(), null);
     }
@@ -174,6 +178,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         } catch (Exception e) {
             log.error(getName(), e);
             onFinish(false, current);
+            throw e;
         }
         onFinish(proceed && shouldContinue(), current);
     }

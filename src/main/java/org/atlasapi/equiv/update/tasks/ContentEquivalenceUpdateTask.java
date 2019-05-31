@@ -116,14 +116,14 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
         log.info("Running equiv on all content from {}", progress.getPublisher());
         if (executor == null) {
-            runSyncronously(contents);
+            runSynchronously(contents);
         } else {
-            runAsyncronously(contents);
+            runAsynchronously(contents);
         }
     }
 
     //TODO: switch to List<String> (a list of URIs)
-    private void runAsyncronously(List<Content> contents) {
+    private void runAsynchronously(List<Content> contents) {
         Content current = null;
         try {
             while (shouldContinue() && !contents.isEmpty()) {
@@ -162,7 +162,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         onFinish(shouldContinue(), null);
     }
 
-    private void runSyncronously(List<Content> contents) {
+    private void runSynchronously(List<Content> contents) {
         boolean proceed = true;
         Content current = null;
         int processed = 0;

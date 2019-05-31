@@ -113,17 +113,18 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
         List<Content> contents = contentLister.listContent(listingCriteria(progress), true);
 
+        log.info("Running equiv on all content from {}", progress.getPublisher());
         if (executor == null) {
-            runSyncronously(contents.iterator());
+            runSyncronously(contents);
         } else {
-            runAsyncronously(contents.iterator());
+            runAsyncronously(contents);
         }
     }
 
-    private void runAsyncronously(Iterator<Content> contents) {
+    private void runAsyncronously(List<Content> contents) {
         Content current = null;
         try {
-            while (shouldContinue() && contents.hasNext()) {
+            while (shouldContinue() && !contents.isEmpty()) {
                 //Normally this saves progress to the db every 10 items. With multithreading
                 //we need to make sure that when progress is written, everything before that item
                 //has completed successfully. The strategy chosen was to batch tasks into
@@ -131,8 +132,9 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 //batch to finish, write progress, repeat until done.
                 CountDownLatch latch = new CountDownLatch(SAVE_EVERY_BLOCK_SIZE);
                 int submitted = 0;
-                while (shouldContinue() && contents.hasNext() && submitted < SAVE_EVERY_BLOCK_SIZE) {
-                    current = contents.next();
+                while (shouldContinue() && !contents.isEmpty() && submitted < SAVE_EVERY_BLOCK_SIZE) {
+                    current = contents.get(0);
+                    contents.remove(0);
                     //We don't check the result of handle, because that was always true. If you
                     //ever need to check that result you probably need to refactor the code
                     //using invokeAll instead of the countdown latch.
@@ -151,18 +153,19 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
             }
         } catch (Exception e) {
             log.error(getName(), e);
-            onFinish(false, null);
+            onFinish(false, null);  //TODO: why lastProcessed this not "current"?
         }
         onFinish(shouldContinue(), null);
     }
 
-    private void runSyncronously(Iterator<Content> contents) {
+    private void runSyncronously(List<Content> contents) {
         boolean proceed = true;
         Content current = null;
         int processed = 0;
         try {
-            while (shouldContinue() && proceed && contents.hasNext()) {
-                current = contents.next();
+            while (shouldContinue() && proceed && !contents.isEmpty()) {
+                current = contents.get(0);
+                contents.remove(0);
                 proceed = handle(current);
                 if (++processed % 10 == 0) {
                     updateProgress(progressFrom(current));

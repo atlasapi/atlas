@@ -26,6 +26,7 @@ import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -62,10 +63,13 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         return new SelectedContentLister() {
 
             @Override
-            public List<Content> listContent(ContentListingCriteria criteria, boolean b) {
-                Iterator<Content> iterator = listContent(criteria);
-                List<Content> allContent = new ArrayList<>();
-                iterator.forEachRemaining(allContent::add);
+            public List<String> listContentUris(ContentListingCriteria criteria) {
+                Iterator<Content> contentIterator = listContent(criteria);
+                Iterator<String> uriIterator = Iterators.transform(contentIterator,
+                        Identified::getCanonicalUri
+                );
+                List<String> allContent = new ArrayList<>();
+                uriIterator.forEachRemaining(allContent::add);
                 return allContent;
             }
 

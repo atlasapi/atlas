@@ -145,7 +145,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                     submitted++;
                 }
                 //reduce the latch by the difference between the wanted amount,
-                // and the amount we maanged to submit. (i.e. manage the last few).
+                // and the amount we managed to submit. (i.e. manage the last few).
                 while (submitted < SAVE_EVERY_BLOCK_SIZE) {
                     latch.countDown();
                     submitted++;

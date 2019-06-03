@@ -94,19 +94,22 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         Episode paEp = new Episode("episode", "episode", Publisher.PA);
         paBrand.setChildRefs(ImmutableList.of(paEp.childRef()));
 
-        SelectedContentLister contentLister = listerForContent(ImmutableMultimap.<Publisher,Content>builder()
-            .putAll(PA, paItemOne, paBrand)
-            .putAll(BBC, bbcItemOne, bbcItemTwo, bbcItemThree)
-            .putAll(C4, c4ItemOne)
-        .build());
-        
+        ImmutableMultimap<Publisher,Content> contentMap = ImmutableMultimap.<Publisher,Content>builder()
+                .putAll(PA, paItemOne, paBrand)
+                .putAll(BBC, bbcItemOne, bbcItemTwo, bbcItemThree)
+                .putAll(C4, c4ItemOne)
+                .build();
+        SelectedContentLister contentLister = listerForContent(contentMap);
+
+        for(Content content : contentMap.values()){
+            when(contentResolver.findByCanonicalUris(argThat(hasItem(content.getCanonicalUri()))))
+                    .thenReturn(ResolvedContent.builder().put(content.getCanonicalUri(), content).build());
+        }
+
         String taskName = "pressassociation.com-bbc.co.uk-channel4.com-equivalence";
         when(progressStore.progressForTask(taskName))
             .thenReturn(ContentListingProgress.START);
-        
-        when(contentResolver.findByCanonicalUris(argThat(hasItem("episode"))))
-            .thenReturn(ResolvedContent.builder().put(paEp.getCanonicalUri(), paEp).build());
-        
+
         new ContentEquivalenceUpdateTask(contentLister, contentResolver, executor, progressStore, updater, ImmutableSet.of()).forPublishers(PA, BBC, C4).run();
         
         verify(updater).updateEquivalences(eq(paItemOne), any(OwlTelescopeReporter.class));

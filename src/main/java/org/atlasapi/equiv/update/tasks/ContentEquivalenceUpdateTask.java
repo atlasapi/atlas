@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.update.tasks;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -12,8 +13,10 @@ import javax.annotation.Nullable;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.RootEquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 import org.atlasapi.persistence.content.listing.SelectedContentLister;
@@ -22,6 +25,7 @@ import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
@@ -48,7 +52,8 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
     private final @Nullable ExecutorService executor;
     private final SelectedContentLister contentLister;
     private final ScheduleTaskProgressStore progressStore;
-    private final EquivalenceUpdater<Content> updater;    
+    private final EquivalenceUpdater<Content> updater;
+    private final ContentResolver contentResolver;
     private final Set<String> ignored;
     private final OwlTelescopeReporter telescope;
 
@@ -78,6 +83,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         this.executor = executor;
         this.progressStore = progressStore;
         this.updater = RootEquivalenceUpdater.create(contentResolver, updater);
+        this.contentResolver = contentResolver;
         this.ignored = ignored;
         this.telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.EQUIVALENCE,
@@ -112,21 +118,21 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
         onStart(progress);
 
-        List<Content> contents = contentLister.listContent(listingCriteria(progress), true);
+        List<String> contentUris = contentLister.listContentUris(listingCriteria(progress), true);
 
         log.info("Running equiv on all content from {}", progress.getPublisher());
         if (executor == null) {
-            runSynchronously(contents);
+            runSynchronously(contentUris);
         } else {
-            runAsynchronously(contents);
+            runAsynchronously(contentUris);
         }
     }
 
-    //TODO: switch to List<String> (a list of URIs)
-    private void runAsynchronously(List<Content> contents) {
-        Content current = null;
+    private void runAsynchronously(List<String> uris) {
+        String currentUri = null;
+        Content currentContent = null;
         try {
-            while (shouldContinue() && !contents.isEmpty()) {
+            while (shouldContinue() && !uris.isEmpty()) {
                 //Normally this saves progress to the db every 10 items. With multithreading
                 //we need to make sure that when progress is written, everything before that item
                 //has completed successfully. The strategy chosen was to batch tasks into
@@ -134,16 +140,17 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 //batch to finish, write progress, repeat until done.
                 CountDownLatch latch = new CountDownLatch(SAVE_EVERY_BLOCK_SIZE);
                 int submitted = 0;
-                while (shouldContinue() && !contents.isEmpty() && submitted < SAVE_EVERY_BLOCK_SIZE) {
-                    current = contents.get(0);
-                    contents.remove(0);
-                    //TODO: add resolver to executor?
+                while (shouldContinue() && !uris.isEmpty() && submitted < SAVE_EVERY_BLOCK_SIZE) {
+                    currentUri = uris.get(0);
+                    uris.remove(0);
                     //We don't check the result of handle, because that was always true. If you
                     //ever need to check that result you probably need to refactor the code
                     //using invokeAll instead of the countdown latch.
-                    executor.submit(handleAsync(current, latch));
-                    submitted++;
+                    currentContent = resolveUri(currentUri);
                 }
+                executor.submit(handleAsync(currentContent, latch));
+                submitted++;
+
                 //reduce the latch by the difference between the wanted amount,
                 // and the amount we managed to submit. (i.e. manage the last few).
                 while (submitted < SAVE_EVERY_BLOCK_SIZE) {
@@ -152,7 +159,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 }
                 //wait for the block to finish, write progress in the db, continue with next block.
                 latch.await();
-                updateProgress(progressFrom(current));
+                updateProgress(progressFrom(currentContent));
             }
         } catch (Exception e) {
             log.error(getName(), e);
@@ -162,25 +169,40 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         onFinish(shouldContinue(), null);
     }
 
-    private void runSynchronously(List<Content> contents) {
+    private void runSynchronously(List<String> uris) {
         boolean proceed = true;
-        Content current = null;
+        String currentUri = null;
+        Content currentContent = null;
         int processed = 0;
         try {
-            while (shouldContinue() && proceed && !contents.isEmpty()) {
-                current = contents.get(0);
-                contents.remove(0);
-                proceed = handle(current);
+            while (shouldContinue() && proceed && !uris.isEmpty()) {
+                currentUri = uris.get(0);
+                uris.remove(0);
+                currentContent = resolveUri(currentUri);
+                proceed = handle(currentContent);
                 if (++processed % 10 == 0) {
-                    updateProgress(progressFrom(current));
+                    updateProgress(progressFrom(currentContent));
                 }
             }
         } catch (Exception e) {
             log.error(getName(), e);
-            onFinish(false, current);
+            onFinish(false, currentContent);
             throw e;
         }
-        onFinish(proceed && shouldContinue(), current);
+        onFinish(proceed && shouldContinue(), currentContent);
+    }
+
+    private boolean isContent(Maybe<Identified> possibleContent) {
+        return possibleContent.valueOrNull() instanceof Content;
+    }
+
+    private Content resolveUri(String currentUri) {
+        ResolvedContent resolvedContent = contentResolver.findByCanonicalUris(Collections
+                .singleton(currentUri));
+        Maybe<Identified> possibleContent = resolvedContent.get(currentUri);
+        return isContent(possibleContent)
+               ? (Content) possibleContent.requireValue()
+               : null;    //shouldn't happen; should always be found as uris were taken from db
     }
 
     protected void onStart(ContentListingProgress progress) {

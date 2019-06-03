@@ -147,9 +147,9 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                     //ever need to check that result you probably need to refactor the code
                     //using invokeAll instead of the countdown latch.
                     currentContent = resolveUri(currentUri);
+                    executor.submit(handleAsync(currentContent, latch));
+                    submitted++;
                 }
-                executor.submit(handleAsync(currentContent, latch));
-                submitted++;
 
                 //reduce the latch by the difference between the wanted amount,
                 // and the amount we managed to submit. (i.e. manage the last few).

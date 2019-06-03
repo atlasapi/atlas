@@ -118,7 +118,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
         onStart(progress);
 
-        List<String> contentUris = contentLister.listContentUris(listingCriteria(progress), true);
+        List<String> contentUris = contentLister.listContentUris(listingCriteria(progress));
 
         log.info("Running equiv on all content from {}", progress.getPublisher());
         if (executor == null) {

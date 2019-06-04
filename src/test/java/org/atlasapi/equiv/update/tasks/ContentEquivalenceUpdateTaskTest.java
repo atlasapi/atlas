@@ -1,5 +1,37 @@
 package org.atlasapi.equiv.update.tasks;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Multimap;
+import junit.framework.TestCase;
+import org.atlasapi.equiv.update.EquivalenceUpdater;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.content.listing.ContentListingCriteria;
+import org.atlasapi.persistence.content.listing.ContentListingProgress;
+import org.atlasapi.persistence.content.listing.SelectedContentLister;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.util.AlwaysBlockingQueue;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.C4;
@@ -12,43 +44,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import junit.framework.TestCase;
-
-import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Identified;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
-import org.atlasapi.persistence.content.listing.ContentLister;
-import org.atlasapi.persistence.content.listing.ContentListingCriteria;
-import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.persistence.content.listing.SelectedContentLister;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.util.AlwaysBlockingQueue;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Multimap;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentEquivalenceUpdateTaskTest extends TestCase {
@@ -82,6 +77,11 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         };
     }
 
+    public void setUpContentResolving(Content content) {
+        when(contentResolver.findByCanonicalUris(argThat(hasItem(content.getCanonicalUri()))))
+                .thenReturn(ResolvedContent.builder().put(content.getCanonicalUri(), content).build());
+    }
+
     public void testCallUpdateOnContent(ExecutorService executor) {
         
         Item paItemOne = new Item("pa1", "pa1c", Publisher.PA);
@@ -102,9 +102,10 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         SelectedContentLister contentLister = listerForContent(contentMap);
 
         for(Content content : contentMap.values()){
-            when(contentResolver.findByCanonicalUris(argThat(hasItem(content.getCanonicalUri()))))
-                    .thenReturn(ResolvedContent.builder().put(content.getCanonicalUri(), content).build());
+            setUpContentResolving(content);
         }
+        setUpContentResolving(paEp);
+
 
         String taskName = "pressassociation.com-bbc.co.uk-channel4.com-equivalence";
         when(progressStore.progressForTask(taskName))

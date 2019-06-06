@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -131,7 +132,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         }
     }
 
-    private void runAsynchronously(List<String> uris) {
+    private void runAsynchronously(Queue<String> uris) {
         String currentUri = null;
         Content currentContent = null;
         try {
@@ -144,8 +145,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
                 CountDownLatch latch = new CountDownLatch(SAVE_EVERY_BLOCK_SIZE);
                 int submitted = 0;
                 while (shouldContinue() && !uris.isEmpty() && submitted < SAVE_EVERY_BLOCK_SIZE) {
-                    currentUri = uris.get(0);
-                    uris.remove(0);
+                    currentUri = uris.poll();
                     //We don't check the result of handle, because that was always true. If you
                     //ever need to check that result you probably need to refactor the code
                     //using invokeAll instead of the countdown latch.
@@ -172,15 +172,14 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
         onFinish(shouldContinue(), null);
     }
 
-    private void runSynchronously(List<String> uris) {
+    private void runSynchronously(Queue<String> uris) {
         boolean proceed = true;
         String currentUri = null;
         Content currentContent = null;
         int processed = 0;
         try {
             while (shouldContinue() && proceed && !uris.isEmpty()) {
-                currentUri = uris.get(0);
-                uris.remove(0);
+                currentUri = uris.poll();
                 currentContent = resolveUri(currentUri);
                 proceed = handle(currentContent);
                 if (++processed % 10 == 0) {

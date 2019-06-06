@@ -148,11 +148,11 @@ public class EquivTaskModule {
     private static final RepetitionRule ITV_SCHEDULE_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(11, 0));
     private static final RepetitionRule ITV_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(12, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule C4_SCHEDULE_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(15, 0));
     private static final RepetitionRule FIVE_SCHEDULE_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(17, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule REDUX_SCHEDULE_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(7, 0));
     private static final RepetitionRule ROVI_EN_EQUIVALENCE_REPETITION =

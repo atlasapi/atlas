@@ -2,6 +2,7 @@ package org.atlasapi.equiv.update.tasks;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -118,7 +119,9 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
         onStart(progress);
 
-        List<String> contentUris = contentLister.listContentUris(listingCriteria(progress));
+        Iterator<String> uriIterator = contentLister.listContentUris(listingCriteria(progress));
+        List<String> contentUris = new LinkedList<>();
+        uriIterator.forEachRemaining(contentUris::add);
 
         log.info("Running equiv on all content from {}", progress.getPublisher());
         if (executor == null) {

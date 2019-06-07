@@ -33,7 +33,6 @@ import org.atlasapi.messaging.v3.JacksonMessageSerializer;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.SelectedContentLister;
 import org.atlasapi.persistence.content.mongo.LastUpdatedContentFinder;
 import org.atlasapi.persistence.lookup.LookupWriter;
@@ -215,7 +214,7 @@ public class EquivTaskModule {
     @Value("${equiv.stream-updater.consumers.max}") private Integer maxStreamedEquivUpdateConsumers;
     @Value("${messaging.destination.content.changes}") private String contentChanges;
 
-    @Autowired private ContentLister contentLister;
+    @Autowired private SelectedContentLister contentLister;
     @Autowired private SimpleScheduler taskScheduler;
     @Autowired private ContentResolver contentResolver;
     @Autowired private LastUpdatedContentFinder contentFinder;
@@ -723,7 +722,7 @@ public class EquivTaskModule {
 
     private ContentEquivalenceUpdateTask publisherUpdateTask(final Publisher... publishers) {
         return new ContentEquivalenceUpdateTask(
-                (SelectedContentLister) contentLister,
+                contentLister,
                 contentResolver,
                 getNewDefaultExecutor(),
                 progressStore(),

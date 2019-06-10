@@ -60,11 +60,15 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         return new SelectedContentLister() {
 
             @Override
-            public Iterator<String> listContentUris(ContentListingCriteria criteria) {
+            public List<String> listContentUris(ContentListingCriteria criteria) {
                 Iterator<Content> contentIterator = listContent(criteria);
-                return Iterators.transform(contentIterator,
-                        Identified::getCanonicalUri
-                );
+                List<String> allContent = new ArrayList<>();
+                Content content;
+                while(contentIterator.hasNext()){
+                    content = contentIterator.next();
+                    allContent.add(content.getCanonicalUri());
+                }
+                return allContent;
             }
 
             @Override

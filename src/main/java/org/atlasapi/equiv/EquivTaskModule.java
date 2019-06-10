@@ -136,9 +136,9 @@ public class EquivTaskModule {
     private static final Set<String> ignored =
             ImmutableSet.of("http://www.bbc.co.uk/programmes/b006mgyl");
     private static final RepetitionRule RT_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(7, 0));
+            RepetitionRules.every(Duration.standardDays(2));
     private static final RepetitionRule TALKTALK_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(11, 15));
+            RepetitionRules.NEVER;
     private static final RepetitionRule YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION =
             RepetitionRules.every(Duration.standardHours(4));
     private static final RepetitionRule YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION =
@@ -146,7 +146,7 @@ public class EquivTaskModule {
     private static final RepetitionRule BBC_SCHEDULE_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(12, 0));
     private static final RepetitionRule ITV_SCHEDULE_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(11, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule ITV_EQUIVALENCE_REPETITION =
             RepetitionRules.NEVER;
     private static final RepetitionRule C4_SCHEDULE_EQUIVALENCE_REPETITION =
@@ -154,13 +154,13 @@ public class EquivTaskModule {
     private static final RepetitionRule FIVE_SCHEDULE_EQUIVALENCE_REPETITION =
             RepetitionRules.NEVER;
     private static final RepetitionRule REDUX_SCHEDULE_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(7, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule ROVI_EN_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(8, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule RTE_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(22, 0));
+            RepetitionRules.every(Duration.standardDays(2));
     private static final RepetitionRule BT_VOD_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(17, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule AMAZON_EQUIVALENCE_DELTA_48H_REPETITION =
             RepetitionRules.daily(new LocalTime(3, 0)); //This is timed with the ingest. Do not move.
@@ -168,9 +168,9 @@ public class EquivTaskModule {
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(20, 0));
     private static final RepetitionRule WIKIPEDIA_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(18, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule BBC_MUSIC_EQUIVALENCE_REPETITION =
-            RepetitionRules.every(Duration.standardHours(6));
+            RepetitionRules.NEVER;
     private static final RepetitionRule TXLOGS_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(9, 0));
     private static final RepetitionRule XCDMF_EQUIVALENCE_DELTA_REPETITION =
@@ -178,7 +178,7 @@ public class EquivTaskModule {
     private static final RepetitionRule CDMF_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(9, 0));
     private static final RepetitionRule IMDB_API_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(5, 30));
+            RepetitionRules.NEVER;
     private static final RepetitionRule C5_DATA_SUBMISSION_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(3, 0));
     private static final RepetitionRule BARB_CENSUS_EQUIVALENCE_DELTA_REPETITION =
@@ -195,11 +195,11 @@ public class EquivTaskModule {
     private static final RepetitionRule EBMS_VF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule REDBEE_MEDIA_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule AMC_EBS_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(4, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule EBS_SPORTS_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(4, 0));
     private static final RepetitionRule C4_PRESS_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(4, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule NITRO_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(5, 0));
 

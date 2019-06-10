@@ -7,6 +7,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 
 import com.metabroadcast.common.properties.Configurer;
+import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.RepetitionRules.Daily;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -40,7 +41,7 @@ public class FiveModule {
     
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(fiveUpdater().withName("Five Updater"), DAILY);
+        scheduler.schedule(fiveUpdater().withName("Five Updater"), RepetitionRules.NEVER);
         log.info("Installed Five updater");
     }
     

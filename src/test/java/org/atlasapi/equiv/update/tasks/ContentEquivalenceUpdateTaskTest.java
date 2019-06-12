@@ -25,11 +25,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -60,15 +56,11 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         return new SelectedContentLister() {
 
             @Override
-            public List<String> listContentUris(ContentListingCriteria criteria) {
+            public Iterator<String> listContentUris(ContentListingCriteria criteria) {
                 Iterator<Content> contentIterator = listContent(criteria);
-                List<String> allContent = new ArrayList<>();
-                Content content;
-                while(contentIterator.hasNext()){
-                    content = contentIterator.next();
-                    allContent.add(content.getCanonicalUri());
-                }
-                return allContent;
+                return Iterators.transform(contentIterator,
+                        Identified::getCanonicalUri
+                );
             }
 
             @Override

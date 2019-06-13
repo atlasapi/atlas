@@ -1,5 +1,35 @@
 package org.atlasapi.equiv.update.tasks;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Multimap;
+import junit.framework.TestCase;
+import org.atlasapi.equiv.update.EquivalenceUpdater;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.content.listing.ContentListingCriteria;
+import org.atlasapi.persistence.content.listing.ContentListingProgress;
+import org.atlasapi.persistence.content.listing.SelectedContentLister;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.util.AlwaysBlockingQueue;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.C4;
@@ -13,41 +43,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Iterator;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import junit.framework.TestCase;
-
-import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
-import org.atlasapi.persistence.content.listing.ContentLister;
-import org.atlasapi.persistence.content.listing.ContentListingCriteria;
-import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.util.AlwaysBlockingQueue;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Multimap;
-
 @RunWith(MockitoJUnitRunner.class)
 public class ContentEquivalenceUpdateTaskTest extends TestCase {
 
@@ -57,20 +52,29 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
 
-    private final ContentLister listerForContent(final Multimap<Publisher, Content> contents) {
-        return new ContentLister() {
+    private final SelectedContentLister listerForContent(final Multimap<Publisher, Content> contents) {
+        return new SelectedContentLister() {
+
+            @Override
+            public Iterator<String> listContentUris(ContentListingCriteria criteria) {
+                Iterator<Content> contentIterator = listContent(criteria);
+                return Iterators.transform(contentIterator,
+                        Identified::getCanonicalUri
+                );
+            }
+
             @Override
             public Iterator<Content> listContent(ContentListingCriteria criteria) {
-                return Iterators.concat(Iterators.transform(criteria.getPublishers().iterator(), 
-                    new Function<Publisher, Iterator<Content>>() {
-                        @Override
-                        public Iterator<Content> apply(Publisher input) {
-                            return contents.get(input).iterator();
-                        }
-                    }
+                return Iterators.concat(Iterators.transform(criteria.getPublishers().iterator(),
+                        input -> contents.get(input).iterator()
                 ));
             }
         };
+    }
+
+    public void setUpContentResolving(Content content) {
+        when(contentResolver.findByCanonicalUris(argThat(hasItem(content.getCanonicalUri()))))
+                .thenReturn(ResolvedContent.builder().put(content.getCanonicalUri(), content).build());
     }
 
     public void testCallUpdateOnContent(ExecutorService executor) {
@@ -85,19 +89,23 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         Episode paEp = new Episode("episode", "episode", Publisher.PA);
         paBrand.setChildRefs(ImmutableList.of(paEp.childRef()));
 
-        ContentLister contentLister = listerForContent(ImmutableMultimap.<Publisher,Content>builder()
-            .putAll(PA, paItemOne, paBrand)
-            .putAll(BBC, bbcItemOne, bbcItemTwo, bbcItemThree)
-            .putAll(C4, c4ItemOne)
-        .build());
-        
+        ImmutableMultimap<Publisher,Content> contentMap = ImmutableMultimap.<Publisher,Content>builder()
+                .putAll(PA, paItemOne, paBrand)
+                .putAll(BBC, bbcItemOne, bbcItemTwo, bbcItemThree)
+                .putAll(C4, c4ItemOne)
+                .build();
+        SelectedContentLister contentLister = listerForContent(contentMap);
+
+        for(Content content : contentMap.values()){
+            setUpContentResolving(content);
+        }
+        setUpContentResolving(paEp);
+
+
         String taskName = "pressassociation.com-bbc.co.uk-channel4.com-equivalence";
         when(progressStore.progressForTask(taskName))
             .thenReturn(ContentListingProgress.START);
-        
-        when(contentResolver.findByCanonicalUris(argThat(hasItem("episode"))))
-            .thenReturn(ResolvedContent.builder().put(paEp.getCanonicalUri(), paEp).build());
-        
+
         new ContentEquivalenceUpdateTask(contentLister, contentResolver, executor, progressStore, updater, ImmutableSet.of()).forPublishers(PA, BBC, C4).run();
         
         verify(updater).updateEquivalences(eq(paItemOne), any(OwlTelescopeReporter.class));

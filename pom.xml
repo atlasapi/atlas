@@ -436,7 +436,7 @@
         <dependency>
             <groupId>org.atlasapi</groupId>
             <artifactId>atlas-persistence</artifactId>
-            <version>${atlas.version}</version>
+            <version>5.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <artifactId>jetty</artifactId>

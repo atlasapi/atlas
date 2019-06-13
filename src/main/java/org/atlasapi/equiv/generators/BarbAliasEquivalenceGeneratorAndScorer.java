@@ -1,9 +1,7 @@
 package org.atlasapi.equiv.generators;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.SetMultimap;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.stream.MoreStreams;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -22,7 +20,6 @@ import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -51,25 +48,38 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private static final String TXNUMBER_NAMESPACE_SUFFIX = "txnumber";
     private static final String BCID_NAMESPACE_SUFFIX = "bcid";
     private static final String PARENT_VERSION_BCID_NAMESPACE_SUFFIX = "parentVersionBcid";
-    private static final SetMultimap<String, String> BROADCAST_GROUP_TO_CMS_BCID_ALIAS_MAP =
+
+    private static final String BBC_CMS_VERSION_BCID_NAMESPACE = "gb:bbc:nitro:prod:version:pid";
+    private static final String BBC_CMS_EPISODE_BCID_NAMESPACE = "gb:bbc:pid";
+    private static final String ITV_CMS_BCID_NAMESPACE = "gb:itv:production:id";
+    private static final String C4_CMS_BCID_NAMESPACE = "gb:channel4:prod:pmlsd:programmeId";
+    private static final String C5_CMS_BCID_NAMESPACE = "gb:c5:bcid";
+    private static final String UKTV_CMS_BCID_NAMESPACE = "gb:uktv:bcid";
+
+    private static String bgidBcidAliasNamespace(int bgid) {
+        return String.format("gb:barb:broadcastGroup:%d:bcid", bgid);
+    }
+
+    private static String oobgidBcidAliasNamespace(int oobgid) {
+        return String.format("gb:barb:originatingOwner:broadcastGroup:%d:bcid", oobgid);
+    }
+
+    private static String parentVersionBcidAliasNamespace(int bgid) {
+        return String.format("gb:barb:broadcastGroup:%d:parentVersionBcid", bgid);
+    }
+
+    private static final ImmutableSetMultimap<String, String> BROADCAST_GROUP_TO_CMS_BCID_ALIAS_MAP =
             ImmutableSetMultimap.<String, String>builder()
-                    .put("gb:barb:broadcastGroup:1:bcid", "gb:bbc:nitro:prod:version:pid")
-                    .put("gb:barb:broadcastGroup:1:bcid", "gb:bbc:pid")
-                    .put("gb:barb:broadcastGroup:2:bcid", "gb:itv:production:id")
-                    .put("gb:barb:broadcastGroup:3:bcid", "gb:channel4:prod:pmlsd:programmeId")
-                    .put("gb:barb:broadcastGroup:4:bcid", "gb:c5:bcid")
-                    .put("gb:barb:broadcastGroup:63:bcid", "gb:uktv:bcid")
+                    .put(bgidBcidAliasNamespace(1), BBC_CMS_VERSION_BCID_NAMESPACE)
+                    .put(bgidBcidAliasNamespace(1), BBC_CMS_EPISODE_BCID_NAMESPACE)
+                    .put(bgidBcidAliasNamespace(2), ITV_CMS_BCID_NAMESPACE)
+                    .put(bgidBcidAliasNamespace(3), C4_CMS_BCID_NAMESPACE)
+                    .put(bgidBcidAliasNamespace(4), C5_CMS_BCID_NAMESPACE)
+                    .put(bgidBcidAliasNamespace(63), UKTV_CMS_BCID_NAMESPACE)
                     .build();
 
-    private static final Map<String, String> CMS_BCID_TO_BROADCAST_GROUP_ALIAS_MAP =
-            ImmutableMap.<String, String>builder()
-            .put("gb:bbc:nitro:prod:version:pid", "gb:barb:broadcastGroup:1:bcid")
-            .put("gb:bbc:pid", "gb:barb:broadcastGroup:1:bcid")
-            .put("gb:itv:production:id", "gb:barb:broadcastGroup:2:bcid")
-            .put("gb:channel4:prod:pmlsd:programmeId", "gb:barb:broadcastGroup:3:bcid")
-            .put("gb:c5:bcid", "gb:barb:broadcastGroup:4:bcid")
-            .put("gb:uktv:bcid", "gb:barb:broadcastGroup:63:bcid")
-            .build();
+    private static final ImmutableSetMultimap<String, String> CMS_BCID_TO_BROADCAST_GROUP_ALIAS_MAP =
+            BROADCAST_GROUP_TO_CMS_BCID_ALIAS_MAP.inverse(); //technically each value is a set of only one element
 
     private static final ImmutableSet<String> T1_BCID_NAMESPACES =
             ImmutableSet.copyOf(CMS_BCID_TO_BROADCAST_GROUP_ALIAS_MAP.keySet());
@@ -86,16 +96,16 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
     private static final String SKY_BCID_NAMESPACE = "gb:barb:broadcastGroup:5:bcid";
     private static final String SKY_PARENT_BCID_NAMESPACE = "gb:barb:broadcastGroup:5:parentVersionBcid";
     private static final String BARB_CONTENT_ID_NAMESPACE = "gb:barb:contentid";
-    
+
     private static final Set<String> C4_NAMESPACES = ImmutableSet.of(
-            "gb:barb:broadcastGroup:3:bcid",
-            "gb:channel4:prod:pmlsd:programmeId",
-            "gb:barb:broadcastGroup:3:parentVersionBcid",
-            "gb:barb:originatingOwner:broadcastGroup:3:bcid"
+            bgidBcidAliasNamespace(3),
+            parentVersionBcidAliasNamespace(3),
+            oobgidBcidAliasNamespace(3),
+            C4_CMS_BCID_NAMESPACE
     );
     private static final Set<String> C4_BCID_PREFIXES = ImmutableSet.of("C4:", "E4:", "M4:");
     private static final int C4_PREFIX_LENGTH = 3;
-    private static final String C4_BG_NAMESPACE = "gb:barb:broadcastGroup:3:bcid";
+    private static final String C4_BG_NAMESPACE = bgidBcidAliasNamespace(3);
     
 
     public BarbAliasEquivalenceGeneratorAndScorer(
@@ -366,28 +376,29 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
                     expandedAliases.add(aliasForNewNamespacePrefix(bcidAliasFromParentBcid, BG_PREFIX, OOBG_PREFIX));
                 }
             } else if (CMS_BCID_TO_BROADCAST_GROUP_ALIAS_MAP.containsKey(alias.getNamespace())) {
-                String bgNamespace = CMS_BCID_TO_BROADCAST_GROUP_ALIAS_MAP.get(alias.getNamespace());
+                Set<String> bgNamespaces = CMS_BCID_TO_BROADCAST_GROUP_ALIAS_MAP.get(alias.getNamespace());
+                for(String bgNamespace : bgNamespaces) {
+                    String aliasValue = bgNamespace.equals(C4_BG_NAMESPACE) && isC4BcidPrefix(alias.getValue())
+                            ? alias.getValue().substring(C4_PREFIX_LENGTH) //C4 CMS bcids do not include this prefix
+                            : alias.getValue();
 
-                String aliasValue = bgNamespace.equals(C4_BG_NAMESPACE) && isC4BcidPrefix(alias.getValue())
-                        ? alias.getValue().substring(C4_PREFIX_LENGTH) //C4 CMS bcids do not include this prefix
-                        : alias.getValue();
-                
-                C4_BCID_PREFIXES.forEach(prefix -> {
-                    Alias bgAliasForCms = new Alias(
-                            bgNamespace,
-                            bgNamespace.equals(C4_BG_NAMESPACE)
-                                    ? prefix.concat(aliasValue)
-                                    : aliasValue
-                    );
-                    expandedAliases.add(bgAliasForCms);
-                    checkArgument(bgAliasForCms.getNamespace().startsWith(BG_PREFIX));
-                    expandedAliases.add(
-                            aliasForNewNamespacePrefix(bgAliasForCms, BG_PREFIX, OOBG_PREFIX)
-                    );
-                    expandedAliases.add(
-                            aliasForNewNamespaceSuffix(bgAliasForCms, BCID_NAMESPACE_SUFFIX, PARENT_VERSION_BCID_NAMESPACE_SUFFIX)
-                    );
-                });
+                    C4_BCID_PREFIXES.forEach(prefix -> {
+                        Alias bgAliasForCms = new Alias(
+                                bgNamespace,
+                                bgNamespace.equals(C4_BG_NAMESPACE)
+                                        ? prefix.concat(aliasValue)
+                                        : aliasValue
+                        );
+                        expandedAliases.add(bgAliasForCms);
+                        checkArgument(bgAliasForCms.getNamespace().startsWith(BG_PREFIX));
+                        expandedAliases.add(
+                                aliasForNewNamespacePrefix(bgAliasForCms, BG_PREFIX, OOBG_PREFIX)
+                        );
+                        expandedAliases.add(
+                                aliasForNewNamespaceSuffix(bgAliasForCms, BCID_NAMESPACE_SUFFIX, PARENT_VERSION_BCID_NAMESPACE_SUFFIX)
+                        );
+                    });
+                }
             }
         }
 

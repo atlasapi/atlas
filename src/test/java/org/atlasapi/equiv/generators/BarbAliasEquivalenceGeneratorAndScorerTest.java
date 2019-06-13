@@ -1103,30 +1103,35 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
     @Test
     public void testBbcBgAliasMatchesBothCmsEpisodeAndVersionAliases() {
         String bcid = "bcid";
-        Item bgWithEpisodePid = new Item();
-        bgWithEpisodePid.setCanonicalUri("1");
-        bgWithEpisodePid.setAliases(ImmutableSet.of(new Alias(String.format(BG_BCID_NAMESPACE_FORMAT, 1), bcid)));
+        Item bgWithPid = new Item();
+        bgWithPid.setCanonicalUri("1");
+        bgWithPid.setAliases(ImmutableSet.of(new Alias(String.format(BG_BCID_NAMESPACE_FORMAT, 1), bcid)));
         Item cmsWithEpisodePid = new Item();
         cmsWithEpisodePid.setCanonicalUri("2");
         cmsWithEpisodePid.setAliases(ImmutableSet.of(new Alias(BBC_CMS_EPISODE_BCID_NAMESPACE, bcid)));
         Item cmsWithVersionPid = new Item();
         cmsWithVersionPid.setCanonicalUri("3");
         cmsWithVersionPid.setAliases(ImmutableSet.of(new Alias(BBC_CMS_VERSION_BCID_NAMESPACE, bcid)));
+        Item parentVersionWithPid = new Item();
+        parentVersionWithPid.setCanonicalUri("4");
+        parentVersionWithPid.setAliases(ImmutableSet.of(new Alias(String.format(BG_PARENT_VERSION_BCID_NAMESPACE_FORMAT, 1), bcid)));
 
-        setUpContentResolving(ImmutableSet.of(bgWithEpisodePid, cmsWithEpisodePid, cmsWithVersionPid));
+        setUpContentResolving(ImmutableSet.of(bgWithPid, cmsWithEpisodePid, cmsWithVersionPid, parentVersionWithPid));
 
         ScoredCandidates<Content> scoredCandidates;
         scoredCandidates = aliasGenerator.generate(
-                bgWithEpisodePid,
+                bgWithPid,
                 desc,
                 EquivToTelescopeResult.create("id", "publisher")
         );
 
-        assertThat(scoredCandidates.candidates().containsKey(bgWithEpisodePid), is(false));
+        assertThat(scoredCandidates.candidates().containsKey(bgWithPid), is(false));
         assertThat(scoredCandidates.candidates().containsKey(cmsWithEpisodePid), is(true));
         assertThat(scoredCandidates.candidates().containsKey(cmsWithVersionPid), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(parentVersionWithPid), is(true));
         assertThat(scoredCandidates.candidates().get(cmsWithEpisodePid), is(SCORE_ON_MATCH));
         assertThat(scoredCandidates.candidates().get(cmsWithVersionPid), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(parentVersionWithPid), is(SCORE_ON_MATCH));
 
         scoredCandidates = aliasGenerator.generate(
                 cmsWithEpisodePid,
@@ -1134,11 +1139,13 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 EquivToTelescopeResult.create("id", "publisher")
         );
 
-        assertThat(scoredCandidates.candidates().containsKey(bgWithEpisodePid), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(bgWithPid), is(true));
         assertThat(scoredCandidates.candidates().containsKey(cmsWithEpisodePid), is(false));
         assertThat(scoredCandidates.candidates().containsKey(cmsWithVersionPid), is(true));
-        assertThat(scoredCandidates.candidates().get(bgWithEpisodePid), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().containsKey(parentVersionWithPid), is(true));
+        assertThat(scoredCandidates.candidates().get(bgWithPid), is(SCORE_ON_MATCH));
         assertThat(scoredCandidates.candidates().get(cmsWithVersionPid), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(parentVersionWithPid), is(SCORE_ON_MATCH));
 
 
         scoredCandidates = aliasGenerator.generate(
@@ -1147,11 +1154,27 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 EquivToTelescopeResult.create("id", "publisher")
         );
 
-        assertThat(scoredCandidates.candidates().containsKey(bgWithEpisodePid), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(bgWithPid), is(true));
         assertThat(scoredCandidates.candidates().containsKey(cmsWithEpisodePid), is(true));
         assertThat(scoredCandidates.candidates().containsKey(cmsWithVersionPid), is(false));
-        assertThat(scoredCandidates.candidates().get(bgWithEpisodePid), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().containsKey(parentVersionWithPid), is(true));
+        assertThat(scoredCandidates.candidates().get(bgWithPid), is(SCORE_ON_MATCH));
         assertThat(scoredCandidates.candidates().get(cmsWithEpisodePid), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(parentVersionWithPid), is(SCORE_ON_MATCH));
+
+        scoredCandidates = aliasGenerator.generate(
+                parentVersionWithPid,
+                desc,
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        assertThat(scoredCandidates.candidates().containsKey(bgWithPid), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(cmsWithEpisodePid), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(cmsWithVersionPid), is(true));
+        assertThat(scoredCandidates.candidates().containsKey(parentVersionWithPid), is(false));
+        assertThat(scoredCandidates.candidates().get(bgWithPid), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(cmsWithEpisodePid), is(SCORE_ON_MATCH));
+        assertThat(scoredCandidates.candidates().get(cmsWithVersionPid), is(SCORE_ON_MATCH));
     }
 
 }

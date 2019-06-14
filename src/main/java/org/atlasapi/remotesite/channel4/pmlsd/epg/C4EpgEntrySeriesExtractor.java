@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.channel4.pmlsd.epg;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,7 +10,7 @@ import org.atlasapi.remotesite.channel4.pmlsd.C4AtomApi;
 import org.atlasapi.remotesite.channel4.pmlsd.ContentFactory;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.model.C4EpgEntry;
 
-import com.google.common.base.Optional;
+import javax.annotation.Nullable;
 
 public class C4EpgEntrySeriesExtractor implements ContentExtractor<C4EpgEntry, Optional<Series>> {
 
@@ -35,10 +36,10 @@ public class C4EpgEntrySeriesExtractor implements ContentExtractor<C4EpgEntry, O
             }
             return Optional.of(series);
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
-    private Integer extractSeriesNumberFrom(String seriesUri) {
+    @Nullable private Integer extractSeriesNumberFrom(String seriesUri) {
         Pattern pattern = Pattern.compile("(\\d+)$");
         Matcher matcher = pattern.matcher(seriesUri);
         if (matcher.matches()) {

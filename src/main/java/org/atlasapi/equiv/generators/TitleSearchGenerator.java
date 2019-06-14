@@ -1,9 +1,15 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.Set;
-
 import com.google.api.client.util.Lists;
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
@@ -11,21 +17,17 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
-import com.metabroadcast.common.query.Selection;
-
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class TitleSearchGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
@@ -34,11 +36,41 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
     
     public static final <T extends Content> TitleSearchGenerator<T> create(
-            SearchResolver searchResolver, Class<? extends T> cls,
+            SearchResolver searchResolver,
+            Class<? extends T> cls,
             Iterable<Publisher> publishers,
             double exactMatchScore
     ) {
-        return new TitleSearchGenerator<T>(searchResolver, cls, publishers, exactMatchScore);
+        return create(searchResolver, cls, publishers, exactMatchScore, false);
+    }
+
+    public static final <T extends Content> TitleSearchGenerator<T> create(
+            SearchResolver searchResolver,
+            Class<? extends T> cls,
+            Iterable<Publisher> publishers,
+            double exactMatchScore,
+            boolean includeSelfPublisher
+    ) {
+        return create(searchResolver, cls, publishers, exactMatchScore, includeSelfPublisher, true);
+    }
+
+    public static final <T extends Content> TitleSearchGenerator<T> create(
+            SearchResolver searchResolver, Class<? extends T> cls,
+            Iterable<Publisher> publishers,
+            double exactMatchScore,
+            boolean includeSelfPublisher,
+            boolean useContentSpecialization
+    ) {
+        return new TitleSearchGenerator<T>(
+                searchResolver,
+                cls,
+                publishers,
+                Functions.<String>identity(),
+                20,
+                exactMatchScore,
+                includeSelfPublisher,
+                useContentSpecialization
+        );
     }
     
     private final SearchResolver searchResolver;
@@ -48,21 +80,30 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final ContentTitleScorer<T> titleScorer;
     private final int searchLimit;
     private final ExpandingTitleTransformer titleExpander;
-
-    public TitleSearchGenerator(
-            SearchResolver searchResolver, Class<? extends T> cls,
-            Iterable<Publisher> publishers,
-            double exactMatchScore
-    ) {
-        this(searchResolver, cls, publishers, Functions.<String>identity(), 20, exactMatchScore);
-    }
+    //include stuff from the same publisher as the given content
+    private final boolean includeSelfPublisher;
+    //filter search results to same specialization as the given content
+    private final boolean useContentSpecialization;
     
     public TitleSearchGenerator(
             SearchResolver searchResolver, Class<? extends T> cls,
             Iterable<Publisher> publishers,
             Function<String,String> titleTransform,
             int searchLimit,
-            double exactMatchScore
+            double exactMatchScore,
+            boolean includeSelfPublisher
+    ) {
+        this(searchResolver, cls, publishers, titleTransform, searchLimit, exactMatchScore, includeSelfPublisher, true);
+    }
+
+    public TitleSearchGenerator(
+            SearchResolver searchResolver, Class<? extends T> cls,
+            Iterable<Publisher> publishers,
+            Function<String,String> titleTransform,
+            int searchLimit,
+            double exactMatchScore,
+            boolean includeSelfPublisher,
+            boolean useContentSpecialization
     ) {
         this.searchResolver = searchResolver;
         this.cls = cls;
@@ -71,13 +112,15 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         this.titleTransform = titleTransform;
         this.titleScorer = new ContentTitleScorer<T>(NAME, titleTransform, exactMatchScore);
         this.titleExpander = new ExpandingTitleTransformer();
+        this.includeSelfPublisher = includeSelfPublisher;
+        this.useContentSpecialization = useContentSpecialization;
     }
 
     @Override
     public ScoredCandidates<T> generate(
             T content,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("Title Search Generator");
@@ -99,38 +142,49 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     }
 
     private Iterable<? extends T> searchForCandidates(T content, ResultDescription desc) {
-        Set<Publisher> publishers = Sets.difference(
-                searchPublishers, ImmutableSet.of(content.getPublisher())
-        );
-        Application application = DefaultApplication.createWithReads(Lists.newArrayList(publishers));
+        Set<Publisher> publishers;
+        if (includeSelfPublisher) {
+            publishers = searchPublishers;
+        } else {
+            publishers = Sets.difference(
+                    searchPublishers, ImmutableSet.of(content.getPublisher())
+            );
+        }
+        Application application = DefaultApplication.createWithReads(Lists.newArrayList(
+                publishers));
 
         String title = titleTransform.apply(content.getTitle());
         title = normalize(title);
         SearchQuery.Builder titleQuery = getSearchQueryBuilder(publishers, title);
 
-        if (content.getSpecialization() != null) {
+        if (useContentSpecialization && content.getSpecialization() != null) {
             titleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
+        } else if (!useContentSpecialization) {
+            titleQuery.withFakeSpecialization(true);
         }
 
         desc.appendText("query: %s, specialization: %s, publishers: %s",
                 title,
-                content.getSpecialization(),
+                useContentSpecialization ? content.getSpecialization() : "no specialization",
                 publishers);
 
-        Iterable<? extends T> results = Iterables.filter(
-                searchResolver.search(titleQuery.build(), application),
-                cls
-        );
+        Iterable<? extends T> results = searchResolver.search(titleQuery.build(), application)
+                .stream()
+                .filter(cls::isInstance)
+                .map(cls::cast)
+                .collect(MoreCollectors.toImmutableList());
 
         String expandedTitle = titleExpander.expand(title);
 
-        if (!title.toLowerCase().equals(expandedTitle)) {
+        if (!title.equalsIgnoreCase(expandedTitle)) {
             SearchQuery.Builder expandedTitleQuery = getSearchQueryBuilder(
                     publishers,
                     expandedTitle
             );
-            if (content.getSpecialization() != null) {
+            if (useContentSpecialization && content.getSpecialization() != null) {
                 titleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
+            } else if (!useContentSpecialization) {
+                titleQuery.withFakeSpecialization(true);
             }
             Iterable<? extends T> filteredExpandedTitleResults = Iterables.filter(
                     searchResolver.search(expandedTitleQuery.build(), application),
@@ -140,7 +194,11 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             results = Iterables.concat(results, filteredExpandedTitleResults);
         }
 
-        return Iterables.filter(results, IS_ACTIVELY_PUBLISHED);
+        //Return actively published results, and not the subject itself.
+        return StreamSupport.stream(results.spliterator(), false)
+                .filter(Described::isActivelyPublished)
+                .filter(input-> !Objects.equals(input.getId(), content.getId()))
+                .collect(Collectors.toList());
     }
 
     private SearchQuery.Builder getSearchQueryBuilder(Set<Publisher> publishers,
@@ -162,7 +220,4 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     public String toString() {
         return "Title-matching Generator";
     }
-
-    private static Predicate<Content> IS_ACTIVELY_PUBLISHED = input -> input.isActivelyPublished();
-    
 }

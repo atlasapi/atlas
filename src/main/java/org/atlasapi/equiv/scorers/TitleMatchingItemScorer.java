@@ -1,11 +1,9 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import org.apache.commons.lang3.StringUtils;
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
@@ -13,12 +11,12 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import org.apache.commons.lang3.StringUtils;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     
@@ -26,6 +24,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final ImmutableSet<String> PREFIXES = ImmutableSet.of("the ", "Live ");
     private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(Unrated\\)", "\\(Rated\\)");
     private static final Pattern TRAILING_APOSTROPHE_PATTERN =Pattern.compile("\\w' ");
+    private static final Score SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
 
     public enum TitleType {
@@ -61,9 +60,9 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private final Score scoreOnMismatch;
-    
+
     public TitleMatchingItemScorer() {
-        this(Score.NULL_SCORE);
+        this(Score.nullScore());
     }
     
     public TitleMatchingItemScorer(Score scoreOnMismatch) {
@@ -75,7 +74,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
             Item subject,
             Set<? extends Item> suggestions,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Title Matching Item Scorer");
@@ -97,14 +96,14 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
             }
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
     
         return equivalents.build();
     }
 
     private Score score(Item subject, Item suggestion, ResultDescription desc) {
-        Score score = Score.NULL_SCORE;
-        if(!Strings.isNullOrEmpty(suggestion.getTitle())) {
+        Score score = Score.nullScore();
+        if(!Strings.isNullOrEmpty(subject.getTitle())) {
             if(Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title (%s) scored: %s", suggestion.getCanonicalUri(), score);
             } else {
@@ -117,12 +116,16 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
 
     private Score score(Item subject, Item suggestion) {
-        
+
+        if(subject.getTitle().equals(suggestion.getTitle())){
+            return SCORE_ON_PERFECT_MATCH;
+        }
+
         TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
         
         
-        Score score = Score.NULL_SCORE;
+        Score score = Score.nullScore();
 
         if(subjectType == suggestionType) {
             String subjectTitle = removePostfix(subject);
@@ -174,7 +177,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (!matches) {
             return partialTitleScore(subjectTitle, suggestionTitle);
         } else {
-            return Score.valueOf(2D);
+            return SCORE_ON_PERFECT_MATCH;
         }
     }
 
@@ -190,15 +193,15 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
             subjTitle = subjTitle.substring(0, subjTitle.indexOf(":"));
             suggTitle = suggTitle.substring(0, suggTitle.indexOf(":"));
-            return subjTitle.equals(suggTitle) ? Score.valueOf(1D) : scoreOnMismatch;
+            return subjTitle.equals(suggTitle) ? Score.ONE : scoreOnMismatch;
         } else if (subjTitle.contains(":") && subjTitle.length() > suggTitle.length()) {
 
             String subjSubstring = subjTitle.substring(0, subjTitle.indexOf(":"));
-            return subjSubstring.equals(suggTitle) ? Score.valueOf(1D) : scoreOnMismatch;
+            return subjSubstring.equals(suggTitle) ? Score.ONE : scoreOnMismatch;
         } else if (suggTitle.contains(":")) {
 
             String suggSubstring = suggTitle.substring(0, suggestionTitle.indexOf(":"));
-            return suggSubstring.equals(subjTitle) ? Score.valueOf(1D) : scoreOnMismatch;
+            return suggSubstring.equals(subjTitle) ? Score.ONE : scoreOnMismatch;
         }
 
         return scoreOnMismatch;

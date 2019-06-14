@@ -3,10 +3,8 @@ package org.atlasapi.equiv.results.filters;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Equiv;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +17,7 @@ public class UnpublishedContentFilter<T extends Content> extends AbstractEquival
             ScoredCandidate<T> candidate,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent filterCompoenent = EquivToTelescopeComponent.create();
         filterCompoenent.setComponentName("Unpublished Content Filter");
@@ -39,9 +37,14 @@ public class UnpublishedContentFilter<T extends Content> extends AbstractEquival
                         "Removed for not being actively published"
                 );
             }
+        } else {
+            filterCompoenent.addComponentResult(
+                    equivalent.getId(),
+                    "Went through."
+            );
         }
 
-        equivToTelescopeResults.addFilterResult(filterCompoenent);
+        equivToTelescopeResult.addFilterResult(filterCompoenent);
 
         return isActivelyPublished;
     }

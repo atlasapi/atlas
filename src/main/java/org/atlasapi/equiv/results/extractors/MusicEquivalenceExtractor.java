@@ -1,15 +1,16 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
 
@@ -17,24 +18,24 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
     private static final double MULTI_THRESHOLD = 0.7;
 
     @Override
-    public Optional<ScoredCandidate<Item>> extract(
+    public Set<ScoredCandidate<Item>> extract(
             List<ScoredCandidate<Item>> candidates,
             Item subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName("Music Equivalence Extractor");
 
         if (candidates.isEmpty()) {
-            return Optional.absent();
+            return ImmutableSet.of();
         }
-        
+
         desc.startStage(toString());
-        
+
         List<ScoredCandidate<Item>> positiveScores = removeNonPositiveScores(candidates, desc);
         
-        Optional<ScoredCandidate<Item>> result = Optional.absent();
+        Optional<ScoredCandidate<Item>> result = Optional.empty();
         
         if (positiveScores.size() == 1) {
             ScoredCandidate<Item> only = positiveScores.get(0);
@@ -44,13 +45,15 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
             result = candidateIfOverThreshold(only, MULTI_THRESHOLD, desc);
         }
 
-        extractorComponent.addComponentResult(
-                result.get().candidate().getId(),
-                String.valueOf(result.get().score())
-        );
+        result.ifPresent(
+                itemScoredCandidate -> extractorComponent.addComponentResult(
+                        itemScoredCandidate.candidate().getId(),
+                        String.valueOf(itemScoredCandidate.score())
+                ));
         
         desc.finishStage();
-        return result; 
+
+        return result.map(ImmutableSet::of).orElseGet(ImmutableSet::of);
     }
 
     private List<ScoredCandidate<Item>> removeNonPositiveScores(List<ScoredCandidate<Item>> candidates, ResultDescription desc) {
@@ -71,7 +74,7 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
             return Optional.of(only);
         } else {
             desc.appendText("%s under %s threshold", only.candidate(), threshold);
-            return Optional.absent();
+            return Optional.empty();
         }
     }
 

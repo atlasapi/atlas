@@ -1,15 +1,15 @@
 package org.atlasapi.equiv.results.persistence;
 
-import java.util.List;
-
-import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.media.entity.Content;
+
+import java.util.List;
 
 public interface EquivalenceResultStore {
 
-    <T extends Content> StoredEquivalenceResult store(EquivalenceResult<T> result);
+    <T extends Content> StoredEquivalenceResults store(EquivalenceResults<T> results);
     
-    StoredEquivalenceResult forId(String canonicalUri);
+    StoredEquivalenceResults forId(String canonicalUri);
     
-    List<StoredEquivalenceResult> forIds(Iterable<String> canonicalUris);
+    List<StoredEquivalenceResults> forIds(Iterable<String> canonicalUris);
 }

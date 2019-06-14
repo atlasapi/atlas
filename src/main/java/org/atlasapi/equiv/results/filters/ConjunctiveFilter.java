@@ -1,13 +1,11 @@
 package org.atlasapi.equiv.results.filters;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 public class ConjunctiveFilter<T> implements EquivalenceFilter<T> {
 
@@ -23,15 +21,15 @@ public class ConjunctiveFilter<T> implements EquivalenceFilter<T> {
 
     @Override
     public List<ScoredCandidate<T>> apply(
-            Iterable<ScoredCandidate<T>> candidate,
+            Iterable<ScoredCandidate<T>> candidates,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         desc.startStage(toString());
-        Iterable<ScoredCandidate<T>> result = candidate;
+        Iterable<ScoredCandidate<T>> result = candidates;
         for (EquivalenceFilter<T> filter : filters) {
-            result = filter.apply(result, subject, desc, equivToTelescopeResults);
+            result = filter.apply(result, subject, desc, equivToTelescopeResult);
         }
         desc.finishStage();
         return ImmutableList.copyOf(result);

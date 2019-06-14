@@ -1,12 +1,11 @@
 package org.atlasapi.equiv.scorers;
 
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
-
-import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,7 +26,7 @@ public class DescriptionMatchingScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         return scores.candidates().get(candidate);
     }

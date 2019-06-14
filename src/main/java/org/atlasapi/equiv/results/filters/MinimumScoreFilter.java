@@ -3,7 +3,7 @@ package org.atlasapi.equiv.results.filters;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 
 public class MinimumScoreFilter<T extends Content>  extends AbstractEquivalenceFilter<T> {
@@ -18,10 +18,10 @@ public class MinimumScoreFilter<T extends Content>  extends AbstractEquivalenceF
             ScoredCandidate<T> candidate,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
-        filterComponent.setComponentName("Minimum Score Filter");
+        filterComponent.setComponentName("Minimum Score Filter "+minimum);
 
         boolean result = candidate.score().isRealScore() && candidate.score().asDouble() > minimum;
         if (!result) {
@@ -34,9 +34,15 @@ public class MinimumScoreFilter<T extends Content>  extends AbstractEquivalenceF
                     candidate.candidate().getId(),
                     "Removed for not reaching minimum score of " + String.valueOf(minimum)
             );
+        } else {
+            filterComponent.addComponentResult(
+                    candidate.candidate().getId(),
+                    "Went through."
+            );
         }
 
-        equivToTelescopeResults.addFilterResult(filterComponent);
+
+        equivToTelescopeResult.addFilterResult(filterComponent);
 
         return result;
     }

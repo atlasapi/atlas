@@ -1,6 +1,9 @@
 package org.atlasapi.remotesite.wikipedia;
 
 import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.common.collect.ImmutableSet;
 import net.sourceforge.jwbf.mediawiki.bots.MediaWikiBot;
@@ -31,14 +34,19 @@ public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleS
     private static final MediaWikiBot bot = new MediaWikiBot("http://en.wikipedia.org/w/");
 
     private static Iterable<String> filmIndexPageTitles() {
-        return Lists.transform(ImmutableList.of(
-            "numbers", "A", "B", "C", "D", "E", "F", "G", "H", "I",
-            "J–K", "L", "M", "N–O", "P", "Q–R", "S", "T", "U–W", "X–Z"
-        ), new Function<String, String>() {
-            @Override public String apply(String suffix) {
-                return "List of films: " + suffix;
-            }
-        });
+        return ImmutableList.of(
+                "numbers", "A", "B", "C", "D", "E", "F", "G", "H", "I",
+                "J–K", "L", "M", "N–O", "P", "Q–R", "S", "T", "U–V-W", "X-Y–Z").stream()
+                .map(suffix -> "List of films: " + suffix)
+                .collect(Collectors.toList());
+    }
+
+    private static Iterable<String> tvIndexPageTitles() {
+        return ImmutableList.of(
+                "numbers", "A", "B", "C", "D", "E", "F", "G", "H", "I-J",
+                "K-L", "M", "N", "O", "P", "Q–R", "S", "T", "U–V-W", "X-Y–Z").stream()
+                .map(suffix -> "List of television programs: " + suffix)
+                .collect(Collectors.toList());
     }
     
     @Override
@@ -66,12 +74,20 @@ public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleS
     }
 
     @Override
-    public Iterable<String> getAllTvBrandArticleTitles() throws TvIndexingException {
-        try {
-            return IndexScraper.extractNames(fetchArticle("List of television programs by name").getMediaWikiSource());
-        } catch (Exception ex) {
-            throw new TvIndexingException(ex);
-        }
+    public Iterable<String> getAllTvBrandArticleTitles() {
+        log.info("Loading tv article titles");
+        return StreamSupport.stream(tvIndexPageTitles().spliterator(), false)
+                .map(title -> {
+                    try {
+                        return IndexScraper.extractNames(fetchArticle(title).getMediaWikiSource());
+                    } catch (Exception e) {
+                        log.error("Failed to load some of the tv article names '{}' - skipping", title, e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 
     @Override

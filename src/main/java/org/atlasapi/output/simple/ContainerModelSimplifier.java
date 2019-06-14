@@ -87,6 +87,7 @@ public class ContainerModelSimplifier extends ContentModelSimplifier<Container, 
 
         copyBasicContentAttributes(fullPlayList, simplePlaylist, annotations, application);
         simplePlaylist.setType(EntityType.from(fullPlayList).toString());
+        simplePlaylist.setCountriesOfOrigin(fullPlayList.getCountriesOfOrigin());
 
         if (annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
             if (fullPlayList instanceof Series) {

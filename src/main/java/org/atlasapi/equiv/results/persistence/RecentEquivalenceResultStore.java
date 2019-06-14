@@ -1,21 +1,20 @@
 package org.atlasapi.equiv.results.persistence;
 
-import java.util.List;
-
-import org.atlasapi.equiv.results.EquivalenceResult;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 public class RecentEquivalenceResultStore implements EquivalenceResultStore {
 
     private final EquivalenceResultStore delegate;
-    private final Cache<String, StoredEquivalenceResult> mrwItemCache;
-    private final Cache<String, StoredEquivalenceResult> mrwContainerCache;
+    private final Cache<String, StoredEquivalenceResults> mrwItemCache;
+    private final Cache<String, StoredEquivalenceResults> mrwContainerCache;
 
     public RecentEquivalenceResultStore(EquivalenceResultStore delegate) {
         this.delegate = delegate;
@@ -24,41 +23,41 @@ public class RecentEquivalenceResultStore implements EquivalenceResultStore {
     }
     
     @Override
-    public <T extends Content> StoredEquivalenceResult store(EquivalenceResult<T> result) {
-        StoredEquivalenceResult restoredResult = delegate.store(result);
-        if(result.subject() instanceof Item) {
-            mrwItemCache.put(result.subject().getCanonicalUri(), restoredResult);
+    public <T extends Content> StoredEquivalenceResults store(EquivalenceResults<T> results) {
+        StoredEquivalenceResults restoredResult = delegate.store(results);
+        if(results.subject() instanceof Item) {
+            mrwItemCache.put(results.subject().getCanonicalUri(), restoredResult);
         }
-        if(result.subject() instanceof Container) {
-            mrwContainerCache.put(result.subject().getCanonicalUri(), restoredResult);
+        if(results.subject() instanceof Container) {
+            mrwContainerCache.put(results.subject().getCanonicalUri(), restoredResult);
         }
         return restoredResult;
     }
 
     @Override
-    public StoredEquivalenceResult forId(String canonicalUri) {
-        StoredEquivalenceResult equivalenceResult = mrwItemCache.getIfPresent(canonicalUri);
-        if(equivalenceResult != null) {
-            return equivalenceResult;
+    public StoredEquivalenceResults forId(String canonicalUri) {
+        StoredEquivalenceResults equivalenceResults = mrwItemCache.getIfPresent(canonicalUri);
+        if(equivalenceResults != null) {
+            return equivalenceResults;
         }
         
-        equivalenceResult = mrwContainerCache.getIfPresent(canonicalUri);
-        if(equivalenceResult != null) {
-            return equivalenceResult;
+        equivalenceResults = mrwContainerCache.getIfPresent(canonicalUri);
+        if(equivalenceResults != null) {
+            return equivalenceResults;
         }
         return delegate.forId(canonicalUri);
     }
     
     @Override
-    public List<StoredEquivalenceResult> forIds(Iterable<String> canonicalUris) {
+    public List<StoredEquivalenceResults> forIds(Iterable<String> canonicalUris) {
         return delegate.forIds(canonicalUris);
     }
     
-    public List<StoredEquivalenceResult> latestItemResults() {
+    public List<StoredEquivalenceResults> latestItemResults() {
         return ImmutableList.copyOf(mrwItemCache.asMap().values());
     }
 
-    public List<StoredEquivalenceResult> latestContainerResults() {
+    public List<StoredEquivalenceResults> latestContainerResults() {
         return ImmutableList.copyOf(mrwContainerCache.asMap().values());
     }
 

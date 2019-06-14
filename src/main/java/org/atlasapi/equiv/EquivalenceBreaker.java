@@ -1,17 +1,26 @@
 package org.atlasapi.equiv;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+
+import com.metabroadcast.common.base.Maybe;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -39,7 +48,15 @@ public class EquivalenceBreaker {
     ) {
         return new EquivalenceBreaker(contentResolver, entryStore, lookupWriter);
     }
-    
+
+    /**
+     * Keep in mind this is very inefficient, as if you are removing everything, you are calling
+     * this multiple times, say e.g. you are unpublishing something and nuking the whole equiv set,
+     * you will be re-resolving, recalculating and re-saving the transitive sets of
+     * everything in the set all the time.
+     * @param sourceUri The uri of the item, that we want to remove the equivalence from
+     * @param directEquivUriToRemove The equivalence to remove from the source item
+     */
     public void removeFromSet(String sourceUri, final String directEquivUriToRemove) {
         Maybe<Identified> possibleSource = 
                 contentResolver.findByCanonicalUris(ImmutableSet.of(sourceUri))
@@ -52,28 +69,69 @@ public class EquivalenceBreaker {
         Described source = (Described) possibleSource.requireValue();
         LookupEntry lookupEntry = 
                 Iterables.getOnlyElement(entryStore.entriesForCanonicalUris(ImmutableSet.of(sourceUri)));
-        
-        if (!ImmutableSet.copyOf(Iterables.transform(lookupEntry.directEquivalents(), LookupRef.TO_URI))
+
+        if (!lookupEntry.directEquivalents()
+                .stream()
+                .map(LookupRef.TO_URI::apply)
+                .collect(Collectors.toList())
                 .contains(directEquivUriToRemove)) {
             throw new IllegalArgumentException("Direct equivalence to " 
                             + directEquivUriToRemove + " not found");
         }
         
-        Iterable<LookupRef> filteredRefs = Iterables.filter(lookupEntry.directEquivalents(), 
-                new Predicate<LookupRef>() {
+        Iterable<LookupRef> filteredRefs = lookupEntry.directEquivalents()
+                .stream()
+                .filter(input -> !input.uri().equals(directEquivUriToRemove))
+                .collect(Collectors.toList());
+        
+        Iterable<ContentRef> equivalents = contentResolver
+                .findByCanonicalUris(StreamSupport.stream(filteredRefs.spliterator(), false)
+                        .map(LookupRef.TO_URI::apply)
+                        .collect(Collectors.toList()))
+                .getAllResolvedResults()
+                .stream()
+                .filter(Described.class::isInstance)
+                .map(Described.class::cast)
+                .map(ContentRef.FROM_CONTENT::apply)
+                .collect(Collectors.toList());
+        
+        lookupWriter.writeLookup(ContentRef.valueOf(source), equivalents, Publisher.all());
+    }
 
-                    @Override
-                    public boolean apply(LookupRef input) {
-                        return !input.uri().equals(directEquivUriToRemove);
-                    }
-                });
-        
-        Iterable<Described> equivalents = Iterables.filter(
-                contentResolver
-                    .findByCanonicalUris(Iterables.transform(filteredRefs, LookupRef.TO_URI))
-                    .getAllResolvedResults(), Described.class);
-        
-        lookupWriter.writeLookup(ContentRef.valueOf(source), 
-                Iterables.transform(equivalents, ContentRef.FROM_CONTENT), Publisher.all());
+    /**
+     *
+     * @param source The item we want to remove equivalences from
+     * @param sourceLE The lookup record of the source item
+     * @param directEquivUrisToRemove All the equivalence uris we want to remove. If source uri is
+     *                                included, this method will ignore it.
+     */
+    public void removeFromSet(Described source, LookupEntry sourceLE, Set<String> directEquivUrisToRemove){
+
+        //make sure to not remove yourself.
+        directEquivUrisToRemove =
+                Sets.difference(directEquivUrisToRemove, ImmutableSet.of(source.getCanonicalUri()));
+
+        Set<String> existingDirectEquivUris = sourceLE.directEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(Collectors.toSet());
+
+        Sets.SetView<String> remainingDirectEquivalences =
+                Sets.difference(existingDirectEquivUris, directEquivUrisToRemove);
+
+        ResolvedContent resolvedEquivList =
+                contentResolver.findByCanonicalUris(remainingDirectEquivalences);
+        List<ContentRef> newDirectEquivs = ImmutableList.of();
+        if (resolvedEquivList != null) {
+            newDirectEquivs = resolvedEquivList
+                    .getAllResolvedResults()
+                    .stream()
+                    .filter(Described.class::isInstance)
+                    .map(Described.class::cast)
+                    .map(ContentRef.FROM_CONTENT::apply)
+                    .collect(Collectors.toList());
+        }
+
+        lookupWriter.writeLookup(ContentRef.valueOf(source), newDirectEquivs, Publisher.all());
     }
 }

@@ -14,6 +14,7 @@ import org.atlasapi.remotesite.util.OldContentDeactivator;
 import org.atlasapi.s3.DefaultS3Client;
 
 import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 
 import com.google.common.base.Strings;
@@ -30,7 +31,7 @@ import static org.atlasapi.persistence.logging.AdapterLogEntry.infoEntry;
 @Configuration
 public class ItunesModule {
 
-    private final static RepetitionRule ITUNES_EPF_UPDATER = daily(new LocalTime(5, 0, 0));
+    private final static RepetitionRule ITUNES_EPF_UPDATER = RepetitionRules.NEVER;
     private final static RepetitionRule ITUNES_FILE_UPDATER = daily(new LocalTime(4, 0, 0));
 
     private @Value("${itunes.epf.username}") String epfUsername;

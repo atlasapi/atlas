@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -20,6 +21,9 @@ import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgChannelDayUpdater;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgClient;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgEntryUriExtractor;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgUpdater;
+import org.atlasapi.remotesite.channel4.pirate.C4PirateClient;
+import org.atlasapi.remotesite.channel4.pirate.C4PirateForceIngestController;
+import org.atlasapi.remotesite.channel4.pirate.C4PirateItemTransformer;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -30,7 +34,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.metabroadcast.common.http.SimpleHttpClient;
@@ -72,6 +75,10 @@ public class C4PmlsdModule {
     private @Value("${service.web.id}") Long webServiceId;
     private @Value("${service.ios.id}") Long iOsServiceId;
     private @Value("${player.4od.id}") Long fourODPlayerId;
+
+    private @Value("${c4.pirate.url}") String c4PirateUrl;
+    private @Value("${c4.pirate.username}") String c4PirateUser;
+    private @Value("${c4.pirate.password}") String c4PiratePass;
 	
 	public static Map<Publisher, String> PUBLISHER_TO_CANONICAL_URI_HOST_MAP 
 	    = ImmutableMap.of(Publisher.C4_PMLSD, "pmlsc.channel4.com",
@@ -80,7 +87,8 @@ public class C4PmlsdModule {
     @PostConstruct
     public void startBackgroundTasks() {
         if (tasksEnabled) {
-            scheduler.schedule(pcC4PmlsdEpgUpdater().withName("C4 PMLSD Epg PC Updater (15 day)"), TWO_HOURS);
+            scheduler.schedule(pcC4Pmlsd15DayEpgUpdater().withName("C4 PMLSD Epg PC Updater (15 day)"), TWO_HOURS);
+            scheduler.schedule(pcC4PmlsdLastMonthEpgUpdater().withName("C4 PMLSD Epg PC Updater (Last Month)"), RepetitionRules.NEVER);
             scheduler.schedule(pcC4PmlsdAtozUpdater().withName("C4 PMLSD 4OD PC Updater"), BRAND_UPDATE_TIME);
             //scheduler.schedule(xbox4PmlsdEpgUpdater().withName("C4 PMLSC Epg XBox Updater (15 day)"), TWO_HOURS_WITH_OFFSET);
             scheduler.schedule(xboxC4PmlsdAtozUpdater().withName("C4 PMLSD 4OD XBox Updater"), XBOX_UPDATE_TIME);
@@ -113,16 +121,36 @@ public class C4PmlsdModule {
         return new C4AtomApi(channelResolver);
     }
     
-	@Bean public C4EpgUpdater pcC4PmlsdEpgUpdater() {
-	    return new C4EpgUpdater(atomPmlsdApi(), pcC4PlmsdEpgChannelDayUpdater(), new DayRangeGenerator().withLookAhead(7).withLookBack(7));
+	@Bean public C4EpgUpdater pcC4Pmlsd15DayEpgUpdater() {
+	    return new C4EpgUpdater(
+	            atomPmlsdApi(),
+	            pcC4PlmsdEpgChannelDayUpdater(),
+	            new DayRangeGenerator().withLookAhead(7).withLookBack(7)
+        );
     }
-	
-	@Bean public C4EpgChannelDayUpdater pcC4PlmsdEpgChannelDayUpdater() {
+
+    @Bean public C4EpgUpdater pcC4PmlsdLastMonthEpgUpdater() {
+        return new C4EpgUpdater(
+                atomPmlsdApi(),
+                pcC4PlmsdEpgChannelDayUpdater(),
+                new DayRangeGenerator().withLookAhead(0).withLookBack(31)
+        );
+    }
+
+    @Bean public C4EpgChannelDayUpdater pcC4PlmsdEpgChannelDayUpdater() {
 	    ScheduleResolverBroadcastTrimmer trimmer = new ScheduleResolverBroadcastTrimmer(SOURCE, scheduleResolver, contentResolver, pmlsdLastUpdatedSettingContentWriter());
-	    return new C4EpgChannelDayUpdater(new C4EpgClient(c4HttpsClient()), pmlsdLastUpdatedSettingContentWriter(),
-                contentResolver, pcPmlsdBrandFetcher(Optional.<Platform>absent(),Optional.<String>absent()), trimmer, 
-                scheduleWriter, Publisher.C4_PMLSD, new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4EpgEntryUriExtractor()),
-                Optional.<String>absent(), c4PCLocationPolicyIds());
+        return new C4EpgChannelDayUpdater(
+                new C4EpgClient(c4HttpsClient()),
+                pmlsdLastUpdatedSettingContentWriter(),
+                contentResolver,
+                pcPmlsdBrandFetcher(Optional.empty(), Optional.empty()),
+                trimmer,
+                scheduleWriter,
+                Publisher.C4_PMLSD,
+                new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4EpgEntryUriExtractor()),
+                Optional.empty(),
+                c4PCLocationPolicyIds()
+        );
 	}
 	
 // Disabling the P06 EPG updater, since it doesn't contain hierarchy links if the programme is
@@ -141,33 +169,75 @@ public class C4PmlsdModule {
 //    }
     
 	@Bean protected C4AtoZAtomContentUpdateTask pcC4PmlsdAtozUpdater() {
-		return new C4AtoZAtomContentUpdateTask(c4HttpsClient(), ATOZ_BASE, pcPmlsdBrandFetcher(Optional.<Platform>absent(),Optional.<String>absent()), Publisher.C4_PMLSD);
+		return new C4AtoZAtomContentUpdateTask(
+		        c4HttpsClient(),
+		        ATOZ_BASE,
+		        pcPmlsdBrandFetcher(Optional.empty(), Optional.empty()),
+		        Publisher.C4_PMLSD
+        );
 	}
 	
 	@Bean protected C4AtoZAtomContentUpdateTask xboxC4PmlsdAtozUpdater() {
-	    return new C4AtoZAtomContentUpdateTask(c4HttpsClient(), ATOZ_BASE, Optional.of(P06_PLATFORM), 
-	            xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX),Optional.of(P06_PLATFORM)), Publisher.C4_PMLSD_P06);
+	    return new C4AtoZAtomContentUpdateTask(
+	            c4HttpsClient(),
+	            ATOZ_BASE,
+	            Optional.of(P06_PLATFORM),
+	            xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX), Optional.of(P06_PLATFORM)),
+	            Publisher.C4_PMLSD_P06
+        );
 	}
 	
-	protected C4AtomBackedBrandUpdater pcPmlsdBrandFetcher(Optional<Platform> platform, Optional<String> platformParam) {
+	protected C4AtomBackedBrandUpdater pcPmlsdBrandFetcher(
+	        Optional<Platform> platform,
+	        Optional<String> platformParam
+    ) {
 	    C4AtomApiClient client = new C4AtomApiClient(c4HttpsClient(), ATOZ_BASE, platformParam);
-	    C4BrandExtractor extractor = new C4BrandExtractor(client, platform, Publisher.C4_PMLSD, 
-	            channelResolver, new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4AtomFeedUriExtractor()),
-	            c4PCLocationPolicyIds(), true);
-		return new C4AtomBackedBrandUpdater(client, platform, contentResolver, pmlsdLastUpdatedSettingContentWriter(), extractor);
+	    C4BrandExtractor extractor = new C4BrandExtractor(
+	            client,
+	            platform,
+	            Publisher.C4_PMLSD,
+	            channelResolver,
+	            new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4AtomFeedUriExtractor()),
+	            c4PCLocationPolicyIds(),
+	            true
+        );
+		return new C4AtomBackedBrandUpdater(
+		        client,
+		        platform,
+		        contentResolver,
+		        pmlsdLastUpdatedSettingContentWriter(),
+		        extractor
+        );
 	}
 	
 	protected C4AtomBackedBrandUpdater xboxPmlsdBrandFetcher(Optional<Platform> platform, Optional<String> platformParam) {
         C4AtomApiClient client = new C4AtomApiClient(c4HttpsClient(), ATOZ_BASE, platformParam);
-        C4BrandExtractor extractor = new C4BrandExtractor(client, platform, Publisher.C4_PMLSD_P06, 
-                channelResolver, new SourceSpecificContentFactory<>(Publisher.C4_PMLSD_P06, new C4AtomFeedUriExtractor()), 
-                c4XBoxLocationPolicyIds(), false);
-        return new C4AtomBackedBrandUpdater(client, platform, contentResolver, pmlsdLastUpdatedSettingContentWriter(), extractor);
+        C4BrandExtractor extractor = new C4BrandExtractor(
+                client,
+                platform,
+                Publisher.C4_PMLSD_P06,
+                channelResolver,
+                new SourceSpecificContentFactory<>(Publisher.C4_PMLSD_P06, new C4AtomFeedUriExtractor()),
+                c4XBoxLocationPolicyIds(),
+                false
+        );
+        return new C4AtomBackedBrandUpdater(
+                client,
+                platform,
+                contentResolver,
+                pmlsdLastUpdatedSettingContentWriter(),
+                extractor
+        );
     }
 	
 	@Bean protected C4BrandUpdateController c4BrandUpdateController() {
-	    return new C4BrandUpdateController(pcPmlsdBrandFetcher(Optional.<Platform>absent(),Optional.<String>absent()), 
-	            ImmutableMap.of(Platform.XBOX, xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX),Optional.of(P06_PLATFORM))));
+	    return new C4BrandUpdateController(
+	            pcPmlsdBrandFetcher(Optional.empty(), Optional.empty()),
+	            ImmutableMap.of(
+	                    Platform.XBOX,
+	                    xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX), Optional.of(P06_PLATFORM))
+                )
+        );
 	}
 	
 	@Bean protected C4EpgChannelDayUpdateController c4EpgChannelDayUpdateController() {
@@ -189,6 +259,14 @@ public class C4PmlsdModule {
     @Bean protected C4LocationPolicyIds c4XBoxLocationPolicyIds() {
         return C4LocationPolicyIds.builder()
                     .build();
+    }
+
+    @Bean protected C4PirateForceIngestController c4PirateForceIngestController() {
+        return new C4PirateForceIngestController(
+                contentWriter,
+                C4PirateItemTransformer.create(),
+                C4PirateClient.create(c4PirateUser, c4PiratePass, c4PirateUrl)
+        );
     }
     
 }

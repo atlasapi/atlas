@@ -1,11 +1,12 @@
 package org.atlasapi.remotesite.wikipedia.film;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.intl.Country;
+import com.neovisionaries.i18n.CountryCode;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.CrewMember.Role;
@@ -16,24 +17,28 @@ import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.ReleaseDate.ReleaseType;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
+import org.atlasapi.remotesite.util.EnglishLanguageCodeMap;
+import org.atlasapi.remotesite.wikipedia.film.FilmInfoboxScraper.ReleaseDateResult;
+import org.atlasapi.remotesite.wikipedia.film.FilmInfoboxScraper.Result;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper.ListItemResult;
-import org.atlasapi.remotesite.wikipedia.film.FilmInfoboxScraper.ReleaseDateResult;
-import org.atlasapi.remotesite.wikipedia.film.FilmInfoboxScraper.Result;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import xtc.parser.ParseException;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.intl.Country;
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  * This attempts to extract a {@link Film} from its Wikipedia article.
@@ -48,19 +53,19 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
             Result info = FilmInfoboxScraper.getInfoboxAttrs(source);
             
             String url = article.getUrl();
-            Film flim = new Film(url, url, Publisher.WIKIPEDIA);
+            Film film = new Film(url, url, Publisher.WIKIPEDIA);
             
-            flim.setLastUpdated(article.getLastModified());
+            film.setLastUpdated(article.getLastModified());
             
             ImmutableList<ListItemResult> title = info.name;
             if (title != null && title.size() == 1) {
-                flim.setTitle(title.get(0).name);
+                film.setTitle(title.get(0).name);
             } else {
                 log.warn("Film in Wikipedia article \"" + article.getTitle() + "\" has " + (title == null || title.isEmpty() ? "no title." : "multiple titles.") + " Falling back to guessing from article title.");
-                flim.setTitle(guessFilmNameFromArticleTitle(article.getTitle()));
+                film.setTitle(guessFilmNameFromArticleTitle(article.getTitle()));
             }
-            
-            List<CrewMember> people = flim.getPeople();
+
+            List<CrewMember> people = film.getPeople();
             crewify(info.cinematographers, Role.DIRECTOR_OF_PHOTOGRAPHY, people);
             crewify(info.composers, Role.COMPOSER, people);
             crewify(info.directors, Role.DIRECTOR, people);
@@ -74,37 +79,108 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
             
             if (info.externalAliases != null) {
                 for (Map.Entry<String, String> a : info.externalAliases.entrySet()) {
-                    flim.addAlias(new Alias(a.getKey(), a.getValue()));
+                    film.addAlias(new Alias(a.getKey(), a.getValue()));
                 }
             }
             
             if (info.releaseDates != null) {
+                int year = 9999;
                 ImmutableSet.Builder<ReleaseDate> releaseDates = ImmutableSet.builder();
                 for (ReleaseDateResult result : info.releaseDates) {
                     Optional<ReleaseDate> releaseDate = extractReleaseDate(result);
                     if (releaseDate.isPresent()) {
-                        releaseDates.add(releaseDate.get());
+                        ReleaseDate date = releaseDate.get();
+                        if (date.date().getYear() < year) { // Will get the earliest release date
+                            year = date.date().getYear();
+                        }
+                        releaseDates.add(date);
                     }
                 }
-                flim.setReleaseDates(releaseDates.build());
+                film.setReleaseDates(releaseDates.build());
+                if (year < 9999) {
+                    film.setYear(year);
+                }
             }
             
             if (info.runtimeInMins != null && info.runtimeInMins > 0) {
                 Version v = new Version();
                 v.setDuration(new Duration(info.runtimeInMins * 60000));
-                flim.addVersion(v);
+                film.addVersion(v);
             }
 
 
             if (info.image != null) {
                 Image image = new Image(SwebleHelper.getWikiImage(info.image));
-                flim.setImages(ImmutableList.of(image));
+                film.setImages(ImmutableList.of(image));
             }
-            
-            return flim;
+
+
+            if(info.language != null && !info.language.isEmpty()){
+                Set<String> languages = new HashSet<>();
+                info.language.stream()
+                        .filter(listItemResult -> !isNullOrEmpty(listItemResult.name))
+                        .flatMap(listItem -> split(listItem.name).stream())
+                        .map(name -> {
+                                Optional<String> lang = EnglishLanguageCodeMap.getInstance().codeForEnglishLanguageName(name.toLowerCase());
+                                if (lang.isPresent()) {
+                                    return lang.get();
+                                } else {
+                                    log.warn("Language not found {}", name);
+                                    return null;
+                                }})
+                        .filter(Objects::nonNull)
+                        .forEach(languages::add);
+
+                film.setLanguages(languages);
+            }
+
+            if(info.countries != null && !info.countries.isEmpty()){
+                Set<Country> countries = new HashSet<>();
+                info.countries.stream()
+                        .filter(listItem -> !isNullOrEmpty(listItem.name))
+                        .map(listItem -> listItem.name)
+                        .filter(name -> {
+                            try {
+                                if (countryNames.containsKey(name.toLowerCase())
+                                        || !CountryCode.findByName(name).isEmpty()) {
+                                    return true;
+                                } else {
+                                    log.warn("Country not found {}", name);
+                                    return false;
+                                }
+                            } catch (Exception e) {
+                                log.warn("Exception parsing {}", name, e);
+                                return false;
+                            }
+                        })
+                        .map(name -> {
+                            Country country = countryNames.get(name.toLowerCase());
+                            if (country == null) {
+                                List<CountryCode> codeList = CountryCode.findByName(name);
+                                if (codeList.size() > 1) {
+                                    log.warn("Country name too ambiguous {} -> {}", name, codeList);
+                                    return null;
+                                } else {
+                                    return Countries.fromCode(codeList.get(0).getAlpha2());
+                                }
+                            }
+                            return country;
+                        })
+                        .filter(Objects::nonNull)
+                        .forEach(countries::add);
+
+                film.setCountriesOfOrigin(countries);
+            }
+
+
+            return film;
         } catch (IOException | ParseException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    private static Iterable<String> languagesFrom(@Nonnull String language) {
+        return EnglishLanguageCodeMap.getInstance().codeForEnglishLanguageName(language.toLowerCase()).asSet();
     }
     
     private String guessFilmNameFromArticleTitle(String title) {
@@ -127,6 +203,15 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
                 into.add(new CrewMember().withRole(role).withName(person.name).withPublisher(Publisher.WIKIPEDIA));
             }
         }
+    }
+
+    private List<String> split(String name) {
+        String[] names = name.split("[,/\\\\]");
+        List<String> cleaned = Lists.newArrayList();
+        for (String s : names) {
+            cleaned.add(s.trim());
+        }
+        return ImmutableList.copyOf(cleaned);
     }
     
     private static final Map<String, Country> countryNames = new TreeMap<String, Country>(){{
@@ -154,7 +239,7 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
         }
 
         Country country;
-        if (result.location() == null || Strings.isNullOrEmpty(result.location().name)) {
+        if (result.location() == null || isNullOrEmpty(result.location().name)) {
             country = Countries.ALL;
         } else {
             String location = result.location().name.trim().toLowerCase();

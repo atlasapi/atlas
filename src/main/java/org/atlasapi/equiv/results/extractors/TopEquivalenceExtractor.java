@@ -1,17 +1,17 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 
-import com.google.common.base.Optional;
+import java.util.List;
+import java.util.Set;
 
 /**
- * Always selects the equivalent with the highest score
+ * Always selects a single candidate with the highest score
  */
 public class TopEquivalenceExtractor<T extends Content> implements EquivalenceExtractor<T> {
 
@@ -20,17 +20,17 @@ public class TopEquivalenceExtractor<T extends Content> implements EquivalenceEx
     }
     
     @Override
-    public Optional<ScoredCandidate<T>> extract(
+    public Set<ScoredCandidate<T>> extract(
             List<ScoredCandidate<T>> equivalents,
             T target,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName("Top Equivalence Extractor");
 
         if(equivalents == null || equivalents.isEmpty()) {
-            return Optional.absent();
+            return ImmutableSet.of();
         }
         if (equivalents.get(0).candidate().getId() != null
                 && equivalents.get(0).score() != null) {
@@ -40,9 +40,9 @@ public class TopEquivalenceExtractor<T extends Content> implements EquivalenceEx
             );
         }
 
-        equivToTelescopeResults.addExtractorResult(extractorComponent);
+        equivToTelescopeResult.addExtractorResult(extractorComponent);
 
-        return Optional.of(equivalents.get(0));
+        return ImmutableSet.of(equivalents.get(0));
         
     }
 

@@ -1,23 +1,5 @@
 package org.atlasapi.equiv.results;
 
-import java.util.List;
-import java.util.Set;
-
-import org.atlasapi.equiv.results.combining.ScoreCombiner;
-import org.atlasapi.equiv.results.description.ReadableDescription;
-import org.atlasapi.equiv.results.description.ResultDescription;
-import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
-import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
-import org.atlasapi.equiv.results.filters.EquivalenceFilter;
-import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Publisher;
-
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -25,34 +7,45 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
+import org.atlasapi.equiv.results.combining.ScoreCombiner;
+import org.atlasapi.equiv.results.description.ReadableDescription;
+import org.atlasapi.equiv.results.description.ResultDescription;
+import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
+import org.atlasapi.equiv.results.filters.EquivalenceFilter;
+import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Publisher;
+
+import java.util.List;
+import java.util.Set;
 
 public class DefaultEquivalenceResultBuilder<T extends Content>
         implements EquivalenceResultBuilder<T> {
 
     private final ScoreCombiner<T> combiner;
-    private final EquivalenceExtractor<T> extractor;
+    private final List<EquivalenceExtractor<T>> extractors;
     private final EquivalenceFilter<T> filter;
-
-    private final MultipleCandidateExtractor<T> multipleCandidateExtractor;
 
     public DefaultEquivalenceResultBuilder(
             ScoreCombiner<T> combiner,
             EquivalenceFilter<T> filter,
-            EquivalenceExtractor<T> extractor
+            List<EquivalenceExtractor<T>> extractors
     ) {
         this.combiner = combiner;
         this.filter = filter;
-        this.extractor = extractor;
+        this.extractors = extractors;
 
-        this.multipleCandidateExtractor = MultipleCandidateExtractor.create();
     }
 
     public static <T extends Content> EquivalenceResultBuilder<T> create(
             ScoreCombiner<T> combiner,
             EquivalenceFilter<T> filter,
-            EquivalenceExtractor<T> marker
+            List<EquivalenceExtractor<T>> marker
     ) {
-        return new DefaultEquivalenceResultBuilder<T>(combiner, filter, marker);
+        return new DefaultEquivalenceResultBuilder<>(combiner, filter, marker);
     }
 
     @Override
@@ -60,20 +53,20 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
             T target,
             List<ScoredCandidates<T>> equivalents,
             ReadableDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
-        ScoredCandidates<T> combined = combine(equivalents, desc, equivToTelescopeResults);
+        ScoredCandidates<T> combined = combine(equivalents, desc, equivToTelescopeResult);
         List<ScoredCandidate<T>> filteredCandidates = filter(
                 target,
                 desc,
                 combined,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         Multimap<Publisher, ScoredCandidate<T>> extractedScores = extract(
                 target,
                 filteredCandidates,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         return new EquivalenceResult<T>(target, equivalents, combined, extractedScores, desc);
     }
@@ -81,7 +74,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
     private ScoredCandidates<T> combine(
             List<ScoredCandidates<T>> equivalents,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         desc.startStage("Combining scores");
         ScoredCandidates<T> combination;
@@ -98,7 +91,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
             T target,
             ReadableDescription desc,
             ScoredCandidates<T> combined,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         desc.startStage("Filtering candidates");
         List<ScoredCandidate<T>> filteredCandidates = ImmutableList.copyOf(
@@ -106,7 +99,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
                     combined.orderedCandidates(Ordering.usingToString()),
                     target,
                     desc,
-                    equivToTelescopeResults
+                    equivToTelescopeResult
             )
         );
         desc.finishStage();
@@ -117,7 +110,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
             T target,
             List<ScoredCandidate<T>> filteredCandidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         desc.startStage("Extracting strong equivalents");
         SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins =
@@ -132,27 +125,16 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
             ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted =
                     ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
 
-            Optional<Set<ScoredCandidate<T>>> multipleExtractedCandidates =
-                    multipleCandidateExtractor.extract(
-                            copyOfSorted.asList().reverse(),
-                            target,
-                            equivToTelescopeResults
-                    );
-
-            if (multipleExtractedCandidates.isPresent()) {
-                builder.putAll(
-                        publisher,
-                        multipleExtractedCandidates.get()
-                );
-            } else {
-                Optional<ScoredCandidate<T>> extracted = extractor.extract(
+            for (EquivalenceExtractor<T> extractor : extractors) {
+                Set<ScoredCandidate<T>> extracted = extractor.extract(
                         copyOfSorted.asList().reverse(),
                         target,
                         desc,
-                        equivToTelescopeResults
+                        equivToTelescopeResult
                 );
-                if (extracted.isPresent()) {
-                    builder.put(publisher, extracted.get());
+                if (!extracted.isEmpty()) {
+                    builder.putAll(publisher, extracted);
+                    break; //try all extractors one by one. Stop if one worked.
                 }
             }
 

@@ -31,7 +31,6 @@ import org.joda.time.Duration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -40,6 +39,8 @@ import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.metabroadcast.common.time.TimeMachine;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
 public class C4EpgEntryContentExtractorTest {
@@ -105,13 +106,13 @@ public class C4EpgEntryContentExtractorTest {
 
         when(resolver.findByCanonicalUris(any())).thenReturn(ResolvedContent.builder().build());
         when(contentFactory.createItem(entry)).thenReturn(Optional.of(new Item(idUri, null, Publisher.C4_PMLSD)));
-        when(contentFactory.createSeries(entry)).thenReturn(Optional.absent());
+        when(contentFactory.createSeries(entry)).thenReturn(Optional.empty());
         verify(brandUpdater, never()).createOrUpdateBrand(any());
 
         ContentHierarchyAndBroadcast extracted = extractor.extract(source);
         
-        assertThat(extracted.getBrand(), is(Optional.<Brand>absent()));
-        assertThat(extracted.getSeries(), is(Optional.<Series>absent()));
+        assertThat(extracted.getBrand(), is(Optional.empty()));
+        assertThat(extracted.getSeries(), is(Optional.empty()));
         
         assertThat(extracted.getItem().getCanonicalUri(), is(idUri));
         assertThat(extracted.getItem().getAliases().isEmpty(), is(true));

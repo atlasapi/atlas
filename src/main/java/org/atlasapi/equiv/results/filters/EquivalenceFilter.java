@@ -1,10 +1,10 @@
 package org.atlasapi.equiv.results.filters;
 
-import java.util.List;
-
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+
+import java.util.List;
 
 public interface EquivalenceFilter<T> {
     
@@ -12,7 +12,7 @@ public interface EquivalenceFilter<T> {
             Iterable<ScoredCandidate<T>> candidates,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     );
     
 }

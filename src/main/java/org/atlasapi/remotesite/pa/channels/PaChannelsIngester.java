@@ -330,7 +330,10 @@ public class PaChannelsIngester {
         ).getvalue();
 
         if (YOUVIEW_SERVICE_PROVIDERS_TO_ALIAS_PREFIX.containsKey(serviceProviderName)) {
-            return Optional.of(youViewAlias(serviceProviderName, providerChannelId.getvalue()));
+            return Optional.of(youViewAlias(serviceProviderName,
+                    //there has been an incident where the id had a space in the end. SUPPORT-2286
+                    providerChannelId.getvalue().trim()
+            ));
         }
 
         log.warn(

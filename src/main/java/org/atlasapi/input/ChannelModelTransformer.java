@@ -166,7 +166,7 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
 
             complex.withChannelNumbers(channelNumberings);
         }
-
+        
         return complex.build();
     }
 

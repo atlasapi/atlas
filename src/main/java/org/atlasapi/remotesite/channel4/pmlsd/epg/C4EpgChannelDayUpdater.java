@@ -4,7 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
@@ -28,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.api.client.repackaged.com.google.common.base.Preconditions;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -51,7 +52,7 @@ public class C4EpgChannelDayUpdater {
     public C4EpgChannelDayUpdater(RemoteSiteClient<List<C4EpgEntry>> scheduleClient, ContentWriter writer, 
             ContentResolver resolver, C4BrandUpdater brandUpdater, BroadcastTrimmer trimmer,
             ScheduleWriter scheduleWriter, Publisher publisher, 
-            ContentFactory<C4EpgEntry, C4EpgEntry, C4EpgEntry> contentFactory, Optional<String> platform, 
+            ContentFactory<C4EpgEntry, C4EpgEntry, C4EpgEntry> contentFactory, Optional<String> platform,
             C4LocationPolicyIds locationPolicyIds) {
         Preconditions.checkArgument(!platform.isPresent(), "If configuring the EPG updater for a platform, then modifications must be made to not write iOS app locations.");
         this.scheduleClient = checkNotNull(scheduleClient);
@@ -59,8 +60,13 @@ public class C4EpgChannelDayUpdater {
         this.scheduleWriter = checkNotNull(scheduleWriter);
         this.platform = checkNotNull(platform);
         this.publisher = checkNotNull(publisher);
-        this.epgEntryContentExtractor = new C4EpgEntryContentExtractor(resolver, brandUpdater, 
-                contentFactory, publisher, locationPolicyIds);
+        this.epgEntryContentExtractor = new C4EpgEntryContentExtractor(
+                resolver,
+                brandUpdater,
+                contentFactory,
+                publisher,
+                locationPolicyIds
+        );
         this.trimmer = checkNotNull(trimmer);
     }
     
@@ -70,15 +76,18 @@ public class C4EpgChannelDayUpdater {
 
         try {
             List<C4EpgEntry> entries = getSchedule(uri);
-            if(entries == null || entries.isEmpty()) {
+            if (entries == null || entries.isEmpty()) {
                 log.warn("Empty or null schedule at: {}", uri);
                 return UpdateProgress.FAILURE;
             }
             
             List<Optional<ItemRefAndBroadcast>> processedItems = process(entries, channel);
-            Iterable<ItemRefAndBroadcast> successfullyProcessed = Optional.presentInstances(processedItems);
+            List<ItemRefAndBroadcast> successfullyProcessed = processedItems.stream()
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(MoreCollectors.toImmutableList());
             maintainSchedule(scheduleDay, channel, successfullyProcessed);
-            int successfullyProcessedCount = Iterables.size(successfullyProcessed);
+            int successfullyProcessedCount = successfullyProcessed.size();
             return new UpdateProgress(successfullyProcessedCount, processedItems.size()-successfullyProcessedCount);
         } catch (Exception e) {
             log.error(uri, e);
@@ -113,7 +122,10 @@ public class C4EpgChannelDayUpdater {
     private Map<String, String> broacastIdsFrom(Iterable<ItemRefAndBroadcast> processedItems) {
         ImmutableMap.Builder<String, String> broadcastIdItemIdMap = ImmutableMap.builder();
         for (ItemRefAndBroadcast itemRefAndBroadcast : processedItems) {
-            broadcastIdItemIdMap.put(itemRefAndBroadcast.getBroadcast().getSourceId(), itemRefAndBroadcast.getItemUri());
+            broadcastIdItemIdMap.put(
+                    itemRefAndBroadcast.getBroadcast().getSourceId(),
+                    itemRefAndBroadcast.getItemUri()
+            );
         }
         return broadcastIdItemIdMap.build();
     }
@@ -132,7 +144,9 @@ public class C4EpgChannelDayUpdater {
     private Optional<ItemRefAndBroadcast> processEntry(Channel channel, C4EpgEntry entry) {
         ItemRefAndBroadcast itemAndBroadcast = null;
         try {
-            ContentHierarchyAndBroadcast extractedContent = epgEntryContentExtractor.extract(new C4EpgChannelEntry(entry, channel));
+            ContentHierarchyAndBroadcast extractedContent = epgEntryContentExtractor.extract(
+                    new C4EpgChannelEntry(entry, channel)
+            );
             if (extractedContent.getBrand().isPresent()) {
                 Brand brand = extractedContent.getBrand().get();
                 checkUri(brand);
@@ -153,7 +167,7 @@ public class C4EpgChannelDayUpdater {
         } catch (Exception e) {
             log.error(entry.id(), e);
         }
-        return Optional.fromNullable(itemAndBroadcast);
+        return Optional.ofNullable(itemAndBroadcast);
     }
 
     private void checkUri(Content c) {

@@ -2,8 +2,7 @@ package org.atlasapi.reporting;
 
 import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.status.client.http.HttpExecutor;
-import com.metabroadcast.status.client.http.RetryStrategy;
-import org.apache.http.impl.client.HttpClients;
+import com.metabroadcast.common.http.apache.CustomHttpClientBuilder;
 import org.atlasapi.reporting.status.OwlStatusReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
@@ -18,9 +17,7 @@ public class OwlReporter {
         this.telescopeReporter = telescopeReporter;
         this.statusReporter = new OwlStatusReporter(
                 HttpExecutor.create(
-                        HttpClients.custom()
-                            .setServiceUnavailableRetryStrategy(new RetryStrategy())
-                            .build(),
+                        CustomHttpClientBuilder.create().build(),
                         Configurer.get("status.client.host").get(),
                         Configurer.get("status.client.port").toInt()),
                 appId);

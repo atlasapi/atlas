@@ -1,24 +1,20 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
-
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
 
-import com.google.common.base.Strings;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
 
@@ -31,7 +27,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
     private final Score scoreOnMismatch;
 
     // This can be calibrated to change how often matching occurs
-    private final double DIVISION_FACTOR;
+    private final double divisionFactor;
 
     public DescriptionTitleMatchingScorer() {
         this(Score.nullScore(), 2.0);
@@ -39,7 +35,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
 
     public DescriptionTitleMatchingScorer(Score scoreOnMismatch, double divisionFactor) {
         this.scoreOnMismatch = scoreOnMismatch;
-        this.DIVISION_FACTOR = divisionFactor;
+        this.divisionFactor = divisionFactor;
     }
 
     @Override
@@ -47,7 +43,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
             Item subject,
             Set<? extends Item> suggestions,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Description Title Matching Scorer");
@@ -66,7 +62,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
             }
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }
@@ -94,7 +90,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
         candidateList.retainAll(subjectTitleList);
 
         // Calibrate the division factor to alter matching frequency
-        return subjectList.size() > (candidateTitleList.size()/ DIVISION_FACTOR) || candidateList.size() > (subjectTitleList.size()/ DIVISION_FACTOR);
+        return subjectList.size() > (candidateTitleList.size() / divisionFactor) || candidateList.size() > (subjectTitleList.size() / divisionFactor);
 
     }
 

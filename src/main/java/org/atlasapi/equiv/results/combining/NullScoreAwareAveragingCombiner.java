@@ -39,7 +39,7 @@ public class NullScoreAwareAveragingCombiner<T extends Described> implements Sco
     ) {
         
         desc.startStage(String.format(
-                "Null-score-aware combining with ignoreNullScoringCandidate set to %s",
+                "Null-score-aware average combining with ignoreNullScoringCandidate set to %s",
                 ignoreNullScoringCandidate
         ));
         

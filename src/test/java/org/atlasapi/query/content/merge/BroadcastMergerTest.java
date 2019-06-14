@@ -1,8 +1,7 @@
 package org.atlasapi.query.content.merge;
 
-import org.atlasapi.media.entity.Broadcast;
-
 import com.google.common.collect.ImmutableSet;
+import org.atlasapi.media.entity.Broadcast;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Rule;
@@ -54,7 +53,7 @@ public class BroadcastMergerTest {
     }
 
     @Test
-    public void nullAssertionParameterRemovesAllExistingBroadcasts() throws Exception {
+    public void nullAssertionParameterPreservesAllExistingBroadcasts() throws Exception {
         BroadcastMerger merger = BroadcastMerger.parse(null);
 
         Broadcast broadcast = new Broadcast("channelUri", DateTime.now(), DateTime.now());
@@ -65,11 +64,11 @@ public class BroadcastMergerTest {
                 true
         );
 
-        assertThat(merge.isEmpty(), is(true));
+        assertThat(merge.contains(broadcast), is(true));
     }
 
     @Test
-    public void emptyAssertionParameterRemovesAllExistingBroadcasts() throws Exception {
+    public void emptyAssertionParameterPreservesAllExistingBroadcasts() throws Exception {
         BroadcastMerger merger = BroadcastMerger.parse("");
 
         Broadcast broadcast = new Broadcast("channelUri", DateTime.now(), DateTime.now());
@@ -80,37 +79,35 @@ public class BroadcastMergerTest {
                 true
         );
 
-        assertThat(merge.isEmpty(), is(true));
+        assertThat(merge.contains(broadcast), is(true));
     }
 
     @Test
-    public void nullAssertionParameterConsidersAllUpdateBroadcastsValid() throws Exception {
+    public void nullAssertionParameterConsidersAllUpdateBroadcastsInvalid() throws Exception {
         BroadcastMerger merger = BroadcastMerger.parse(null);
 
         Broadcast broadcast = new Broadcast("channelUri", DateTime.now(), DateTime.now());
 
+        exception.expect(IllegalArgumentException.class);
         ImmutableSet<Broadcast> merge = merger.merge(
                 ImmutableSet.of(broadcast),
                 ImmutableSet.of(),
                 true
         );
-
-        assertThat(merge.contains(broadcast), is(true));
     }
 
     @Test
-    public void emptyAssertionParameterConsidersAllUpdateBroadcastsValid() throws Exception {
+    public void emptyAssertionParameterConsidersAllUpdateBroadcastsInvalid() throws Exception {
         BroadcastMerger merger = BroadcastMerger.parse("");
 
         Broadcast broadcast = new Broadcast("channelUri", DateTime.now(), DateTime.now());
 
+        exception.expect(IllegalArgumentException.class);
         ImmutableSet<Broadcast> merge = merger.merge(
                 ImmutableSet.of(broadcast),
                 ImmutableSet.of(),
                 true
         );
-
-        assertThat(merge.contains(broadcast), is(true));
     }
 
     @Test

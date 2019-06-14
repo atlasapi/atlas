@@ -167,7 +167,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     if (Strings.isNullOrEmpty(existingChannel.getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
-                                existingChannel.getId(),
+                                existingChannel,
                                 getPartialStatusForContent(
                                         existingChannel.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -184,7 +184,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
-                                existingChannel.getId(),
+                                existingChannel,
                                 getPartialStatusForContent(
                                         existingChannel.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -210,7 +210,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     if (Strings.isNullOrEmpty(channel.getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
-                                channel.getId(),
+                                channel,
                                 getPartialStatusForContent(
                                         channel.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -227,7 +227,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
-                                channel.getId(),
+                                channel,
                                 getPartialStatusForContent(
                                         channel.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),

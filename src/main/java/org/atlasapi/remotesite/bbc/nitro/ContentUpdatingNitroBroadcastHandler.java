@@ -182,7 +182,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         if (Strings.isNullOrEmpty(brand.getModel().getTitle())) {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brand.getModel().getId(),
+                                    brand.getModel(),
                                     getPartialStatusForContent(
                                             brand.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -199,46 +199,12 @@ public class ContentUpdatingNitroBroadcastHandler
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brand.getModel().getId(),
+                                    brand.getModel(),
                                     getPartialStatusForContent(
                                             brand.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
                                             NewAlert.Key.Check.MISSING,
                                             NewAlert.Key.Field.TITLE,
-                                            null,
-                                            EntityRef.Type.CONTENT,
-                                            brand.getModel().getPublisher().key(),
-                                            true
-                                    )
-                            );
-                        }
-
-                        if (brand.getModel().getGenres() == null || brand.getModel().getGenres().isEmpty()) {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    brand.getModel().getId(),
-                                    getPartialStatusForContent(
-                                            brand.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            String.format("Content %s is missing genres.",
-                                                    encode(brand.getModel().getId())
-                                            ),
-                                            EntityRef.Type.CONTENT,
-                                            brand.getModel().getPublisher().key(),
-                                            false
-                                    )
-                            );
-                        } else {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    brand.getModel().getId(),
-                                    getPartialStatusForContent(
-                                            brand.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
                                             null,
                                             EntityRef.Type.CONTENT,
                                             brand.getModel().getPublisher().key(),
@@ -271,7 +237,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         if (Strings.isNullOrEmpty(sery.getModel().getTitle())){
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    sery.getModel().getId(),
+                                    sery.getModel(),
                                     getPartialStatusForContent(
                                             sery.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -288,46 +254,12 @@ public class ContentUpdatingNitroBroadcastHandler
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    sery.getModel().getId(),
+                                    sery.getModel(),
                                     getPartialStatusForContent(
                                             sery.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
                                             NewAlert.Key.Check.MISSING,
                                             NewAlert.Key.Field.TITLE,
-                                            null,
-                                            EntityRef.Type.CONTENT,
-                                            sery.getModel().getPublisher().key(),
-                                            true
-                                    )
-                            );
-                        }
-
-                        if (sery.getModel().getGenres() == null || sery.getModel().getGenres().isEmpty()) {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    sery.getModel().getId(),
-                                    getPartialStatusForContent(
-                                            sery.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            String.format("Content %s is missing genres.",
-                                                    encode(sery.getModel().getId())
-                                            ),
-                                            EntityRef.Type.CONTENT,
-                                            sery.getModel().getPublisher().key(),
-                                            false
-                                    )
-                            );
-                        } else {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    sery.getModel().getId(),
-                                    getPartialStatusForContent(
-                                            sery.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
                                             null,
                                             EntityRef.Type.CONTENT,
                                             sery.getModel().getPublisher().key(),
@@ -358,7 +290,7 @@ public class ContentUpdatingNitroBroadcastHandler
                     if (Strings.isNullOrEmpty(item.getModel().getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -375,7 +307,7 @@ public class ContentUpdatingNitroBroadcastHandler
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -389,44 +321,10 @@ public class ContentUpdatingNitroBroadcastHandler
                         );
                     }
 
-                    if (item.getModel().getGenres() == null || item.getModel().getGenres().isEmpty()) {
-                        owlReporter.getStatusReporter().updateStatus(
-                                EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
-                                getPartialStatusForContent(
-                                        item.getModel().getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId(),
-                                        NewAlert.Key.Check.MISSING,
-                                        NewAlert.Key.Field.GENRE,
-                                        String.format("Content %s is missing genres.",
-                                                encode(item.getModel().getId())
-                                        ),
-                                        EntityRef.Type.CONTENT,
-                                        item.getModel().getPublisher().key(),
-                                        false
-                                )
-                        );
-                    } else {
-                        owlReporter.getStatusReporter().updateStatus(
-                                EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
-                                getPartialStatusForContent(
-                                        item.getModel().getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId(),
-                                        NewAlert.Key.Check.MISSING,
-                                        NewAlert.Key.Field.GENRE,
-                                        null,
-                                        EntityRef.Type.CONTENT,
-                                        item.getModel().getPublisher().key(),
-                                        true
-                                )
-                        );
-                    }
-
                     if (item.getModel() instanceof Episode && ((Episode) item.getModel()).getEpisodeNumber() == null) {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -440,10 +338,10 @@ public class ContentUpdatingNitroBroadcastHandler
                                         false
                                 )
                         );
-                    } else {
+                    } else { //TODO: Is this "else" correct?
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),

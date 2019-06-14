@@ -1,21 +1,5 @@
 package org.atlasapi.equiv.results.filters;
 
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.equiv.results.description.DefaultDescription;
-import org.atlasapi.equiv.results.description.ResultDescription;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-
-import org.junit.Test;
-
 import com.google.common.base.Function;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
@@ -23,6 +7,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import org.atlasapi.equiv.results.description.DefaultDescription;
+import org.atlasapi.equiv.results.description.ResultDescription;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.junit.Test;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class ConjunctiveFilterTest {
 
@@ -40,7 +37,7 @@ public class ConjunctiveFilterTest {
                 candidates,
                 null,
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         
         assertThat(Lists.transform(filtered, ScoredCandidate.<Integer>toCandidate()), is(hasItems(6,12,18)));
@@ -72,7 +69,7 @@ public class ConjunctiveFilterTest {
                 ScoredCandidate<Integer> input,
                 Integer subject,
                 ResultDescription desc,
-                EquivToTelescopeResults equivToTelescopeResults
+                EquivToTelescopeResult equivToTelescopeResult
         ) {
             return input.candidate() % factor == 0;
         }

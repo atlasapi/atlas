@@ -1,14 +1,13 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.util.Map;
-
-import org.atlasapi.media.entity.Episode;
-
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
 import com.metabroadcast.common.time.Clock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
+import org.atlasapi.media.entity.Episode;
+
+import java.util.Map;
 
 
 public abstract class BaseC4EpisodeExtractor extends C4MediaItemExtractor<Episode> {

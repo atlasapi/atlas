@@ -1,17 +1,5 @@
 package org.atlasapi.equiv.handlers;
 
-import java.util.Set;
-
-import org.atlasapi.equiv.ContentRef;
-import org.atlasapi.equiv.results.EquivalenceResult;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.media.entity.Described;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.lookup.LookupWriter;
-
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -19,11 +7,24 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import junit.framework.TestCase;
+import org.atlasapi.equiv.ContentRef;
+import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.EquivalenceResults;
+import org.atlasapi.equiv.results.description.DefaultDescription;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.lookup.LookupWriter;
 import org.joda.time.Duration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Set;
 
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.hasItems;
@@ -77,7 +78,7 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
         ))
                 .thenReturn(Optional.of(ImmutableSet.of()));
 
-        updater.handle(equivResultFor(content, ImmutableList.of(equiv1, equiv2)));
+        updater.handle(equivResultsFor(content, ImmutableList.of(equiv1, equiv2)));
 
         verify(lookupWriter).writeLookup(
                 argThat(is(contentRef)),
@@ -95,7 +96,7 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
         ))
                 .thenReturn(Optional.of(ImmutableSet.of()));
 
-        boolean handled = updater.handle(equivResultFor(content, ImmutableList.of(equiv1, equiv2)));
+        boolean handled = updater.handle(equivResultsFor(content, ImmutableList.of(equiv1, equiv2)));
 
         assertThat(handled, is(true));
     }
@@ -109,7 +110,7 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
         ))
                 .thenReturn(Optional.absent());
 
-        boolean handled = updater.handle(equivResultFor(content, ImmutableList.of(equiv1, equiv2)));
+        boolean handled = updater.handle(equivResultsFor(content, ImmutableList.of(equiv1, equiv2)));
 
         assertThat(handled, is(false));
     }
@@ -125,11 +126,11 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
         ))
                 .thenReturn(Optional.of(ImmutableSet.of()));
 
-        EquivalenceResult<Item> equivResult = equivResultFor(
+        EquivalenceResults<Item> equivResult = equivResultsFor(
                 content,
                 ImmutableList.of(equiv1, equiv2)
         );
-        EquivalenceResult<Item> noEquivalences = equivResultFor(
+        EquivalenceResults<Item> noEquivalences = equivResultsFor(
                 equiv1,
                 ImmutableList.<Item>of()
         );
@@ -167,12 +168,12 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
         ))
                 .thenReturn(Optional.of(ImmutableSet.of()));
 
-        EquivalenceResult<Item> equivResult1 = equivResultFor(
+        EquivalenceResults<Item> equivResult1 = equivResultsFor(
                 content,
                 ImmutableList.of(equiv1, equiv2)
         );
 
-        EquivalenceResult<Item> equivResult2 = equivResultFor(
+        EquivalenceResults<Item> equivResult2 = equivResultsFor(
                 equiv1,
                 ImmutableList.<Item>of(content)
         );
@@ -194,17 +195,60 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
 
     }
 
+    @Test
+    public void
+    testWritesAllLookupsFromMultipleEquivalenceResults() {
+        when(lookupWriter.writeLookup(
+                Matchers.any(ContentRef.class),
+                anyCollectionOf(ContentRef.class),
+                anySetOf(Publisher.class)
+        ))
+                .thenReturn(Optional.of(ImmutableSet.of()));
+
+        EquivalenceResult<Item> equivResult1 = equivResultFor(
+                content,
+                ImmutableList.of(equiv1)
+        );
+
+        EquivalenceResult<Item> equivResult2 = equivResultFor(
+                content,
+                ImmutableList.<Item>of(equiv2)
+        );
+
+        EquivalenceResults<Item> equivResults = new EquivalenceResults<>(
+                content,
+                ImmutableList.of(equivResult1, equivResult2),
+                new DefaultDescription()
+        );
+
+        updater.handle(equivResults);
+
+        verify(lookupWriter).writeLookup(
+                argThat(is(contentRef)),
+                argThat(hasItems(equiv1Ref, equiv2Ref)),
+                argThat(is(publishers))
+        );
+    }
+
     private EquivalenceResult<Item> equivResultFor(Item content, Iterable<Item> equivalents) {
         Multimap<Publisher, ScoredCandidate<Item>> strong = Multimaps.transformValues(Multimaps
                 .index(
-                equivalents,
+                        equivalents,
                         Described::getPublisher
-        ), RANDOM_SCORE);
-        return new EquivalenceResult<Item>(
+                ), RANDOM_SCORE);
+        return new EquivalenceResult<>(
                 content,
                 ImmutableList.<ScoredCandidates<Item>>of(),
                 null,
                 strong,
+                null
+        );
+    }
+
+    private EquivalenceResults<Item> equivResultsFor(Item content, Iterable<Item> equivalents) {
+        return new EquivalenceResults<>(
+                content,
+                ImmutableList.of(equivResultFor(content, equivalents)),
                 null
         );
     }

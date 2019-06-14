@@ -14,16 +14,12 @@ permissions and limitations under the License. */
 
 package org.atlasapi.query.v2;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.application.v3.DefaultApplication;
@@ -32,23 +28,25 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
+import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.event.EventContentLister;
 import org.atlasapi.persistence.logging.AdapterLog;
-
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Controller
 public class QueryController extends BaseController<QueryResult<Identified, ? extends Identified>> {
@@ -64,12 +62,19 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             .withStatusCode(HttpStatusCode.FORBIDDEN)
             .withMessage("Your API key is not permitted to view content from this publisher");
 
-	private final KnownTypeQueryExecutor executor;
+    private final KnownTypeQueryExecutor restrictiveExecutor;
+    /**
+     * This executor will allow multiple items from the same publisher in the equiv set.
+     * We gave it this unexplanatory name because no reasonably sized name could explain that.
+     */
+    private final KnownTypeQueryExecutor liberalExecutor;
 
     private final ContentWriteController contentWriteController;
     private final EventContentLister contentLister;
-	
-    public QueryController(KnownTypeQueryExecutor executor,
+
+    public QueryController(
+            KnownTypeQueryExecutor restrictiveExecutor,
+            KnownTypeQueryExecutor liberalExecutor,
             ApplicationFetcher configFetcher,
             AdapterLog log,
             AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputter,
@@ -77,7 +82,8 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             EventContentLister contentLister) {
 	    super(configFetcher, log, outputter, SubstitutionTableNumberCodec.lowerCaseOnly(),
                 DefaultApplication.createDefault());
-        this.executor = executor;
+        this.restrictiveExecutor = restrictiveExecutor;
+        this.liberalExecutor = liberalExecutor;
         this.contentWriteController = contentWriteController;
         this.contentLister = contentLister;
 	}
@@ -115,6 +121,15 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
+            }
+
+            //decide which executor to use. Restrictive is normal, liberal allows multiple stuff
+            //from the same publisher in the equiv set.
+            KnownTypeQueryExecutor executor;
+            if(filter.getAnnotations().contains(Annotation.ALLOW_MULTIPLE_FROM_SAME_PUBLISHER_IN_EQUIV_LIST)){
+                executor = liberalExecutor;
+            } else {
+                executor = restrictiveExecutor;
             }
 			
 			List<String> uris = getUriList(request);
@@ -278,5 +293,10 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.DELETE)
     public WriteResponse deleteContent(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.unpublishContent(req, resp);
+    }
+
+    @RequestMapping(value="/3.0/debug/equivalence/explicit/content.json", method = RequestMethod.PUT)
+    public WriteResponse updateExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
+        return contentWriteController.updateExplicitEquivalence(req, resp);
     }
 }

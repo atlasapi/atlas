@@ -1,20 +1,17 @@
 package org.atlasapi.equiv.messengers;
 
-import org.atlasapi.equiv.results.EquivalenceResult;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.time.SystemClock;
+import com.metabroadcast.common.time.Timestamper;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.messaging.ContentEquivalenceAssertionMessenger;
 import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.time.SystemClock;
-import com.metabroadcast.common.time.Timestamper;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 
 public class QueueingEquivalenceResultMessenger<T extends Content>
         implements EquivalenceResultMessenger<T> {
@@ -68,13 +65,10 @@ public class QueueingEquivalenceResultMessenger<T extends Content>
     }
 
     @Override
-    public void sendMessage(EquivalenceResult<T> result) {
+    public void sendMessage(EquivalenceResults<T> results) {
         messenger.sendMessage(
-                result.subject(),
-                result.strongEquivalences()
-                        .values()
-                        .stream()
-                        .map(ScoredCandidate::candidate)
+                results.subject(),
+                results.strongEquivalences().stream()
                         .collect(MoreCollectors.toImmutableList()),
                 sources.stream()
                         .map(Publisher::key)

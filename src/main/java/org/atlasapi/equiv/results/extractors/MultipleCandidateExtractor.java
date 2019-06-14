@@ -1,24 +1,21 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Series;
-
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This extractor attempts to get multiple candidates for the same publisher. It will only do this
@@ -32,7 +29,7 @@ import org.joda.time.Duration;
  *     target broadcast (+- {@link MultipleCandidateExtractor#BROADCAST_TIME_FLEXIBILITY})</li>
  * </ul>
  */
-public class MultipleCandidateExtractor<T extends Content> {
+public class MultipleCandidateExtractor<T extends Content> implements EquivalenceExtractor<T>{
 
     private static final Duration BROADCAST_TIME_FLEXIBILITY = Duration.standardMinutes(5);
     private static final double PUBLISHER_MATCHING_EQUIV_THRESHOLD = 0.3;
@@ -44,22 +41,24 @@ public class MultipleCandidateExtractor<T extends Content> {
         return new MultipleCandidateExtractor<>();
     }
 
-    public Optional<Set<ScoredCandidate<T>>> extract(
+    @Override
+    public Set<ScoredCandidate<T>> extract(
             List<ScoredCandidate<T>> candidates,
             T target,
-            EquivToTelescopeResults equivToTelescopeResults
+            ResultDescription desc,
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName("Multiple Candidate Extractor");
 
         if (isSeriesOrBrand(target) || candidates.isEmpty()) {
-            return Optional.absent();
+            return ImmutableSet.of();
         }
 
         ScoredCandidate<T> highestScoringCandidate = candidates.get(0);
 
         if (isSeriesOrBrand(highestScoringCandidate.candidate())) {
-            return Optional.absent();
+            return ImmutableSet.of();
         }
 
         Set<ScoredCandidate<T>> allowedCandidates = new HashSet<ScoredCandidate<T>>();
@@ -90,14 +89,12 @@ public class MultipleCandidateExtractor<T extends Content> {
                 }
         );
 
-        equivToTelescopeResults.addExtractorResult(extractorComponent);
+        equivToTelescopeResult.addExtractorResult(extractorComponent);
 
-        // If we have found a group of candidates return it otherwise return absent and let
-        // the configured extractor decide instead
         if (allowedCandidates.size() > 1) {
-            return Optional.of(allowedCandidates);
+            return allowedCandidates;
         } else {
-            return Optional.absent();
+            return ImmutableSet.of();
         }
     }
 

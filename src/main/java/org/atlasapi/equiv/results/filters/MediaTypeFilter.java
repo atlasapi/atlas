@@ -1,13 +1,12 @@
 package org.atlasapi.equiv.results.filters;
 
+import com.google.common.base.Objects;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.MediaType;
-
-import com.google.common.base.Objects;
 
 
 public class MediaTypeFilter<T extends Content> extends AbstractEquivalenceFilter<T> {
@@ -17,10 +16,10 @@ public class MediaTypeFilter<T extends Content> extends AbstractEquivalenceFilte
             ScoredCandidate<T> input,
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
-        filterComponent.setComponentName("Meda Type Filter");
+        filterComponent.setComponentName("Media Type Filter");
 
         T equivalent = input.candidate();
         MediaType candMediaType = equivalent.getMediaType();
@@ -37,9 +36,14 @@ public class MediaTypeFilter<T extends Content> extends AbstractEquivalenceFilte
                     equivalent.getId(),
                     "Removed due to differing media types"
             );
+        } else{
+            filterComponent.addComponentResult(
+                    equivalent.getId(),
+                    "Went through."
+            );
         }
 
-        equivToTelescopeResults.addFilterResult(filterComponent);
+        equivToTelescopeResult.addFilterResult(filterComponent);
 
         return result;
     }

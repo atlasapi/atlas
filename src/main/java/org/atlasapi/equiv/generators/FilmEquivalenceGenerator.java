@@ -1,10 +1,13 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.query.Selection;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -13,7 +16,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -21,21 +24,15 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.query.Selection;
-
-import com.google.common.base.Objects;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.google.common.collect.Iterables.filter;
 
 public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     
     private static final Pattern IMDB_REF = Pattern.compile("http://imdb.com/title/[\\d\\w]+");
-    private static final int NUMBER_OF_YEARS_DIFFERENT_TOLERANCE = 1;
 
     private static final float TITLE_WEIGHTING = 1.0f;
     private static final float BROADCAST_WEIGHTING = 0.0f;
@@ -48,6 +45,11 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private final FilmTitleMatcher titleMatcher;
     private final boolean acceptNullYears;
 
+    //this var is used to ensure films with multiple release dates equiv (eg. film released across the span of two years)
+    //useful if we want to constrict equiv (eg. Amazon should not have different release years)
+    //Context: we had a support issue caused by a bad equiv on exact title match (for RT)
+    private int tolerableYearDifference;
+
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
 
     private final List<Publisher> publishers;
@@ -59,38 +61,50 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             Application application,
             boolean acceptNullYears
     ) {
+        this(searchResolver, publishers, application, acceptNullYears, 1);
+    }
+
+    public FilmEquivalenceGenerator(
+            SearchResolver searchResolver,
+            Iterable<Publisher> publishers,
+            Application application,
+            boolean acceptNullYears,
+            Integer tolerableYearDifference
+    ) {
         this.searchResolver = searchResolver;
         this.publishers = ImmutableList.copyOf(publishers);
         this.searchApplication = application;
         this.acceptNullYears = acceptNullYears;
         this.titleMatcher = new FilmTitleMatcher(titleExpander);
+        this.tolerableYearDifference = tolerableYearDifference;
     }
 
     @Override
     public ScoredCandidates<Item> generate(
             Item item,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         Builder<Item> scores = DefaultScoredCandidates.fromSource("Film");
 
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("Film Equivalence Generator");
 
-        if (!(item instanceof Film)
-                || !item.isActivelyPublished()) {
+        if (!(item instanceof Film) || !item.isActivelyPublished()) {
             return scores.build();
         }
         
         Film film = (Film) item;
         
-        if (film.getYear() == null && !acceptNullYears) {
-            desc.appendText("Can't continue: null year");
+        if (!acceptNullYears && film.getYear() == null ) {
+            desc.appendText("Can't generate: null year");
+            equivToTelescopeResult.addGeneratorResult(generatorComponent);
             return scores.build();
         }
         
         if (Strings.isNullOrEmpty(film.getTitle())) {
-            desc.appendText("Can't continue: title '%s'", film.getTitle()).finishStage();
+            desc.appendText("Can't generate: title '%s'", film.getTitle()).finishStage();
+            equivToTelescopeResult.addGeneratorResult(generatorComponent);
             return scores.build();
         } else {
             desc.appendText("Using year %s, title %s", film.getYear(), film.getTitle());
@@ -101,8 +115,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             desc.appendText("Using IMDB ref %s", imdbRef.requireValue());
         }
 
-        String title = film.getTitle();
-        title = normalize(title);
+        String title = normalize(film.getTitle());
         String expandedTitle = titleExpander.expand(title);
 
         Iterable<Identified> possibleEquivalentFilms = searchResolver.search(searchQueryFor(title),
@@ -122,7 +135,11 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         desc.appendText("Found %s films through title search", Iterables.size(foundFilms));
 
         for (Film equivFilm : ImmutableSet.copyOf(foundFilms)) {
-            
+            //if the candidate film is the subject itself, ignore
+            if(java.util.Objects.equals(equivFilm.getId(), item.getId())){
+                continue;
+            }
+
             Maybe<String> equivImdbRef = getImdbRef(equivFilm);
             if(imdbRef.hasValue() && equivImdbRef.hasValue() && Objects.equal(imdbRef.requireValue(), equivImdbRef.requireValue())) {
                 desc.appendText("%s (%s) scored 1.0 (IMDB match)", equivFilm.getTitle(), equivFilm.getCanonicalUri());
@@ -159,8 +176,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             }
         }
 
-        equivToTelescopeResults.addGeneratorResult(generatorComponent);
-        
+        equivToTelescopeResult.addGeneratorResult(generatorComponent);
         return scores.build();
     }
 
@@ -193,7 +209,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         } else if (equivFilm.getYear() == null && acceptNullYears) {
             return true;
         }
-        return Math.abs(film.getYear() - equivFilm.getYear()) <= NUMBER_OF_YEARS_DIFFERENT_TOLERANCE;
+        return Math.abs(film.getYear() - equivFilm.getYear()) <= tolerableYearDifference;
     }
 
     private String normalize(String title) {

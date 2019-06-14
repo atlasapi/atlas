@@ -1,4 +1,4 @@
-FROM 448613307115.dkr.ecr.eu-west-1.amazonaws.com/jvm-oracle:latest
+FROM openjdk:8
 
 ENV SERVER_PORT="8080" \
     PROCESSING_CONFIG="false" \
@@ -34,6 +34,8 @@ ENV SERVER_PORT="8080" \
     TELESCOPE_QUEUE_SIZE="" \
     TELESCOPE_REPORTING_THREAD_NAME="" \
     TELESCOPE_METRICS_PREFIX="" \
+    REPID_SERVICE_HOST="" \
+    UPDATERS_BARB_CHANNELS_ENABLED="false" \
     UPDATERS_BBC_AUDIENCE_DATA_ENABLED="false" \
     UPDATERS_BBC_PRODUCTS_ENABLED="false" \
     UPDATERS_BBC_ENABLED="false" \
@@ -73,6 +75,9 @@ ENV SERVER_PORT="8080" \
     UPDATERS_YOUVIEW_ENABLED="false" \
     XMLTV_UPLOAD_ENABLED="false" \
     YOUVIEW_UPLOAD_NITRO_UPLOAD_ENABLED="false" \
+    YOUVIEW_UPLOAD_NITRO_EQUIVAPPID="" \
+    YOUVIEW_UPLOAD_UNBOX_UPLOAD_ENABLED="false" \
+    YOUVIEW_UPLOAD_UNBOX_EQUIVAPPID="" \
     METRICS_GRAPHITE_ENABLED="false" \
     JSSE_ENABLESNIEXTENSION="false" \
     LOG4J_CONFIGURATION="file:////usr/local/jetty/log4j.properties" \
@@ -98,10 +103,12 @@ RUN mkdir -p /data/accessible-dir \
     mkdir -p /data/rovi \
     mkdir -p /data/unbox \
     mkdir -p /data/ws \
-    mkdir -p /data/youview
+    mkdir -p /data/youview \
+    mkdir -p /usr/local/jetty/equiv
 
 COPY target/atlas.war /usr/local/jetty/atlas.war
 COPY log4j.properties /usr/local/jetty/log4j.properties
+COPY src/main/resources/equivList.csv /usr/local/jetty/equiv/equivList.csv
 
 WORKDIR /usr/local/jetty
 
@@ -114,6 +121,9 @@ CMD java \
     -Dapplications.client.env="$APPLICATIONS_CLIENT_ENV" \
     -Datlas.search.host="$ATLAS_SEARCH_HOST" \
     -Daz="$AZ" \
+    -Dbarb.ftp.host="$BARB_FTP_HOST" \
+    -Dbarb.ftp.password="$BARB_FTP_PASSWORD" \
+    -Dbarb.ftp.username="$BARB_FTP_USERNAME" \
     -Dbbc.audience-data.filename="$BBC_AUDIENCE_DATA_FILENAME" \
     -Dbbc.nitro.apiKey="$BBC_NITRO_APIKEY" \
     -Dbbc.nitro.releaseDateIngest.enabled="$BBC_NITRO_RELEASEDATEINGEST_ENABLED" \
@@ -150,6 +160,9 @@ CMD java \
     -Dc4.keystore.path="$C4_KEYSTORE_PATH" \
     -Dc4.lakeviewavailability.apiroot="$C4_LAKEVIEWAVAILABILITY_APIROOT" \
     -Dc4.lakeviewavailability.key="$C4_LAKEVIEWAVAILABILITY_KEY" \
+    -Dc4.pirate.url="$C4_PIRATE_URL" \
+    -Dc4.pirate.username="$C4_PIRATE_USERNAME" \
+    -Dc4.pirate.password="$C4_PIRATE_PASSWORD" \
     -Dcannon.host.name="$CANNON_HOST_NAME" \
     -Dcannon.host.port="$CANNON_HOST_PORT" \
     -Dcassandra.connectionTimeout="$CASSANDRA_CONNECTIONTIMEOUT" \
@@ -258,6 +271,7 @@ CMD java \
     -Dtelescope.queueSize="$TELESCOPE_QUEUE_SIZE" \
     -Dtelescope.reportingThreadName="$TELESCOPE_REPORTING_THREAD_NAME" \
     -Dtelescope.metricsPrefix="$TELESCOPE_METRICS_PREFIX" \
+    -Drepid.service.host="$REPID_SERVICE_HOST" \
     -Drequest.threads="$REQUEST_THREADS" \
     -Drp.ftp.enabled="$RP_FTP_ENABLED" \
     -Drp.ftp.manualUpload.enabled="$RP_FTP_MANUALUPLOAD_ENABLED" \
@@ -299,6 +313,7 @@ CMD java \
     -Dunbox.remote.s3.secret="$UNBOX_REMOTE_S3_SECRET" \
     -Dunbox.s3.bucket="$UNBOX_S3_BUCKET" \
     -Dunbox.url="$UNBOX_URL" \
+    -Dupdaters.barb-channels.enabled="$UPDATERS_BARB_CHANNELS_ENABLED" \
     -Dupdaters.bbc-audience-data.enabled="$UPDATERS_BBC_AUDIENCE_DATA_ENABLED" \
     -Dupdaters.bbc-products.enabled="$UPDATERS_BBC_PRODUCTS_ENABLED" \
     -Dupdaters.bbc.enabled="$UPDATERS_BBC_ENABLED" \
@@ -343,10 +358,16 @@ CMD java \
     -Dyouview.prod.url="$YOUVIEW_PROD_URL" \
     -Dyouview.stage.url="$YOUVIEW_STAGE_URL" \
     -Dyouview.timeout.seconds="$YOUVIEW_TIMEOUT_SECONDS" \
-    -Dyouview.upload.nitro.password="$YOUVIEW_UPLOAD_NITRO_PASSWORD" \
     -Dyouview.upload.nitro.upload.enabled="$YOUVIEW_UPLOAD_NITRO_UPLOAD_ENABLED" \
     -Dyouview.upload.nitro.url="$YOUVIEW_UPLOAD_NITRO_URL" \
     -Dyouview.upload.nitro.username="$YOUVIEW_UPLOAD_NITRO_USERNAME" \
+    -Dyouview.upload.nitro.password="$YOUVIEW_UPLOAD_NITRO_PASSWORD" \
+    -Dyouview.upload.nitro.equivappid="$YOUVIEW_UPLOAD_NITRO_EQUIVAPPID" \
+    -Dyouview.upload.unbox.upload.enabled="$YOUVIEW_UPLOAD_UNBOX_UPLOAD_ENABLED" \
+    -Dyouview.upload.unbox.url="$YOUVIEW_UPLOAD_UNBOX_URL" \
+    -Dyouview.upload.unbox.username="$YOUVIEW_UPLOAD_UNBOX_USERNAME" \
+    -Dyouview.upload.unbox.password="$YOUVIEW_UPLOAD_UNBOX_PASSWORD" \
+    -Dyouview.upload.unbox.equivappid="$YOUVIEW_UPLOAD_UNBOX_EQUIVAPPID" \
     -Dyouview.upload.password="$YOUVIEW_UPLOAD_PASSWORD" \
     -Dyouview.upload.username="$YOUVIEW_UPLOAD_USERNAME" \
     -Dmetrics.graphite.enabled="$METRICS_GRAPHITE_ENABLED" \

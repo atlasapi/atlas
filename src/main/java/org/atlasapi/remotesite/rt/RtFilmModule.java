@@ -6,6 +6,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
+import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,8 @@ public class RtFilmModule {
     public void startUp() {
         scheduler.schedule(rtFilmFeedDeltaUpdater().withName("RT Film Feed Updater"), DAILY);
         scheduler.schedule(rtFilmFeedCompleteUpdater().withName("RT Film Feed Complete Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(rtFilmFeed4MonthUpdater().withName("RT Film Feed 4 Month Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(rtFilmFeed2YearUpdater().withName("RT Film Feed 2 Year Updater"), RepetitionRules.every(Duration.standardDays(30)));
     }
 
     @Bean
@@ -47,5 +50,15 @@ public class RtFilmModule {
     @Bean
     public RtFilmProcessor rtFilmProcessor() {
         return new RtFilmProcessor(contentResolver, contentWriter, peopleWriter, log);
+    }
+
+    @Bean
+    public RtFilmFeedUpdater rtFilmFeed4MonthUpdater() {
+        return RtFilmFeedUpdater.fourMonthUpdater(feedUrl, log, contentResolver, contentWriter, rtFilmProcessor());
+    }
+
+    @Bean
+    public RtFilmFeedUpdater rtFilmFeed2YearUpdater() {
+        return RtFilmFeedUpdater.twoYearUpdater(feedUrl, log, contentResolver, contentWriter, rtFilmProcessor());
     }
 }

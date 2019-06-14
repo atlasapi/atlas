@@ -9,7 +9,6 @@ import com.metabroadcast.common.collect.OptionalMap;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 
 public class ExpandingTitleTransformer {
 
@@ -40,9 +39,8 @@ public class ExpandingTitleTransformer {
 
         List<String> cleanWords = words.stream()
                 .map(this::americanize)
-                .map(expander::apply).collect(Collectors.toList());
-
-
+                .map(expander::apply)
+                .collect(Collectors.toList());
 
         return String.join(" ", cleanWords);
     }

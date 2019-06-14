@@ -143,6 +143,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
                 db,
                 channelResolver,
                 contentBuffer,
+                contentWriter,
                 equivContentResolver,
                 ms
         );

@@ -17,7 +17,8 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.segment.SegmentWriter;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.EquivalenceContentWriter;
+import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
@@ -26,11 +27,14 @@ import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.EpisodeMerger;
 import org.atlasapi.query.content.merge.ItemMerger;
+import org.atlasapi.query.content.merge.SeriesMerger;
 import org.atlasapi.query.content.merge.SongMerger;
 import org.atlasapi.query.content.merge.VersionMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 import org.atlasapi.query.worker.ContentWriteMessageSerialiser;
 import org.atlasapi.query.worker.ContentWriteWorker;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
 
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -57,8 +61,9 @@ import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETT
 @Configuration
 @Import({ KafkaMessagingModule.class })
 public class QueryExecutorModule {
-    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private EquivalenceContentWriter contentWriter;
     @Autowired private ScheduleWriter scheduleWriter;
+    @Autowired private ScheduleResolver scheduleResolver;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ChannelResolver channelResolver;
     @Autowired @Qualifier("topicStore") private TopicStore topicStore;
@@ -108,6 +113,7 @@ public class QueryExecutorModule {
         VersionMerger versionMerger = VersionMerger.create();
         SongMerger songMerger = SongMerger.create();
         EpisodeMerger episodeMerger = EpisodeMerger.create();
+        SeriesMerger seriesMerger = SeriesMerger.create();
 
         ItemMerger itemMerger = ItemMerger.create(versionMerger, songMerger);
 
@@ -119,8 +125,9 @@ public class QueryExecutorModule {
                 scheduleWriter,
                 channelResolver,
                 eventResolver,
-                ContentMerger.create(itemMerger, episodeMerger),
-                versionMerger
+                ContentMerger.create(itemMerger, episodeMerger, seriesMerger),
+                versionMerger,
+                broadcastTrimmer()
         );
     }
 
@@ -146,6 +153,14 @@ public class QueryExecutorModule {
     public MessageSender<ContentWriteMessage> contentWriteMessageSender() {
         return senderFactory.makeMessageSender(
                 contentWriteTopic, new ContentWriteMessageSerialiser()
+        );
+    }
+
+    private BroadcastTrimmer broadcastTrimmer() {
+        return new ScheduleResolverBroadcastTrimmer(
+                scheduleResolver,
+                contentResolver,
+                contentWriter
         );
     }
 

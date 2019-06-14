@@ -1,23 +1,22 @@
 package org.atlasapi.equiv.results.filters;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.junit.Test;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class ContainerHierarchyFilterTest {
 
@@ -36,19 +35,19 @@ public class ContainerHierarchyFilterTest {
                 candidates,
                 brand,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         ), brand, topLevelSeries);
         checkFiltered(filter.apply(
                 candidates,
                 topLevelSeries,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         ), brand, topLevelSeries);
         checkFiltered(filter.apply(
                 candidates,
                 nonTopLevelSeries,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         ), nonTopLevelSeries);
         
     }

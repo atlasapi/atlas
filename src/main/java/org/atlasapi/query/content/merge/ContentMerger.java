@@ -1,8 +1,8 @@
 package org.atlasapi.query.content.merge;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
@@ -11,10 +11,8 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
 
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import java.util.List;
+import java.util.Set;
 
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
@@ -22,22 +20,27 @@ public class ContentMerger {
 
     private final ItemMerger itemMerger;
     private final EpisodeMerger episodeMerger;
+    private final SeriesMerger seriesMerger;
 
     private ContentMerger(
             ItemMerger itemMerger,
-            EpisodeMerger episodeMerger
+            EpisodeMerger episodeMerger,
+            SeriesMerger seriesMerger
     ){
         this.itemMerger = checkNotNull(itemMerger);
         this.episodeMerger = checkNotNull(episodeMerger);
+        this.seriesMerger = checkNotNull(seriesMerger);
     }
 
     public static ContentMerger create(
             ItemMerger itemMerger,
-            EpisodeMerger episodeMerger
+            EpisodeMerger episodeMerger,
+            SeriesMerger seriesMerger
     ){
         return new ContentMerger(
                 itemMerger,
-                episodeMerger
+                episodeMerger,
+                seriesMerger
         );
     }
 
@@ -187,8 +190,21 @@ public class ContentMerger {
         existing.setPresentationChannel(update.getPresentationChannel());
         existing.setYear(update.getYear());
 
+        //currently not set to use merge logic since these have been added later
+        existing.setLanguages(update.getLanguages());
+        existing.setCountriesOfOrigin(update.getCountriesOfOrigin());
+
+        if(merge) {
+            existing.addCustomFields(update.getCustomFields());
+        } else {
+            existing.setCustomFields(update.getCustomFields());
+        }
+
         if (existing instanceof Episode && update instanceof Episode) {
             episodeMerger.mergeEpisodes((Episode) existing, (Episode) update);
+        }
+        if (existing instanceof Series && update instanceof Series) {
+            seriesMerger.mergeSeries((Series) existing, (Series) update);
         }
         if (existing instanceof Item && update instanceof Item) {
             return itemMerger.mergeItems(

@@ -141,12 +141,13 @@ public class PaFeaturesUpdater extends ScheduledTask {
                         FeatureSet featureSet = (FeatureSet) target;
                         Optional<FeatureSetContentGroups> contentGroups = contentGroupProcessor.getContentGroups(featureSet.getId());
                         if (contentGroups.isPresent()) {
+                            log.info("Processing FeatureSet Id {}", featureSet.getId());
                             Features features = Iterables.getOnlyElement(featureSet.getFeatures());
                             for (Feature feature : features.getFeature()) {
                                 processor.process(feature.getProgrammeID(), contentGroups.get());
                             }
                         } else {
-                            log.error("FeatureSet Id {} not supported");
+                            log.error("FeatureSet Id {} not supported", featureSet.getId());
                         }
                     } catch (NoSuchElementException e) {
                         log.error("No content found for programme Id: " + ((Feature) target).getProgrammeID(), e);

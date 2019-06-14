@@ -24,8 +24,8 @@
 {template .tableResult}
 <tr>
     <td>{$result.time}</td>
-    <td title="{$result.id}"><a href="/system/equivalence/result?uri={$result.encodedId}">{$result.title}</a></td>
-    <td>{length($result.equivalences)}</td>
+    <td title="{$result.id}"><a href="/system/equivalence/result?id={$result.aid}">{$result.title}</a></td>
+    <td>{$result.equivalences}</td>
     <td>{if $result.hasStrong}✔{else}✘{/if}</td>
 </tr>
 {/template}
@@ -34,77 +34,99 @@
  * @param result
  */
 {template .result}
-<h2>{$result.title} - <span class="target-uri">{$result.id}</span> <a style="margin-left:5px;vertical-align:middle" href="http://atlasapi.org/3.0/content.json?uri={$result.encodedId}"><img src="/static/images/external.png"></a></h2>
-{if length($result.equivalences) > 0}
-<table>
-    <tr>
-        <td></td>
-        <th>Suggested</th>
-        <th></th>
-        <th>Combined</th>
-        {foreach $source in $result.sources}
-        <th>{$source}</th>
-        {/foreach}
-        <th>Expected</th>
-        <th>Not Expected</th>
-        <th>Neither</th>
-        <td></td>
-    </tr>
-{foreach $equivalence in $result.equivalences}
-  <tr id="{$equivalence.id}"{if $equivalence.strong} class="strong"{/if}>
-    <td>{if $equivalence.strong}✔{else}✘{/if}</td>
-    <td><a href="?uri={$equivalence.encodedId}">{$equivalence.title} ({$equivalence.publisher})</a></td>
-    <td><a href="http://atlasapi.org/3.0/content.json?uri={$equivalence.encodedId}"><img src="/static/images/external.png"></a></td>
-    {if $equivalence.scores['combined'] == false}
-        <td>N/A</td>
-    {else}
-	    <td {if $equivalence.scores['combined'] > 0} title="{print round($equivalence.scores['combined']/$result.totals['combined']*100) }%"{/if}>
-	        {round($equivalence.scores['combined'], 5)}
-	    </td>
-    {/if}
-    {foreach $source in $result.sources}
-	    {if $equivalence.scores[$source] == false}
-	        <td>N/A</td>
-	    {else}
-	        <td {if $equivalence.scores[$source] > 0} title="{print round($equivalence.scores[$source]/$result.totals[$source]*100) }%"{/if}>
-	            {round($equivalence.scores[$source], 5)}
-	        </td>
-	    {/if}
-    {/foreach}
-    <td><input type="radio" name="{$equivalence.encodedId}" value="expect" {if $equivalence.expected == 'expected'}checked{/if}></td>
-    <td><input type="radio" name="{$equivalence.encodedId}" value="notExpect" {if $equivalence.expected == 'notexpected'}checked{/if}></td>
-    <td><input type="radio" name="{$equivalence.encodedId}" value="unknown" {if $equivalence.expected == 'unknown'}checked{/if}></td>
-    {if isFirst($equivalence)}
-        <td rowspan="{print length($result.equivalences)}"><input id={$result.encodedId} class="resultProbeUpdate" type="submit" value="Update Probe" style="font-size:12px"/></td>
-    {/if}
-  </tr>
-{/foreach}
-<tr>
-    <td></td><td>Totals</td><td></td>
-    {if not $result.totals['combined']}
-        <td>N/A</t>
-    {else}
-        <td>{print round($result.totals['combined'], 5)}</td>
-    {/if}
-    {foreach $source in $result.sources}
-        {if not $result.totals[$source]}
-            <td>N/A</t>
-        {else}
-            <td>{print round($result.totals[$source], 5)}</td>
-        {/if}
-    {/foreach}
-    <td colspan="4"></td>
-</tr>
-</table>
-{else}
+<h2>{$result.title} ({$result.publisher}) - <span class="target-uri">{$result.id}</span> <span class="target-id">({$result.aid})</span></h2>
+<p class="time">{$result.time}</p>
+{if length($result.resultTables) <= 0}
 <p>No suggested equivalences</p>
 {/if}
-<p class="time">{$result.time}</p>
+{foreach $resultTable in $result.resultTables}
+    {if length($result.resultTables) > 1}
+        <p class="resultTableLinks">
+            <a name="{index($resultTable) + 1}"></a>
+            {for $i in range(length($result.resultTables))}
+              <a href="#{$i + 1}">{$i + 1}</a>
+              {if ($i + 1) < length($result.resultTables)}<span> | </span>{/if}
+            {/for}
+        </p>
+    {/if}
+    {if length($resultTable.equivalences) > 0}
+    <table>
+        <tr>
+            <td>✔/✘</td>
+            <th>Suggested</th>
+            <th>ID</th>
+            <th>Combined</th>
+            {foreach $source in $resultTable.sources}
+            <th>{$source}</th>
+            {/foreach}
+            <th>Expected</th>
+            <th>Not Expected</th>
+            <th>Neither</th>
+            <td></td>
+        </tr>
+    {foreach $equivalence in $resultTable.equivalences}
+      <tr id="{$equivalence.id}"{if $equivalence.strong} class="strong"{/if}>
+        <td>{if $equivalence.strong}✔{else}✘{/if}</td>
+        <td><a href="?id={$equivalence.encodedId}">{$equivalence.title} ({$equivalence.publisher})</a></td>
+        <td>{$equivalence.id}</td>
+        {if $equivalence.scores['combined'] == false}
+            <td>N/A</td>
+        {else}
+            <td {if $equivalence.scores['combined'] > 0} title="{print round($equivalence.scores['combined']/$resultTable.totals['combined']*100) }%"{/if}>
+                {round($equivalence.scores['combined'], 5)}
+            </td>
+        {/if}
+        {foreach $source in $resultTable.sources}
+            {if $equivalence.scores[$source] == false}
+                <td>N/A</td>
+            {else}
+                <td {if $equivalence.scores[$source] > 0} title="{print round($equivalence.scores[$source]/$resultTable.totals[$source]*100) }%"{/if}>
+                    {round($equivalence.scores[$source], 5)}
+                </td>
+            {/if}
+        {/foreach}
+        <td><input type="radio" name="{$equivalence.encodedId}" value="expect" {if $equivalence.expected == 'expected'}checked{/if}></td>
+        <td><input type="radio" name="{$equivalence.encodedId}" value="notExpect" {if $equivalence.expected == 'notexpected'}checked{/if}></td>
+        <td><input type="radio" name="{$equivalence.encodedId}" value="unknown" {if $equivalence.expected == 'unknown'}checked{/if}></td>
+        {if isFirst($equivalence)}
+            <td rowspan="{print length($resultTable.equivalences)}"><input id={$result.encodedId} class="resultProbeUpdate" type="submit" value="Update Probe" style="font-size:12px"/></td>
+        {/if}
+      </tr>
+    {/foreach}
+    <tr>
+        <td></td><td>Totals</td><td></td>
+        {if not $resultTable.totals['combined']}
+            <td>N/A</t>
+        {else}
+            <td>{print round($resultTable.totals['combined'], 5)}</td>
+        {/if}
+        {foreach $source in $resultTable.sources}
+            {if not $resultTable.totals[$source]}
+                <td>N/A</t>
+            {else}
+                <td>{print round($resultTable.totals[$source], 5)}</td>
+            {/if}
+        {/foreach}
+        <td colspan="4"></td>
+    </tr>
+    </table>
+    {else}
+    <p>No suggested equivalences</p>
+    {/if}
+    {if $resultTable.desc}
+        <div id="desc">
+            {call atlas.templates.equivalence.widgets.description}
+                {param descList: $resultTable.desc /}
+            {/call}
+        </div>
+    {/if}
+{/foreach}
+<hr>
 {if $result.desc}
     <div id="desc">
-	    {call atlas.templates.equivalence.widgets.description}
-	        {param descList: $result.desc /}
-	    {/call}
+        {call atlas.templates.equivalence.widgets.description}
+            {param descList: $result.desc /}
+        {/call}
     </div>
 {/if}
 {/template}

@@ -1,8 +1,18 @@
 package org.atlasapi.input;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Actor;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Content;
@@ -17,6 +27,7 @@ import org.atlasapi.media.entity.Topic.Type;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.TopicRef.Relationship;
 import org.atlasapi.media.entity.simple.Description;
+import org.atlasapi.media.entity.simple.Language;
 import org.atlasapi.media.entity.simple.Person;
 import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.atlasapi.media.entity.simple.SameAs;
@@ -24,19 +35,8 @@ import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.time.Clock;
-
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -102,6 +102,7 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
         result.setClips(transformClips(inputContent));
         result.setEventRefs(eventRefs(inputContent.getEventRefs()));
         result.setYear(inputContent.getYear());
+        result.setLanguages(transformLanguages(inputContent.getOriginalLanguages()));
         return result;
     }
 
@@ -249,5 +250,11 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
         member.setCanonicalUri(person.getUri());
         member.setCurie(person.getCurie());
         return member;
+    }
+
+    private Set<String> transformLanguages(Set<Language> languages) {
+        return languages.stream()
+                .map(Language::getCode)
+                .collect(MoreCollectors.toImmutableSet());
     }
 }

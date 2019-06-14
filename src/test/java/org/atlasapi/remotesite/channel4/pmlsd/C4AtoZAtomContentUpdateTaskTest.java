@@ -1,13 +1,12 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.common.io.Resources;
+import com.metabroadcast.common.http.SimpleHttpClient;
+import com.metabroadcast.common.http.SimpleHttpRequest;
+import com.sun.syndication.feed.atom.Feed;
 import junit.framework.TestCase;
-
-import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Policy.Platform;
+import org.atlasapi.media.entity.Publisher;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
@@ -15,11 +14,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Optional;
-import com.google.common.io.Resources;
-import com.metabroadcast.common.http.SimpleHttpClient;
-import com.metabroadcast.common.http.SimpleHttpRequest;
-import com.sun.syndication.feed.atom.Feed;
+import java.util.Optional;
+
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class C4AtoZAtomContentUpdateTaskTest extends TestCase {
@@ -56,7 +56,13 @@ public class C4AtoZAtomContentUpdateTaskTest extends TestCase {
     @Test
     public void testRequestsFeedsAndPassesExtractedUrisToAdapterWithPlatform() throws Exception {
         
-        C4AtoZAtomContentUpdateTask adapter = new C4AtoZAtomContentUpdateTask(client, apiBase, Optional.of(Platform.XBOX.key().toLowerCase()), brandAdapter, Publisher.C4_PMLSD);
+        C4AtoZAtomContentUpdateTask adapter = new C4AtoZAtomContentUpdateTask(
+                client,
+                apiBase,
+                Optional.of(Platform.XBOX.key().toLowerCase()),
+                brandAdapter,
+                Publisher.C4_PMLSD
+        );
     
         when(client.get(requestFor("http://pmlsc.channel4.com/pmlsd/atoz/a.atom?platform=xbox"))).thenReturn(ps3atoza.build());
         when(brandAdapter.canFetch(anyString())).thenReturn(true);

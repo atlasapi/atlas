@@ -1,5 +1,19 @@
 package org.atlasapi.equiv.scorers;
 
+import com.google.common.collect.ImmutableSet;
+import org.atlasapi.equiv.results.description.DefaultDescription;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -10,21 +24,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.atlasapi.equiv.results.description.DefaultDescription;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.collect.ImmutableSet;
-
 @RunWith(MockitoJUnitRunner.class)
 public class BroadcastItemTitleScorerTest {
 
@@ -32,8 +31,8 @@ public class BroadcastItemTitleScorerTest {
     private final ContentResolver resolver = mock(ContentResolver.class);
     private final BroadcastItemTitleScorer scorer
         = new BroadcastItemTitleScorer(resolver, mismatchScore);
-    private final EquivToTelescopeResults equivToTelescopeResults =
-            EquivToTelescopeResults.create("id", "publisher");
+    private final EquivToTelescopeResult equivToTelescopeResult =
+            EquivToTelescopeResult.create("id", "publisher");
     
     @Test
     public void testScoresOneIfBrandTitleMatchesWhenCandidateHasContainer() {
@@ -55,7 +54,7 @@ public class BroadcastItemTitleScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 new DefaultDescription(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(results.candidates().get(candidate), is(Score.ONE));
@@ -82,7 +81,7 @@ public class BroadcastItemTitleScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 new DefaultDescription(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(results.candidates().get(candidate), is(Score.ONE));
@@ -106,7 +105,7 @@ public class BroadcastItemTitleScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 new DefaultDescription(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(results.candidates().get(candidate), is(Score.ONE));
@@ -136,7 +135,7 @@ public class BroadcastItemTitleScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 new DefaultDescription(),
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         assertThat(results.candidates().get(candidate), is(mismatchScore));

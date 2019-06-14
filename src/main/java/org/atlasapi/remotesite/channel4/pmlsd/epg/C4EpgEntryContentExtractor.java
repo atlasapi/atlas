@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.channel4.pmlsd.epg;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
@@ -20,7 +21,6 @@ import org.atlasapi.remotesite.channel4.pmlsd.epg.model.C4EpgEntry;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.time.Clock;
@@ -59,16 +59,16 @@ public class C4EpgEntryContentExtractor implements
     public ContentHierarchyAndBroadcast extract(C4EpgChannelEntry source) {
         DateTime now = clock.now();
 
-        Optional<Brand> brand = resolveBrand(source);
-        if (!brand.isPresent()) {
-            brand = fetchBrand(source).or(createBrandFrom(source));
-        }
+        Optional<Brand> brand = resolveBrand(source)
+                .map(Optional::of).orElseGet(() -> fetchBrand(source))
+                .map(Optional::of).orElseGet(() -> createBrandFrom(source));
         ensureHierarchyAlias(brand);
         
-        Optional<Series> series = resolveSeries(source).or(createSeriesFrom(source));
+        Optional<Series> series = resolveSeries(source)
+                .map(Optional::of).orElseGet(() -> createSeriesFrom(source));
         ensureHierarchyAlias(series);
         
-        Item item = resolveItem(source).or(createItem(source, brand, series));
+        Item item = resolveItem(source).orElseGet(() -> createItem(source, brand, series));
         ensureHierarchyUri(item);
         
         Broadcast broadcast = broadcastExtractor.extract(source);
@@ -154,11 +154,11 @@ public class C4EpgEntryContentExtractor implements
 
     private Optional<Brand> fetchBrand(C4EpgChannelEntry source) {
         return source.hasRelatedLink()  ? fetchBrand(source.getRelatedLinkUri()) 
-                                        : Optional.<Brand>absent();
+                                        : Optional.empty();
     }
 
     private Optional<Brand> fetchBrand(String relatedLinkUri) {
-        return Optional.fromNullable(brandUpdater.createOrUpdateBrand(relatedLinkUri));
+        return Optional.ofNullable(brandUpdater.createOrUpdateBrand(relatedLinkUri));
     }
 
     private Optional<Brand> resolveBrand(C4EpgChannelEntry source) {

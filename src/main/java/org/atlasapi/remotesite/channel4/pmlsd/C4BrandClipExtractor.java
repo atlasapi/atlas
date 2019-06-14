@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Policy.Platform;
@@ -8,11 +9,11 @@ import org.atlasapi.media.entity.Publisher;
 
 import com.metabroadcast.common.time.Clock;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
+import org.atlasapi.remotesite.channel4.pmlsd.C4UriExtractor.C4UriAndAliases;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -30,7 +31,7 @@ public class C4BrandClipExtractor extends C4MediaItemExtractor<Clip> {
         this.contentFactory = contentFactory;
         this.publisher = publisher;
         // TODO: Do we have platform-specific clips?
-        versionExtractor = new C4AtomEntryVersionExtractor(Optional.<Platform>absent(), locationPolicyIds, false);
+        versionExtractor = new C4AtomEntryVersionExtractor(Optional.empty(), locationPolicyIds, false);
         this.contentLinker = checkNotNull(contentLinker);
     }
 
@@ -48,15 +49,15 @@ public class C4BrandClipExtractor extends C4MediaItemExtractor<Clip> {
         }
 
         clip.setIsLongForm(false);
-        clip.setClipOf(possibleSeriesAndEpisodeNumberFrom(lookup).orNull());
+        clip.setClipOf(possibleSeriesAndEpisodeNumberFrom(lookup).orElse(null));
 
-        String uri = uriExtractor.uriForClip(publisher, entry).get();
+        C4UriAndAliases uri = uriExtractor.uriForClip(publisher, entry).orElse(null);
         checkNotNull(uri, "No version URI extracted for %s", entry.getId());
 
         clip.addVersion(versionExtractor.extract(
                 new C4VersionData(
                         entry.getId(),
-                        uri,
+                        uri.getUri(),
                         getMedia(entry),
                         lookup,
                         clip.getLastUpdated()
@@ -71,7 +72,7 @@ public class C4BrandClipExtractor extends C4MediaItemExtractor<Clip> {
         Integer series = Ints.tryParse(Strings.nullToEmpty(lookup.get(C4AtomApi.DC_SERIES_NUMBER)));
         
         if (episode == null && series == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         
         if (episode == null && series != null) {

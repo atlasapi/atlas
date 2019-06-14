@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
+import java.util.Set;
 
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
@@ -19,49 +20,60 @@ import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.EquivalenceContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.VersionMerger;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 
 import com.metabroadcast.common.base.Maybe;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.joda.time.Interval;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ContentWriteExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(ContentWriteExecutor.class);
+
     private final ModelReader reader;
     private final ModelTransformer<Description, Content> transformer;
     private final ContentResolver resolver;
-    private final ContentWriter writer;
+    private final EquivalenceContentWriter writer;
     private final ScheduleWriter scheduleWriter;
     private final ChannelResolver channelResolver;
     private final EventResolver eventResolver;
     private final ContentMerger contentMerger;
     private final VersionMerger versionMerger;
+    private final BroadcastTrimmer trimmer;
 
     private ContentWriteExecutor(
             ModelReader reader,
             ModelTransformer<Description, Content> transformer,
             ContentResolver resolver,
-            ContentWriter writer,
+            EquivalenceContentWriter writer,
             ScheduleWriter scheduleWriter,
             ChannelResolver channelResolver,
             EventResolver eventResolver,
             ContentMerger contentMerger,
-            VersionMerger versionMerger
+            VersionMerger versionMerger,
+            BroadcastTrimmer trimmer
     ) {
         this.reader = checkNotNull(reader);
         this.transformer = checkNotNull(transformer);
@@ -72,18 +84,20 @@ public class ContentWriteExecutor {
         this.eventResolver = checkNotNull(eventResolver);
         this.contentMerger = checkNotNull(contentMerger);
         this.versionMerger = checkNotNull(versionMerger);
+        this.trimmer = checkNotNull(trimmer);
     }
 
     public static ContentWriteExecutor create(
             ModelReader reader,
             ModelTransformer<Description, Content> transformer,
             ContentResolver resolver,
-            ContentWriter writer,
+            EquivalenceContentWriter writer,
             ScheduleWriter scheduleWriter,
             ChannelResolver channelResolver,
             EventResolver eventResolver,
             ContentMerger contentMerger,
-            VersionMerger versionMerger
+            VersionMerger versionMerger,
+            BroadcastTrimmer trimmer
     ) {
         return new ContentWriteExecutor(
                 reader,
@@ -94,7 +108,8 @@ public class ContentWriteExecutor {
                 channelResolver,
                 eventResolver,
                 contentMerger,
-                versionMerger
+                versionMerger,
+                trimmer
         );
     }
 
@@ -129,7 +144,6 @@ public class ContentWriteExecutor {
         checkArgument(content.getId() != null, "Cannot write content without an ID");
 
         Content updatedContent = updateEventPublisher(content);
-
         Maybe<Identified> identified = resolveExisting(updatedContent);
 
         if ("broadcast".equals(type)) {
@@ -141,12 +155,59 @@ public class ContentWriteExecutor {
                     identified, updatedContent, shouldMerge, broadcastMerger
             );
         }
+        long startTime = System.nanoTime();
         if (updatedContent instanceof Item) {
             Item item = (Item) updatedContent;
             writer.createOrUpdate(item);
-            updateSchedule(item);
+            updateSchedule(content, item);
         } else {
             writer.createOrUpdate((Container) updatedContent);
+        }
+
+        long duration = (System.nanoTime() - startTime)/1000000;
+        if(duration > 1000){
+            log.info("TIMER. Super slow. Writing to db took {}ms. uri={} {}",duration, content.getCanonicalUri(), Thread.currentThread().getName());
+        }
+    }
+
+    private void updateSchedule(Content content, Item item) {
+        for (Broadcast broadcast : content.getVersions()
+                .iterator()
+                .next()
+                .getBroadcasts()) {
+            Interval broadcastInterval = new Interval(
+                    broadcast.getTransmissionTime(),
+                    broadcast.getTransmissionEndTime()
+            );
+
+            Channel channel = channelResolver.fromUri(broadcast.getBroadcastOn())
+                    .requireValue();
+
+            ImmutableMap<String, String> acceptableIds = ImmutableMap.of(
+                    broadcast.getSourceId(),
+                    item.getCanonicalUri()
+            );
+
+            trimmer.trimBroadcasts(item.getPublisher(), broadcastInterval, channel, acceptableIds);
+
+            scheduleWriter.replaceScheduleBlock(
+                    item.getPublisher(),
+                    channel,
+                    ImmutableSet.of(new ScheduleEntry.ItemRefAndBroadcast(item, broadcast))
+            );
+        }
+    }
+
+    public void updateExplicitEquivalence(
+            Content content,
+            Set<Publisher> publishers,
+            Set<LookupRef> explicitEquivRefs
+    ) {
+        content.setEquivalentTo(explicitEquivRefs);
+        if(content instanceof  Item) {
+            writer.createOrUpdate((Item) content, publishers, true);
+        } else {
+            writer.createOrUpdate((Container) content, publishers, true);
         }
     }
 

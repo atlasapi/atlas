@@ -1,10 +1,12 @@
 package org.atlasapi.equiv.results.filters;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
@@ -12,25 +14,23 @@ import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.EntityType;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
+import org.joda.time.DateTime;
+import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import org.joda.time.DateTime;
-import org.junit.Test;
-
 public class DummyContainerFilterTest {
 
     private DummyContainerFilter dummyContainerFilter = new DummyContainerFilter();
-    private final EquivToTelescopeResults equivToTelescopeResults =
-            EquivToTelescopeResults.create("id", "publisher");
+    private final EquivToTelescopeResult equivToTelescopeResult =
+            EquivToTelescopeResult.create("id", "publisher");
 
     @Test
     public void testDoesntFilterNonContainers() {
         Container subject = new Brand();
         Item candidate = new Item();
+        candidate.setId(1L);
         ResultDescription result = new DefaultDescription();
 
         assertTrue(
@@ -38,7 +38,7 @@ public class DummyContainerFilterTest {
                         ScoredCandidate.valueOf(candidate, Score.ONE),
                         subject,
                         result,
-                        equivToTelescopeResults
+                        equivToTelescopeResult
                 )
         );
         assertTrue(
@@ -46,7 +46,7 @@ public class DummyContainerFilterTest {
                         ScoredCandidate.valueOf(candidate, Score.ONE),
                         candidate,
                         result,
-                        equivToTelescopeResults
+                        equivToTelescopeResult
                 )
         );
     }
@@ -59,6 +59,7 @@ public class DummyContainerFilterTest {
         );
         subject.setChildRefs(ImmutableSet.of(ref));
         Container candidate = new Container();
+        candidate.setId(1L);
         candidate.setChildRefs(ImmutableSet.of(ref));
         ResultDescription result = new DefaultDescription();
 
@@ -67,7 +68,7 @@ public class DummyContainerFilterTest {
                         ScoredCandidate.valueOf(candidate, Score.ONE),
                         subject,
                         result,
-                        equivToTelescopeResults
+                        equivToTelescopeResult
                 )
         );
     }
@@ -83,7 +84,7 @@ public class DummyContainerFilterTest {
                         ScoredCandidate.valueOf(candidate, Score.ONE),
                         subject,
                         result,
-                        equivToTelescopeResults
+                        equivToTelescopeResult
                 )
         );
     }
@@ -100,7 +101,7 @@ public class DummyContainerFilterTest {
                         ScoredCandidate.valueOf(candidate, Score.ONE),
                         subject,
                         result,
-                        equivToTelescopeResults
+                        equivToTelescopeResult
                 )
         );
     }

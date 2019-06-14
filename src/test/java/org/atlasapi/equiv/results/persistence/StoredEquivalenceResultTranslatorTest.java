@@ -1,10 +1,9 @@
 package org.atlasapi.equiv.results.persistence;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Table.Cell;
 import junit.framework.TestCase;
-
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.EquivalenceResultBuilder;
@@ -18,14 +17,13 @@ import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Table.Cell;
+import java.util.List;
+import java.util.Set;
 
 public class StoredEquivalenceResultTranslatorTest extends TestCase {
 
@@ -34,9 +32,9 @@ public class StoredEquivalenceResultTranslatorTest extends TestCase {
     private final EquivalenceFilter<Item> filter = AlwaysTrueFilter.get();
     private final EquivalenceExtractor<Item> extractor = TopEquivalenceExtractor.create();
     private final EquivalenceResultBuilder<Item> resultBuilder =
-            DefaultEquivalenceResultBuilder.<Item>create(combiner, filter, extractor);
-    private final EquivToTelescopeResults equivToTelescopeResults =
-            EquivToTelescopeResults.create("id", "publisher");
+            DefaultEquivalenceResultBuilder.<Item>create(combiner, filter, ImmutableList.of(extractor));
+    private final EquivToTelescopeResult equivToTelescopeResult =
+            EquivToTelescopeResult.create("id", "publisher");
 
     public final Item target = target("target", "Target", Publisher.BBC);
     public final Item equivalent1 = target("equivalent1", "Equivalent1", Publisher.BBC);
@@ -58,7 +56,7 @@ public class StoredEquivalenceResultTranslatorTest extends TestCase {
                 target,
                 scores,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         StoredEquivalenceResult storedResult = translator.toStoredEquivalenceResult(itemResult);
@@ -81,7 +79,7 @@ public class StoredEquivalenceResultTranslatorTest extends TestCase {
                 target,
                 scores,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         StoredEquivalenceResult restoredResult = translator.toStoredEquivalenceResult(itemResult);
@@ -116,7 +114,7 @@ public class StoredEquivalenceResultTranslatorTest extends TestCase {
                 target,
                 scores,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         StoredEquivalenceResult restoredResult = translator.toStoredEquivalenceResult(itemResult);
@@ -153,7 +151,7 @@ public class StoredEquivalenceResultTranslatorTest extends TestCase {
                 target,
                 scores,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         
         StoredEquivalenceResult restoredResult = translator.toStoredEquivalenceResult(itemResult);

@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.rt;
 
-import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
-
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,9 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import nu.xom.Element;
-import nu.xom.Elements;
 
 import org.atlasapi.media.entity.Actor;
 import org.atlasapi.media.entity.Alias;
@@ -40,8 +35,11 @@ import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
 import org.atlasapi.remotesite.pa.PaCountryMap;
 import org.atlasapi.remotesite.util.EnglishLanguageCodeMap;
-import org.joda.time.Duration;
-import org.joda.time.format.DateTimeFormat;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.text.MoreStrings;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Optional;
@@ -52,8 +50,12 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.text.MoreStrings;
+import nu.xom.Element;
+import nu.xom.Elements;
+import org.joda.time.Duration;
+import org.joda.time.format.DateTimeFormat;
+
+import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
 public class RtFilmProcessor {
     
@@ -67,7 +69,7 @@ public class RtFilmProcessor {
     private final AdapterLog log;
     
     private final PaCountryMap countryMapper = new PaCountryMap();
-    private final EnglishLanguageCodeMap languageMap = new EnglishLanguageCodeMap();
+    private final EnglishLanguageCodeMap languageMap = EnglishLanguageCodeMap.getInstance();
     
     private final Splitter csvSplitter = Splitter.on(",").omitEmptyStrings().trimResults();
     private final Splitter slashSplitter = Splitter.on("/").omitEmptyStrings().trimResults();
@@ -79,7 +81,8 @@ public class RtFilmProcessor {
         this.log = log;
     }
     
-    public void process(Element filmElement) {
+    public void process(Element filmElement,
+            OwlTelescopeReporter telescopeReporter) {
         String id = filmElement.getFirstChildElement("film_reference_no").getValue();
         
         Film film;
@@ -200,7 +203,13 @@ public class RtFilmProcessor {
         }
 
         contentWriter.createOrUpdate(film);
-        
+        telescopeReporter.reportSuccessfulEvent(
+                film.getId(),
+                film.getAliases(),
+                EntityType.FILM,
+                filmElement
+        );
+
         peopleWriter.createOrUpdatePeople(film);
     }
 

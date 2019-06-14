@@ -43,7 +43,10 @@ public class SeriesModelTransformer extends ContentModelTransformer<Playlist, Se
         super.setFields(result, simple);
         result.setTotalEpisodes(simple.getTotalEpisodes());
         result.withSeriesNumber(simple.getSeriesNumber());
-        result.setParentRef(new ParentRef(simple.getBrandSummary().getUri()));
+        if (simple.getBrandSummary() != null) {
+            result.setParentRef(new ParentRef(simple.getBrandSummary().getUri()));
+        }
+        result.setCountriesOfOrigin(simple.getCountriesOfOrigin());
         return result;
     }
 }

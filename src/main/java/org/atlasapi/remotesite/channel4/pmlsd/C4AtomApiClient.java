@@ -4,12 +4,13 @@ import org.atlasapi.remotesite.support.atom.AtomClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.metabroadcast.common.http.HttpException;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.url.Urls;
 import com.sun.syndication.feed.atom.Feed;
+
+import java.util.Optional;
 
 public class C4AtomApiClient {
     
@@ -77,7 +78,7 @@ public class C4AtomApiClient {
         } catch (Exception e) {
             log.error("Exception fetching " + uri, e);
         }
-        return Optional.fromNullable(feed);
+        return Optional.ofNullable(feed);
     }
     
     private String appendPlatform(String url) {

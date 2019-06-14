@@ -15,6 +15,13 @@ public class BrandModelTransformer extends ContentModelTransformer<Playlist, Bra
 		super(lookupStore, topicStore, idCodec, clipsModelTransformer, clock);
 	}
 
+    @Override
+    protected Brand setFields(Brand result, Playlist inputContent) {
+        super.setFields(result, inputContent);
+        result.setCountriesOfOrigin(inputContent.getCountriesOfOrigin());
+        return result;
+    }
+
 	@Override
 	protected Brand createOutput(Playlist simple) {
 		return new Brand();

@@ -1,11 +1,16 @@
 package org.atlasapi.equiv.handlers;
 
-import java.util.List;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
+import com.metabroadcast.common.collect.ImmutableOptionalMap;
 import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.equiv.EquivalenceSummary;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
 import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
@@ -17,14 +22,6 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
-
-import com.metabroadcast.common.collect.ImmutableOptionalMap;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -33,6 +30,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.List;
 
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.Matchers.hasItem;
@@ -69,7 +68,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     @Test
     public void testFiltersItemFromNonStrongBrand() {
         //noinspection unchecked
-        when(delegate.handle(Matchers.any(EquivalenceResult.class)))
+        when(delegate.handle(Matchers.any(EquivalenceResults.class)))
                 .thenReturn(true);
 
         Container strongContainer = new Brand("pabrand", "pabrandCurie", Publisher.PA);
@@ -98,12 +97,18 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
                 delegate,
                 summaryStore
         );
 
-        handler.handle(result);
+        handler.handle(results);
 
         verify(delegate).handle(argThat(resultWithNoStrongEquivalents()));
     }
@@ -111,7 +116,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     @Test
     public void testDoesntFilterItemFromStrongBrand() {
         //noinspection unchecked
-        when(delegate.handle(Matchers.any(EquivalenceResult.class)))
+        when(delegate.handle(Matchers.any(EquivalenceResults.class)))
                 .thenReturn(true);
 
         Container strongContainer = new Brand("bbcbrand", "bbcbrandCurie", Publisher.BBC);
@@ -140,12 +145,18 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
                 delegate,
                 summaryStore
         );
 
-        handler.handle(result);
+        handler.handle(results);
 
         verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.BBC, "gequiv")));
     }
@@ -153,7 +164,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     @Test
     public void testDoesntFilterItemFromSourceWithNoStrongBrandsWhenRelaxed() {
         //noinspection unchecked
-        when(delegate.handle(Matchers.any(EquivalenceResult.class)))
+        when(delegate.handle(Matchers.any(EquivalenceResults.class)))
                 .thenReturn(true);
 
         EquivalenceSummary equivSummary = new EquivalenceSummary(
@@ -181,12 +192,18 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
                 delegate,
                 summaryStore
         );
 
-        handler.handle(result);
+        handler.handle(results);
 
         verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.C4, "ignoredequiv")));
     }
@@ -194,7 +211,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     @Test
     public void testDoesntFilterItemWithNoBrand() {
         //noinspection unchecked
-        when(delegate.handle(Matchers.any(EquivalenceResult.class)))
+        when(delegate.handle(Matchers.any(EquivalenceResults.class)))
                 .thenReturn(true);
 
         EquivalenceSummary equivSummary = new EquivalenceSummary(
@@ -221,12 +238,18 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
                 delegate,
                 summaryStore
         );
 
-        handler.handle(result);
+        handler.handle(results);
 
         verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.FIVE, "nobrand")));
     }
@@ -234,7 +257,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     @Test
     public void testFiltersItemFromSourceWithNoStrongBrandsWhenStrict() {
         //noinspection unchecked
-        when(delegate.handle(Matchers.any(EquivalenceResult.class)))
+        when(delegate.handle(Matchers.any(EquivalenceResults.class)))
                 .thenReturn(true);
 
         EquivalenceSummary equivSummary = new EquivalenceSummary(
@@ -259,12 +282,18 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 subject, noScores, emptyCombined, strong, new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.strict(
                 delegate,
                 summaryStore
         );
 
-        handler.handle(result);
+        handler.handle(results);
 
         verify(delegate).handle(argThat(resultWithNoStrongEquivalents()));
     }
@@ -272,7 +301,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     @Test
     public void whenContainerIsNullReturnTrueWhenDelegateReturnsTrue() {
         //noinspection unchecked
-        when(delegate.handle(Matchers.any(EquivalenceResult.class)))
+        when(delegate.handle(Matchers.any(EquivalenceResults.class)))
                 .thenReturn(true);
 
         subject.setParentRef(null);
@@ -285,13 +314,19 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
                 delegate,
                 summaryStore
         );
 
         assertThat(
-                handler.handle(result),
+                handler.handle(results),
                 is(true)
         );
     }
@@ -299,7 +334,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     @Test
     public void whenContainerIsNullReturnFalseWhenDelegateReturnsFalse() {
         //noinspection unchecked
-        when(delegate.handle(Matchers.any(EquivalenceResult.class)))
+        when(delegate.handle(Matchers.any(EquivalenceResults.class)))
                 .thenReturn(false);
 
         subject.setParentRef(null);
@@ -312,13 +347,19 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
                 delegate,
                 summaryStore
         );
 
         assertThat(
-                handler.handle(result),
+                handler.handle(results),
                 is(false)
         );
     }
@@ -336,13 +377,19 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
                 delegate,
                 summaryStore
         );
 
         try {
-            handler.handle(result);
+            handler.handle(results);
             fail("Item with missing container summary failed to throw exception");
         } catch (ContainerSummaryRequiredException e) {
             assertThat(e.getItem(), is(subject));
@@ -352,7 +399,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     @Test
     public void returnTrueWhenTheDelegateReturnsTrue() {
         //noinspection unchecked
-        when(delegate.handle(Matchers.any(EquivalenceResult.class)))
+        when(delegate.handle(Matchers.any(EquivalenceResults.class)))
                 .thenReturn(true);
 
         EquivalenceSummary equivSummary = summary(
@@ -379,13 +426,19 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
                 delegate,
                 summaryStore
         );
 
         assertThat(
-                handler.handle(result),
+                handler.handle(results),
                 is(true)
         );
     }
@@ -393,7 +446,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     @Test
     public void returnFalseWhenTheDelegateReturnsFalse() {
         //noinspection unchecked
-        when(delegate.handle(Matchers.any(EquivalenceResult.class)))
+        when(delegate.handle(Matchers.any(EquivalenceResults.class)))
                 .thenReturn(false);
 
         EquivalenceSummary equivSummary = summary(
@@ -420,13 +473,19 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 new DefaultDescription()
         );
 
+        EquivalenceResults<Item> results = new EquivalenceResults<>(
+                subject,
+                ImmutableList.of(result),
+                new DefaultDescription()
+        );
+
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
                 delegate,
                 summaryStore
         );
 
         assertThat(
-                handler.handle(result),
+                handler.handle(results),
                 is(false)
         );
     }
@@ -441,11 +500,11 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         return equivSummary;
     }
 
-    private Matcher<EquivalenceResult<Item>> resultWithStrongEquiv(
+    private Matcher<EquivalenceResults<Item>> resultWithStrongEquiv(
             final Publisher publisher,
             final String uri
     ) {
-        return new TypeSafeMatcher<EquivalenceResult<Item>>() {
+        return new TypeSafeMatcher<EquivalenceResults<Item>>() {
 
             @Override
             public void describeTo(Description desc) {
@@ -456,17 +515,16 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
             }
 
             @Override
-            public boolean matchesSafely(EquivalenceResult<Item> result) {
-                return result.strongEquivalences().get(publisher).stream().anyMatch(strong -> strong
-                        .candidate()
+            public boolean matchesSafely(EquivalenceResults<Item> result) {
+                return result.strongEquivalences().stream().anyMatch(strong -> strong
                         .getCanonicalUri()
                         .equals(uri));
             }
         };
     }
 
-    private Matcher<EquivalenceResult<Item>> resultWithNoStrongEquivalents() {
-        return new TypeSafeMatcher<EquivalenceResult<Item>>() {
+    private Matcher<EquivalenceResults<Item>> resultWithNoStrongEquivalents() {
+        return new TypeSafeMatcher<EquivalenceResults<Item>>() {
 
             @Override
             public void describeTo(Description desc) {
@@ -474,8 +532,8 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
             }
 
             @Override
-            public boolean matchesSafely(EquivalenceResult<Item> result) {
-                return result.strongEquivalences().isEmpty();
+            public boolean matchesSafely(EquivalenceResults<Item> results) {
+                return results.strongEquivalences().isEmpty();
             }
         };
     }

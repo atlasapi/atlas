@@ -1,5 +1,13 @@
 package org.atlasapi.reporting.telescope;
 
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
+import org.atlasapi.media.entity.Identified;
+
 import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;
 import com.metabroadcast.columbus.telescope.api.Environment;
@@ -9,17 +17,8 @@ import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporter;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
 import com.metabroadcast.common.media.MimeType;
-import org.atlasapi.media.entity.Identified;
-import org.atlasapi.remotesite.amazonunbox.TelescopeReporterHelperMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.Set;
-
-//import com.metabroadcast.columbus.telescope.client.http.TelescopeReporterHelperMethods;
 
 /**
  * startReporting, then report various events, and finally endReporting. If you do stuff in the
@@ -78,15 +77,16 @@ public class OwlTelescopeReporter extends TelescopeReporter {
         );
     }
 
-    public void reportSuccessfulEventWithWarning(
-            String atlasItemId,
+    public <T extends Identified> void reportSuccessfulEventWithWarning(
+            long dbId,
+            Set<org.atlasapi.media.entity.Alias> aliases,
             EntityType entityType,
             String warningMsg,
-            Object... objectToSerialise
-    ) {
+            Object... objectToSerialise) {
+
         reportSuccessfulEventGeneric(
-                atlasItemId,
-                null,
+                encode(dbId),
+                OwlTelescopeUtilityMethodsAtlas.getAliases(aliases),
                 entityType,
                 warningMsg,
                 TelescopeReporterHelperMethods.serialize(objectToSerialise)

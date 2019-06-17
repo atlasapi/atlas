@@ -55,10 +55,14 @@ public class NitroBroadcastExtractor
         broadcast.setAliases(extractAliasesFrom(source));
 
         if(source.getTxTime() != null) {
-            DateTime actualStart = NitroUtil.toDateTime(source.getTxTime().getStart());
-            DateTime actualEnd = NitroUtil.toDateTime(source.getTxTime().getEnd());
-            broadcast.setActualTransmissionTime(actualStart);
-            broadcast.setActualTransmissionEndTime(actualEnd);
+            if(source.getTxTime().getStart() != null) {
+                DateTime actualStart = NitroUtil.toDateTime(source.getTxTime().getStart());
+                broadcast.setActualTransmissionTime(actualStart);
+            }
+            if(source.getTxTime().getEnd() != null) {
+                DateTime actualEnd = NitroUtil.toDateTime(source.getTxTime().getEnd());
+                broadcast.setActualTransmissionEndTime(actualEnd);
+            }
         }
 
         // Adding an alias uri for equivalence between Nitro and YV broadcasts

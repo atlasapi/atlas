@@ -9,11 +9,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSetMultimap.Builder;
 import com.google.common.collect.Iterables;
+import com.google.common.hash.Hashing;
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
 import com.metabroadcast.atlas.glycerin.model.WarningTexts;
 import com.metabroadcast.common.time.Clock;
+import org.atlasapi.feeds.youview.nitro.NitroIdGenerator;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
@@ -44,7 +47,13 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
 
     private static final String AUDIO_DESCRIBED_VERSION_TYPE = "DubbedAudioDescribed";
     private static final String SIGNED_VERSION_TYPE = "Signed";
+    private static final String ORIGINAL_TYPE = "Original";
     private static final String WARNING_TEXT_LONG_LENGTH = "long";
+    private static final String VERSION_PID_NAMESPACE = "gb:bbc:nitro:prod:version:pid";
+    private static final String ORIGINAL_VERSION_PID_NAMESPACE = "gb:bbc:nitro:prod:original:version:pid";
+    private static final String CRID_ALIAS_NAMESPACE = "gb:yv:prod:version:crid";
+
+    private final NitroIdGenerator nitroIdGenerator = new NitroIdGenerator(Hashing.md5());
 
     private final NitroBroadcastExtractor broadcastExtractor
             = new NitroBroadcastExtractor();
@@ -115,6 +124,14 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                 setLastUpdated(encodings, now);
 
                 versions.add(version);
+
+                if(isVersionOfType(nitroVersion, ORIGINAL_TYPE)) {
+                    item.addAlias(new Alias(ORIGINAL_VERSION_PID_NAMESPACE, nitroVersion.getPid()));
+                }
+                Alias versionPidAlias = new Alias(VERSION_PID_NAMESPACE, nitroVersion.getPid());
+                item.addAlias(versionPidAlias);
+
+                addVersionAliasesToLocations(item, version, versionPidAlias);
             }
         }
 
@@ -128,6 +145,20 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         }
 
         extractAdditionalItemFields(source, item, now);
+    }
+
+    //This was moved from NitroEpisodeExtractor and refactored slightly
+    private void addVersionAliasesToLocations(Item item, Version version, Alias versionPidAlias) {
+        Alias versionCridAlias = new Alias(
+                CRID_ALIAS_NAMESPACE,
+                nitroIdGenerator.generateVersionCrid(item, version)
+        );
+        for (Encoding encoding : version.getManifestedAs()) {
+            for (Location location : encoding.getAvailableAt()) {
+                location.addAlias(versionPidAlias);
+                location.addAlias(versionCridAlias);
+            }
+        }
     }
 
     private void setEncodingDetails(

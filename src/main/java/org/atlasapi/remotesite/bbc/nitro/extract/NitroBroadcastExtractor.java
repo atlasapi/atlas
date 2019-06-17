@@ -47,11 +47,17 @@ public class NitroBroadcastExtractor
         }
         DateTime start = NitroUtil.toDateTime(source.getPublishedTime().getStart());
         DateTime end = NitroUtil.toDateTime(source.getPublishedTime().getEnd());
+
+        DateTime actualStart = NitroUtil.toDateTime(source.getTxTime().getStart());
+        DateTime actualEnd = NitroUtil.toDateTime(source.getTxTime().getEnd());
+
         Broadcast broadcast = new Broadcast(channel, start, end)
                 .withId("bbc:" + source.getPid());
         broadcast.setRepeat(source.isIsRepeat());
         broadcast.setAudioDescribed(source.isIsAudioDescribed());
         broadcast.setAliases(extractAliasesFrom(source));
+        broadcast.setActualTransmissionTime(actualStart);
+        broadcast.setActualTransmissionEndTime(actualEnd);
 
         // Adding an alias uri for equivalence between Nitro and YV broadcasts
         Optional<Alias> pcridAlias = Iterables.tryFind(broadcast.getAliases(), PCRID_ALIAS);

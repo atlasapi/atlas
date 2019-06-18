@@ -50,7 +50,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     private static final String ORIGINAL_TYPE = "Original";
     private static final String WARNING_TEXT_LONG_LENGTH = "long";
     private static final String VERSION_PID_NAMESPACE = "gb:bbc:nitro:prod:version:pid";
-    private static final String ORIGINAL_VERSION_PID_NAMESPACE = "gb:bbc:nitro:prod:original:version:pid";
+    private static final String ORIGINAL_VERSION_PID_NAMESPACE = "gb:bbc:nitro:prod:version:original:pid";
     private static final String CRID_ALIAS_NAMESPACE = "gb:yv:prod:version:crid";
 
     private final NitroIdGenerator nitroIdGenerator = new NitroIdGenerator(Hashing.md5());
@@ -147,7 +147,6 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         extractAdditionalItemFields(source, item, now);
     }
 
-    //This was moved from NitroEpisodeExtractor and refactored slightly
     private void addVersionAliasesToLocations(Item item, Version version, Alias versionPidAlias) {
         Alias versionCridAlias = new Alias(
                 CRID_ALIAS_NAMESPACE,

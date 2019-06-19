@@ -84,6 +84,7 @@ public class FirstMatchingPredicateContentEquivalenceResultUpdater<T extends Con
             );
             desc.finishStage();
             if (equivalenceResultPredicate.getPredicate().test(result)) {
+                desc.finishStage();
                 return result;
             }
         }

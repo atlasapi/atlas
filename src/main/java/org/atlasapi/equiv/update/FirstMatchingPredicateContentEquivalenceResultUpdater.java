@@ -3,6 +3,7 @@ package org.atlasapi.equiv.update;
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.description.ReadableDescription;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.FirstMatchingPredicateContentEquivalenceResultProviderMetadata;
@@ -67,19 +68,26 @@ public class FirstMatchingPredicateContentEquivalenceResultUpdater<T extends Con
     @Override
     public EquivalenceResult<T> provideEquivalenceResult(
             T content,
+            ReadableDescription desc,
             EquivToTelescopeResults resultsForTelescope
     ) {
         checkArgument(!equivalenceResultUpdaters.isEmpty());
         EquivalenceResult<T> result = null;
+        desc.startStage("First Matching Predicate: " + equivalenceResultPredicate.getPredicateName());
+        int count = 1;
         for (EquivalenceResultUpdater<T> equivalenceResultUpdater : equivalenceResultUpdaters) {
+            desc.startStage("EquivalenceResultUpdater " + count++);
             result = equivalenceResultUpdater.provideEquivalenceResult(
                     content,
+                    desc,
                     resultsForTelescope
             );
+            desc.finishStage();
             if (equivalenceResultPredicate.getPredicate().test(result)) {
                 return result;
             }
         }
+        desc.finishStage();
 
         return result; //will return the result of the last updater if none matched the predicate
     }

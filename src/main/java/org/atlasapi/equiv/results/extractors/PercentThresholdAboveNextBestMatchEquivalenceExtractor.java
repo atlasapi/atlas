@@ -42,7 +42,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractor<T>
 
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName(
-                "Percent Threshold Above Next Best Match Equivalence Extractor"
+                "Percent GeneratorThreshold Above Next Best Match Equivalence Extractor"
         );
         
         if (candidates.isEmpty()) {

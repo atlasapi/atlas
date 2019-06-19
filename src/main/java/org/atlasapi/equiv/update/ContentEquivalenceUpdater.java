@@ -55,7 +55,13 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         ImmutableList.Builder<EquivalenceResult<T>> resultsBuilder = ImmutableList.builder();
 
         for(EquivalenceResultUpdater<T> equivalenceResultUpdater : equivalenceResultUpdaters) {
-            resultsBuilder.add(equivalenceResultUpdater.provideEquivalenceResult(content, resultsForTelescope));
+            resultsBuilder.add(
+                    equivalenceResultUpdater.provideEquivalenceResult(
+                            content,
+                            new DefaultDescription(),
+                            resultsForTelescope
+                    )
+            );
         }
 
         EquivalenceResults<T> results = new EquivalenceResults<>(content, resultsBuilder.build(), desc);

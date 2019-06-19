@@ -4,6 +4,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProv
 import org.atlasapi.equiv.update.updaters.providers.item.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbXItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.BbcTxlogsItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
@@ -20,6 +21,9 @@ import org.atlasapi.equiv.update.updaters.providers.item.VodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbAliasItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBbcActualTransmissionItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBroadcastItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -72,6 +76,13 @@ public enum ItemEquivalenceUpdaterType {
     ),
     TXLOGS_ITEM(
             TxlogsItemUpdaterProvider.create()
+    ),
+    BBC_TXLOGS_ITEM(
+            BbcTxlogsItemUpdaterProvider.create(
+                    BarbAliasItemUpdaterProvider.create(),
+                    BarbBroadcastItemUpdaterProvider.create(),
+                    BarbBbcActualTransmissionItemUpdaterProvider.create()
+            )
     ),
     WIKIPEDIA_ITEM(
             WikipediaItemUpdateProvider.create()

@@ -36,7 +36,7 @@ public class PercentThresholdEquivalenceExtractor<T> implements EquivalenceExtra
             EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent extractorCompoenent = EquivToTelescopeComponent.create();
-        extractorCompoenent.setComponentName("Percent GeneratorThreshold Equivalence Extractor");
+        extractorCompoenent.setComponentName("Percent Threshold Equivalence Extractor");
 
         desc.startStage(NAME);
         

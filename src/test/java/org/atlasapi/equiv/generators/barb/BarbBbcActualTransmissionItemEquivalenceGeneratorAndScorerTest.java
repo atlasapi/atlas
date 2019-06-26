@@ -40,7 +40,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
             .withBroadcaster(Publisher.METABROADCAST)
             .withTitle("BBC One")
             .withHighDefinition(false)
-            .withMediaType(MediaType.AUDIO)
+            .withMediaType(MediaType.VIDEO)
             .withUri("http://www.bbc.co.uk/bbcone")
             .build();
 
@@ -48,7 +48,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
             .withBroadcaster(Publisher.METABROADCAST)
             .withTitle("BBC Two Wales")
             .withHighDefinition(false)
-            .withMediaType(MediaType.AUDIO)
+            .withMediaType(MediaType.VIDEO)
             .withUri("http://www.bbc.co.uk/services/bbctwo/wales")
             .build();
 

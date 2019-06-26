@@ -44,6 +44,14 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
             .withUri("http://www.bbc.co.uk/bbcone")
             .build();
 
+    private static final Channel BBC_TWO_WALES = Channel.builder()
+            .withBroadcaster(Publisher.METABROADCAST)
+            .withTitle("BBC Two Wales")
+            .withHighDefinition(false)
+            .withMediaType(MediaType.AUDIO)
+            .withUri("http://www.bbc.co.uk/services/bbctwo/wales")
+            .build();
+
     private static final Score SCORE_ON_MATCH = Score.ONE;
 
     private static final Duration FLEXIBILITY = standardHours(1);
@@ -56,6 +64,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
         final ChannelResolver channelResolver = mock(ChannelResolver.class);
 
         when(channelResolver.fromUri(BBC_ONE.getUri())).thenReturn(Maybe.just(BBC_ONE));
+        when(channelResolver.fromUri(BBC_TWO_WALES.getUri())).thenReturn(Maybe.just(BBC_TWO_WALES));
 
         generator = new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                 resolver,
@@ -447,6 +456,54 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
     }
 
     @Test
+    public void testIgnoreActualTransmissionEndForBbc2Wales() {
+        DateTime publishedStart = DateTime.now().withTime(12, 0, 0, 0);
+        DateTime publishedEnd = publishedStart.plusHours(1);
+        DateTime actualStart = publishedStart.plusMinutes(5);
+        DateTime actualEnd = publishedEnd.plusMinutes(5);
+        Broadcast txlogBroadcast = new Broadcast(BBC_TWO_WALES.getUri(), actualStart, actualEnd);
+        Broadcast nitroBroadcast = new Broadcast(BBC_TWO_WALES.getUri(), publishedStart, publishedEnd);
+        nitroBroadcast.setActualTransmissionTime(actualStart);
+
+        final Item txlogItem = episodeWithBroadcasts(
+                "subjectItem",
+                Publisher.BARB_TRANSMISSIONS,
+                txlogBroadcast
+        );
+
+        final Item nitroItem = episodeWithBroadcasts(
+                "equivItem",
+                Publisher.BBC_NITRO,
+                nitroBroadcast
+        );
+
+        setupResolving(txlogItem, nitroItem, BBC_TWO_WALES);
+
+        ScoredCandidates<Item> equivalents;
+        Map<Item, Score> scoreMap;
+
+        equivalents = generator.generate(
+                txlogItem,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+        scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(1));
+        assertThat(scoreMap.get(nitroItem), is(SCORE_ON_MATCH));
+
+        equivalents = generator.generate(
+                nitroItem,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+        scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(1));
+        assertThat(scoreMap.get(txlogItem), is(SCORE_ON_MATCH));
+    }
+
+    @Test
     public void testEquivOnRealExample() {
         // Nitro:
         // <published_time start="2019-06-17T18:00:00Z" end="2019-06-17T18:30:00Z" duration="PT30M"/>
@@ -503,6 +560,10 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
     }
 
     private void setupResolving(Item txlogItem, Item nitroItem) {
+        setupResolving(txlogItem, nitroItem, BBC_ONE);
+    }
+
+    private void setupResolving(Item txlogItem, Item nitroItem, Channel channel) {
         Broadcast txlogBroadcast =
                 Iterables.getOnlyElement(Iterables.getOnlyElement(txlogItem.getVersions()).getBroadcasts());
         DateTime queryStart = txlogBroadcast.getTransmissionTime().minus(FLEXIBILITY);
@@ -511,11 +572,11 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
         when(resolver.unmergedSchedule(
                 queryStart,
                 queryEnd,
-                ImmutableSet.of(BBC_ONE),
+                ImmutableSet.of(channel),
                 ImmutableSet.of(nitroItem.getPublisher())
         ))
                 .thenReturn(Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE,
+                        ImmutableMap.of(channel,
                                 ImmutableList.of(nitroItem)),
                         interval(queryStart, queryEnd)
                 ));
@@ -528,11 +589,11 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
         when(resolver.unmergedSchedule(
                 queryStart,
                 queryEnd,
-                ImmutableSet.of(BBC_ONE),
+                ImmutableSet.of(channel),
                 ImmutableSet.of(txlogItem.getPublisher())
         ))
                 .thenReturn(Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE,
+                        ImmutableMap.of(channel,
                                 ImmutableList.of(txlogItem)),
                         interval(queryStart, queryEnd)
                 ));

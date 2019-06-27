@@ -107,7 +107,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                         ))
                 )
                 .withExtractor(
-                        new AllOverOrEqThresholdExtractor<>(4)
+                        AllOverOrEqThresholdExtractor.create(4)
                 )
                 .build();
     }

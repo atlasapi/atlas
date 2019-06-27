@@ -73,7 +73,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         // 1 hour and gradually increase the search window up to a given limit?
                                         Duration.standardHours(1),
                                         broadcast -> true,
-                                        Score.valueOf(4.0)
+                                        Score.valueOf(6.0)
                                 )
                         )
                 )
@@ -116,7 +116,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                         //
                         // N.B. extractors extract individually by publisher so if the highest threshold for
                         // one source is 10, we can still extract other publishers whose highest threshold was 4
-                        new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
+                        new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(6D, 4D))
                 )
                 .build();
     }

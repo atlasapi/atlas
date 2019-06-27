@@ -40,6 +40,11 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
     // what rounding logic is used.
     private static final Duration ACTUAL_TRANSMISSION_FLEXIBILITY = Duration.standardSeconds(1);
 
+    private static final Set<String> CHANNELS_TO_IGNORE_ACTUAL_TRANSMISSION_END = ImmutableSet.of(
+            "http://www.bbc.co.uk/services/bbctwo/wales",
+            "http://www.bbc.co.uk/services/bbctwo/ni"
+    );
+
     private final ScheduleResolver resolver;
     private final Duration flexibility;
     private final ChannelResolver channelResolver;
@@ -175,8 +180,12 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
     }
 
     private boolean hasQualifyingActualTransmissionTime(Broadcast txlogBroadcast, Broadcast nitroBroadcast) {
+        // Actual end time is generally missing from these channels so BBC have requested us
+        // to only check the actual start time for these
+        boolean onlyCheckActualStartTime = CHANNELS_TO_IGNORE_ACTUAL_TRANSMISSION_END
+                .contains(nitroBroadcast.getBroadcastOn());
         if (nitroBroadcast.getActualTransmissionTime() == null
-                || nitroBroadcast.getActualTransmissionEndTime() == null
+                || (nitroBroadcast.getActualTransmissionEndTime() == null && !onlyCheckActualStartTime)
         ) {
             return false;
         }
@@ -184,10 +193,12 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
                 txlogBroadcast.getTransmissionTime(),
                 nitroBroadcast.getActualTransmissionTime(),
                 ACTUAL_TRANSMISSION_FLEXIBILITY
-        ) && around(
+        ) && (onlyCheckActualStartTime
+                || around(
                 txlogBroadcast.getTransmissionEndTime(),
                 nitroBroadcast.getActualTransmissionEndTime(),
                 ACTUAL_TRANSMISSION_FLEXIBILITY
+        )
         );
     }
 

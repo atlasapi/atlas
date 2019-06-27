@@ -7,7 +7,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProv
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbAliasItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBbcActualTransmissionItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBroadcastItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBbcBroadcastItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
@@ -18,27 +18,27 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private final BarbAliasItemUpdaterProvider barbAliasItemUpdaterProvider;
-    private final BarbBroadcastItemUpdaterProvider barbBroadcastItemUpdaterProvider;
+    private final BarbBbcBroadcastItemUpdaterProvider barbBbcBroadcastItemUpdaterProvider;
     private final BarbBbcActualTransmissionItemUpdaterProvider barbBbcActualTransmissionItemUpdaterProvider;
 
     private BbcTxlogsItemUpdaterProvider(
             BarbAliasItemUpdaterProvider barbAliasItemUpdaterProvider,
-            BarbBroadcastItemUpdaterProvider barbBroadcastItemUpdaterProvider,
+            BarbBbcBroadcastItemUpdaterProvider barbBbcBroadcastItemUpdaterProvider,
             BarbBbcActualTransmissionItemUpdaterProvider barbBbcActualTransmissionItemUpdaterProvider
     ) {
         this.barbAliasItemUpdaterProvider = barbAliasItemUpdaterProvider;
-        this.barbBroadcastItemUpdaterProvider = barbBroadcastItemUpdaterProvider;
+        this.barbBbcBroadcastItemUpdaterProvider = barbBbcBroadcastItemUpdaterProvider;
         this.barbBbcActualTransmissionItemUpdaterProvider = barbBbcActualTransmissionItemUpdaterProvider;
     }
 
     public static BbcTxlogsItemUpdaterProvider create(
             BarbAliasItemUpdaterProvider barbAliasItemUpdaterProvider,
-            BarbBroadcastItemUpdaterProvider barbBroadcastItemUpdaterProvider,
+            BarbBbcBroadcastItemUpdaterProvider barbBbcBroadcastItemUpdaterProvider,
             BarbBbcActualTransmissionItemUpdaterProvider barbBbcActualTransmissionItemUpdaterProvider
     ) {
         return new BbcTxlogsItemUpdaterProvider(
                 barbAliasItemUpdaterProvider,
-                barbBroadcastItemUpdaterProvider,
+                barbBbcBroadcastItemUpdaterProvider,
                 barbBbcActualTransmissionItemUpdaterProvider
         );
     }
@@ -56,7 +56,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                 targetPublishers
         );
 
-        EquivalenceResultUpdater<Item> broadcastEquivResultUpdater = barbBroadcastItemUpdaterProvider.getUpdater(
+        EquivalenceResultUpdater<Item> broadcastEquivResultUpdater = barbBbcBroadcastItemUpdaterProvider.getUpdater(
                 dependencies,
                 targetPublishers
         );

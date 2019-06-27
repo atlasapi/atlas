@@ -27,15 +27,15 @@ import org.joda.time.Duration;
 
 import java.util.Set;
 
-public class BarbBroadcastItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
+public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
 
-    private BarbBroadcastItemUpdaterProvider() {
+    private BarbBbcBroadcastItemUpdaterProvider() {
 
     }
 
-    public static BarbBroadcastItemUpdaterProvider create() {
-        return new BarbBroadcastItemUpdaterProvider();
+    public static BarbBbcBroadcastItemUpdaterProvider create() {
+        return new BarbBbcBroadcastItemUpdaterProvider();
     }
 
     @Override
@@ -50,7 +50,7 @@ public class BarbBroadcastItemUpdaterProvider implements EquivalenceResultUpdate
                                 dependencies.getScheduleResolver(),
                                 dependencies.getChannelResolver(),
                                 targetPublishers,
-                                Duration.standardMinutes(5),
+                                Duration.standardMinutes(10),
                                 Predicates.alwaysTrue(),
                                 3.0
                         )

@@ -23,7 +23,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProv
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbAliasItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBbcActualTransmissionItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBroadcastItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBbcBroadcastItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -80,7 +80,7 @@ public enum ItemEquivalenceUpdaterType {
     BBC_TXLOGS_ITEM(
             BbcTxlogsItemUpdaterProvider.create(
                     BarbAliasItemUpdaterProvider.create(),
-                    BarbBroadcastItemUpdaterProvider.create(),
+                    BarbBbcBroadcastItemUpdaterProvider.create(),
                     BarbBbcActualTransmissionItemUpdaterProvider.create()
             )
     ),

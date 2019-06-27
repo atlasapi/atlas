@@ -21,9 +21,6 @@ import org.atlasapi.equiv.update.updaters.providers.item.VodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbAliasItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBbcActualTransmissionItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBbcBroadcastItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -78,11 +75,12 @@ public enum ItemEquivalenceUpdaterType {
             TxlogsItemUpdaterProvider.create()
     ),
     BBC_TXLOGS_ITEM(
-            BbcTxlogsItemUpdaterProvider.create(
-                    BarbAliasItemUpdaterProvider.create(),
-                    BarbBbcBroadcastItemUpdaterProvider.create(),
-                    BarbBbcActualTransmissionItemUpdaterProvider.create()
-            )
+//            BbcTxlogsEfficientItemUpdaterProvider.create(
+//                    BarbAliasItemUpdaterProvider.create(),
+//                    BarbBbcBroadcastItemUpdaterProvider.create(),
+//                    BarbBbcActualTransmissionItemUpdaterProvider.create()
+//            )
+            BbcTxlogsItemUpdaterProvider.create()
     ),
     WIKIPEDIA_ITEM(
             WikipediaItemUpdateProvider.create()

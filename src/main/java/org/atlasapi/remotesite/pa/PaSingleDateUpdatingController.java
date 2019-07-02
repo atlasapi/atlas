@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Controller
-public class PaSingleDateUpdatingController {
+public class PaSingleDateUpdatingController  {
     
     private final ExecutorService executor;
     private final PaChannelProcessor channelProcessor;

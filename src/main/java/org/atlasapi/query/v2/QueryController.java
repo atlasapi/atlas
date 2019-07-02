@@ -281,6 +281,7 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
     public WriteResponse postContent(HttpServletRequest req, HttpServletResponse resp) {
+
         return contentWriteController.postContent(req, resp);
     }
 

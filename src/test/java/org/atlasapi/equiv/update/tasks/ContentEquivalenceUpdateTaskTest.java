@@ -69,6 +69,11 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
                         input -> contents.get(input).iterator()
                 ));
             }
+
+            @Override
+            public Iterator<Content> listUnpublishedContent(ContentListingCriteria criteria) {
+                return listUnpublishedContent(criteria);
+            }
         };
     }
 

@@ -34,7 +34,7 @@ import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.listing.SelectedContentLister;
-import org.atlasapi.persistence.content.mongo.LastUpdatedContentFinder;
+import org.atlasapi.persistence.content.mongo.LastUpdatedPublishedContentFinder;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
@@ -217,7 +217,7 @@ public class EquivTaskModule {
     @Autowired private SelectedContentLister contentLister;
     @Autowired private SimpleScheduler taskScheduler;
     @Autowired private ContentResolver contentResolver;
-    @Autowired private LastUpdatedContentFinder contentFinder;
+    @Autowired private LastUpdatedPublishedContentFinder contentFinder;
     @Autowired private DatabasedMongo db;
     @Autowired private LookupEntryStore lookupStore;
     @Autowired private ScheduleResolver scheduleResolver;

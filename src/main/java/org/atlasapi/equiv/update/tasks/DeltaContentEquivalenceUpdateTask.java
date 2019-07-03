@@ -9,6 +9,7 @@ import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.mongo.LastUpdatedContentFinder;
+import org.atlasapi.persistence.content.mongo.LastUpdatedPublishedContentFinder;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
@@ -44,9 +45,9 @@ public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
     private Publisher publisher;
     private volatile UpdateProgress progress = UpdateProgress.START;
     private Period delta;
-    private LastUpdatedContentFinder contentFinder;
+    private LastUpdatedPublishedContentFinder contentFinder;
 
-    public DeltaContentEquivalenceUpdateTask(LastUpdatedContentFinder contentFinder,
+    public DeltaContentEquivalenceUpdateTask(LastUpdatedPublishedContentFinder contentFinder,
             EquivalenceUpdater<Content> updater,
             Set<String> ignored) {
         this.contentFinder = contentFinder;
@@ -81,7 +82,7 @@ public final class DeltaContentEquivalenceUpdateTask extends ScheduledTask {
         DateTime since = DateTime.now().minus(delta);
         onStart(since);
 
-        Iterator<Content> contents = contentFinder.updatedSince(publisher, since);
+        Iterator<Content> contents = contentFinder.publishedUpdatedSince(publisher, since);
         try {
             while(shouldContinue() && contents.hasNext()) {
                 executor.submit(handle(contents.next()));

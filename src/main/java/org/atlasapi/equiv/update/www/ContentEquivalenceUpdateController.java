@@ -137,7 +137,14 @@ public class ContentEquivalenceUpdateController {
         List<Content> contents = resolved.getAllResolvedResults().stream()
                 .filter(Content.class::isInstance)
                 .map(Content.class::cast)
+                .filter(Content::isActivelyPublished)
                 .collect(MoreCollectors.toImmutableList());
+
+        if(contents.isEmpty()){
+            response.getWriter().write("Content is unpublished.");
+            response.setStatus(OK.code());
+            return;
+        }
 
         telescope.startReporting();
 

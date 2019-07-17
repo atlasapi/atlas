@@ -1,13 +1,10 @@
 package org.atlasapi.query.content;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
@@ -34,16 +31,18 @@ import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.VersionMerger;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
-
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -198,9 +197,14 @@ public class ContentWriteExecutor {
         }
     }
 
+    /**
+     * @param publishers the set of publishers whose explicit equivalences will be modified in the lookup table,
+     *                   with any other explicit equivalences to content from other publishers being unaffected.
+     *                   If null will be later set to all publishers present in the explicitEquivRefs.
+     */
     public void updateExplicitEquivalence(
             Content content,
-            Set<Publisher> publishers,
+            @Nullable Set<Publisher> publishers,
             Set<LookupRef> explicitEquivRefs
     ) {
         content.setEquivalentTo(explicitEquivRefs);

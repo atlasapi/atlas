@@ -241,31 +241,9 @@ public class ContentWriteController {
     @Nullable
     public MultiWriteResponse addExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
         try {
-            PossibleApplication possibleApplication = validateApplicationConfiguration(req, resp);
-            if (possibleApplication.getErrorSummary().isPresent()) {
-                return multiWriteError(req, resp, possibleApplication.getErrorSummary().get());
-            }
-            Application application = possibleApplication.getApplication().get(); //should be safe due to the validation
-
-            List<String> uris = parseList(req.getParameter(URIS));
-            List<String> ids = parseList(req.getParameter(IDS));
-
-            if (uris.size() + ids.size() != 2) {
-                throw new IllegalArgumentException("Must specify exactly two " + URIS + " or " + IDS);
-            }
-
-            List<Content> contents = resolveContent(uris, ids);
-            if (contents.size() != 2 || contents.get(0).equals(contents.get(1))) {
-                throw new IllegalArgumentException("Must specify exactly two pieces of content");
-            }
-
-            for (Content content : contents) {
-                validateApplicationForExplicitEquiv(content.getPublisher(), application);
-            }
-
+            List<Content> contents = getContentForExplicitEquivFromRequest(req);
             Content firstContent = contents.get(0);
             Content secondContent = contents.get(1);
-
             List<String> updatedIds = new ArrayList<>(2);
 
             addExplicitEquivalence(firstContent, secondContent).ifPresent(updatedIds::add);
@@ -274,7 +252,6 @@ public class ContentWriteController {
             if (updatedIds.isEmpty()) {
                 throw new IllegalArgumentException("Content is already explicitly equived");
             }
-
             resp.setStatus(HttpServletResponse.SC_OK);
             return new MultiWriteResponse(updatedIds);
         } catch (Exception e) {
@@ -304,31 +281,9 @@ public class ContentWriteController {
     @Nullable
     public MultiWriteResponse removeExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
         try {
-            PossibleApplication possibleApplication = validateApplicationConfiguration(req, resp);
-            if (possibleApplication.getErrorSummary().isPresent()) {
-                return multiWriteError(req, resp, possibleApplication.getErrorSummary().get());
-            }
-            Application application = possibleApplication.getApplication().get(); //should be safe due to the validation
-
-            List<String> uris = parseList(req.getParameter(URIS));
-            List<String> ids = parseList(req.getParameter(IDS));
-
-            if (uris.size() + ids.size() != 2) {
-                throw new IllegalArgumentException("Must specify exactly two " + URIS + " or " + IDS);
-            }
-
-            List<Content> contents = resolveContent(uris, ids);
-            if (contents.size() != 2 || contents.get(0).equals(contents.get(1))) {
-                throw new IllegalArgumentException("Must specify exactly two pieces of content");
-            }
-
-            for (Content content : contents) {
-                validateApplicationForExplicitEquiv(content.getPublisher(), application);
-            }
-
+            List<Content> contents = getContentForExplicitEquivFromRequest(req);
             Content firstContent = contents.get(0);
             Content secondContent = contents.get(1);
-
             List<String> updatedIds = new ArrayList<>(2);
 
             removeExplicitEquivalence(firstContent, secondContent).ifPresent(updatedIds::add);
@@ -337,7 +292,6 @@ public class ContentWriteController {
             if (updatedIds.isEmpty()) {
                 throw new IllegalArgumentException("Content is already not explicitly equived");
             }
-
             resp.setStatus(HttpServletResponse.SC_OK);
             return new MultiWriteResponse(updatedIds);
         } catch (Exception e) {
@@ -353,6 +307,26 @@ public class ContentWriteController {
         newExplicits.remove(LookupRef.from(to));
         writeExecutor.updateExplicitEquivalence(from, publishers(from.getEquivalentTo()), newExplicits);
         return Optional.of(encodeId(from.getId()));
+    }
+
+    private List<Content> getContentForExplicitEquivFromRequest(HttpServletRequest req) throws InvalidApiKeyException {
+        Application application = getAndValidateApplication(req);
+        List<String> uris = parseList(req.getParameter(URIS));
+        List<String> ids = parseList(req.getParameter(IDS));
+
+        if (uris.size() + ids.size() != 2) {
+            throw new IllegalArgumentException("Must specify exactly two " + URIS + " or " + IDS);
+        }
+
+        List<Content> contents = resolveContent(uris, ids);
+        if (contents.size() != 2 || contents.get(0).equals(contents.get(1))) {
+            throw new IllegalArgumentException("Must specify exactly two distinct pieces of content");
+        }
+
+        for (Content content : contents) {
+            validateApplicationForExplicitEquiv(content.getPublisher(), application);
+        }
+        return contents;
     }
 
     private Set<Publisher> publishers(Collection<LookupRef> lookupRefs) {
@@ -393,11 +367,7 @@ public class ContentWriteController {
     @Nullable
     public WriteResponse updateExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
         try {
-            PossibleApplication possibleApplication = validateApplicationConfiguration(req, resp);
-            if (possibleApplication.getErrorSummary().isPresent()) {
-                return error(req, resp, possibleApplication.getErrorSummary().get());
-            }
-            Application application = possibleApplication.getApplication().get(); //should be safe due to the validation
+            Application application = getAndValidateApplication(req);
             String uri = req.getParameter(URI);
             String id = req.getParameter(ID);
             Iterable<String> includeIds = parseList(req.getParameter(INCLUDE_IDS));
@@ -622,6 +592,16 @@ public class ContentWriteController {
         }
 
         return possibleApplication;
+    }
+
+    private Application getAndValidateApplication(HttpServletRequest request) throws InvalidApiKeyException {
+        Optional<Application> application = applicationFetcher.applicationFor(request);
+
+        if (!application.isPresent()) {
+            throw new UnauthorizedException("API key is unauthorised");
+        }
+
+        return application.get();
     }
 
     private Optional<AtlasErrorSummary> validateApiKey(

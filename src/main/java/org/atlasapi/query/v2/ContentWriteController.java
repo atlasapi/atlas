@@ -249,12 +249,12 @@ public class ContentWriteController {
             List<String> ids = parseList(req.getParameter(IDS));
 
             if (uris.size() + ids.size() != 2) {
-                throw new BadRequestException("Must specify exactly two " + URIS + " or " + IDS);
+                throw new IllegalArgumentException("Must specify exactly two " + URIS + " or " + IDS);
             }
 
             List<Content> contents = resolveContent(uris, ids);
             if (contents.size() != 2 || contents.get(0).equals(contents.get(1))) {
-                throw new BadRequestException("Must specify exactly two pieces of content");
+                throw new IllegalArgumentException("Must specify exactly two pieces of content");
             }
 
             for (Content content : contents) {
@@ -266,21 +266,11 @@ public class ContentWriteController {
 
             List<String> updatedIds = new ArrayList<>(2);
 
-            if (!firstContent.getEquivalentTo().contains(LookupRef.from(secondContent))) {
-                Set<LookupRef> newExplicits = new HashSet<>(firstContent.getEquivalentTo());
-                newExplicits.add(LookupRef.from(secondContent));
-                writeExecutor.updateExplicitEquivalence(firstContent, null, newExplicits);
-                updatedIds.add(encodeId(firstContent.getId()));
-            }
-            if (!secondContent.getEquivalentTo().contains(LookupRef.from(firstContent))) {
-                Set<LookupRef> newExplicits = new HashSet<>(secondContent.getEquivalentTo());
-                newExplicits.add(LookupRef.from(firstContent));
-                writeExecutor.updateExplicitEquivalence(secondContent, null, newExplicits);
-                updatedIds.add(encodeId(secondContent.getId()));
-            }
+            addExplicitEquivalence(firstContent, secondContent).ifPresent(updatedIds::add);
+            addExplicitEquivalence(secondContent, firstContent).ifPresent(updatedIds::add);
 
             if (updatedIds.isEmpty()) {
-                throw new BadRequestException("Content is already explicitly equived");
+                throw new IllegalArgumentException("Content is already explicitly equived");
             }
 
             resp.setStatus(HttpServletResponse.SC_OK);
@@ -288,6 +278,16 @@ public class ContentWriteController {
         } catch (Exception e) {
             return multiWriteError(req, resp, AtlasErrorSummary.forException(e));
         }
+    }
+
+    private Optional<String> addExplicitEquivalence(Content from, Content to) {
+        if (from.getEquivalentTo().contains(LookupRef.from(to))) {
+            return Optional.empty();
+        }
+        Set<LookupRef> newExplicits = new HashSet<>(from.getEquivalentTo());
+        newExplicits.add(LookupRef.from(to));
+        writeExecutor.updateExplicitEquivalence(from, null, newExplicits);
+        return Optional.of(encodeId(from.getId()));
     }
 
     /**
@@ -312,12 +312,12 @@ public class ContentWriteController {
             List<String> ids = parseList(req.getParameter(IDS));
 
             if (uris.size() + ids.size() != 2) {
-                throw new BadRequestException("Must specify exactly two " + URIS + " or " + IDS);
+                throw new IllegalArgumentException("Must specify exactly two " + URIS + " or " + IDS);
             }
 
             List<Content> contents = resolveContent(uris, ids);
             if (contents.size() != 2 || contents.get(0).equals(contents.get(1))) {
-                throw new BadRequestException("Must specify exactly two pieces of content");
+                throw new IllegalArgumentException("Must specify exactly two pieces of content");
             }
 
             for (Content content : contents) {
@@ -329,21 +329,11 @@ public class ContentWriteController {
 
             List<String> updatedIds = new ArrayList<>(2);
 
-            if (firstContent.getEquivalentTo().contains(LookupRef.from(secondContent))) {
-                Set<LookupRef> newExplicits = new HashSet<>(firstContent.getEquivalentTo());
-                newExplicits.remove(LookupRef.from(secondContent));
-                writeExecutor.updateExplicitEquivalence(firstContent, null, newExplicits);
-                updatedIds.add(encodeId(firstContent.getId()));
-            }
-            if (secondContent.getEquivalentTo().contains(LookupRef.from(firstContent))) {
-                Set<LookupRef> newExplicits = new HashSet<>(secondContent.getEquivalentTo());
-                newExplicits.remove(LookupRef.from(firstContent));
-                writeExecutor.updateExplicitEquivalence(secondContent, null, newExplicits);
-                updatedIds.add(encodeId(secondContent.getId()));
-            }
+            removeExplicitEquivalence(firstContent, secondContent).ifPresent(updatedIds::add);
+            removeExplicitEquivalence(secondContent, firstContent).ifPresent(updatedIds::add);
 
             if (updatedIds.isEmpty()) {
-                throw new BadRequestException("Content is already not explicitly equived");
+                throw new IllegalArgumentException("Content is already not explicitly equived");
             }
 
             resp.setStatus(HttpServletResponse.SC_OK);
@@ -351,6 +341,16 @@ public class ContentWriteController {
         } catch (Exception e) {
             return multiWriteError(req, resp, AtlasErrorSummary.forException(e));
         }
+    }
+
+    private Optional<String> removeExplicitEquivalence(Content from, Content to) {
+        if (!from.getEquivalentTo().contains(LookupRef.from(to))) {
+            return Optional.empty();
+        }
+        Set<LookupRef> newExplicits = new HashSet<>(from.getEquivalentTo());
+        newExplicits.remove(LookupRef.from(to));
+        writeExecutor.updateExplicitEquivalence(from, null, newExplicits);
+        return Optional.of(encodeId(from.getId()));
     }
 
     private List<Content> resolveContent(Collection<String> uris, Collection<String> ids) {
@@ -398,19 +398,19 @@ public class ContentWriteController {
             Iterable<String> excludeUris = parseList(req.getParameter(EXCLUDE_URIS));
 
             if (!Strings.isNullOrEmpty(uri) && !Strings.isNullOrEmpty(id)) {
-                throw new BadRequestException(String.format("Both %s and %s cannot specified", URI, ID));
+                throw new IllegalArgumentException(String.format("Both %s and %s cannot specified", URI, ID));
             }
             if (Strings.isNullOrEmpty(uri) && Strings.isNullOrEmpty(id)) {
-                throw new BadRequestException(String.format("Either %s or %s must be specified", URI, ID));
+                throw new IllegalArgumentException(String.format("Either %s or %s must be specified", URI, ID));
             }
             LookupEntry lookupEntry = lookupEntryForIdOrUri(id, uri);
             Maybe<Identified> identified = contentResolver.findByCanonicalUris(
                     ImmutableList.of(lookupEntry.uri())
             ).getFirstValue();
             if (identified.isNothing()) {
-                throw new NoSuchElementException("No content found for lookup entry with uri " + lookupEntry.uri());
+                throw new IllegalArgumentException("No content found for lookup entry with uri " + lookupEntry.uri());
             }
-            WriteResponse response = updateExplicitEquivalence(
+            WriteResponse response = addExplicitEquivalence(
                     (Content) identified.requireValue(),
                     application,
                     includeIds,
@@ -439,7 +439,7 @@ public class ContentWriteController {
      * @param excludeUris the content uris to remove from the explicit set if they exist.
      */
     @Nullable
-    private WriteResponse updateExplicitEquivalence(
+    private WriteResponse addExplicitEquivalence(
             Content content,
             Application application,
             Iterable<String> includeIds,
@@ -735,7 +735,7 @@ public class ContentWriteController {
             LookupEntry lookupEntry = entryStoreIterator.next();
             return lookupEntry.uri();
         } else {
-            throw new NoSuchElementException("No lookup entry found for id " + id);
+            throw new IllegalArgumentException("No lookup entry found for id " + id);
         }
     }
 
@@ -744,7 +744,7 @@ public class ContentWriteController {
         if (!Strings.isNullOrEmpty(uri)) {
             lookupEntries = lookupEntryStore.entriesForCanonicalUris(ImmutableList.of(uri));
             if (!lookupEntries.iterator().hasNext()) {
-                throw new NoSuchElementException("No lookup entry found for uri " + uri);
+                throw new IllegalArgumentException("No lookup entry found for uri " + uri);
             }
         } else if (!Strings.isNullOrEmpty(id)) {
             lookupEntries = lookupEntryStore.entriesForIds(
@@ -753,13 +753,13 @@ public class ContentWriteController {
                     )
             );
             if (!lookupEntries.iterator().hasNext()) {
-                throw new NoSuchElementException("No lookup entry found for id " + id);
+                throw new IllegalArgumentException("No lookup entry found for id " + id);
             }
         } else {
             throw new IllegalArgumentException("No id or uri specified");
         }
         if (!lookupEntries.iterator().hasNext()) {
-            throw new NoSuchElementException("No lookup entry found");
+            throw new IllegalArgumentException("No lookup entry found");
         }
         return Iterables.getOnlyElement(lookupEntries);
     }

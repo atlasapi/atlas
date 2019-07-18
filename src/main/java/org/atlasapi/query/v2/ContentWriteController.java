@@ -68,6 +68,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -385,7 +386,7 @@ public class ContentWriteController {
     }
 
     /**
-     * This method was added without any current plans for it being used, as a result it is essentially untested.
+     * This method was added without any current plans for it being used, feel free to change if needed.
      * It updates the explicit entries that exist in the specified content record's list of explicit equivs.
      * It does not update any other content record's list of explicit equivs except its own.
      */
@@ -458,24 +459,24 @@ public class ContentWriteController {
             throw new ForbiddenException("API key does not have write permission");
         }
         Set<LookupRef> existingExplicits = ImmutableSet.copyOf(content.getEquivalentTo());
-        Set<LookupRef> includeRefsFromIds = getLookupRefsForIds(includeIds, application);
-        Set<LookupRef> includeRefsFromUris = getLookupRefsForUris(includeUris, application);
-        Set<LookupRef> excludeRefsFromIds = getLookupRefsForIds(excludeIds, application);
-        Set<LookupRef> excludeRefsFromUris = getLookupRefsForUris(excludeUris, application);
+        Set<LookupRef> includeRefs = Sets.union(
+                getLookupRefsForIds(includeIds, application),
+                getLookupRefsForUris(includeUris, application)
+        );
+        Set<LookupRef> excludeRefs = Sets.union(
+                getLookupRefsForIds(excludeIds, application),
+                getLookupRefsForUris(excludeUris, application)
+        );
+
+        if (!Collections.disjoint(includeRefs, excludeRefs)) {
+            throw new IllegalArgumentException("Cannot include and exclude the same content");
+        }
 
         Set<LookupRef> combinedExplicits = new HashSet<>(existingExplicits);
-        combinedExplicits.addAll(includeRefsFromIds);
-        combinedExplicits.addAll(includeRefsFromUris);
-        combinedExplicits.removeAll(excludeRefsFromIds);
-        combinedExplicits.removeAll(excludeRefsFromUris);
+        combinedExplicits.addAll(includeRefs);
+        combinedExplicits.removeAll(excludeRefs);
 
-        Set<Publisher> allAffectedPublishers = Sets.union(
-                publishers(existingExplicits),
-                Sets.union(
-                        publishers(includeRefsFromIds),
-                        publishers(includeRefsFromUris)
-                )
-        );
+        Set<Publisher> allAffectedPublishers = Sets.union(publishers(existingExplicits), publishers(includeRefs));
 
         writeExecutor.updateExplicitEquivalence(content, allAffectedPublishers, combinedExplicits);
 

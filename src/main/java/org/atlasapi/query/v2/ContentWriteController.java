@@ -511,9 +511,18 @@ public class ContentWriteController {
      * N.B. this updates the content table since it contains a copy of the explicit set and is used for merging
      * explicit equivalences in the regular content POST endpoint.
      *
-     * In particular this allows an easy way to remove all explicit equivalences on a piece of content since the other
-     * methods do not support updating the explicit equivalences with an empty set.
+     * In particular this allows an easy way to remove all explicit equivalences on a piece of content.
+     * This was needed due to an ingest bug which would fetch content through the api, add broadcasts and write
+     * the content back - which due to the questionable way the api was designed meant that all transitive equivs
+     * were being written as explicit equivs, which was undesired and needed to be undone.
+     *
+     * N.B. Unlike the other explicit endpoints which were added later, this method has no validation on the sources
+     * of content that are being explicitly equived. As a result the endpoint currently allows a piece of content to
+     * be equived to content from a source that the application has neither read nor write access to. If there is ever
+     * a need to use the endpoint beyond the bug mentioned above it should be considered whether this behaviour is
+     * appropriate.
      */
+    @Deprecated
     @Nullable
     public WriteResponse updateExplicitEquivalenceBySource(HttpServletRequest req, HttpServletResponse resp) {
         PossibleApplication possibleApplication = validateApplicationConfiguration(req, resp);

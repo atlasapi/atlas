@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.applications.client.model.internal.ApplicationConfiguration;
 import com.metabroadcast.common.base.Maybe;
@@ -286,7 +287,7 @@ public class ContentWriteController {
         }
         Set<LookupRef> newExplicits = new HashSet<>(from.getEquivalentTo());
         newExplicits.add(LookupRef.from(to));
-        writeExecutor.updateExplicitEquivalence(from, null, newExplicits);
+        writeExecutor.updateExplicitEquivalence(from, publishers(newExplicits), newExplicits);
         return Optional.of(encodeId(from.getId()));
     }
 
@@ -349,8 +350,14 @@ public class ContentWriteController {
         }
         Set<LookupRef> newExplicits = new HashSet<>(from.getEquivalentTo());
         newExplicits.remove(LookupRef.from(to));
-        writeExecutor.updateExplicitEquivalence(from, null, newExplicits);
+        writeExecutor.updateExplicitEquivalence(from, publishers(from.getEquivalentTo()), newExplicits);
         return Optional.of(encodeId(from.getId()));
+    }
+
+    private Set<Publisher> publishers(Collection<LookupRef> lookupRefs) {
+        return lookupRefs.stream()
+                .map(LookupRef::publisher)
+                .collect(MoreCollectors.toImmutableSet());
     }
 
     private List<Content> resolveContent(Collection<String> uris, Collection<String> ids) {
@@ -462,7 +469,15 @@ public class ContentWriteController {
         combinedExplicits.removeAll(excludeRefsFromIds);
         combinedExplicits.removeAll(excludeRefsFromUris);
 
-        writeExecutor.updateExplicitEquivalence(content, null, combinedExplicits);
+        Set<Publisher> allAffectedPublishers = Sets.union(
+                publishers(existingExplicits),
+                Sets.union(
+                        publishers(includeRefsFromIds),
+                        publishers(includeRefsFromUris)
+                )
+        );
+
+        writeExecutor.updateExplicitEquivalence(content, allAffectedPublishers, combinedExplicits);
 
         return new WriteResponse(encodeId(content.getId()));
     }

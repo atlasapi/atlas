@@ -763,9 +763,6 @@ public class ContentWriteController {
         } else {
             throw new IllegalArgumentException("No id or uri specified");
         }
-        if (!lookupEntries.iterator().hasNext()) {
-            throw new IllegalArgumentException("No lookup entry found");
-        }
         return Iterables.getOnlyElement(lookupEntries);
     }
 

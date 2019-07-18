@@ -228,13 +228,13 @@ public class ContentWriteController {
     }
 
     /**
-     * Adds a bidrectional explicit equivalence link between two pieces of content.
+     * Adds a bidirectional explicit equivalence link between two pieces of content.
      * The content record list of explicit equivs is updated much like it is in the regular content update endpoints.
      * Other existing explicit equivalences are left intact.
      * The application must have write permissions to both pieces of content, unless the application has the role
      * "explicit-equivalence-from-read-sources" in which case it must have either write permissions or read permissions
      * to both pieces of content.
-     * An error is thrown if the content is already explicitly equived bidrectionally.
+     * An error is thrown if the content is already explicitly equived bidirectionally.
      */
     @Nullable
     public MultiWriteResponse addExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
@@ -291,7 +291,7 @@ public class ContentWriteController {
     }
 
     /**
-     * Removes an explicit equivalence link bidrectionally between two pieces of content.
+     * Removes an explicit equivalence link bidirectionally between two pieces of content.
      * The content record list of explicit equivs is updated much like it is in the regular content update endpoints.
      * Other existing explicit equivalences are left intact.
      * The application must have write permissions to both pieces of content, unless the application has the role

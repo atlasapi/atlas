@@ -274,7 +274,7 @@ public class ContentWriteController {
             }
             if (!secondContent.getEquivalentTo().contains(LookupRef.from(firstContent))) {
                 Set<LookupRef> newExplicits = new HashSet<>(secondContent.getEquivalentTo());
-                newExplicits.add(LookupRef.from(secondContent));
+                newExplicits.add(LookupRef.from(firstContent));
                 writeExecutor.updateExplicitEquivalence(secondContent, null, newExplicits);
                 updatedIds.add(encodeId(secondContent.getId()));
             }

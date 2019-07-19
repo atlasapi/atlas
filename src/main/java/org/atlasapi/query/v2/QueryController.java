@@ -27,7 +27,7 @@ import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.simple.response.MultiWriteResponse;
+import org.atlasapi.media.entity.simple.response.ExplicitEquivalenceResponse;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
@@ -298,12 +298,12 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     }
 
     @RequestMapping(value="/3.0/equivalence/explicit.json", method = RequestMethod.POST)
-    public MultiWriteResponse addExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
+    public ExplicitEquivalenceResponse addExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.addExplicitEquivalence(req, resp);
     }
 
     @RequestMapping(value="/3.0/equivalence/explicit.json", method = RequestMethod.DELETE)
-    public MultiWriteResponse removeExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
+    public ExplicitEquivalenceResponse removeExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.removeExplicitEquivalence(req, resp);
     }
 }

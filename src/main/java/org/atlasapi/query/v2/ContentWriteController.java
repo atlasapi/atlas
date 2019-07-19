@@ -34,7 +34,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.simple.response.MultiWriteResponse;
+import org.atlasapi.media.entity.simple.response.ExplicitEquivalenceResponse;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
@@ -239,39 +239,42 @@ public class ContentWriteController {
      * An error is thrown if the content is already explicitly equived bidirectionally.
      */
     @Nullable
-    public MultiWriteResponse addExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
+    public ExplicitEquivalenceResponse addExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
         try {
             List<Content> contents = getContentForExplicitEquivFromRequest(req);
             Content firstContent = contents.get(0);
             Content secondContent = contents.get(1);
-            List<String> updatedIds = new ArrayList<>(2);
+            List<ExplicitEquivalenceResponse.EquivalenceLink> equivLinksAdded = new ArrayList<>(2);
 
-            addExplicitEquivalence(firstContent, secondContent).ifPresent(updatedIds::add);
-            addExplicitEquivalence(secondContent, firstContent).ifPresent(updatedIds::add);
+            addExplicitEquivalence(firstContent, secondContent).ifPresent(equivLinksAdded::add);
+            addExplicitEquivalence(secondContent, firstContent).ifPresent(equivLinksAdded::add);
 
-            if (updatedIds.isEmpty()) {
+            if (equivLinksAdded.isEmpty()) {
                 throw new IllegalArgumentException("Content is already explicitly equived");
             }
             resp.setStatus(HttpServletResponse.SC_OK);
-            return new MultiWriteResponse(updatedIds);
+            return new ExplicitEquivalenceResponse(equivLinksAdded, null);
         } catch (Exception e) {
-            return multiWriteError(req, resp, AtlasErrorSummary.forException(e));
+            return explicitEquivalenceWriteError(req, resp, AtlasErrorSummary.forException(e));
         }
     }
 
     /**
      * Forms a unidrectional explicit equivalence link between 'from' and 'to'.
-     * @return An empty optional if the link already exists, otherwise the id of the 'from' content indicating that
-     * its content record has been updated.
+     * @return An empty optional if the link already exists, otherwise the equivalence link that has been created.
      */
-    private Optional<String> addExplicitEquivalence(Content from, Content to) {
+    private Optional<ExplicitEquivalenceResponse.EquivalenceLink> addExplicitEquivalence(Content from, Content to) {
         if (from.getEquivalentTo().contains(LookupRef.from(to))) {
             return Optional.empty();
         }
         Set<LookupRef> newExplicits = new HashSet<>(from.getEquivalentTo());
         newExplicits.add(LookupRef.from(to));
         writeExecutor.updateExplicitEquivalence(from, publishers(newExplicits), newExplicits);
-        return Optional.of(encodeId(from.getId()));
+        return Optional.of(
+                new ExplicitEquivalenceResponse.EquivalenceLink(
+                        encodeId(from.getId()),
+                        encodeId(to.getId())
+                ));
     }
 
     /**
@@ -284,39 +287,42 @@ public class ContentWriteController {
      * An error is thrown if the content is not explicitly equived in either direction.
      */
     @Nullable
-    public MultiWriteResponse removeExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
+    public ExplicitEquivalenceResponse removeExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
         try {
             List<Content> contents = getContentForExplicitEquivFromRequest(req);
             Content firstContent = contents.get(0);
             Content secondContent = contents.get(1);
-            List<String> updatedIds = new ArrayList<>(2);
+            List<ExplicitEquivalenceResponse.EquivalenceLink> equivLinksRemoved = new ArrayList<>(2);
 
-            removeExplicitEquivalence(firstContent, secondContent).ifPresent(updatedIds::add);
-            removeExplicitEquivalence(secondContent, firstContent).ifPresent(updatedIds::add);
+            removeExplicitEquivalence(firstContent, secondContent).ifPresent(equivLinksRemoved::add);
+            removeExplicitEquivalence(secondContent, firstContent).ifPresent(equivLinksRemoved::add);
 
-            if (updatedIds.isEmpty()) {
+            if (equivLinksRemoved.isEmpty()) {
                 throw new IllegalArgumentException("Content is already not explicitly equived");
             }
             resp.setStatus(HttpServletResponse.SC_OK);
-            return new MultiWriteResponse(updatedIds);
+            return new ExplicitEquivalenceResponse(null, equivLinksRemoved);
         } catch (Exception e) {
-            return multiWriteError(req, resp, AtlasErrorSummary.forException(e));
+            return explicitEquivalenceWriteError(req, resp, AtlasErrorSummary.forException(e));
         }
     }
 
     /**
      * Removes a unidrectional explicit equivalence link between 'from' and 'to'.
-     * @return An empty optional if the link does not alread exist
-     * otherwise the id of the 'from' content indicating that its content record has been updated.
+     * @return An empty optional if the link does not exist, otherwise the equivalence link which has been removed.
      */
-    private Optional<String> removeExplicitEquivalence(Content from, Content to) {
+    private Optional<ExplicitEquivalenceResponse.EquivalenceLink> removeExplicitEquivalence(Content from, Content to) {
         if (!from.getEquivalentTo().contains(LookupRef.from(to))) {
             return Optional.empty();
         }
         Set<LookupRef> newExplicits = new HashSet<>(from.getEquivalentTo());
         newExplicits.remove(LookupRef.from(to));
         writeExecutor.updateExplicitEquivalence(from, publishers(from.getEquivalentTo()), newExplicits);
-        return Optional.of(encodeId(from.getId()));
+        return Optional.of(
+                new ExplicitEquivalenceResponse.EquivalenceLink(
+                        encodeId(from.getId()),
+                        encodeId(to.getId())
+                ));
     }
 
     /**
@@ -960,7 +966,7 @@ public class ContentWriteController {
         return null;
     }
 
-    private MultiWriteResponse multiWriteError(
+    private ExplicitEquivalenceResponse explicitEquivalenceWriteError(
             HttpServletRequest request,
             HttpServletResponse response,
             AtlasErrorSummary summary

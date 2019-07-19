@@ -459,7 +459,7 @@ public class ContentWriteController {
 
     private Set<LookupRef> getLookupRefsForIds(Iterable<String> ids, Application application) {
         Iterable<Long> decodedIds = MoreStreams.stream(ids)
-                .map(id -> SubstitutionTableNumberCodec.lowerCaseOnly().decode(id))
+                .map(codec::decode)
                 .map(BigInteger::longValue)
                 .collect(MoreCollectors.toImmutableSet());
         return getLookupRefsForExplicitEquiv(lookupEntryStore.entriesForIds(decodedIds), application);
@@ -629,9 +629,7 @@ public class ContentWriteController {
         // get ID / URI, if ID, lookup URI from it
         LookupEntry lookupEntry;
         if (req.getParameter(ID) != null) {
-            Long contentId = SubstitutionTableNumberCodec
-                    .lowerCaseOnly()
-                    .decode(req.getParameter(ID))
+            Long contentId = codec.decode(req.getParameter(ID))
                     .longValue();
             Iterator<LookupEntry> entryStoreIterator = lookupEntryStore
                     .entriesForIds(Lists.newArrayList(contentId))
@@ -729,10 +727,7 @@ public class ContentWriteController {
     }
 
     private String uriForId(String id) {
-        Long contentId = SubstitutionTableNumberCodec
-                .lowerCaseOnly()
-                .decode(id)
-                .longValue();
+        Long contentId = codec.decode(id).longValue();
         Iterator<LookupEntry> entryStoreIterator = lookupEntryStore
                 .entriesForIds(Lists.newArrayList(contentId))
                 .iterator();
@@ -753,9 +748,7 @@ public class ContentWriteController {
             }
         } else if (!Strings.isNullOrEmpty(id)) {
             lookupEntries = lookupEntryStore.entriesForIds(
-                    ImmutableList.of(
-                            SubstitutionTableNumberCodec.lowerCaseOnly().decode(id).longValue()
-                    )
+                    ImmutableList.of(codec.decode(id).longValue())
             );
             if (!lookupEntries.iterator().hasNext()) {
                 throw new IllegalArgumentException("No lookup entry found for id " + id);

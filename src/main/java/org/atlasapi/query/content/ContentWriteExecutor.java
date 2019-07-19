@@ -201,6 +201,12 @@ public class ContentWriteExecutor {
      * @param publishers the set of publishers whose explicit equivalences will be modified in the lookup table,
      *                   with any other explicit equivalences to content from other publishers being unaffected.
      *                   If null will be later set to all publishers present in the explicitEquivRefs.
+     * e.g. Suppose content A (Publisher X) has explicit equivs to B (Publisher Y), C (Publisher Z)
+     *                   and explicitEquivsRefs is just a single element set of D (Publisher Y)
+     *                   If publishers is just a single element set of Publisher Y then the explicit equivs in the
+     *                   lookup table will become C (Publisher Z), D (Publisher Y)
+     *                   If publishers is Publisher Y and Publisher Z then the explicit equivs in the lookup table will
+     *                   become just D (Publisher Y)
      */
     public void updateExplicitEquivalence(
             Content content,

@@ -259,6 +259,11 @@ public class ContentWriteController {
         }
     }
 
+    /**
+     * Forms a unidrectional explicit equivalence link between 'from' and 'to'.
+     * @return An empty optional if the link already exists, otherwise the id of the 'from' content indicating that
+     * its content record has been updated.
+     */
     private Optional<String> addExplicitEquivalence(Content from, Content to) {
         if (from.getEquivalentTo().contains(LookupRef.from(to))) {
             return Optional.empty();
@@ -299,6 +304,11 @@ public class ContentWriteController {
         }
     }
 
+    /**
+     * Removes a unidrectional explicit equivalence link between 'from' and 'to'.
+     * @return An empty optional if the link does not alread exist
+     * otherwise the id of the 'from' content indicating that its content record has been updated.
+     */
     private Optional<String> removeExplicitEquivalence(Content from, Content to) {
         if (!from.getEquivalentTo().contains(LookupRef.from(to))) {
             return Optional.empty();
@@ -309,18 +319,23 @@ public class ContentWriteController {
         return Optional.of(encodeId(from.getId()));
     }
 
+    /**
+     * @return A list of exactly two pieces of content based on the specified uris or ids of the request
+     * @throws InvalidApiKeyException
+     * @throws IllegalArgumentException if exactly two distinct pieces of content are not found
+     */
     private List<Content> getContentForExplicitEquivFromRequest(HttpServletRequest req) throws InvalidApiKeyException {
         Application application = getAndValidateApplication(req);
         List<String> uris = parseList(req.getParameter(URIS));
         List<String> ids = parseList(req.getParameter(IDS));
 
         if (uris.size() + ids.size() != 2) {
-            throw new IllegalArgumentException("Must specify exactly two " + URIS + " or " + IDS);
+            throw new IllegalArgumentException("Must specify exactly a sum of two of " + URIS + " or " + IDS);
         }
 
         List<Content> contents = resolveContent(uris, ids);
         if (contents.size() != 2 || contents.get(0).equals(contents.get(1))) {
-            throw new IllegalArgumentException("Must specify exactly two distinct pieces of content");
+            throw new IllegalArgumentException("Must specify exactly a sum of two of " + URIS + " or " + IDS);
         }
 
         for (Content content : contents) {
@@ -362,7 +377,8 @@ public class ContentWriteController {
     /**
      * This method was added without any current plans for it being used, feel free to change if needed.
      * It updates the explicit entries that exist in the specified content record's list of explicit equivs.
-     * It does not update any other content record's list of explicit equivs except its own.
+     * It does not update any other content record's list of explicit equivs except its own, behaviour that matches
+     * the way the content PUT and POST endpoints behave.
      */
     @Nullable
     public WriteResponse updateExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
@@ -374,12 +390,13 @@ public class ContentWriteController {
             Iterable<String> includeUris = parseList(req.getParameter(INCLUDE_URIS));
             Iterable<String> excludeIds = parseList(req.getParameter(EXCLUDE_IDS));
             Iterable<String> excludeUris = parseList(req.getParameter(EXCLUDE_URIS));
-
-            if (!Strings.isNullOrEmpty(uri) && !Strings.isNullOrEmpty(id)) {
-                throw new IllegalArgumentException(String.format("Both %s and %s cannot specified", URI, ID));
-            }
-            if (Strings.isNullOrEmpty(uri) && Strings.isNullOrEmpty(id)) {
-                throw new IllegalArgumentException(String.format("Either %s or %s must be specified", URI, ID));
+            if (
+                    (Strings.isNullOrEmpty(uri) && Strings.isNullOrEmpty(id))
+                            || (!Strings.isNullOrEmpty(uri) && !Strings.isNullOrEmpty(id))
+            ) {
+                throw new IllegalArgumentException(
+                        String.format("Exactly one of either %s or %s must be specified", URI, ID)
+                );
             }
             LookupEntry lookupEntry = lookupEntryForIdOrUri(id, uri);
             Maybe<Identified> identified = contentResolver.findByCanonicalUris(

@@ -297,11 +297,6 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
         return contentWriteController.unpublishContent(req, resp);
     }
 
-    @RequestMapping(value="/3.0/equivalence/explicit.json", method = RequestMethod.PUT)
-    public WriteResponse updateExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
-        return contentWriteController.updateExplicitEquivalence(req, resp);
-    }
-
     @RequestMapping(value="/3.0/equivalence/explicit.json", method = RequestMethod.POST)
     public MultiWriteResponse addExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.addExplicitEquivalence(req, resp);
@@ -310,12 +305,5 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     @RequestMapping(value="/3.0/equivalence/explicit.json", method = RequestMethod.DELETE)
     public MultiWriteResponse removeExplicitEquivalence(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.removeExplicitEquivalence(req, resp);
-    }
-
-    // This was created just to fix a bug caused by an ingest writing all transitive equivs as explicit equivs
-    // Please read the comments in the contentWriteController for further context behind this endpoint.
-    @RequestMapping(value="/3.0/debug/equivalence/explicit.json", method = RequestMethod.PUT)
-    public WriteResponse updateExplicitEquivalenceBySource(HttpServletRequest req, HttpServletResponse resp) {
-        return contentWriteController.updateExplicitEquivalenceBySource(req, resp);
     }
 }

@@ -330,12 +330,12 @@ public class ContentWriteController {
         List<String> ids = parseList(req.getParameter(IDS));
 
         if (uris.size() + ids.size() != 2) {
-            throw new IllegalArgumentException("Must specify exactly a sum of two of " + URIS + " or " + IDS);
+            throw new IllegalArgumentException("Must specify exactly a distinct sum of two of " + URIS + " or " + IDS);
         }
 
         List<Content> contents = resolveContent(uris, ids);
         if (contents.size() != 2 || contents.get(0).equals(contents.get(1))) {
-            throw new IllegalArgumentException("Must specify exactly a sum of two of " + URIS + " or " + IDS);
+            throw new IllegalArgumentException("Must specify exactly a distinct sum of two of " + URIS + " or " + IDS);
         }
 
         for (Content content : contents) {

@@ -52,7 +52,8 @@ public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpd
                                 targetPublishers,
                                 Duration.standardMinutes(10),
                                 Predicates.alwaysTrue(),
-                                3.0
+                                3.0,
+                                false
                         )
                 )
                 .withScorers(

@@ -43,6 +43,25 @@ public class BroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equiv
             .plus(Duration.standardMinutes(5));
     private final Duration SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY = Duration.standardMinutes(10);
     private final Double scoreOnMatch;
+    private final boolean scaleCandidateScores;
+
+    public BroadcastMatchingItemEquivalenceGeneratorAndScorer(
+            ScheduleResolver resolver,
+            ChannelResolver channelResolver,
+            Set<Publisher> supportedPublishers,
+            Duration flexibility,
+            Predicate<? super Broadcast> filter,
+            Double scoreOnMatch,
+            boolean scaleCandidateScores
+    ) {
+        this.resolver = resolver;
+        this.channelResolver = channelResolver;
+        this.supportedPublishers = supportedPublishers;
+        this.flexibility = flexibility;
+        this.filter = filter;
+        this.scoreOnMatch = scoreOnMatch;
+        this.scaleCandidateScores = scaleCandidateScores;
+    }
 
     public BroadcastMatchingItemEquivalenceGeneratorAndScorer(
             ScheduleResolver resolver,
@@ -52,12 +71,15 @@ public class BroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equiv
             Predicate<? super Broadcast> filter,
             Double scoreOnMatch
     ) {
-        this.resolver = resolver;
-        this.channelResolver = channelResolver;
-        this.supportedPublishers = supportedPublishers;
-        this.flexibility = flexibility;
-        this.filter = filter;
-        this.scoreOnMatch = scoreOnMatch;
+        this(
+                resolver,
+                channelResolver,
+                supportedPublishers,
+                flexibility,
+                filter,
+                scoreOnMatch,
+                true
+        );
     }
 
 
@@ -141,7 +163,9 @@ public class BroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equiv
 
         desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
 
-        return scale(scores.build(), processedBroadcasts, desc);
+        return scaleCandidateScores
+                ? scale(scores.build(), processedBroadcasts, desc)
+                : scores.build();
     }
 
     @Override

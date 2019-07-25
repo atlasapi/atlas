@@ -63,7 +63,8 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         targetPublishers,
                                         Duration.standardMinutes(10),
                                         Predicates.alwaysTrue(),
-                                        3.0
+                                        3.0,
+                                        false
                                 ),
                                 new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),

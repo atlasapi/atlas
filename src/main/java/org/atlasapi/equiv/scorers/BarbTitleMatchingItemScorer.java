@@ -119,12 +119,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 Optional<Score> parentScore = getParentScore(subject, suggestion, desc);
                 if (parentScore.isPresent() && parentScore.get().isRealScore()
                     && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
-                    desc.appendText(String.format(
-                            "Parent for %s scored %.2f which is greater than its own score of %.2f",
-                            suggestion.getCanonicalUri(),
-                            parentScore.get().asDouble(),
-                            equivScore.asDouble()
-                    ));
                     equivScore = parentScore.get();
                 }
             }
@@ -182,6 +176,13 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 }
             }
             Score parentScore = score(txlog, parent, desc);
+            desc.appendText(
+                    String.format(
+                            "Parent (%s) for %s scored %.2f",
+                            parent.getCanonicalUri(),
+                            nonTxlog.getCanonicalUri(),
+                            parentScore.asDouble()
+                    ));
             return Optional.of(parentScore);
         }
         return Optional.empty();

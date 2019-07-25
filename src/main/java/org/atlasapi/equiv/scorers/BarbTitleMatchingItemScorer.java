@@ -114,8 +114,9 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         for (Item suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
             if (equivScore != scoreOnPerfectMatch) {
-                //txlog titles are often just the title of the brand so score against suggestion's brand title
-                Optional<Score> parentScore = getParentScore(subject, desc, suggestion);
+                // txlog titles are often just the title of the brand so score the txlog title
+                // against a brand title as well if applicable
+                Optional<Score> parentScore = getParentScore(subject, suggestion, desc);
                 if (parentScore.isPresent() && parentScore.get().isRealScore()
                     && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
                     desc.appendText(String.format(
@@ -142,16 +143,30 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return equivalents.build();
     }
 
-    private Optional<Score> getParentScore(Item subject, ResultDescription desc, Item suggestion) {
-        if(!subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
-                || contentResolver == null
-                || suggestion.getContainer() == null
-        ) {
+    private Optional<Score> getParentScore(Item subject, Item suggestion, ResultDescription desc) {
+        boolean singleTxlogPresent = subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
+                // xor since we need the other publisher to be different and have a parent
+                ^ suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS);
+        if (contentResolver == null || !singleTxlogPresent) {
+            return Optional.empty();
+        }
+
+        Item txlog;
+        Item nonTxlog;
+        if(subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)) {
+            txlog = subject;
+            nonTxlog = suggestion;
+        } else {
+            txlog = suggestion;
+            nonTxlog = subject;
+        }
+
+        if (nonTxlog.getContainer() == null) {
             return Optional.empty();
         }
 
         Maybe<Identified> resolved = contentResolver.findByCanonicalUris(
-                ImmutableSet.of(suggestion.getContainer().getUri())
+                ImmutableSet.of(nonTxlog.getContainer().getUri())
         ).getFirstValue();
         if(resolved.hasValue()) {
             Content parent = (Content) resolved.requireValue();
@@ -159,14 +174,14 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 Series series = (Series) parent;
                 if(series.getParent() != null) {
                     resolved = contentResolver.findByCanonicalUris(
-                            ImmutableSet.of(suggestion.getContainer().getUri()))
+                            ImmutableSet.of(series.getParent().getUri()))
                     .getFirstValue();
                     if(resolved.hasValue()) {
                         parent = (Content) resolved.requireValue();
                     }
                 }
             }
-            Score parentScore = score(subject, parent, desc);
+            Score parentScore = score(txlog, parent, desc);
             return Optional.of(parentScore);
         }
         return Optional.empty();

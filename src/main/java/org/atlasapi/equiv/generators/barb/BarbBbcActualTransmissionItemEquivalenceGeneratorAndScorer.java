@@ -31,6 +31,10 @@ import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * This call was created as part of the BBC work to fill in missing PIDs in their CCIDSTxLogs
+ * More details can be found in JIRA ENG-339
+ */
 public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
 
     private static final Set<Publisher> PUBLISHERS = ImmutableSet.of(Publisher.BBC_NITRO, Publisher.BARB_TRANSMISSIONS);

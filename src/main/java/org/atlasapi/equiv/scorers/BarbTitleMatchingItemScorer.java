@@ -2,6 +2,7 @@ package org.atlasapi.equiv.scorers;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.base.Maybe;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +47,18 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final Score DEFAULT_SCORE_ON_PARTIAL_MATCH = Score.ONE;
     private static final Score DEFAULT_SCORE_ON_MISMATCH = Score.ZERO;
     private static final int TXLOG_TITLE_LENGTH = 40;
+
+    //Nitro<->Txlog specific rules
+    //Lowercase because the logic happens after converting content titles to lower case
+    private static final Pattern BBC_O_CLOCK_NEWS_PATTERN = Pattern.compile("(\\w+) o'clock news");
+    private static final String BBC_NEWS_AT_O_CLOCK_REPLACEMENT = "news at ";
+    private static final ImmutableMap<String, String> BBC_TITLE_REPLACEMENTS = ImmutableMap.of(
+            "news 24", "joins bbc news"
+    );
+    private static final ImmutableSet<String> BBC_PREFIXES = ImmutableSet.of(
+            "bbc"
+    );
+
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
     private final Score scoreOnPerfectMatch;
     private final Score scoreOnPartialMatch;
@@ -209,6 +222,13 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         //TxLog titles are size capped, so truncate everything if we are equiving to txlogs
         if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
             || (subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS))) {
+
+            if (suggestion.getPublisher().equals(Publisher.BBC_NITRO)
+                    || subject.getPublisher().equals(Publisher.BBC_NITRO)
+            ) {
+                subjectTitle = processBbcTitle(subjectTitle);
+                suggestionTitle = processBbcTitle(suggestionTitle);
+            }
 
             if (subjectTitle.length() > TXLOG_TITLE_LENGTH) {
                 subjectTitle = subjectTitle.substring(0, TXLOG_TITLE_LENGTH);
@@ -375,13 +395,17 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private String removeCommonPrefixes(String title) {
+        return removePrefixes(title, PREFIXES);
+    }
+
+    private String removePrefixes(String title, Set<String> prefixes) {
         String remainingTitle = title;
         boolean removedAtLeastOne;
         do {
             removedAtLeastOne = false;
-            for (String prefix : PREFIXES) {
+            for (String prefix : prefixes) {
                 if (remainingTitle.length() > prefix.length() &&
-                    remainingTitle.startsWith(prefix)) {
+                        remainingTitle.startsWith(prefix)) {
                     remainingTitle = remainingTitle.substring(prefix.length()).trim();
                     removedAtLeastOne = true;
                     break;
@@ -403,6 +427,22 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private String removeSequencePrefix(String title) {
         Matcher matcher = seqTitle.matcher(title);
         return matcher.matches() ? matcher.group(1) : title;
+    }
+
+    /**
+     * Used for custom rules between BBC txlogs and Nitro
+     */
+    private String processBbcTitle(String title) {
+        String replacement = BBC_TITLE_REPLACEMENTS.get(title);
+        if (!Strings.isNullOrEmpty(replacement)) {
+            return replacement;
+        }
+        title = removePrefixes(title, BBC_PREFIXES);
+        Matcher oClockMatcher = BBC_O_CLOCK_NEWS_PATTERN.matcher(title);
+        if (oClockMatcher.find()) {
+            title = oClockMatcher.replaceFirst(BBC_NEWS_AT_O_CLOCK_REPLACEMENT + oClockMatcher.group(1));
+        }
+        return title;
     }
 
     @Override

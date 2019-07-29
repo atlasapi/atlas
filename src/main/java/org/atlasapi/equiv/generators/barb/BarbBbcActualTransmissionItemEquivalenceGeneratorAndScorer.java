@@ -25,11 +25,13 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * This call was created as part of the BBC work to fill in missing PIDs in their CCIDSTxLogs
@@ -59,14 +61,14 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
             ScheduleResolver resolver,
             ChannelResolver channelResolver,
             Duration flexibility,
-            Predicate<? super Broadcast> broadcastFilter,
+            @Nullable Predicate<? super Broadcast> broadcastFilter,
             Score scoreOnMatch
     ) {
-        this.resolver = resolver;
-        this.channelResolver = channelResolver;
-        this.flexibility = flexibility;
-        this.broadcastFilter = broadcastFilter;
-        this.scoreOnMatch = scoreOnMatch;
+        this.resolver = checkNotNull(resolver);
+        this.channelResolver = checkNotNull(channelResolver);
+        this.flexibility = checkNotNull(flexibility);
+        this.broadcastFilter = broadcastFilter == null ? broadcast -> true : broadcastFilter;
+        this.scoreOnMatch = checkNotNull(scoreOnMatch);
     }
 
     @Override

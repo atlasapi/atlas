@@ -420,8 +420,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         do {
             removedAtLeastOne = false;
             for (String prefix : prefixes) {
-                if (remainingTitle.length() > prefix.length() &&
-                        remainingTitle.startsWith(prefix)) {
+                if (remainingTitle.length() > prefix.length() && remainingTitle.startsWith(prefix)) {
                     remainingTitle = remainingTitle.substring(prefix.length()).trim();
                     removedAtLeastOne = true;
                     break;

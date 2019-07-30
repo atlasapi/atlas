@@ -20,6 +20,8 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -35,6 +37,7 @@ import static com.google.api.client.repackaged.com.google.common.base.Preconditi
  * such as broadcast times for Txlogs
  */
 public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
+    private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
 
     public static final String NAME = "Barb-Title";
     private static final ImmutableSet<String> PREFIXES = ImmutableSet.of(
@@ -228,8 +231,19 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             if (suggestion.getPublisher().equals(Publisher.BBC_NITRO)
                     || subject.getPublisher().equals(Publisher.BBC_NITRO)
             ) {
-                subjectTitle = processBbcTitle(subjectTitle);
-                suggestionTitle = processBbcTitle(suggestionTitle);
+                String processedSubjectTitle = processBbcTitle(subjectTitle);
+                String processedSuggestionTitle = processBbcTitle(suggestionTitle);
+                if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
+                    log.info(
+                            "BBC Title Processing: subject({} -> {}) suggestion({} -> {})",
+                            subjectTitle,
+                            processedSubjectTitle,
+                            suggestionTitle,
+                            processedSuggestionTitle
+                    );
+                    subjectTitle = processedSubjectTitle;
+                    suggestionTitle = processedSuggestionTitle;
+                }
             }
 
             if (subjectTitle.length() > TXLOG_TITLE_LENGTH) {

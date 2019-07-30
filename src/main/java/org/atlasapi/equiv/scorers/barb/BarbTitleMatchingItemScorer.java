@@ -55,7 +55,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     //Nitro<->Txlog specific rules
     //Lowercase because the logic happens after converting content titles to lower case
     private static final Pattern BBC_O_CLOCK_NEWS_PATTERN = Pattern.compile("(\\w+) o'clock news");
-    private static final String BBC_NEWS_AT_O_CLOCK_REPLACEMENT = "news at ";
+    private static final String BBC_NEWS_AT_O_CLOCK_REPLACEMENT = "bbc news at "; //remove bbc prefix if bbc stripping enabled
     private static final ImmutableMap<String, String> BBC_TITLE_REPLACEMENTS = ImmutableMap.of(
             "news 24", "joins bbc news",
             "!mpossible", "impossible"
@@ -452,7 +452,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (!Strings.isNullOrEmpty(replacement)) {
             return replacement;
         }
-        title = removePrefixes(title, BBC_PREFIXES);
+//        title = removePrefixes(title, BBC_PREFIXES); //temporarily disabled in case it causes issues
         Matcher oClockMatcher = BBC_O_CLOCK_NEWS_PATTERN.matcher(title);
         if (oClockMatcher.find()) {
             title = oClockMatcher.replaceFirst(BBC_NEWS_AT_O_CLOCK_REPLACEMENT + oClockMatcher.group(1));

@@ -46,15 +46,16 @@ public class BarbTitleMatchingItemScorerTest {
         assertTxlogNitroScore("NEWSLINE", "05/06/2019", "BBC Newsline", scoreOnMatch);
         assertTxlogNitroScore("NEWS 24", "07/06/2019", "Joins BBC News", scoreOnMatch);
         assertTxlogNitroScore("TEN O'CLOCK NEWS", "06/06/2019", "BBC News at Ten", scoreOnMatch);
-        assertTxlogNitroScore("SIX O'CLOCK NEWS", " 06/06/2019", "BBC News at Six", scoreOnMatch);
+        assertTxlogNitroScore("SIX O'CLOCK NEWS", "06/06/2019", "BBC News at Six", scoreOnMatch);
+        assertTxlogNitroScore("BBC News at One", "06/06/2019", "BBC News at One", scoreOnMatch);
+        assertTxlogNitroScore("ONE O'CLOCK NEWS", "06/06/2019", "BBC News at One", scoreOnMatch);
         assertTxlogNitroScore("WALES TODAY", "09/06/2019", "BBC Wales Today", scoreOnMatch);
+        assertTxlogNitroScore("!MPOSSIBLE", "Episode 7", "Impossible", scoreOnMatch);
     }
 
     @Test
     public void testRealBbcTxlogRegularExamples() {
         assertTxlogNitroScore("THE HOUSING ENFORCERS", "Episode 2", "The Housing Enforcers", scoreOnMatch);
-        //will likely add equiv rules for this in future
-        assertTxlogNitroScore("!MPOSSIBLE", "Episode 7", "Impossible", scoreOnMismatch);
     }
 
     private void assertTxlogNitroScore(

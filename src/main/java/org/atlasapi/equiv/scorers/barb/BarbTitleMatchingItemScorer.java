@@ -54,7 +54,8 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final Pattern BBC_O_CLOCK_NEWS_PATTERN = Pattern.compile("(\\w+) o'clock news");
     private static final String BBC_NEWS_AT_O_CLOCK_REPLACEMENT = "news at ";
     private static final ImmutableMap<String, String> BBC_TITLE_REPLACEMENTS = ImmutableMap.of(
-            "news 24", "joins bbc news"
+            "news 24", "joins bbc news",
+            "!mpossible", "impossible"
     );
     private static final ImmutableSet<String> BBC_PREFIXES = ImmutableSet.of(
             "bbc"

@@ -58,7 +58,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
             "http://www.bbc.co.uk/services/bbcone/cambridge"
     );
 
-    private static final Channel BBC_TWO_ENGLAND = new Channel(
+    public static final Channel BBC_TWO_ENGLAND = new Channel(
             Publisher.BBC_NITRO,
             "BBC Two England",
             "bbctwo-england",
@@ -67,7 +67,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
             "http://www.bbc.co.uk/services/bbctwo/england"
     );
 
-    private static final Map<String, Channel> BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP =
+    public static final Map<String, Channel> BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP =
             BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer
                     .CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(BBC_TWO_ENGLAND.getUri())
                     .stream()
@@ -82,9 +82,9 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                             ))
                     .collect(MoreCollectors.toImmutableMap(Channel::getUri, channel -> channel));
 
-    private static final Channel BBC_TWO_SOUTH_TXLOG =
+    public static final Channel BBC_TWO_SOUTH_TXLOG =
             BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP.get("http://channels.barb.co.uk/channels/1085");
-    private static final Channel BBC_TWO_EAST_TXLOG =
+    public static final Channel BBC_TWO_EAST_TXLOG =
             BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP.get("http://channels.barb.co.uk/channels/1082");
 
 

@@ -3,6 +3,7 @@ package org.atlasapi.equiv.generators.barb;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
@@ -26,12 +27,12 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer.CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS;
 
 /**
  * This call was created as part of the BBC work to fill in missing PIDs in their CCIDSTxLogs
@@ -134,13 +135,10 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
             Set<Publisher> validPublishers,
             EquivToTelescopeComponent generatorComponent
     ) {
+        Set<String> channelUris = expandChannelUris(subjectBroadcast.getBroadcastOn());
+        Schedule schedule = scheduleAround(subjectBroadcast, channelUris, validPublishers);
 
-        Optional<Schedule> schedule = scheduleAround(subjectBroadcast, validPublishers);
-
-        if (!schedule.isPresent()) {
-            return;
-        }
-        for (ScheduleChannel channel : schedule.get().scheduleChannels()) {
+        for (ScheduleChannel channel : schedule.scheduleChannels()) {
             for (Item scheduleItem : channel.items()) {
                 if (scheduleItem.isActivelyPublished()
                         && hasQualifyingBroadcast(scheduleItem, subjectBroadcast)
@@ -155,6 +153,17 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
                 }
             }
         }
+    }
+
+    private Set<String> expandChannelUris(String channelUri) {
+        ImmutableSet.Builder<String> channelUris = ImmutableSet.builder();
+        channelUris.add(channelUri);
+        if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsKey(channelUri)) {
+            channelUris.addAll(CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(channelUri));
+        } else if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsValue(channelUri)) {
+            channelUris.addAll(CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.inverse().get(channelUri));
+        }
+        return channelUris.build();
     }
 
     private boolean hasQualifyingActualTransmissionTimeBroadcast(
@@ -212,10 +221,27 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
         for (Version version : item.nativeVersions()) {
             for (Broadcast broadcast : version.getBroadcasts()) {
                 if (around(broadcast, referenceBroadcast, flexibility) && broadcast.getBroadcastOn() != null
-                        && broadcast.getBroadcastOn().equals(referenceBroadcast.getBroadcastOn())
+                        && sameChannel(broadcast.getBroadcastOn(), referenceBroadcast.getBroadcastOn())
                         && broadcast.isActivelyPublished()) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    private boolean sameChannel(String channelUri, String otherChannelUri) {
+        if (channelUri.equals(otherChannelUri)) {
+            return true;
+        }
+        if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsKey(channelUri)) {
+            if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(channelUri).contains(otherChannelUri)) {
+                return true;
+            }
+        }
+        if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsKey(otherChannelUri)) {
+            if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(otherChannelUri).contains(channelUri)) {
+                return true;
             }
         }
         return false;
@@ -232,23 +258,21 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
                 && !transmissionTime.isAfter(transmissionTime2.plus(flexibility));
     }
 
-    private Optional<Schedule> scheduleAround(Broadcast broadcast, Set<Publisher> publishers) {
+    private Schedule scheduleAround(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {
         DateTime start = broadcast.getTransmissionTime().minus(flexibility);
         DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
 
-        // if the broadcast is less than 10 minutes long, reduce the flexibility
-        Maybe<Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
-        if (channel.hasValue()) {
-            return Optional.of(
-                    resolver.unmergedSchedule(
-                            start,
-                            end,
-                            ImmutableSet.of(channel.requireValue()),
-                            publishers
-                    )
-            );
-        }
-        return Optional.empty();
+        Set<Channel> channels = channelUris.parallelStream()
+                .map(channelResolver::fromUri)
+                .filter(Maybe::hasValue)
+                .map(Maybe::requireValue)
+                .collect(MoreCollectors.toImmutableSet());
+        return resolver.unmergedSchedule(
+                start,
+                end,
+                channels,
+                publishers
+        );
     }
 
     @Override

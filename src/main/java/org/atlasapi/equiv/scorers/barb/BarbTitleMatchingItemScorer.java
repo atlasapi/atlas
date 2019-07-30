@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.scorers;
+package org.atlasapi.equiv.scorers.barb;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -11,6 +11,7 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.scorers.EquivalenceScorer;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;

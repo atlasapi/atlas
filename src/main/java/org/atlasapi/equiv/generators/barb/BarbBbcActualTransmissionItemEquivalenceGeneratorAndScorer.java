@@ -32,7 +32,9 @@ import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer.CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.around;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.expandChannelUris;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQualifyingBroadcast;
 
 /**
  * This call was created as part of the BBC work to fill in missing PIDs in their CCIDSTxLogs
@@ -141,7 +143,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
         for (ScheduleChannel channel : schedule.scheduleChannels()) {
             for (Item scheduleItem : channel.items()) {
                 if (scheduleItem.isActivelyPublished()
-                        && hasQualifyingBroadcast(scheduleItem, subjectBroadcast)
+                        && hasQualifyingBroadcast(scheduleItem, subjectBroadcast, flexibility)
                         && hasQualifyingActualTransmissionTimeBroadcast(subject, scheduleItem, subjectBroadcast)
                 ) {
                     scores.addEquivalent(scheduleItem, scoreOnMatch);
@@ -153,17 +155,6 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
                 }
             }
         }
-    }
-
-    private Set<String> expandChannelUris(String channelUri) {
-        ImmutableSet.Builder<String> channelUris = ImmutableSet.builder();
-        channelUris.add(channelUri);
-        if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsKey(channelUri)) {
-            channelUris.addAll(CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(channelUri));
-        } else if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsValue(channelUri)) {
-            channelUris.addAll(CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.inverse().get(channelUri));
-        }
-        return channelUris.build();
     }
 
     private boolean hasQualifyingActualTransmissionTimeBroadcast(
@@ -217,46 +208,6 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
         );
     }
 
-    private boolean hasQualifyingBroadcast(Item item, Broadcast referenceBroadcast) {
-        for (Version version : item.nativeVersions()) {
-            for (Broadcast broadcast : version.getBroadcasts()) {
-                if (around(broadcast, referenceBroadcast, flexibility) && broadcast.getBroadcastOn() != null
-                        && sameChannel(broadcast.getBroadcastOn(), referenceBroadcast.getBroadcastOn())
-                        && broadcast.isActivelyPublished()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean sameChannel(String channelUri, String otherChannelUri) {
-        if (channelUri.equals(otherChannelUri)) {
-            return true;
-        }
-        if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsKey(channelUri)) {
-            if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(channelUri).contains(otherChannelUri)) {
-                return true;
-            }
-        }
-        if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsKey(otherChannelUri)) {
-            if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(otherChannelUri).contains(channelUri)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    private boolean around(Broadcast broadcast, Broadcast referenceBroadcast, Duration flexibility) {
-        return around(broadcast.getTransmissionTime(), referenceBroadcast.getTransmissionTime(), flexibility)
-                && around(broadcast.getTransmissionEndTime(), referenceBroadcast.getTransmissionEndTime(), flexibility);
-    }
-
-    private boolean around(DateTime transmissionTime, DateTime transmissionTime2, Duration flexibility) {
-        return !transmissionTime.isBefore(transmissionTime2.minus(flexibility))
-                && !transmissionTime.isAfter(transmissionTime2.plus(flexibility));
-    }
 
     private Schedule scheduleAround(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {
         DateTime start = broadcast.getTransmissionTime().minus(flexibility);

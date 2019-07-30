@@ -1,7 +1,6 @@
 package org.atlasapi.equiv.generators.barb;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -32,44 +31,15 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.expandChannelUris;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasFlexibleQualifyingBroadcast;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQualifyingBroadcast;
 
 /**
  * This is mostly a copy of {@link BroadcastMatchingItemEquivalenceGeneratorAndScorer} class but with some logic
  * stripped out. For certain channels it also generates candidates from additional channels.
  */
 public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
-
-    /**
-     * There may be a solution for this that utilises channel equivalence however due to time constraints and a lack of
-     * knowledge of channel equivalence I have opted to use a hardcoded map for the time being.
-     * <p>
-     * N.B. that the MAS file ingest already uses channel equivalence to produce the station-codes.tsv file and so if
-     * any other non-barb channel is equived to the barb channel its uri is output in the tsv file and all txlogs for
-     * that station code will be ingested on the non-barb channel instead. In the case of txlog BBC2 England regional
-     * channels this meant they were all originally being ingested on the single Nitro channel causing most of their
-     * broadcasts to become unpublished since the channel can only have one piece of content present in a given time
-     * slot. Now they are ingested on their own barb channels and use this map in order to search for candidates from
-     * the Nitro channel. If changing to using channel equivalence for candidate generation then the MAS file ingest may
-     * need to be changed to make sure broadcasts on txlog content are ingested correctly.
-     */
-    public static final ImmutableSetMultimap<String, String> CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS =
-            ImmutableSetMultimap.<String, String>builder()
-                    .putAll(
-                            "http://www.bbc.co.uk/services/bbctwo/england", ImmutableSet.of(
-                                    "http://channels.barb.co.uk/channels/1081",
-                                    "http://channels.barb.co.uk/channels/1082",
-                                    "http://channels.barb.co.uk/channels/1083",
-                                    "http://channels.barb.co.uk/channels/1084",
-                                    "http://channels.barb.co.uk/channels/1085",
-                                    "http://channels.barb.co.uk/channels/1086",
-                                    "http://channels.barb.co.uk/channels/1087",
-                                    "http://channels.barb.co.uk/channels/1088",
-                                    "http://channels.barb.co.uk/channels/1093",
-                                    "http://channels.barb.co.uk/channels/1094",
-                                    "http://channels.barb.co.uk/channels/1095"
-                            )
-                    )
-                    .build();
 
     private final ScheduleResolver resolver;
     private final Set<Publisher> supportedPublishers;
@@ -164,7 +134,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             for (Item scheduleItem : channel.items()) {
                 if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
-                        && hasQualifyingBroadcast(scheduleItem, broadcast)) {
+                        && hasQualifyingBroadcast(scheduleItem, broadcast, flexibility)) {
                     scores.addEquivalent(scheduleItem, scoreOnMatch);
 
                     if (scheduleItem.getId() != null) {
@@ -176,7 +146,9 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
 
                 } else if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
-                        && hasFlexibleQualifyingBroadcast(scheduleItem, broadcast)) {
+                        && hasFlexibleQualifyingBroadcast(
+                                scheduleItem, broadcast, flexibility, EXTENDED_END_TIME_FLEXIBILITY
+                )) {
                     scores.addEquivalent(scheduleItem, scoreOnExtendedFlexibilityMatch);
 
                     generatorComponent.addComponentResult(
@@ -186,83 +158,6 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 }
             }
         }
-    }
-
-    private Set<String> expandChannelUris(String channelUri) {
-        ImmutableSet.Builder<String> channelUris = ImmutableSet.builder();
-        channelUris.add(channelUri);
-        if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsKey(channelUri)) {
-            channelUris.addAll(CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(channelUri));
-        } else if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsValue(channelUri)) {
-            channelUris.addAll(CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.inverse().get(channelUri));
-        }
-        return channelUris.build();
-    }
-
-    private boolean hasQualifyingBroadcast(Item item, Broadcast referenceBroadcast) {
-        for (Version version : item.nativeVersions()) {
-            for (Broadcast broadcast : version.getBroadcasts()) {
-                if (around(broadcast, referenceBroadcast) && broadcast.getBroadcastOn() != null
-                        && sameChannel(broadcast.getBroadcastOn(), referenceBroadcast.getBroadcastOn())
-                        && broadcast.isActivelyPublished()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean hasFlexibleQualifyingBroadcast(Item item, Broadcast referenceBroadcast) {
-        for (Version version : item.nativeVersions()) {
-            for (Broadcast broadcast : version.getBroadcasts()) {
-                if (flexibleAround(broadcast, referenceBroadcast)
-                        && broadcast.getBroadcastOn() != null
-                        && sameChannel(broadcast.getBroadcastOn(), referenceBroadcast.getBroadcastOn())
-                        && broadcast.isActivelyPublished()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean sameChannel(String channelUri, String otherChannelUri) {
-        if (channelUri.equals(otherChannelUri)) {
-            return true;
-        }
-        if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsKey(channelUri)) {
-            if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(channelUri).contains(otherChannelUri)) {
-                return true;
-            }
-        }
-        if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.containsKey(otherChannelUri)) {
-            if (CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(otherChannelUri).contains(channelUri)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-    private boolean around(Broadcast broadcast, Broadcast referenceBroadcast) {
-        return around(broadcast.getTransmissionTime(), referenceBroadcast.getTransmissionTime())
-                && around(broadcast.getTransmissionEndTime(), referenceBroadcast.getTransmissionEndTime());
-    }
-
-    private boolean around(DateTime transmissionTime, DateTime transmissionTime2) {
-        return !transmissionTime.isBefore(transmissionTime2.minus(flexibility))
-                && !transmissionTime.isAfter(transmissionTime2.plus(flexibility));
-    }
-
-    private boolean flexibleAround(Broadcast broadcast, Broadcast referenceBroadcast) {
-        return around(broadcast.getTransmissionTime(), referenceBroadcast.getTransmissionTime())
-                && flexibleAroundEndTime(broadcast.getTransmissionEndTime(),
-                referenceBroadcast.getTransmissionEndTime());
-    }
-
-    private boolean flexibleAroundEndTime(DateTime transmissionTime, DateTime transmissionTime2) {
-        return !transmissionTime.isBefore(transmissionTime2.minus(EXTENDED_END_TIME_FLEXIBILITY))
-                && !transmissionTime.isAfter(transmissionTime2.plus(EXTENDED_END_TIME_FLEXIBILITY));
     }
 
     private Schedule scheduleAround(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {

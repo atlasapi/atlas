@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.DateTimeZones;
+import org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
@@ -68,7 +69,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
     );
 
     public static final Map<String, Channel> BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP =
-            BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer
+            BarbGeneratorUtils
                     .CHANNELS_WITH_MULTIPLE_TXLOG_CHANNEL_VARIANTS.get(BBC_TWO_ENGLAND.getUri())
                     .stream()
                     .map(uri ->

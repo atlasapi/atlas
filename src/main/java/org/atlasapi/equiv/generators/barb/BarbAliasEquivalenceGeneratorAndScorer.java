@@ -1,9 +1,10 @@
-package org.atlasapi.equiv.generators;
+package org.atlasapi.equiv.generators.barb;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.stream.MoreStreams;
+import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;

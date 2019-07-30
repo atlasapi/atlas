@@ -28,6 +28,12 @@ import org.junit.Test;
 
 import java.util.Map;
 
+import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest.BBC_TWO_EAST_TXLOG;
+import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest.BBC_TWO_ENGLAND;
+import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest.BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP;
+import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest.BBC_TWO_SOUTH_TXLOG;
+import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
+import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.joda.time.Duration.standardHours;
@@ -66,11 +72,16 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
         when(channelResolver.fromUri(BBC_ONE.getUri())).thenReturn(Maybe.just(BBC_ONE));
         when(channelResolver.fromUri(BBC_TWO_WALES.getUri())).thenReturn(Maybe.just(BBC_TWO_WALES));
 
+        when(channelResolver.fromUri(BBC_TWO_ENGLAND.getUri())).thenReturn(Maybe.just(BBC_TWO_ENGLAND));
+        for (Channel channel : BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP.values()) {
+            when(channelResolver.fromUri(channel.getUri())).thenReturn(Maybe.just(channel));
+        }
+
         generator = new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                 resolver,
                 channelResolver,
                 FLEXIBILITY,
-                broadcast -> true,
+                null,
                 SCORE_ON_MATCH
         );
     }
@@ -557,6 +568,103 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         assertThat(scoreMap.size(), is(1));
         assertThat(scoreMap.get(txlogItem), is(SCORE_ON_MATCH));
+    }
+
+    @Test
+    public void testGenerateEquivalencesForBbcTwoEnglandTxlogVariants() {
+        DateTime publishedStart = DateTime.now().withTime(12, 0, 0, 0);
+        DateTime publishedEnd = publishedStart.plusHours(1);
+        DateTime actualStart = publishedStart.plusMinutes(5);
+        DateTime actualEnd = publishedEnd.plusMinutes(5);
+
+        Broadcast txlogSouthBroadcast = new Broadcast(BBC_TWO_SOUTH_TXLOG.getUri(), actualStart, actualEnd);
+        Broadcast txlogEastBroadcast = new Broadcast(BBC_TWO_EAST_TXLOG.getUri(), actualStart, actualEnd);
+        Broadcast nitroBroadcast = new Broadcast(BBC_TWO_ENGLAND.getUri(), publishedStart, publishedEnd);
+        nitroBroadcast.setActualTransmissionTime(actualStart);
+        nitroBroadcast.setActualTransmissionEndTime(actualEnd);
+
+        final Item nitroItem = episodeWithBroadcasts(
+                "nitroItem",
+                BBC_NITRO,
+                nitroBroadcast
+        );
+
+        final Item southTxlogItem = episodeWithBroadcasts(
+                "southTxlogItem",
+                BARB_TRANSMISSIONS,
+                txlogSouthBroadcast
+        );
+
+        final Item eastTxlogItem = episodeWithBroadcasts(
+                "eastTxlogItem",
+                BARB_TRANSMISSIONS,
+                txlogEastBroadcast
+        );
+
+        DateTime queryStart = nitroBroadcast.getTransmissionTime().minus(FLEXIBILITY);
+        DateTime queryEnd = nitroBroadcast.getTransmissionEndTime().plus(FLEXIBILITY);
+
+        when(
+                resolver.unmergedSchedule(
+                        queryStart,
+                        queryEnd,
+                        ImmutableSet.<Channel>builder()
+                                .add(BBC_TWO_ENGLAND)
+                                .addAll(BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP.values())
+                                .build(),
+                        ImmutableSet.of(BARB_TRANSMISSIONS)
+                )
+        ).thenReturn(
+                Schedule.fromChannelMap(
+                        ImmutableMap.of(
+                                BBC_TWO_SOUTH_TXLOG, ImmutableList.of(southTxlogItem),
+                                BBC_TWO_EAST_TXLOG, ImmutableList.of(eastTxlogItem)
+                        ),
+                        interval(queryStart, queryEnd)
+                )
+        );
+
+        queryStart = txlogSouthBroadcast.getTransmissionTime().minus(FLEXIBILITY);
+        queryEnd = txlogSouthBroadcast.getTransmissionEndTime().plus(FLEXIBILITY);
+
+        when(
+                resolver.unmergedSchedule(
+                        queryStart,
+                        queryEnd,
+                        ImmutableSet.of(BBC_TWO_ENGLAND, BBC_TWO_SOUTH_TXLOG),
+                        ImmutableSet.of(BBC_NITRO)
+                )
+        ).thenReturn(
+                Schedule.fromChannelMap(
+                        ImmutableMap.of(BBC_TWO_ENGLAND, ImmutableList.of(nitroItem)),
+                        interval(queryStart, queryEnd)
+                )
+        );
+
+        ScoredCandidates<Item> equivalents;
+        Map<Item, Score> scoreMap;
+
+        equivalents = generator.generate(
+                nitroItem,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+        scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(2));
+        assertThat(scoreMap.get(southTxlogItem), is(SCORE_ON_MATCH));
+        assertThat(scoreMap.get(eastTxlogItem), is(SCORE_ON_MATCH));
+
+        equivalents = generator.generate(
+                southTxlogItem,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+        scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(1));
+        assertThat(scoreMap.get(nitroItem), is(SCORE_ON_MATCH));
+
     }
 
     private void setupResolving(Item txlogItem, Item nitroItem) {

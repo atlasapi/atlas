@@ -3,6 +3,7 @@ package org.atlasapi.equiv.generators.barb;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
@@ -25,11 +26,15 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
-import java.util.Optional;
+import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.around;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.expandChannelUris;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQualifyingBroadcast;
 
 /**
  * This call was created as part of the BBC work to fill in missing PIDs in their CCIDSTxLogs
@@ -59,14 +64,14 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
             ScheduleResolver resolver,
             ChannelResolver channelResolver,
             Duration flexibility,
-            Predicate<? super Broadcast> broadcastFilter,
+            @Nullable Predicate<? super Broadcast> broadcastFilter,
             Score scoreOnMatch
     ) {
-        this.resolver = resolver;
-        this.channelResolver = channelResolver;
-        this.flexibility = flexibility;
-        this.broadcastFilter = broadcastFilter;
-        this.scoreOnMatch = scoreOnMatch;
+        this.resolver = checkNotNull(resolver);
+        this.channelResolver = checkNotNull(channelResolver);
+        this.flexibility = checkNotNull(flexibility);
+        this.broadcastFilter = broadcastFilter == null ? broadcast -> true : broadcastFilter;
+        this.scoreOnMatch = checkNotNull(scoreOnMatch);
     }
 
     @Override
@@ -132,16 +137,13 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
             Set<Publisher> validPublishers,
             EquivToTelescopeComponent generatorComponent
     ) {
+        Set<String> channelUris = expandChannelUris(subjectBroadcast.getBroadcastOn());
+        Schedule schedule = scheduleAround(subjectBroadcast, channelUris, validPublishers);
 
-        Optional<Schedule> schedule = scheduleAround(subjectBroadcast, validPublishers);
-
-        if (!schedule.isPresent()) {
-            return;
-        }
-        for (ScheduleChannel channel : schedule.get().scheduleChannels()) {
+        for (ScheduleChannel channel : schedule.scheduleChannels()) {
             for (Item scheduleItem : channel.items()) {
                 if (scheduleItem.isActivelyPublished()
-                        && hasQualifyingBroadcast(scheduleItem, subjectBroadcast)
+                        && hasQualifyingBroadcast(scheduleItem, subjectBroadcast, flexibility)
                         && hasQualifyingActualTransmissionTimeBroadcast(subject, scheduleItem, subjectBroadcast)
                 ) {
                     scores.addEquivalent(scheduleItem, scoreOnMatch);
@@ -206,47 +208,22 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
         );
     }
 
-    private boolean hasQualifyingBroadcast(Item item, Broadcast referenceBroadcast) {
-        for (Version version : item.nativeVersions()) {
-            for (Broadcast broadcast : version.getBroadcasts()) {
-                if (around(broadcast, referenceBroadcast, flexibility) && broadcast.getBroadcastOn() != null
-                        && broadcast.getBroadcastOn().equals(referenceBroadcast.getBroadcastOn())
-                        && broadcast.isActivelyPublished()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
-
-    private boolean around(Broadcast broadcast, Broadcast referenceBroadcast, Duration flexibility) {
-        return around(broadcast.getTransmissionTime(), referenceBroadcast.getTransmissionTime(), flexibility)
-                && around(broadcast.getTransmissionEndTime(), referenceBroadcast.getTransmissionEndTime(), flexibility);
-    }
-
-    private boolean around(DateTime transmissionTime, DateTime transmissionTime2, Duration flexibility) {
-        return !transmissionTime.isBefore(transmissionTime2.minus(flexibility))
-                && !transmissionTime.isAfter(transmissionTime2.plus(flexibility));
-    }
-
-    private Optional<Schedule> scheduleAround(Broadcast broadcast, Set<Publisher> publishers) {
+    private Schedule scheduleAround(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {
         DateTime start = broadcast.getTransmissionTime().minus(flexibility);
         DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
 
-        // if the broadcast is less than 10 minutes long, reduce the flexibility
-        Maybe<Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
-        if (channel.hasValue()) {
-            return Optional.of(
-                    resolver.unmergedSchedule(
-                            start,
-                            end,
-                            ImmutableSet.of(channel.requireValue()),
-                            publishers
-                    )
-            );
-        }
-        return Optional.empty();
+        Set<Channel> channels = channelUris.parallelStream()
+                .map(channelResolver::fromUri)
+                .filter(Maybe::hasValue)
+                .map(Maybe::requireValue)
+                .collect(MoreCollectors.toImmutableSet());
+        return resolver.unmergedSchedule(
+                start,
+                end,
+                channels,
+                publishers
+        );
     }
 
     @Override

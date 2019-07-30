@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;

@@ -56,12 +56,17 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     //Lowercase because the logic happens after converting content titles to lower case
     private static final Pattern BBC_O_CLOCK_NEWS_PATTERN = Pattern.compile("(\\w+) o'clock news");
     private static final String BBC_NEWS_AT_O_CLOCK_REPLACEMENT = "news at ";
+    private static final Pattern BBC_WEEKEND_NEWS_PATTERN = Pattern.compile("weekend news");
+    private static final String BBC_WEEKEND_NEWS_REPLACEMENT = "news";
     private static final ImmutableMap<String, String> BBC_TITLE_REPLACEMENTS = ImmutableMap.of(
             "news 24", "joins bbc news",
             "!mpossible", "impossible"
     );
     private static final ImmutableSet<String> BBC_PREFIXES = ImmutableSet.of(
             "bbc"
+    );
+    private static final ImmutableSet<String> BBC_SUFFIXES = ImmutableSet.of(
+            "highlights"
     );
 
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
@@ -432,6 +437,24 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return remainingTitle;
     }
 
+    private String removeSuffixes(String title, Set<String> suffixes) {
+        String remainingTitle = title;
+        boolean removedAtLeastOne;
+        do {
+            removedAtLeastOne = false;
+            for (String suffix : suffixes) {
+                if (remainingTitle.length() > suffix.length() && remainingTitle.endsWith(suffix)) {
+                    remainingTitle = remainingTitle.substring(0, remainingTitle.length() - suffix.length()).trim();
+                    removedAtLeastOne = true;
+                    break;
+                }
+            }
+        }
+        while (removedAtLeastOne);
+
+        return remainingTitle;
+    }
+
     private boolean matchWithoutDashes(String subject, String suggestion) {
         return subject.replaceAll("-", "").equals(suggestion.replaceAll("-", ""));
     }
@@ -453,10 +476,12 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             return replacement;
         }
         title = removePrefixes(title, BBC_PREFIXES);
+        title = removeSuffixes(title, BBC_SUFFIXES);
         Matcher oClockMatcher = BBC_O_CLOCK_NEWS_PATTERN.matcher(title);
         if (oClockMatcher.find()) {
             title = oClockMatcher.replaceFirst(BBC_NEWS_AT_O_CLOCK_REPLACEMENT + oClockMatcher.group(1));
         }
+        title = BBC_WEEKEND_NEWS_PATTERN.matcher(title).replaceFirst(BBC_WEEKEND_NEWS_REPLACEMENT);
         return title;
     }
 

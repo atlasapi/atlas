@@ -51,6 +51,8 @@ public class BarbTitleMatchingItemScorerTest {
         assertTxlogNitroScore("ONE O'CLOCK NEWS", "06/06/2019", "BBC News at One", scoreOnMatch);
         assertTxlogNitroScore("WALES TODAY", "09/06/2019", "BBC Wales Today", scoreOnMatch);
         assertTxlogNitroScore("!MPOSSIBLE", "Episode 7", "Impossible", scoreOnMatch);
+        assertTxlogNitroScore("BBC NEWS", "08/06/2019", "BBC Weekend News", scoreOnMatch);
+        assertTxlogNitroScore("INTERNATIONAL FOOTBALL HIGHLIGHTS", "Estonia v Northern Ireland", "International Football", scoreOnMatch);
     }
 
     @Test

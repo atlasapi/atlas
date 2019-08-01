@@ -11,6 +11,10 @@ import org.atlasapi.media.entity.Item;
 
 import java.util.Set;
 
+/**
+ * Like {@link ItemYearScorer}, except
+ * only scores candidate if and only if both it and the subject are a film.
+ */
 public class FilmYearScorer extends ItemYearScorer {
     private static final String NAME = "Film-Year";
 

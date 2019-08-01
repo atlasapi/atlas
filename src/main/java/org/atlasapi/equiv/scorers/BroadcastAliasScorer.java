@@ -82,4 +82,9 @@ public class BroadcastAliasScorer implements EquivalenceScorer<Item> {
         
         return mismatchScore;
     }
+
+    @Override
+    public String toString(){
+        return NAME;
+    }
 }

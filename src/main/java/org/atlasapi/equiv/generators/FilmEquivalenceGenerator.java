@@ -38,12 +38,11 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private static final float TITLE_WEIGHTING = 1.0f;
     private static final float BROADCAST_WEIGHTING = 0.0f;
     private static final float CATCHUP_WEIGHTING = 0.0f;
-
-    private static int DEFAULT_TOLERABLE_YEAR_DIFFERENCE = 1;
-    private static Score defaultScoreOnImdbMatch = Score.ONE;
-    private static Score defaultScoreOnYearMismatch = Score.negativeOne();
-    private static Score defaultScoreOnTitleMatch = Score.ONE;
-    private static Score defaultScoreOnTitleMismatch = Score.ZERO;
+    private static final int DEFAULT_TOLERABLE_YEAR_DIFFERENCE = 1;
+    private static final Score DEFAULT_SCORE_ON_IMDB_MATCH = Score.ONE;
+    private static final Score DEFAULT_SCORE_ON_YEAR_MISMATCH = Score.negativeOne();
+    private static final Score DEFAULT_SCORE_ON_TITLE_MATCH = Score.ONE;
+    private static final Score DEFAULT_SCORE_ON_TITLE_MISMATCH = Score.ZERO;
 
     private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
 
@@ -77,10 +76,10 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
                 application,
                 acceptNullYears,
                 DEFAULT_TOLERABLE_YEAR_DIFFERENCE,
-                defaultScoreOnImdbMatch,
-                defaultScoreOnYearMismatch,
-                defaultScoreOnTitleMatch,
-                defaultScoreOnTitleMismatch
+                DEFAULT_SCORE_ON_IMDB_MATCH,
+                DEFAULT_SCORE_ON_YEAR_MISMATCH,
+                DEFAULT_SCORE_ON_TITLE_MATCH,
+                DEFAULT_SCORE_ON_TITLE_MISMATCH
         );
     }
 

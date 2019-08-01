@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
-public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
+public class FilmEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
     
     private static final Pattern IMDB_REF = Pattern.compile("http://imdb.com/title/[\\d\\w]+");
 
@@ -64,7 +64,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private Score scoreOnYearMismatch;
 
 
-    public FilmEquivalenceGenerator(
+    public FilmEquivalenceGeneratorAndScorer(
             SearchResolver searchResolver,
             Iterable<Publisher> publishers,
             Application application,
@@ -94,7 +94,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
      * @param scoreOnTitleMatch the score given if there is no IMDB match and the year and title match
      * @param scoreOnTitleMismatch the score given if there is no IMDB match and the year matches but the title does not
      */
-    public FilmEquivalenceGenerator(
+    public FilmEquivalenceGeneratorAndScorer(
             SearchResolver searchResolver,
             Iterable<Publisher> publishers,
             Application application,

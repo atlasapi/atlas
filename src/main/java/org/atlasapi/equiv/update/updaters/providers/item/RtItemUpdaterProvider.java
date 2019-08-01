@@ -3,7 +3,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.application.v3.DefaultApplication;
-import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
+import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.RadioTimesFilmEquivalenceGenerator;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
@@ -47,7 +47,7 @@ public class RtItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                                 new RadioTimesFilmEquivalenceGenerator(
                                         dependencies.getContentResolver()
                                 ),
-                                new FilmEquivalenceGenerator(
+                                new FilmEquivalenceGeneratorAndScorer(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(

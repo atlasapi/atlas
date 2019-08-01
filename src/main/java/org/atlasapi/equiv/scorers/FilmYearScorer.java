@@ -5,7 +5,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
 
@@ -27,7 +27,7 @@ public class FilmYearScorer extends ItemYearScorer {
             Item subject,
             Set<? extends Item> candidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResults
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Film Year Scorer");

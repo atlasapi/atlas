@@ -10,7 +10,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
@@ -57,7 +57,7 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
     public ScoredCandidates<T> generate(
             T subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResults
     ) {
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("Amazon Title Generator");

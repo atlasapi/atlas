@@ -60,7 +60,6 @@ public class AmazonContainerUpdaterProvider implements EquivalenceResultUpdaterP
                                         dependencies.getAmazonTitleIndexStore(),
                                         dependencies.getContentResolver(),
                                         Container.class,
-                                        true,
                                         Publisher.AMAZON_UNBOX
                                 )
                         )

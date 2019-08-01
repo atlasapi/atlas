@@ -36,20 +36,17 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
     private final ContentResolver resolver;
     private final Class<? extends T> cls;
     private final Set<Publisher> publishers;
-    private final boolean onlyIncludeTopLevelContent;
 
 
     public AmazonTitleGenerator(
             AmazonTitleIndexStore amazonTitleIndexStore,
             ContentResolver resolver,
             Class<? extends T> cls,
-            boolean onlyIncludeTopLevelContent,
             Publisher... publishers
     ) {
         this.amazonTitleIndexStore = checkNotNull(amazonTitleIndexStore);
         this.resolver = checkNotNull(resolver);
         this.cls = checkNotNull(cls);
-        this.onlyIncludeTopLevelContent = onlyIncludeTopLevelContent;
         this.publishers = ImmutableSet.copyOf(publishers);
     }
 
@@ -73,7 +70,7 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
                 .filter(cls::isInstance)
                 .map(cls::cast)
                 .filter(content -> publishers.contains(content.getPublisher()))
-                .filter(content -> !onlyIncludeTopLevelContent || topLevelContent(content))
+                .filter(this::topLevelContent)
                 .filter(content -> content.getTitle().equals(subject.getTitle())) //shouldn't be needed but included to be safe
                 .collect(MoreCollectors.toImmutableList());
 

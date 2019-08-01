@@ -76,7 +76,6 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         dependencies.getAmazonTitleIndexStore(),
                                         dependencies.getContentResolver(),
                                         Item.class,
-                                        true,
                                         AMAZON_UNBOX
                                 )
                         )

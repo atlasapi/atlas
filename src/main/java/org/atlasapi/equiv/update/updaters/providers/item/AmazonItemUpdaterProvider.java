@@ -66,7 +66,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)),
                                         true,
-                                        0, //only equiv on exact year, as agreed,
+                                        0, //only equiv on exact year, as agreed
                                         Score.nullScore(), //score with ItemYearScorer
                                         Score.nullScore(),
                                         Score.nullScore(),

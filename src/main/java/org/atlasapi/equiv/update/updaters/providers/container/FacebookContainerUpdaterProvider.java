@@ -1,15 +1,9 @@
 package org.atlasapi.equiv.update.updaters.providers.container;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
-import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EpisodeMatchingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
-import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
-import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
@@ -17,17 +11,16 @@ import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
-import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
+import org.atlasapi.equiv.update.EquivalenceResultUpdater;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
-public class FacebookContainerUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
+public class FacebookContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
     private FacebookContainerUpdaterProvider() {
     }
@@ -37,11 +30,11 @@ public class FacebookContainerUpdaterProvider implements EquivalenceUpdaterProvi
     }
 
     @Override
-    public EquivalenceUpdater<Container> getUpdater(
+    public EquivalenceResultUpdater<Container> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceUpdater.<Container>builder()
+        return ContentEquivalenceResultUpdater.<Container>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
@@ -74,31 +67,6 @@ public class FacebookContainerUpdaterProvider implements EquivalenceUpdaterProvi
                         ImmutableList.of(
                                 MultipleCandidateExtractor.create(),
                                 PercentThresholdEquivalenceExtractor.moreThanPercent(90)
-                        )
-                )
-                .withHandler(
-                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-                                LookupWritingEquivalenceHandler.create(
-                                        dependencies.getLookupWriter()
-                                ),
-                                new EpisodeMatchingEquivalenceHandler(
-                                        dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore(),
-                                        dependencies.getLookupWriter(),
-                                        targetPublishers
-                                ),
-                                new ResultWritingEquivalenceHandler<>(
-                                        dependencies.getEquivalenceResultStore()
-                                ),
-                                new EquivalenceSummaryWritingHandler<>(
-                                        dependencies.getEquivSummaryStore()
-                                )
-                        ))
-                )
-                .withMessenger(
-                        QueueingEquivalenceResultMessenger.create(
-                                dependencies.getMessageSender(),
-                                dependencies.getLookupEntryStore()
                         )
                 )
                 .build();

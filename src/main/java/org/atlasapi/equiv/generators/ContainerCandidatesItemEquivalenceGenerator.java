@@ -1,10 +1,11 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.collect.OptionalMap;
 import org.atlasapi.equiv.EquivalenceSummary;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -13,7 +14,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
@@ -22,12 +23,9 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.collect.OptionalMap;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Generates equivalences for an Item based on the children of the equivalence
@@ -58,7 +56,7 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
     public ScoredCandidates<Item> generate(
             Item subject,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         Builder<Item> result = DefaultScoredCandidates.fromSource("Container");
 
@@ -87,7 +85,7 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
             }
         }
 
-        equivToTelescopeResults.addGeneratorResult(generatorComponent);
+        equivToTelescopeResult.addGeneratorResult(generatorComponent);
 
         return result.build();
     }

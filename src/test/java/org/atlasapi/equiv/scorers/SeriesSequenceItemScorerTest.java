@@ -1,22 +1,21 @@
 package org.atlasapi.equiv.scorers;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
-
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 
 public class SeriesSequenceItemScorerTest {
@@ -64,7 +63,7 @@ public class SeriesSequenceItemScorerTest {
                 subject,
                 set(candidate),
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertThat(scores.candidates().get(candidate), is(expectedScore));
     }

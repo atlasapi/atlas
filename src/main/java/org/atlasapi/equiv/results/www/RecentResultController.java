@@ -1,15 +1,14 @@
 package org.atlasapi.equiv.results.www;
 
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.model.SimpleModelList;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
-import org.atlasapi.equiv.results.persistence.StoredEquivalenceResult;
+import org.atlasapi.equiv.results.persistence.StoredEquivalenceResults;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.model.SimpleModelList;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class RecentResultController {
@@ -41,10 +40,10 @@ public class RecentResultController {
         return "equivalence.recentContainers";
     }
     
-    private List<Map<String, ?>> compileResults(List<StoredEquivalenceResult> latestResults) {
+    private List<Map<String, ?>> compileResults(List<StoredEquivalenceResults> latestResults) {
         SimpleModelList resultsList = new SimpleModelList();
         
-        for (StoredEquivalenceResult result : Lists.reverse(latestResults)) {
+        for (StoredEquivalenceResults result : Lists.reverse(latestResults)) {
             resultsList.add(resultModelBuilder.build(result, null));
         }
         

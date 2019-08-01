@@ -1,20 +1,23 @@
 package org.atlasapi.equiv.channel.updaters;
 
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.columbus.telescope.client.EntityType;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.atlasapi.equiv.ChannelRef;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+
+import com.metabroadcast.columbus.telescope.client.EntityType;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -62,9 +65,9 @@ public class BarbForcedChannelEquivalenceUpdater extends SourceSpecificChannelEq
             return false;
         }
 
-        Optional<String> candidateUri = Optional.ofNullable(stationCodeToUri.get(subjectStationCode.get()));
+        String candidateUri = stationCodeToUri.get(subjectStationCode.get());
 
-        if (!candidateUri.isPresent()) {
+        if (Strings.isNullOrEmpty(candidateUri)) {
             // some things we don't force any equiv on
             log.info("No hardcoded equiv found for channel {}. Removing if present.", subject.getId());
             // check if we need to remove an equiv link though
@@ -72,11 +75,11 @@ public class BarbForcedChannelEquivalenceUpdater extends SourceSpecificChannelEq
             return true;
         }
 
-        Optional<Channel> optionalCandidate = channelResolver.fromUri(candidateUri.get()).toOptional();
+        Optional<Channel> optionalCandidate = channelResolver.fromUri(candidateUri).toOptional();
 
         if (!optionalCandidate.isPresent()) {
             // candidates should always exist if there's a url for them
-            log.error("No channel found for uri {}", candidateUri.get());
+            log.error("No channel found for uri {}", candidateUri);
             return false;
         }
 
@@ -102,6 +105,10 @@ public class BarbForcedChannelEquivalenceUpdater extends SourceSpecificChannelEq
     }
 
     private void removeEquivalence(Channel subject, OwlTelescopeReporter telescope) {
+        if (subject.getSameAs().isEmpty()) {
+            return; //no equiv to remove
+        }
+        
         ChannelRef candidateRef = subject.getSameAs().iterator().next();
         Channel candidate = channelResolver.fromUri(candidateRef.getUri()).requireValue();
 

@@ -1,12 +1,11 @@
 package org.atlasapi.equiv.generators;
 
+import com.google.common.base.Function;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScaledScoredEquivalents;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
-
-import com.google.common.base.Function;
 
 public class ScalingEquivalenceGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
@@ -49,12 +48,12 @@ public class ScalingEquivalenceGenerator<T extends Content> implements Equivalen
     public ScoredCandidates<T> generate(
             T content,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         return ScaledScoredEquivalents.<T>scale(delegate.generate(
                 content,
                 desc,
-                equivToTelescopeResults
+                equivToTelescopeResult
         ), scalingFunction);
     }
 

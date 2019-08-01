@@ -16,7 +16,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -120,7 +120,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     public ScoredCandidates<Item> generate(
             Item item,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         Builder<Item> scores = DefaultScoredCandidates.fromSource("Film");
 
@@ -135,13 +135,13 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         
         if (!acceptNullYears && film.getYear() == null ) {
             desc.appendText("Can't generate: null year");
-            equivToTelescopeResults.addGeneratorResult(generatorComponent);
+            equivToTelescopeResult.addGeneratorResult(generatorComponent);
             return scores.build();
         }
         
         if (Strings.isNullOrEmpty(film.getTitle())) {
             desc.appendText("Can't generate: title '%s'", film.getTitle()).finishStage();
-            equivToTelescopeResults.addGeneratorResult(generatorComponent);
+            equivToTelescopeResult.addGeneratorResult(generatorComponent);
             return scores.build();
         } else {
             desc.appendText("Using year %s, title %s", film.getYear(), film.getTitle());
@@ -213,7 +213,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             }
         }
 
-        equivToTelescopeResults.addGeneratorResult(generatorComponent);
+        equivToTelescopeResult.addGeneratorResult(generatorComponent);
         return scores.build();
     }
 

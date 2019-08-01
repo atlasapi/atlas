@@ -1,18 +1,16 @@
 package org.atlasapi.equiv.generators;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
-
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +46,7 @@ public class RadioTimesFilmEquivalenceGeneratorTest {
         ScoredCandidates<Item> scoredCandidates = rtFilmEquivalenceGenerator.generate(
                 film,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         Item onlyElement = Iterables.getOnlyElement(scoredCandidates.candidates().keySet());
         assertTrue(onlyElement instanceof Film);
@@ -62,7 +60,7 @@ public class RadioTimesFilmEquivalenceGeneratorTest {
         ScoredCandidates<Item> scoredCandidates = rtFilmEquivalenceGenerator.generate(
                 film,
                 new DefaultDescription(),
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().isEmpty());
     }

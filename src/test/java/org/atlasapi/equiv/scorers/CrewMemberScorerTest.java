@@ -1,21 +1,5 @@
 package org.atlasapi.equiv.scorers;
 
-import static com.google.common.collect.DiscreteDomain.integers;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
-import org.atlasapi.equiv.results.description.DefaultDescription;
-import org.atlasapi.equiv.results.description.ResultDescription;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.CrewMember;
-import org.atlasapi.media.entity.Item;
-import org.junit.Test;
-
 import com.google.common.base.Function;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.ImmutableList;
@@ -23,6 +7,21 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import org.atlasapi.equiv.results.description.DefaultDescription;
+import org.atlasapi.equiv.results.description.ResultDescription;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.CrewMember;
+import org.atlasapi.media.entity.Item;
+import org.junit.Test;
+
+import java.util.List;
+
+import static com.google.common.collect.DiscreteDomain.integers;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 public class CrewMemberScorerTest {
 
@@ -100,7 +99,7 @@ public class CrewMemberScorerTest {
                 subject,
                 ImmutableSet.of(candidate),
                 desc,
-                EquivToTelescopeResults.create("id", "publisher")
+                EquivToTelescopeResult.create("id", "publisher")
         );
     }
 

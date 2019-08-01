@@ -1,21 +1,20 @@
 package org.atlasapi.equiv.scorers;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Set;
-
+import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
+import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 
-import com.google.common.base.Objects;
-import com.google.common.collect.Iterables;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SequenceItemScorer implements EquivalenceScorer<Item> {
 
@@ -32,7 +31,7 @@ public class SequenceItemScorer implements EquivalenceScorer<Item> {
             Item subject,
             Set<? extends Item> candidates,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Sequence Item Scorer");
@@ -71,7 +70,7 @@ public class SequenceItemScorer implements EquivalenceScorer<Item> {
             }
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

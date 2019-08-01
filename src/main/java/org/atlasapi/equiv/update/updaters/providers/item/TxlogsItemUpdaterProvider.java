@@ -3,16 +3,10 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.atlasapi.equiv.generators.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
-import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
-import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
-import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
+import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
-import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqHighestNonEmptyThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -22,12 +16,11 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
-import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.scorers.barb.BarbTitleMatchingItemScorer;
+import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
+import org.atlasapi.equiv.update.EquivalenceResultUpdater;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -36,7 +29,7 @@ import org.joda.time.Duration;
 
 import java.util.Set;
 
-public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+public class TxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
 
     private TxlogsItemUpdaterProvider() {
@@ -48,17 +41,21 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
     }
 
     @Override
-    public EquivalenceUpdater<Item> getUpdater(
+    public EquivalenceResultUpdater<Item> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies, Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceUpdater.<Item>builder()
+        return ContentEquivalenceResultUpdater.<Item>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                BarbAliasEquivalenceGeneratorAndScorer.barbAliasResolvingGenerator(
+                                new BarbAliasEquivalenceGeneratorAndScorer<>(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
-                                        dependencies.getContentResolver()
+                                        dependencies.getContentResolver(),
+                                        targetPublishers,
+                                        Score.valueOf(10.0),
+                                        Score.ZERO,
+                                        false
                                 ),
                                 new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
@@ -68,12 +65,6 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                         Predicates.alwaysTrue(),
                                         3.0
                                 )
-//                                BarbTitleGenerator.barbTitleGenerator(
-//                                        ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
-//                                        dependencies.getContentResolver(),
-//                                        ImmutableSet.of(BarbTitleGenerator.BBC_BROADCAST_GROUP),
-//                                        Score.valueOf(5.0)
-//                                )
                         )
                 )
                 .withScorers(
@@ -106,29 +97,16 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(4)
-                )
-                .withHandler(
-                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-                                EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                        LookupWritingEquivalenceHandler.create(
-                                                dependencies.getLookupWriter()
-                                        ),
-                                        dependencies.getEquivSummaryStore()
-                                ),
-                                new ResultWritingEquivalenceHandler<>(
-                                        dependencies.getEquivalenceResultStore()
-                                ),
-                                new EquivalenceSummaryWritingHandler<>(
-                                        dependencies.getEquivSummaryStore()
-                                )
-                        ))
-                )
-                .withMessenger(
-                        QueueingEquivalenceResultMessenger.create(
-                                dependencies.getMessageSender(),
-                                dependencies.getLookupEntryStore()
-                        )
+                        // If we equiv on bcid (scoring 10) then we don't want to equiv on broadcast time
+                        // This is due to an issue where some CMS and Txlog broadcasts have become incorrect
+                        // and we had ended up with txlogs equived on bcid to one piece of CMS content but to
+                        // another piece of CMS content (generally belonging to the same brand) on broadcast time.
+                        // Since BARB equivalence is primarily driven by bcid equiv this should not prove problematic
+                        // if we end up excluding some legitimate broadcast equiv since it will at least be equived on bcid
+                        //
+                        // N.B. extractors extract individually by publisher so if the highest threshold for
+                        // one source is 10, we can still extract other publishers whose highest threshold was 4
+                        new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
                 )
                 .build();
     }

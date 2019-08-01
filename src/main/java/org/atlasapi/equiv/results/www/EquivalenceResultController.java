@@ -1,17 +1,16 @@
 package org.atlasapi.equiv.results.www;
 
-import static com.metabroadcast.common.http.HttpStatusCode.NOT_FOUND;
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.api.client.util.Strings;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.model.SimpleModel;
+import com.metabroadcast.common.model.SimpleModelList;
 import org.atlasapi.equiv.results.persistence.EquivalenceResultStore;
-import org.atlasapi.equiv.results.persistence.StoredEquivalenceResult;
+import org.atlasapi.equiv.results.persistence.StoredEquivalenceResults;
 import org.atlasapi.equiv.results.probe.EquivalenceProbeStore;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
@@ -23,14 +22,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.api.client.util.Strings;
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.model.SimpleModel;
-import com.metabroadcast.common.model.SimpleModelList;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.common.http.HttpStatusCode.NOT_FOUND;
 
 @Controller
 public class EquivalenceResultController {
@@ -66,14 +64,14 @@ public class EquivalenceResultController {
             uri = uriFor(id);
         }
         
-        StoredEquivalenceResult equivalenceResult = store.forId(uri);
+        StoredEquivalenceResults equivalenceResults = store.forId(uri);
 
-        if (equivalenceResult == null) {
+        if (equivalenceResults == null) {
             response.sendError(NOT_FOUND.code(), "No result for URI");
             return null;
         }
 
-        SimpleModel resultModel = resultModelBuilder.build(equivalenceResult, probeStore.probeFor(uri));
+        SimpleModel resultModel = resultModelBuilder.build(equivalenceResults, probeStore.probeFor(uri));
 
         model.put("result", resultModel);
 
@@ -99,14 +97,14 @@ public class EquivalenceResultController {
 
         if (ided.requireValue() instanceof Container) {
 
-            List<StoredEquivalenceResult> results = store.forIds(Iterables.transform(((Container) ided.requireValue()).getChildRefs(), new Function<ChildRef, String>() {
+            List<StoredEquivalenceResults> results = store.forIds(Iterables.transform(((Container) ided.requireValue()).getChildRefs(), new Function<ChildRef, String>() {
                 @Override
                 public String apply(ChildRef input) {
                     return input.getUri();
                 }
             }));
 
-            for (StoredEquivalenceResult result : results) {
+            for (StoredEquivalenceResults result : results) {
                 resultModelList.add(resultModelBuilder.build(result, probeStore.probeFor(uri)));
             }
 

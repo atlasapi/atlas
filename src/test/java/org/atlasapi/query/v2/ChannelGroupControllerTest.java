@@ -12,9 +12,7 @@ import org.atlasapi.input.ChannelGroupTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
-import org.atlasapi.media.channel.ChannelGroupStore;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 
@@ -36,6 +34,7 @@ public class ChannelGroupControllerTest {
     private ChannelGroupResolver channelGroupResolver;
     private ChannelGroup channelGroup;
     private ChannelGroupWriteExecutor executor;
+    private ChannelResolver channelResolver;
     private ApplicationFetcher applicationFetcher;
     private Application application;
     private ApplicationConfiguration configuration;
@@ -47,8 +46,8 @@ public class ChannelGroupControllerTest {
         AtlasModelWriter<Iterable<ChannelGroup>> atlasModelWriter = mock(AtlasModelWriter.class);
         AdapterLog adapterLog = mock(AdapterLog.class);
         ChannelGroupTransformer channelGroupTransformer = mock(ChannelGroupTransformer.class);
-        ChannelResolver channelResolver = mock(ChannelResolver.class);
 
+        channelResolver = mock(ChannelResolver.class);
         channelGroup = mock(ChannelGroup.class);
         channelGroupResolver = mock(ChannelGroupResolver.class);
         executor = mock(ChannelGroupWriteExecutor.class);
@@ -79,21 +78,30 @@ public class ChannelGroupControllerTest {
 
         controller.deleteChannelGroup("bc", request, response, ChannelGroupController.OWL);
 
-        verify(executor, times(0)).deletePlatform(request, response, 1L);
+        verify(executor, times(0)).deletePlatform(
+                request,
+                response,
+                1L,
+                channelResolver
+        );
     }
 
     @Test
     public void testClientHasPermissionsToDelete() throws InvalidApiKeyException, IOException {
         when(applicationFetcher.applicationFor(any())).thenReturn(Optional.ofNullable(application));
-        when(channelGroupResolver.channelGroupFor(1L))
-                .thenReturn(com.google.common.base.Optional.fromNullable(channelGroup));
+        when(channelGroupResolver.channelGroupFor(1L)).thenReturn(com.google.common.base.Optional.fromNullable(channelGroup));
         when(application.getConfiguration()).thenReturn(configuration);
         when(configuration.isWriteEnabled(any())).thenReturn(true);
-        when(executor.deletePlatform(request, response, 1L))
+        when(executor.deletePlatform(request, response, 1L, channelResolver))
                 .thenReturn(Optional.empty());
 
         controller.deleteChannelGroup("bc", request, response, ChannelGroupController.OWL);
 
-        verify(executor, times(1)).deletePlatform(request, response, 1L);
+        verify(executor, times(1)).deletePlatform(
+                request,
+                response,
+                1L,
+                channelResolver
+        );
     }
 }

@@ -1,9 +1,10 @@
 package org.atlasapi.equiv.update.updaters.types;
 
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbXItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.BbcTxlogsItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
@@ -73,6 +74,14 @@ public enum ItemEquivalenceUpdaterType {
     TXLOGS_ITEM(
             TxlogsItemUpdaterProvider.create()
     ),
+    BBC_TXLOGS_ITEM(
+//            BbcTxlogsEfficientItemUpdaterProvider.create(
+//                    BarbAliasItemUpdaterProvider.create(),
+//                    BarbBbcBroadcastItemUpdaterProvider.create(),
+//                    BarbBbcActualTransmissionItemUpdaterProvider.create()
+//            )
+            BbcTxlogsItemUpdaterProvider.create()
+    ),
     WIKIPEDIA_ITEM(
             WikipediaItemUpdateProvider.create()
     ),
@@ -84,13 +93,13 @@ public enum ItemEquivalenceUpdaterType {
     )
     ;
 
-    private final EquivalenceUpdaterProvider<Item> provider;
+    private final EquivalenceResultUpdaterProvider<Item> provider;
 
-    ItemEquivalenceUpdaterType(EquivalenceUpdaterProvider<Item> provider) {
+    ItemEquivalenceUpdaterType(EquivalenceResultUpdaterProvider<Item> provider) {
         this.provider = checkNotNull(provider);
     }
 
-    public EquivalenceUpdaterProvider<Item> getProvider() {
+    public EquivalenceResultUpdaterProvider<Item> getProvider() {
         return provider;
     }
 }

@@ -1,17 +1,22 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import java.util.Set;
-
-import org.atlasapi.equiv.update.EquivalenceUpdater;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.description.ReadableDescription;
+import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
+import org.atlasapi.equiv.update.EquivalenceResultUpdater;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.NopEquivalenceUpdaterMetadata;
-import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
-public class NopItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+import java.util.Set;
+
+public class NopItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private NopItemUpdaterProvider() {
     }
@@ -21,19 +26,30 @@ public class NopItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> 
     }
 
     @Override
-    public EquivalenceUpdater<Item> getUpdater(
+    public EquivalenceResultUpdater<Item> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return new EquivalenceUpdater<Item>() {
-
+        return new EquivalenceResultUpdater<Item>() {
             @Override
-            public boolean updateEquivalences(Item subject, OwlTelescopeReporter telescope) {
-                return false;
+            public EquivalenceResult<Item> provideEquivalenceResult(
+                    Item subject,
+                    ReadableDescription desc,
+                    EquivToTelescopeResults resultsForTelescope
+            ) {
+                return new EquivalenceResult<>(
+                        subject,
+                        ImmutableList.of(),
+                        DefaultScoredCandidates
+                                .<Item>fromSource(getClass().getSimpleName())
+                                .build(),
+                        ImmutableMultimap.of(),
+                        desc
+                );
             }
 
             @Override
-            public EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources) {
+            public EquivalenceUpdaterMetadata getMetadata() {
                 return NopEquivalenceUpdaterMetadata.create();
             }
         };

@@ -13,6 +13,7 @@ import static org.atlasapi.media.entity.Publisher.BARB_CHANNELS;
 public class BarbStringToChannelTransformer {
 
     private static final String ALIAS_NAMESPACE = "gb:barb:stationCode";
+    private static final String URI_NAMESPACE = "uri";
     private static final String URI_FORMAT = "http://%s/channels/%s";
 
     private final PublisherDetails PUB_DETAILS = new PublisherDetails(BARB_CHANNELS.key());
@@ -47,6 +48,7 @@ public class BarbStringToChannelTransformer {
 
         org.atlasapi.media.channel.Channel complex =  modelTransformer.transform(channel);
         complex.addAlias(new Alias(ALIAS_NAMESPACE, stationCode)); // The model transformer does not transform aliases. Bug? 18/06/18
+        complex.addAlias(new Alias(URI_NAMESPACE, complex.getUri()));
 
         return complex;
     }

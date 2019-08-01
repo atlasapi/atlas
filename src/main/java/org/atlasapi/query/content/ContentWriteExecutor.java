@@ -31,17 +31,16 @@ import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.VersionMerger;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
-
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -159,12 +158,7 @@ public class ContentWriteExecutor {
         if (updatedContent instanceof Item) {
             Item item = (Item) updatedContent;
             writer.createOrUpdate(item);
-
-            if (content.getPublisher().key().equals(Publisher.BT_SPORT_EBS.key())) {
-                updateEbsSchedule(content, item);
-            } else {
-                updateSchedule(item);
-            }
+            updateSchedule(content, item);
         } else {
             writer.createOrUpdate((Container) updatedContent);
         }
@@ -175,7 +169,7 @@ public class ContentWriteExecutor {
         }
     }
 
-    private void updateEbsSchedule(Content content, Item item) {
+    private void updateSchedule(Content content, Item item) {
         for (Broadcast broadcast : content.getVersions()
                 .iterator()
                 .next()
@@ -190,10 +184,10 @@ public class ContentWriteExecutor {
 
             ImmutableMap<String, String> acceptableIds = ImmutableMap.of(
                     broadcast.getSourceId(),
-                    content.getCanonicalUri()
+                    item.getCanonicalUri()
             );
 
-            trimmer.trimBroadcasts(broadcastInterval, channel, acceptableIds);
+            trimmer.trimBroadcasts(item.getPublisher(), broadcastInterval, channel, acceptableIds);
 
             scheduleWriter.replaceScheduleBlock(
                     item.getPublisher(),
@@ -203,9 +197,20 @@ public class ContentWriteExecutor {
         }
     }
 
+    /**
+     * @param publishers the set of publishers whose explicit equivalences will be modified in the lookup table,
+     *                   with any other explicit equivalences to content from other publishers being unaffected.
+     *                   If null will be later set to all publishers present in the explicitEquivRefs.
+     * e.g. Suppose content A (Publisher X) has explicit equivs to B (Publisher Y), C (Publisher Z)
+     *                   and explicitEquivsRefs is just a single element set of D (Publisher Y)
+     *                   If publishers is just a single element set of Publisher Y then the explicit equivs in the
+     *                   lookup table will become C (Publisher Z), D (Publisher Y)
+     *                   If publishers is Publisher Y and Publisher Z then the explicit equivs in the lookup table will
+     *                   become just D (Publisher Y)
+     */
     public void updateExplicitEquivalence(
             Content content,
-            Set<Publisher> publishers,
+            @Nullable Set<Publisher> publishers,
             Set<LookupRef> explicitEquivRefs
     ) {
         content.setEquivalentTo(explicitEquivRefs);

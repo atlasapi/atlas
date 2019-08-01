@@ -1,7 +1,8 @@
-package org.atlasapi.equiv.scorers;
+package org.atlasapi.equiv.scorers.barb;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.base.Maybe;
 import org.apache.commons.lang3.StringUtils;
@@ -10,14 +11,17 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.scorers.EquivalenceScorer;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -33,17 +37,38 @@ import static com.google.api.client.repackaged.com.google.common.base.Preconditi
  * such as broadcast times for Txlogs
  */
 public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
+    private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
 
     public static final String NAME = "Barb-Title";
     private static final ImmutableSet<String> PREFIXES = ImmutableSet.of(
-            "the ", "Live ", "FILM: ", "FILM:", "NEW: ", "NEW:", "LIVE: ", "LIVE:"
+            "the ", "live ", "film:", "new:", "live:"
     );
-    private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(Unrated\\)", "\\(Rated\\)");
+    private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(unrated\\)", "\\(rated\\)");
+    private static final Pattern TRAILING_YEAR_PATTERN = Pattern.compile("^(.*)\\(\\d{4}\\)$");
+
     private static final Pattern TRAILING_APOSTROPHE_PATTERN = Pattern.compile("\\w' ");
     private static final Score DEFAULT_SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
     private static final Score DEFAULT_SCORE_ON_PARTIAL_MATCH = Score.ONE;
     private static final Score DEFAULT_SCORE_ON_MISMATCH = Score.ZERO;
     private static final int TXLOG_TITLE_LENGTH = 40;
+
+    //Nitro<->Txlog specific rules
+    //Lowercase because the logic happens after converting content titles to lower case
+    private static final Pattern BBC_O_CLOCK_NEWS_PATTERN = Pattern.compile("(\\w+) o'clock news");
+    private static final String BBC_NEWS_AT_O_CLOCK_REPLACEMENT = "news at ";
+    private static final Pattern BBC_WEEKEND_NEWS_PATTERN = Pattern.compile("weekend news");
+    private static final String BBC_WEEKEND_NEWS_REPLACEMENT = "news";
+    private static final ImmutableMap<String, String> BBC_TITLE_REPLACEMENTS = ImmutableMap.of(
+            "news 24", "joins bbc news",
+            "!mpossible", "impossible"
+    );
+    private static final ImmutableSet<String> BBC_PREFIXES = ImmutableSet.of(
+            "bbc"
+    );
+    private static final ImmutableSet<String> BBC_SUFFIXES = ImmutableSet.of(
+            "highlights"
+    );
+
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
     private final Score scoreOnPerfectMatch;
     private final Score scoreOnPartialMatch;
@@ -98,7 +123,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             Item subject,
             Set<? extends Item> suggestions,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Barb Title Matching Item Scorer");
@@ -111,20 +136,16 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         for (Item suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
-            //txlog titles are often just the title of the brand so score against suggestion's brand title
-            Optional<Score> parentScore = getParentScore(subject, desc, suggestion);
-            if (parentScore.isPresent()
-                    && parentScore.get().isRealScore()
-                    && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())
-                ) {
-                desc.appendText(String.format(
-                        "Parent for %s scored %.2f which is greater than its own score of %.2f",
-                        suggestion.getCanonicalUri(),
-                        parentScore.get().asDouble(),
-                        equivScore.asDouble()
-                ));
-                equivScore = parentScore.get();
+            if (equivScore != scoreOnPerfectMatch) {
+                // txlog titles are often just the title of the brand so score the txlog title
+                // against a brand title as well if applicable
+                Optional<Score> parentScore = getParentScore(subject, suggestion, desc);
+                if (parentScore.isPresent() && parentScore.get().isRealScore()
+                    && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
+                    equivScore = parentScore.get();
+                }
             }
+
             equivalents.addEquivalent(suggestion, equivScore);
             if (suggestion.getId() != null) {
                 scorerComponent.addComponentResult(
@@ -134,21 +155,35 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             }
         }
 
-        equivToTelescopeResults.addScorerResult(scorerComponent);
+        equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }
 
-    private Optional<Score> getParentScore(Item subject, ResultDescription desc, Item suggestion) {
-        if(!subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
-                || contentResolver == null
-                || suggestion.getContainer() == null
-        ) {
+    private Optional<Score> getParentScore(Item subject, Item suggestion, ResultDescription desc) {
+        boolean singleTxlogPresent = subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
+                // xor since we need the other publisher to be different and have a parent
+                ^ suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS);
+        if (contentResolver == null || !singleTxlogPresent) {
+            return Optional.empty();
+        }
+
+        Item txlog;
+        Item nonTxlog;
+        if(subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)) {
+            txlog = subject;
+            nonTxlog = suggestion;
+        } else {
+            txlog = suggestion;
+            nonTxlog = subject;
+        }
+
+        if (nonTxlog.getContainer() == null) {
             return Optional.empty();
         }
 
         Maybe<Identified> resolved = contentResolver.findByCanonicalUris(
-                ImmutableSet.of(suggestion.getContainer().getUri())
+                ImmutableSet.of(nonTxlog.getContainer().getUri())
         ).getFirstValue();
         if(resolved.hasValue()) {
             Content parent = (Content) resolved.requireValue();
@@ -156,14 +191,21 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 Series series = (Series) parent;
                 if(series.getParent() != null) {
                     resolved = contentResolver.findByCanonicalUris(
-                            ImmutableSet.of(suggestion.getContainer().getUri()))
+                            ImmutableSet.of(series.getParent().getUri()))
                     .getFirstValue();
                     if(resolved.hasValue()) {
                         parent = (Content) resolved.requireValue();
                     }
                 }
             }
-            Score parentScore = score(subject, parent, desc);
+            Score parentScore = score(txlog, parent, desc);
+            desc.appendText(
+                    String.format(
+                            "Parent (%s) for %s scored %.2f",
+                            parent.getCanonicalUri(),
+                            nonTxlog.getCanonicalUri(),
+                            parentScore.asDouble()
+                    ));
             return Optional.of(parentScore);
         }
         return Optional.empty();
@@ -183,31 +225,71 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    private Score score(Item subject, Content suggestion) {
-        String subjectTitle = subject.getTitle();
+    public Score score(Item subject, Content suggestion) {
+        String subjectTitle = subject.getTitle().trim().toLowerCase();
+        String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
+
+        //TxLog titles are size capped, so truncate everything if we are equiving to txlogs
         if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
-                && subjectTitle.length() > TXLOG_TITLE_LENGTH) {
-            subjectTitle = subjectTitle.substring(0, TXLOG_TITLE_LENGTH);
+            || (subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS))) {
+
+            if (suggestion.getPublisher().equals(Publisher.BBC_NITRO)
+                    || subject.getPublisher().equals(Publisher.BBC_NITRO)
+            ) {
+                String processedSubjectTitle = processBbcTitle(subjectTitle);
+                String processedSuggestionTitle = processBbcTitle(suggestionTitle);
+                if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
+                    log.info(
+                            "BBC Title Processing: subject({} -> {}) suggestion({} -> {})",
+                            subjectTitle,
+                            processedSubjectTitle,
+                            suggestionTitle,
+                            processedSuggestionTitle
+                    );
+                    subjectTitle = processedSubjectTitle;
+                    suggestionTitle = processedSuggestionTitle;
+                }
+            }
+
+            if (subjectTitle.length() > TXLOG_TITLE_LENGTH) {
+                subjectTitle = subjectTitle.substring(0, TXLOG_TITLE_LENGTH);
+            }
+            if (suggestionTitle.length() > TXLOG_TITLE_LENGTH) {
+                suggestionTitle = suggestionTitle.substring(0, TXLOG_TITLE_LENGTH);
+            }
         }
 
-        if (subjectTitle.equals(suggestion.getTitle())) {
+        //if either subject or candidate is txlog, strip the year from the end
+        if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)) {
+            suggestionTitle = removeArbitraryTrailingYear(suggestionTitle);
+        }
+        if (subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)) {
+            subjectTitle = removeArbitraryTrailingYear(subjectTitle);
+        }
+
+        //return early if you can.
+        if (subjectTitle.equals(suggestionTitle)) {
             return scoreOnPerfectMatch;
         }
 
         TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
 
-
-        Score score = Score.nullScore();
-
         if (subjectType == suggestionType) {
             subjectTitle = removePostfix(subjectTitle, subject.getYear());
-            String suggestionTitle = removePostfix(suggestion.getTitle(), suggestion.getYear());
+            suggestionTitle = removePostfix(suggestionTitle, suggestion.getYear());
             return compareTitles(subjectTitle, suggestionTitle);
-
         }
 
-        return score;
+        return Score.nullScore();
+    }
+
+    private String removeArbitraryTrailingYear(String suggestionTitle) {
+        Matcher matcher = TRAILING_YEAR_PATTERN.matcher(suggestionTitle);
+        suggestionTitle = matcher.matches()
+                ? matcher.group(1)
+                : suggestionTitle;
+        return suggestionTitle;
     }
 
     private String removePostfix(String title, @Nullable Integer year) {
@@ -293,14 +375,14 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private String normalizeWithoutReplacing(String title) {
-        String withoutSequencePrefix = removeSequencePrefix(title);
-        String expandedTitle = titleExpander.expand(withoutSequencePrefix);
-        String withoutCommonPrefixes = removeCommonPrefixes(expandedTitle);
+        String withoutSequencePrefix = removeSequencePrefix(title).trim();
+        String expandedTitle = titleExpander.expand(withoutSequencePrefix).trim();
+        String withoutCommonPrefixes = removeCommonPrefixes(expandedTitle).trim();
         return StringUtils.stripAccents(withoutCommonPrefixes);
     }
 
     private String normalizeRegularExpression(String title) {
-        return regularExpressionReplaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title).toLowerCase()));
+        return regularExpressionReplaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title)));
     }
 
     private boolean appearsToBeWithApostrophe(String title) {
@@ -334,14 +416,43 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private String removeCommonPrefixes(String title) {
-        String titleWithoutPrefix = title;
-        for (String prefix : PREFIXES) {
-            if (titleWithoutPrefix.length() > prefix.length() &&
-                    titleWithoutPrefix.substring(0, prefix.length()).equalsIgnoreCase(prefix)) {
-                titleWithoutPrefix = titleWithoutPrefix.substring(prefix.length());
+        return removePrefixes(title, PREFIXES);
+    }
+
+    private String removePrefixes(String title, Set<String> prefixes) {
+        String remainingTitle = title;
+        boolean removedAtLeastOne;
+        do {
+            removedAtLeastOne = false;
+            for (String prefix : prefixes) {
+                if (remainingTitle.length() > prefix.length() && remainingTitle.startsWith(prefix)) {
+                    remainingTitle = remainingTitle.substring(prefix.length()).trim();
+                    removedAtLeastOne = true;
+                    break;
+                }
             }
         }
-        return titleWithoutPrefix;
+        while (removedAtLeastOne);
+
+        return remainingTitle;
+    }
+
+    private String removeSuffixes(String title, Set<String> suffixes) {
+        String remainingTitle = title;
+        boolean removedAtLeastOne;
+        do {
+            removedAtLeastOne = false;
+            for (String suffix : suffixes) {
+                if (remainingTitle.length() > suffix.length() && remainingTitle.endsWith(suffix)) {
+                    remainingTitle = remainingTitle.substring(0, remainingTitle.length() - suffix.length()).trim();
+                    removedAtLeastOne = true;
+                    break;
+                }
+            }
+        }
+        while (removedAtLeastOne);
+
+        return remainingTitle;
     }
 
     private boolean matchWithoutDashes(String subject, String suggestion) {
@@ -354,6 +465,24 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private String removeSequencePrefix(String title) {
         Matcher matcher = seqTitle.matcher(title);
         return matcher.matches() ? matcher.group(1) : title;
+    }
+
+    /**
+     * Used for custom rules between BBC txlogs and Nitro
+     */
+    private String processBbcTitle(String title) {
+        String replacement = BBC_TITLE_REPLACEMENTS.get(title);
+        if (!Strings.isNullOrEmpty(replacement)) {
+            return replacement;
+        }
+        title = removePrefixes(title, BBC_PREFIXES);
+        title = removeSuffixes(title, BBC_SUFFIXES);
+        Matcher oClockMatcher = BBC_O_CLOCK_NEWS_PATTERN.matcher(title);
+        if (oClockMatcher.find()) {
+            title = oClockMatcher.replaceFirst(BBC_NEWS_AT_O_CLOCK_REPLACEMENT + oClockMatcher.group(1));
+        }
+        title = BBC_WEEKEND_NEWS_PATTERN.matcher(title).replaceFirst(BBC_WEEKEND_NEWS_REPLACEMENT);
+        return title;
     }
 
     @Override

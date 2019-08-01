@@ -1,28 +1,25 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
-
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-
-import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -35,7 +32,7 @@ public class EquivalenceGeneratorsTest {
     private ScoredCandidates candidates;
 
     private EquivalenceGenerators<Content> generators;
-    private EquivToTelescopeResults equivToTelescopeResults;
+    private EquivToTelescopeResult equivToTelescopeResult;
 
     @Before
     public void setUp() {
@@ -51,10 +48,10 @@ public class EquivalenceGeneratorsTest {
         when(generator.generate(
                 any(Content.class),
                 any(ResultDescription.class),
-                any(EquivToTelescopeResults.class))
+                any(EquivToTelescopeResult.class))
         ).thenReturn(candidates);
 
-        equivToTelescopeResults = EquivToTelescopeResults.create(
+        equivToTelescopeResult = EquivToTelescopeResult.create(
                 "id",
                 "publisher"
         );
@@ -67,7 +64,7 @@ public class EquivalenceGeneratorsTest {
         List<ScoredCandidates<Content>> generated = generators.generate(
                 item,
                 resultDescription,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         assertTrue(generated.isEmpty());
     }
@@ -82,7 +79,7 @@ public class EquivalenceGeneratorsTest {
         List<ScoredCandidates<Content>> generated = generators.generate(
                 item,
                 resultDescription,
-                equivToTelescopeResults
+                equivToTelescopeResult
         );
         assertTrue(generated.isEmpty());
     }
@@ -91,15 +88,15 @@ public class EquivalenceGeneratorsTest {
     public void generatorCreatesCandidatesForNonExcludedUri() {
         Item item = new Item();
         item.setCanonicalUri("notexcluded");
-        generators.generate(item, resultDescription, equivToTelescopeResults);
-        verify(generator).generate(item, resultDescription, equivToTelescopeResults);
+        generators.generate(item, resultDescription, equivToTelescopeResult);
+        verify(generator).generate(item, resultDescription, equivToTelescopeResult);
     }
 
     @Test
     public void generatorCreatesCandidatesForNonExcludedId() {
         Item item = new Item();
         item.setId(12345678L);
-        generators.generate(item, resultDescription, equivToTelescopeResults);
-        verify(generator).generate(item, resultDescription, equivToTelescopeResults);
+        generators.generate(item, resultDescription, equivToTelescopeResult);
+        verify(generator).generate(item, resultDescription, equivToTelescopeResult);
     }
 }

@@ -1,22 +1,16 @@
 package org.atlasapi.equiv.generators;
 
-import java.math.BigInteger;
-
+import com.google.common.collect.Iterables;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
-
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-
-import com.google.common.collect.Iterables;
 
 public class AliasResolvingEquivalenceGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
@@ -36,7 +30,7 @@ public class AliasResolvingEquivalenceGenerator<T extends Content> implements Eq
     public ScoredCandidates<T> generate(
             T content,
             ResultDescription desc,
-            EquivToTelescopeResults equivToTelescopeResults
+            EquivToTelescopeResult equivToTelescopeResult
     ) {
         Builder<T> equivalents = DefaultScoredCandidates.fromSource("Alias");
         desc.startStage("Resolving aliases:");
@@ -63,7 +57,7 @@ public class AliasResolvingEquivalenceGenerator<T extends Content> implements Eq
        }
        desc.appendText("Missed %s", resolved.getUnresolved().size());
 
-       equivToTelescopeResults.addGeneratorResult(generatorComponent);
+       equivToTelescopeResult.addGeneratorResult(generatorComponent);
 
        return equivalents.build();
     }

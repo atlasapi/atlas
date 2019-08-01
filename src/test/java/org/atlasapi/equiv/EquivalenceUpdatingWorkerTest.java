@@ -1,16 +1,17 @@
 package org.atlasapi.equiv;
 
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.time.DateTimeZones;
+import com.metabroadcast.common.time.Timestamp;
 import org.atlasapi.equiv.results.persistence.CombinedEquivalenceScore;
 import org.atlasapi.equiv.results.persistence.EquivalenceResultStore;
-import org.atlasapi.equiv.results.persistence.StoredEquivalenceResult;
+import org.atlasapi.equiv.results.persistence.StoredEquivalenceResultTable;
+import org.atlasapi.equiv.results.persistence.StoredEquivalenceResults;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
@@ -22,7 +23,6 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
 import org.joda.time.DateTime;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -30,14 +30,13 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.time.DateTimeZones;
-import com.metabroadcast.common.time.Timestamp;
+import static org.atlasapi.media.entity.Publisher.BBC;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EquivalenceUpdatingWorkerTest {
@@ -155,10 +154,16 @@ public class EquivalenceUpdatingWorkerTest {
         when(resolver.findByCanonicalUris(ImmutableSet.of(eid)))
             .thenReturn(ResolvedContent.builder().put(eid, item).build());
         when(resultStore.forId(eid))
-            .thenReturn(new StoredEquivalenceResult(eid, "title", 
-                    HashBasedTable.<String, String, Double>create(), 
-                    Lists.<CombinedEquivalenceScore>newArrayList(), 
-                    new DateTime(DateTimeZones.UTC), Lists.newArrayList()));
+                .thenReturn(new StoredEquivalenceResults(eid, eid, "title", BBC.title(),
+                        ImmutableList.of(
+                                new StoredEquivalenceResultTable(
+
+                                        HashBasedTable.<String, String, Double>create(),
+                                        Lists.<CombinedEquivalenceScore>newArrayList(),
+                                        ImmutableList.of()
+                                )
+                        ),
+                        new DateTime(DateTimeZones.UTC), Lists.newArrayList()));
         
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);

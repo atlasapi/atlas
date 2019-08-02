@@ -166,7 +166,7 @@ public class AmazonTitleGeneratorTest {
     }
 
     @Test
-    public void testGenerationOnlyIncludesTopLevelContentIfEnabled() {
+    public void testGenerationOnlyIncludesTopLevelContent() {
         String title = "title";
         Item subject = item("uri", title);
         Item item1 = item("uri1", title);
@@ -195,14 +195,6 @@ public class AmazonTitleGeneratorTest {
         );
 
         assertThat(scoredCandidates.candidates().keySet(), is(ImmutableSet.of(item1, series2, brand3)));
-
-        scoredCandidates = contentGenerator.generate(
-                subject,
-                new DefaultDescription(),
-                EquivToTelescopeResult.create("contentId", Publisher.AMAZON_UNBOX.key())
-        );
-
-        assertThat(scoredCandidates.candidates().keySet(), is(ImmutableSet.of(item1, series2, brand3, series4, episode5)));
     }
 
     private <T extends Content> T setCommonFields(T content, String uri, String title) {

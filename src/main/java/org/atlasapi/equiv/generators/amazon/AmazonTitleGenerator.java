@@ -1,7 +1,8 @@
 package org.atlasapi.equiv.generators.amazon;
 
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.stream.MoreCollectors;
+import java.util.Collection;
+import java.util.Set;
+
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
@@ -11,19 +12,17 @@ import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
-import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.remotesite.amazon.AmazonContentWritingItemProcessor;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexEntry;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 
-import java.util.Collection;
-import java.util.Set;
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.collect.ImmutableSet;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -70,7 +69,7 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
                 .filter(cls::isInstance)
                 .map(cls::cast)
                 .filter(content -> publishers.contains(content.getPublisher()))
-                .filter(AmazonTitleGenerator::isTopLevelContent)
+                .filter(AmazonContentWritingItemProcessor::isTopLevelContent)
                 .filter(content -> content.getTitle().equals(subject.getTitle())) //shouldn't be needed but included to be safe
                 .collect(MoreCollectors.toImmutableList());
 
@@ -81,24 +80,6 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
             scoredCandidates.addEquivalent(content, Score.nullScore());
         }
         return scoredCandidates.build();
-    }
-
-    public static boolean isTopLevelContent(Content content) {
-        if(content instanceof Item) {
-            if (content instanceof Episode) {
-                return false;
-            }
-            if (((Item) content).getContainer() != null) {
-                return false;
-            }
-        } else if(content instanceof Container) {
-            if (content instanceof Series) {
-                if (((Series) content).getParent() != null) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     @Override

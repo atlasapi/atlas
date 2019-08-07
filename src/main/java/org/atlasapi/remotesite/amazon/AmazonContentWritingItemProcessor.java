@@ -1,17 +1,19 @@
 package org.atlasapi.remotesite.amazon;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.SetMultimap;
-import com.metabroadcast.columbus.telescope.client.EntityType;
-import com.metabroadcast.common.base.Maybe;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
+import javax.annotation.Nullable;
+
 import org.atlasapi.feeds.tasks.youview.creation.HierarchicalOrdering;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
@@ -34,21 +36,20 @@ import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexEntry;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.common.base.Maybe;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.SetMultimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.remotesite.amazon.AmazonContentExtractor.URI_PREFIX;
@@ -253,7 +254,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         //Title -> Set<Content> (stores object references instead of just uri to reduce memory use)
         SetMultimap<String, Content> titleIndex = HashMultimap.create();
         for (ModelWithPayload<Content> content : seenContent.values()) {
-            if(AmazonTitleGenerator.isTopLevelContent(content.getModel())) {
+            if(isTopLevelContent(content.getModel())) {
                 titleIndex.put(content.getModel().getTitle(), content.getModel());
             }
         }
@@ -741,5 +742,23 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                     content.getPayload()
             );
         }
+    }
+
+    public static boolean isTopLevelContent(Content content) {
+        if(content instanceof Item) {
+            if (content instanceof Episode) {
+                return false;
+            }
+            if (((Item) content).getContainer() != null) {
+                return false;
+            }
+        } else if(content instanceof Container) {
+            if (content instanceof Series) {
+                if (((Series) content).getParent() != null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

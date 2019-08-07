@@ -10,6 +10,8 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.base.Maybe;
+
+import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
 import org.atlasapi.feeds.tasks.youview.creation.HierarchicalOrdering;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
@@ -251,7 +253,9 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
         //Title -> Set<Content> (stores object references instead of just uri to reduce memory use)
         SetMultimap<String, Content> titleIndex = HashMultimap.create();
         for (ModelWithPayload<Content> content : seenContent.values()) {
-            titleIndex.put(content.getModel().getTitle(), content.getModel());
+            if(AmazonTitleGenerator.isTopLevelContent(content.getModel())) {
+                titleIndex.put(content.getModel().getTitle(), content.getModel());
+            }
         }
         Set<String> titles = titleIndex.keySet();
         log.info("Creating title index for {} unique titles", titles.size());

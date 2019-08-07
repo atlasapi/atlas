@@ -70,7 +70,7 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
                 .filter(cls::isInstance)
                 .map(cls::cast)
                 .filter(content -> publishers.contains(content.getPublisher()))
-                .filter(this::topLevelContent)
+                .filter(AmazonTitleGenerator::isTopLevelContent)
                 .filter(content -> content.getTitle().equals(subject.getTitle())) //shouldn't be needed but included to be safe
                 .collect(MoreCollectors.toImmutableList());
 
@@ -83,7 +83,7 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
         return scoredCandidates.build();
     }
 
-    private boolean topLevelContent(Content content) {
+    public static boolean isTopLevelContent(Content content) {
         if(content instanceof Item) {
             if (content instanceof Episode) {
                 return false;

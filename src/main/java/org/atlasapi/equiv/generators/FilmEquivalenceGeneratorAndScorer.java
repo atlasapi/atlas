@@ -127,6 +127,7 @@ public class FilmEquivalenceGeneratorAndScorer implements EquivalenceGenerator<I
         generatorComponent.setComponentName("Film Equivalence Generator");
 
         if (!(item instanceof Film) || !item.isActivelyPublished()) {
+            desc.appendText("Won't generate: subject is not a film");
             return scores.build();
         }
         

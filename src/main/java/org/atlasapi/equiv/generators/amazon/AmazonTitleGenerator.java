@@ -25,6 +25,7 @@ import com.metabroadcast.common.stream.MoreCollectors;
 import com.google.common.collect.ImmutableSet;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.remotesite.amazon.AmazonContentWritingItemProcessor.isTopLevelContent;
 
 /**
  * An exact title generator backed by a dedicated database index for amazon content
@@ -58,9 +59,14 @@ public class AmazonTitleGenerator<T extends Content> implements EquivalenceGener
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("Amazon Title Generator");
 
-        AmazonTitleIndexEntry indexEntry = amazonTitleIndexStore.getIndexEntry(subject.getTitle());
-
         DefaultScoredCandidates.Builder<T> scoredCandidates = DefaultScoredCandidates.fromSource("Amazon Title");
+
+        if (!isTopLevelContent(subject)) {
+            desc.appendText("Won't generate: subject not top level content");
+            return scoredCandidates.build();
+        }
+
+        AmazonTitleIndexEntry indexEntry = amazonTitleIndexStore.getIndexEntry(subject.getTitle());
 
         ResolvedContent resolved = resolver.findByCanonicalUris(indexEntry.getUris());
 

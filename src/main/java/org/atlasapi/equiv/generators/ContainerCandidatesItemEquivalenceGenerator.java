@@ -76,6 +76,7 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
                         !Objects.equals(child.getId(), subject.getId())) {
 
                         result.addEquivalent(child, Score.NULL_SCORE);
+                        desc.appendText("Candidate: %s", child.getCanonicalUri());
                         generatorComponent.addComponentResult(
                                 child.getId(),
                                 ""

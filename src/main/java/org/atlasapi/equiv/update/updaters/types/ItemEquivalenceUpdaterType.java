@@ -21,7 +21,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequen
 import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToAmazonItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToPaItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -61,7 +61,7 @@ public enum ItemEquivalenceUpdaterType {
             AmazonToAmazonItemUpdaterProvider.create()
     ),
     AMAZON_ITEM(
-            AmazonToPaItemUpdaterProvider.create()
+            AmazonItemUpdaterProvider.create()
     ),
     VOD_WITH_SERIES_SEQUENCE_ITEM(
             VodItemWithSeriesSequenceUpdaterProvider.create()

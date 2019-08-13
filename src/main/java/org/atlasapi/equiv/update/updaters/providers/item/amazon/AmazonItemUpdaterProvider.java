@@ -30,13 +30,13 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class AmazonToPaItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
+public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
-    private AmazonToPaItemUpdaterProvider() {
+    private AmazonItemUpdaterProvider() {
     }
 
-    public static AmazonToPaItemUpdaterProvider create() {
-        return new AmazonToPaItemUpdaterProvider();
+    public static AmazonItemUpdaterProvider create() {
+        return new AmazonItemUpdaterProvider();
     }
 
     @Override

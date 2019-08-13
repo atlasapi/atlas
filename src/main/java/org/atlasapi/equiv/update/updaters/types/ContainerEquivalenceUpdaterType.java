@@ -14,8 +14,8 @@ import org.atlasapi.equiv.update.updaters.providers.container.VodContainerUpdate
 import org.atlasapi.equiv.update.updaters.providers.container.WikipediaContainerUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonSeriesUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToPaContainerUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToPaSeriesUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonSeriesUpdaterProvider;
 import org.atlasapi.media.entity.Container;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -52,13 +52,13 @@ public enum ContainerEquivalenceUpdaterType {
             AmazonToAmazonContainerUpdaterProvider.create()
     ),
     AMAZON_CONTAINER(
-            AmazonToPaContainerUpdaterProvider.create()
+            AmazonContainerUpdaterProvider.create()
     ),
     AMAZON_AMAZON_SERIES(
             AmazonToAmazonSeriesUpdaterProvider.create()
     ),
     AMAZON_SERIES(
-            AmazonToPaSeriesUpdaterProvider.create()
+            AmazonSeriesUpdaterProvider.create()
     ),
     WIKIPEDIA_CONTAINER(
             WikipediaContainerUpdateProvider.create()

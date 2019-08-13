@@ -26,13 +26,17 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class AmazonToPaSeriesUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
+/***
+ * Identical to {@link AmazonToAmazonSeriesUpdaterProvider}. It has been split for consistency
+ * and also to allow easier publisher-specific changes to Amazon equiv.
+ */
+public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
-    private AmazonToPaSeriesUpdaterProvider() {
+    private AmazonSeriesUpdaterProvider() {
     }
 
-    public static AmazonToPaSeriesUpdaterProvider create() {
-        return new AmazonToPaSeriesUpdaterProvider();
+    public static AmazonSeriesUpdaterProvider create() {
+        return new AmazonSeriesUpdaterProvider();
     }
 
     @Override

@@ -1,15 +1,12 @@
-package org.atlasapi.equiv.update.updaters.providers.item;
+package org.atlasapi.equiv.update.updaters.providers.item.amazon;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
-import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
-import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
-import org.atlasapi.equiv.results.extractors.ExcludePublisherThenExtractExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
@@ -30,17 +27,16 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
+public class AmazonToPaItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
-public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
-
-    private AmazonItemUpdaterProvider() {
+    private AmazonToPaItemUpdaterProvider() {
     }
 
-    public static AmazonItemUpdaterProvider create() {
-        return new AmazonItemUpdaterProvider();
+    public static AmazonToPaItemUpdaterProvider create() {
+        return new AmazonToPaItemUpdaterProvider();
     }
 
     @Override
@@ -73,12 +69,6 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         Score.nullScore(),
                                         Score.nullScore(),
                                         Score.nullScore()
-                                ),
-                                new AmazonTitleGenerator<>(
-                                        dependencies.getAmazonTitleIndexStore(),
-                                        dependencies.getContentResolver(),
-                                        Item.class,
-                                        AMAZON_UNBOX
                                 )
                         )
                 )
@@ -111,18 +101,8 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                 new UnpublishedContentFilter<>()
                         ))
                 )
-                .withExtractors(
-                        ImmutableList.of(
-                                //get all items that scored perfectly everywhere.
-                                //this should equiv all amazon versions of the same content together
-                                //then let it equate with other stuff as well.
-                                AllOverOrEqThresholdExtractor.create(3.00), // TODO: dropped as Description scorer removed
-                                ExcludePublisherThenExtractExtractor.create(
-                                        AMAZON_UNBOX, //we don't want to equiv with remaining amazon items if they don't have a perfect score
-                                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
-                                )
-
-                        )
+                .withExtractor(
+                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
                 )
                 .build();
     }

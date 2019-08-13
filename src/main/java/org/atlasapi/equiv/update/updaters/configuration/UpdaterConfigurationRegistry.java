@@ -1,14 +1,16 @@
 package org.atlasapi.equiv.update.updaters.configuration;
 
+import java.util.Set;
+
+import org.atlasapi.media.entity.Publisher;
+
+import com.metabroadcast.common.collect.MoreSets;
+import com.metabroadcast.common.stream.MoreCollectors;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.collect.MoreSets;
-import com.metabroadcast.common.stream.MoreCollectors;
-import org.atlasapi.media.entity.Publisher;
-
-import java.util.Set;
 
 import static java.lang.String.format;
 import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.NOP_CONTAINER_HANDLER;
@@ -26,6 +28,8 @@ import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfigurat
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.NON_STANDARD_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.TARGET_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.VF_SOURCES;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_AMAZON_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_AMAZON_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.BROADCAST_ITEM_CONTAINER;
@@ -39,6 +43,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.STANDARD_TOP_LEVEL_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.WIKIPEDIA_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_AMAZON_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_X_ITEM;
@@ -869,29 +874,34 @@ public class UpdaterConfigurationRegistry {
     }
 
     private static UpdaterConfiguration makeAmazonUnboxConfiguration() {
-        ImmutableSet<Publisher> targetSources =
-                ImmutableSet.of(AMAZON_UNBOX, PA, RADIO_TIMES_UPCOMING);
+        ImmutableSet<Publisher> amazonSource =
+                ImmutableSet.of(AMAZON_UNBOX);
+        ImmutableSet<Publisher> otherSources =
+                ImmutableSet.of(PA, RADIO_TIMES_UPCOMING);
 
         return UpdaterConfiguration.builder()
                 .withSource(AMAZON_UNBOX)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                AMAZON_ITEM, targetSources
+                                AMAZON_AMAZON_ITEM, amazonSource,
+                                AMAZON_ITEM, otherSources
                         ),
                         STRICT_EPISODE_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                AMAZON_CONTAINER, targetSources
-                        ),
+                                AMAZON_AMAZON_CONTAINER, amazonSource,
+                                AMAZON_CONTAINER, otherSources
+                                ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                AMAZON_SERIES, targetSources
-                        ),
+                                AMAZON_AMAZON_SERIES, amazonSource,
+                                AMAZON_SERIES, otherSources
+                                ),
                         STANDARD_SERIES_HANDLER,
                         STANDARD_SERIES_MESSENGER
                 )

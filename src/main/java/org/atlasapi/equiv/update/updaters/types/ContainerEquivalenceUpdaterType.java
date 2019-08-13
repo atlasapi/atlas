@@ -1,8 +1,6 @@
 package org.atlasapi.equiv.update.updaters.types;
 
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.AmazonContainerUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.AmazonSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BroadcastItemContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BtVodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.FacebookContainerUpdaterProvider;
@@ -14,6 +12,10 @@ import org.atlasapi.equiv.update.updaters.providers.container.StandardSeriesUpda
 import org.atlasapi.equiv.update.updaters.providers.container.StandardTopLevelContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.VodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.WikipediaContainerUpdateProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonSeriesUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToPaContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToPaSeriesUpdaterProvider;
 import org.atlasapi.media.entity.Container;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -46,11 +48,17 @@ public enum ContainerEquivalenceUpdaterType {
     RTE_VOD_CONTAINER(
             RteContainerUpdaterProvider.create()
     ),
+    AMAZON_AMAZON_CONTAINER(
+            AmazonToAmazonContainerUpdaterProvider.create()
+    ),
     AMAZON_CONTAINER(
-            AmazonContainerUpdaterProvider.create()
+            AmazonToPaContainerUpdaterProvider.create()
+    ),
+    AMAZON_AMAZON_SERIES(
+            AmazonToAmazonSeriesUpdaterProvider.create()
     ),
     AMAZON_SERIES(
-            AmazonSeriesUpdaterProvider.create()
+            AmazonToPaSeriesUpdaterProvider.create()
     ),
     WIKIPEDIA_CONTAINER(
             WikipediaContainerUpdateProvider.create()

@@ -27,8 +27,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /***
- * Identical to {@link AmazonToAmazonSeriesUpdaterProvider}. It has been split for consistency
- * and also to allow easier publisher-specific changes to Amazon equiv.
+ * Like {@link AmazonToAmazonSeriesUpdaterProvider}, except different extractor (as before the split of
+ * Amazon equiv into Amazon-Amazon and Amazon-Everything else.
  */
 public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 

@@ -57,7 +57,8 @@ public class AmazonToAmazonItemUpdaterProvider implements EquivalenceResultUpdat
                         ImmutableSet.of(
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers
                                 ),
                                 new AmazonTitleGenerator<>(
                                         dependencies.getAmazonTitleIndexStore(),

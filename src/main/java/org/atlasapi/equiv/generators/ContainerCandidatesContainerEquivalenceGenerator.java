@@ -19,6 +19,7 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -27,6 +28,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Generates equivalences for an non-top-level Container based on the children of the equivalences
@@ -37,6 +39,8 @@ public class ContainerCandidatesContainerEquivalenceGenerator
 
     private final ContentResolver contentResolver;
     private final EquivalenceSummaryStore equivSummaryStore;
+    private final Set<Publisher> publishers;
+
     private final Function<Brand, Iterable<Series>> TO_SERIES = new Function<Brand, Iterable<Series>>() {
         @Override
         public Iterable<Series> apply(@Nullable Brand input) {
@@ -49,9 +53,18 @@ public class ContainerCandidatesContainerEquivalenceGenerator
     public ContainerCandidatesContainerEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore
+    ){
+        this(contentResolver,equivSummaryStore, null);
+    }
+
+    public ContainerCandidatesContainerEquivalenceGenerator(
+            ContentResolver contentResolver,
+            EquivalenceSummaryStore equivSummaryStore,
+            @Nullable Set<Publisher> publishers
     ) {
         this.contentResolver = contentResolver;
         this.equivSummaryStore = equivSummaryStore;
+        this.publishers = (publishers == null) ? null : ImmutableSet.copyOf(publishers);
     }
 
     @Override
@@ -75,6 +88,11 @@ public class ContainerCandidatesContainerEquivalenceGenerator
                     for (Series candidateSeries : seriesOf(
                             Iterables.transform(summary.getEquivalents().values(), TO_CANONICAL_URI)
                     )) {
+                        if (publishers != null){
+                            if (!publishers.contains(candidateSeries.getPublisher())){
+                                continue;
+                            }
+                        }
                         //if its published, and its not the subject itself, we have a winner.
                         if (candidateSeries.isActivelyPublished()
                             && !Objects.equals(candidateSeries.getId(), subject.getId())) {

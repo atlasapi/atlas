@@ -1,8 +1,10 @@
 package org.atlasapi.equiv.generators;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.atlasapi.equiv.EquivalenceSummary;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
@@ -18,6 +20,7 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 
@@ -26,6 +29,7 @@ import com.metabroadcast.common.collect.OptionalMap;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.gdata.util.common.base.Nullable;
 
 /**
  * Generates equivalences for an Item based on the children of the equivalence
@@ -35,13 +39,23 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
 
     private final ContentResolver contentResolver;
     private final EquivalenceSummaryStore equivSummaryStore;
+    private final Set<Publisher> publishers;
 
     public ContainerCandidatesItemEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore
     ) {
+        this(contentResolver, equivSummaryStore, null);
+    }
+
+    public ContainerCandidatesItemEquivalenceGenerator(
+            ContentResolver contentResolver,
+            EquivalenceSummaryStore equivSummaryStore,
+            @Nullable Collection<Publisher> publishers
+    ) {
         this.contentResolver = contentResolver;
         this.equivSummaryStore = equivSummaryStore;
+        this.publishers = (publishers == null) ? null : ImmutableSet.copyOf(publishers);
     }
 
     @Override
@@ -69,7 +83,11 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
                     Container resolvedContainer = Iterables.filter(resolvedContent, Container.class)
                             .iterator()
                             .next();
-
+                    if (publishers != null){
+                        if (!publishers.contains(resolvedContainer.getPublisher())){
+                            continue;
+                        }
+                    }
                     for (Item child : itemsOf(resolvedContainer)) {
                         //if its published, and its not the subject itself, we have a winner!
                         if (child.isActivelyPublished() &&
@@ -105,7 +123,7 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
     private OptionalMap<String, EquivalenceSummary> parentSummary(String parentUri) {
         return equivSummaryStore.summariesForUris(ImmutableSet.of(parentUri));
     }
-    
+
     @Override
     public String toString() {
         return "Container's candidates generator";

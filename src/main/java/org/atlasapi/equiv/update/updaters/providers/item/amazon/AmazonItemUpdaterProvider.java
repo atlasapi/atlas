@@ -56,7 +56,8 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                         ImmutableSet.of(
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers
                                 ),
                                 new FilmEquivalenceGeneratorAndScorer(
                                         dependencies.getSearchResolver(),

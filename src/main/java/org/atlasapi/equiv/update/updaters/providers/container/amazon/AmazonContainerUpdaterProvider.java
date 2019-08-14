@@ -25,6 +25,10 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+// N.B. There is some flip-flopping happening on Amazon-PA equiv that has to do with the sequence
+// stitching that happens at container level when equiv is run. This can cause situations such as
+// Amazon items equiv'ing to PA items when equiv run on container level, but not equiv'ing when run
+// on item level.
 public class AmazonContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
     private AmazonContainerUpdaterProvider() {

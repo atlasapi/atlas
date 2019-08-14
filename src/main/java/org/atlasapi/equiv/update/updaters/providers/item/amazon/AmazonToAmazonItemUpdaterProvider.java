@@ -55,6 +55,7 @@ public class AmazonToAmazonItemUpdaterProvider implements EquivalenceResultUpdat
                         //Also, this SHOULD NOT GENERATE candidates that belong to different brands,
                         //because the scorer DOES NOT CHECK for that and WILL equiv them together
                         ImmutableSet.of(
+                                // This will only generate the candidates based on the container's strong candidates
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),

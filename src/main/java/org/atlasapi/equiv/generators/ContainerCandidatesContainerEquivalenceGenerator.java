@@ -151,22 +151,14 @@ public class ContainerCandidatesContainerEquivalenceGenerator
     private ImmutableList<String> fetchContainerUris(EquivalenceSummary summary,
             boolean strongCandidatesOnly, @Nullable Set<Publisher> publishers) {
         //if we are looking at equivalents only, then we can filter out by publisher before resolving
-        if(strongCandidatesOnly){
-            if(publishers != null){
-                return summary.getEquivalents().entries().stream()
-                        .filter(input -> publishers.contains(input.getKey()))
-                        .map(Map.Entry::getValue)
-                        .map(ContentRef::getCanonicalUri)
-                        .collect(MoreCollectors.toImmutableList());
-            }
-            return summary.getEquivalents()
-                    .entries()
-                    .stream()
+        if (strongCandidatesOnly) {
+            return summary.getEquivalents().entries().stream()
+                    .filter(input -> publishers == null || publishers.contains(input.getKey()))
                     .map(Map.Entry::getValue)
                     .map(ContentRef::getCanonicalUri)
+                    .distinct()
                     .collect(MoreCollectors.toImmutableList());
-        }
-        else{
+        } else {
             return summary.getCandidates();
         }
     }

@@ -55,8 +55,6 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                         //whatever generators are used here, should prevent the creation of
                         //candidates which are the item itself (because there is no further filtering
                         //to remove them, whereas the Publisher filter used elsewhere does that).
-                        //Also, this SHOULD NOT GENERATE candidates that belong to different brands,
-                        //because the scorer DOES NOT CHECK for that and WILL equiv them together
                         ImmutableSet.of(
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),

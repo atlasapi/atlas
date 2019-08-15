@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableSet;
 
 /***
  * Like {@link AmazonSeriesUpdaterProvider}, except different extractor (as before the split of
- * Amazon equiv into Amazon-Amazon and Amazon-Everything else.
+ * Amazon equiv into Amazon-Amazon and Amazon-Everything else)
  */
 public class AmazonToAmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
@@ -49,9 +49,13 @@ public class AmazonToAmazonSeriesUpdaterProvider implements EquivalenceResultUpd
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
+                                // This should only generate the candidates based on the container's
+                                // strong candidates, otherwise we get candidates from other brands
                                 new ContainerCandidatesContainerEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers,
+                                        true
                                 )
                         )
                 )

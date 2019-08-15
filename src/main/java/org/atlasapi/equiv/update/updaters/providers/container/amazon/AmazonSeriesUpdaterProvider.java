@@ -51,7 +51,8 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProv
                         ImmutableSet.of(
                                 new ContainerCandidatesContainerEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers
                                 )
                         )
                 )

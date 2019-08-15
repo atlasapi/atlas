@@ -3,9 +3,11 @@ package org.atlasapi.equiv.generators;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.equiv.EquivalenceSummary;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -25,8 +27,10 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 
 import com.metabroadcast.common.collect.OptionalMap;
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.gdata.util.common.base.Nullable;
@@ -40,22 +44,33 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
     private final ContentResolver contentResolver;
     private final EquivalenceSummaryStore equivSummaryStore;
     private final Set<Publisher> publishers;
+    private final boolean strongCandidatesOnly;
 
     public ContainerCandidatesItemEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore
     ) {
-        this(contentResolver, equivSummaryStore, null);
+        this(contentResolver, equivSummaryStore, null, false);
     }
 
     public ContainerCandidatesItemEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore,
-            @Nullable Collection<Publisher> publishers
+            @Nullable Collection<Publisher> publishers,
+            boolean strongCandidatesOnly
     ) {
         this.contentResolver = contentResolver;
         this.equivSummaryStore = equivSummaryStore;
         this.publishers = (publishers == null) ? null : ImmutableSet.copyOf(publishers);
+        this.strongCandidatesOnly = strongCandidatesOnly;
+    }
+
+    public ContainerCandidatesItemEquivalenceGenerator(
+            ContentResolver contentResolver,
+            EquivalenceSummaryStore equivSummaryStore,
+            @Nullable Set<Publisher> publishers
+    ){
+        this(contentResolver,equivSummaryStore, publishers, false);
     }
 
     @Override
@@ -77,12 +92,15 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
 
             if (optional.isPresent()) {
                 EquivalenceSummary summary = optional.get();
-                for (String containerUri : summary.getCandidates()) {
+                ImmutableList<String> containerUris = fetchContainerUris(summary, strongCandidatesOnly, publishers);
+                for (String containerUri : containerUris) {
                     List<Identified> resolvedContent = contentResolver.findByCanonicalUris(
                             Collections.singleton(containerUri)).getAllResolvedResults();
                     Container resolvedContainer = Iterables.filter(resolvedContent, Container.class)
                             .iterator()
                             .next();
+                    //this is necessary for when we looked at all candidates;if we looked at container's
+                    //equivalents only, then we already filtered out by publisher before resolving;
                     if (publishers != null){
                         if (!publishers.contains(resolvedContainer.getPublisher())){
                             continue;
@@ -114,6 +132,7 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
         return result.build();
     }
 
+
     private Iterable<Item> itemsOf(Container container){
         Iterable<String> childUris = Iterables.transform(container.getChildRefs(), ChildRef.TO_URI);
         ResolvedContent children = contentResolver.findByCanonicalUris(childUris);
@@ -122,6 +141,29 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
 
     private OptionalMap<String, EquivalenceSummary> parentSummary(String parentUri) {
         return equivSummaryStore.summariesForUris(ImmutableSet.of(parentUri));
+    }
+
+    private ImmutableList<String> fetchContainerUris(EquivalenceSummary summary,
+            boolean strongCandidatesOnly, @Nullable Set<Publisher> publishers) {
+        //if we are looking at equivalents only, then we can filter out by publisher before resolving
+        if(strongCandidatesOnly){
+            if(publishers != null){
+                return summary.getEquivalents().entries().stream()
+                        .filter(input -> publishers.contains(input.getKey()))
+                        .map(Map.Entry::getValue)
+                        .map(ContentRef::getCanonicalUri)
+                        .collect(MoreCollectors.toImmutableList());
+            }
+            return summary.getEquivalents()
+                    .entries()
+                    .stream()
+                    .map(Map.Entry::getValue)
+                    .map(ContentRef::getCanonicalUri)
+                    .collect(MoreCollectors.toImmutableList());
+        }
+        else{
+            return summary.getCandidates();
+        }
     }
 
     @Override

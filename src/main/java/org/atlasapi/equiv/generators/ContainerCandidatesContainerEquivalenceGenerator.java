@@ -2,6 +2,7 @@ package org.atlasapi.equiv.generators;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -28,9 +29,11 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 
 import com.metabroadcast.common.collect.OptionalMap;
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -44,22 +47,33 @@ public class ContainerCandidatesContainerEquivalenceGenerator
     private final ContentResolver contentResolver;
     private final EquivalenceSummaryStore equivSummaryStore;
     private final Set<Publisher> publishers;
+    private final boolean strongCandidatesOnly;
 
     public ContainerCandidatesContainerEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore
     ){
-        this(contentResolver,equivSummaryStore, null);
+        this(contentResolver,equivSummaryStore, null, false);
     }
 
     public ContainerCandidatesContainerEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore,
             @Nullable Set<Publisher> publishers
+    ){
+        this(contentResolver,equivSummaryStore, publishers, false);
+    }
+
+    public ContainerCandidatesContainerEquivalenceGenerator(
+            ContentResolver contentResolver,
+            EquivalenceSummaryStore equivSummaryStore,
+            @Nullable Set<Publisher> publishers,
+            boolean strongCandidatesOnly
     ) {
         this.contentResolver = contentResolver;
         this.equivSummaryStore = equivSummaryStore;
         this.publishers = (publishers == null) ? null : ImmutableSet.copyOf(publishers);
+        this.strongCandidatesOnly = strongCandidatesOnly;
     }
 
     @Override
@@ -89,12 +103,15 @@ public class ContainerCandidatesContainerEquivalenceGenerator
         Optional<EquivalenceSummary> optional = containerSummary.get(parentUri);
         if (optional.isPresent()) {
             EquivalenceSummary summary = optional.get();
-            for (String containerUri : summary.getCandidates()) {
+            ImmutableList<String> containerUris = fetchContainerUris(summary, strongCandidatesOnly, publishers);
+            for (String containerUri : containerUris) {
                 List<Identified> resolvedContent = contentResolver.findByCanonicalUris(
                         Collections.singleton(containerUri)).getAllResolvedResults();
                 Brand resolvedContainer = Iterables.filter(resolvedContent, Brand.class)
                         .iterator()
                         .next();
+                //this is necessary for when we looked at all candidates;if we looked at container's
+                //equivalents only, then we already filtered out by publisher before resolving;
                 if (publishers != null) {
                     if (!publishers.contains(resolvedContainer.getPublisher())) {
                         continue;
@@ -131,6 +148,29 @@ public class ContainerCandidatesContainerEquivalenceGenerator
         return equivSummaryStore.summariesForUris(ImmutableSet.of(parentUri));
     }
 
+    private ImmutableList<String> fetchContainerUris(EquivalenceSummary summary,
+            boolean strongCandidatesOnly, @Nullable Set<Publisher> publishers) {
+        //if we are looking at equivalents only, then we can filter out by publisher before resolving
+        if(strongCandidatesOnly){
+            if(publishers != null){
+                return summary.getEquivalents().entries().stream()
+                        .filter(input -> publishers.contains(input.getKey()))
+                        .map(Map.Entry::getValue)
+                        .map(ContentRef::getCanonicalUri)
+                        .collect(MoreCollectors.toImmutableList());
+            }
+            return summary.getEquivalents()
+                    .entries()
+                    .stream()
+                    .map(Map.Entry::getValue)
+                    .map(ContentRef::getCanonicalUri)
+                    .collect(MoreCollectors.toImmutableList());
+        }
+        else{
+            return summary.getCandidates();
+        }
+    }
+
     @Override
     public String toString() {
         return "Container's candidates generator";
@@ -138,5 +178,5 @@ public class ContainerCandidatesContainerEquivalenceGenerator
     
     private static final Function<ContentRef, String> TO_CANONICAL_URI = input-> input.getCanonicalUri() ;
 
-    
+
 }

@@ -1152,7 +1152,8 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of(PA, BBC_NITRO, UKTV)
+                                //nitro and uktv were removed since they are explicitly equived to by editors
+                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of(PA)
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
@@ -1181,7 +1182,8 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of(PA, UKTV)
+                                //uktv was removed since it is explicitly equived to by editors
+                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of(PA)
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
@@ -1197,6 +1199,12 @@ public class UpdaterConfigurationRegistry {
     }
 
     private static UpdaterConfiguration makeC4PmlsdConfiguration() {
+        ImmutableSet<Publisher> topLevelContainerTargetSources =
+                Sets.difference(
+                        TARGET_SOURCES,
+                        //Top level containers from the following sources are explicitly equived to by editors
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, C4_PMLSD, C5_DATA_SUBMISSION, UKTV)
+                ).immutableCopy();
         return UpdaterConfiguration.builder()
                 .withSource(C4_PMLSD)
                 .withItemEquivalenceUpdater(
@@ -1209,7 +1217,7 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, TARGET_SOURCES
+                                STANDARD_TOP_LEVEL_CONTAINER, topLevelContainerTargetSources
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
@@ -1225,6 +1233,12 @@ public class UpdaterConfigurationRegistry {
     }
 
     private static UpdaterConfiguration makeUktvConfiguration() {
+        ImmutableSet<Publisher> topLevelContainerTargetSources =
+                Sets.difference(
+                        TARGET_SOURCES,
+                        //Top level containers from the following sources are explicitly equived to by editors
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, C4_PMLSD, C5_DATA_SUBMISSION, UKTV)
+                ).immutableCopy();
         return UpdaterConfiguration.builder()
                 .withSource(UKTV)
                 .withItemEquivalenceUpdater(
@@ -1237,7 +1251,7 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, TARGET_SOURCES
+                                STANDARD_TOP_LEVEL_CONTAINER, topLevelContainerTargetSources
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
@@ -1253,6 +1267,12 @@ public class UpdaterConfigurationRegistry {
     }
 
     private static UpdaterConfiguration makeC5DataSubmissionConfiguration() {
+        ImmutableSet<Publisher> topLevelContainerTargetSources =
+                Sets.difference(
+                        TARGET_SOURCES,
+                        //Top level containers from the following sources are explicitly equived to by editors
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, C4_PMLSD, C5_DATA_SUBMISSION, UKTV)
+                ).immutableCopy();
         return UpdaterConfiguration.builder()
                 .withSource(C5_DATA_SUBMISSION)
                 .withItemEquivalenceUpdater(
@@ -1265,7 +1285,7 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, TARGET_SOURCES
+                                STANDARD_TOP_LEVEL_CONTAINER, topLevelContainerTargetSources
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER

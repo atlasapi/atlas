@@ -2,6 +2,8 @@ package org.atlasapi.equiv.update;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerators;
@@ -21,6 +23,7 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.StreamSupport;
@@ -32,6 +35,9 @@ public class ContentEquivalenceResultUpdater<T extends Content> implements Equiv
     private final EquivalenceGenerators<T> generators;
     private final EquivalenceScorers<T> scorers;
     private final DefaultEquivalenceResultBuilder<T> resultBuilder;
+
+    private final SubstitutionTableNumberCodec codec
+            = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private final EquivalenceUpdaterMetadata metadata;
 
@@ -75,7 +81,7 @@ public class ContentEquivalenceResultUpdater<T extends Content> implements Equiv
             EquivToTelescopeResults resultsForTelescope
     ) {
         EquivToTelescopeResult resultForTelescope = EquivToTelescopeResult.create(
-                String.valueOf(content.getId()),
+                codec.encode(BigInteger.valueOf(content.getId())),
                 content.getPublisher().toString()
         );
 

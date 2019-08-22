@@ -257,19 +257,28 @@ public class ChannelWriteExecutor {
     }
 
     private void createOrUpdateImage(Channel existingChannel, ImageDetails imageDetails) {
-        Set<Image> channelImages = Sets.newHashSet(existingChannel.getImages());
-        Optional<Image> possibleImage = getPossibleImageByTheme(channelImages, imageDetails.getTheme());
+        Set<Image> originalChannelImages = Sets.newHashSet(existingChannel.getImages());
+        Optional<Image> possibleImage = getPossibleImageByTheme(originalChannelImages, imageDetails.getTheme());
 
         if (possibleImage.isPresent()) {
             Image imageToBeUpdated = possibleImage.get();
 
-            channelImages.remove(imageToBeUpdated);
+            Set<Image> updatedChannelImages = Sets.newHashSet(originalChannelImages);
+
+            updatedChannelImages.remove(imageToBeUpdated);
 
             Image updatedImage = updateImage(imageDetails, imageToBeUpdated);
 
-            channelImages.add(updatedImage);
+            updatedChannelImages.add(updatedImage);
 
-            setImagesOnChannel(existingChannel, channelImages);
+            //Try and prevent concurrency issues caused by updating multiple images at the same time
+            if(originalChannelImages.equals(existingChannel.getImages())) {
+                setImagesOnChannel(existingChannel, updatedChannelImages);
+            }
+            else{
+                createOrUpdateImage(existingChannel, imageDetails);
+            }
+
         } else {
             Image newImage = createImage(imageDetails);
 

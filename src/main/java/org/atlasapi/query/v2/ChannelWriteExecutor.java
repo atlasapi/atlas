@@ -271,19 +271,19 @@ public class ChannelWriteExecutor {
 
             updatedChannelImages.add(updatedImage);
 
-            //Try and prevent concurrency issues caused by updating multiple images at the same time
-            if(originalChannelImages.equals(existingChannel.getImages())) {
-                setImagesOnChannel(existingChannel, updatedChannelImages);
-            }
-            else{
-                createOrUpdateImage(existingChannel, imageDetails);
-            }
+            setImagesOnChannel(existingChannel, updatedChannelImages);
 
         } else {
             Image newImage = createImage(imageDetails);
 
             existingChannel.addImage(newImage);
         }
+
+        //Try and prevent concurrency issues caused by updating multiple images at the same time
+        if(!originalChannelImages.equals(existingChannel.getImages())) {
+            createOrUpdateImage(existingChannel, imageDetails);
+        }
+
     }
 
     private void setImagesOnChannel(Channel existingChannel, Set<Image> channelImages) {

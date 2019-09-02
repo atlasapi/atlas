@@ -55,6 +55,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STANDARD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STRICT_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_TO_BBC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_WITH_SERIES_SEQUENCE_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.WIKIPEDIA_ITEM;
@@ -1117,7 +1118,7 @@ public class UpdaterConfigurationRegistry {
                                         BARB_TRANSMISSIONS,
                                         BARB_MASTER
                                 ),
-                                BBC_TO_TXLOGS_ITEM, ImmutableSet.of(BBC_NITRO)
+                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

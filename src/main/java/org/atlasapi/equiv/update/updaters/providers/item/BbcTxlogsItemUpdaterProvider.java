@@ -1,11 +1,12 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqHighestNonEmptyThresholdExtractor;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
@@ -25,25 +26,29 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-import org.joda.time.Duration;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import org.joda.time.Duration;
 
 public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
-    private BbcTxlogsItemUpdaterProvider() {
+    public final boolean isSubjectTxlog;
 
+    private BbcTxlogsItemUpdaterProvider(boolean isSubjectTxlog) {
+        this.isSubjectTxlog = isSubjectTxlog;
     }
 
-    public static BbcTxlogsItemUpdaterProvider create() {
-        return new BbcTxlogsItemUpdaterProvider();
+    public static BbcTxlogsItemUpdaterProvider create(boolean isSubjectTxlog) {
+        return new BbcTxlogsItemUpdaterProvider(isSubjectTxlog);
     }
 
     @Override
     public EquivalenceResultUpdater<Item> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies, Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceResultUpdater.<Item>builder()
+        ContentEquivalenceResultUpdater.ExtractorStep<Item> updaterBuilder =
+                ContentEquivalenceResultUpdater.<Item>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
@@ -105,10 +110,20 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()
                         ))
-                )
-                .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(4)
-                )
-                .build();
+                );
+        if(isSubjectTxlog) {
+            return updaterBuilder
+                    .withExtractor(
+                            new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
+                    )
+                    .build();
+        }
+        else {
+            return updaterBuilder
+                    .withExtractor(
+                            AllOverOrEqThresholdExtractor.create(4)
+                    )
+                    .build();
+        }
     }
 }

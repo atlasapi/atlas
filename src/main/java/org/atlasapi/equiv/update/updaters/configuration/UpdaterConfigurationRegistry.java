@@ -42,7 +42,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_X_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BBC_TXLOGS_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BBC_TO_TXLOGS_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
@@ -1117,7 +1117,7 @@ public class UpdaterConfigurationRegistry {
                                         BARB_TRANSMISSIONS,
                                         BARB_MASTER
                                 ),
-                                BBC_TXLOGS_ITEM, ImmutableSet.of(BBC_NITRO)
+                                BBC_TO_TXLOGS_ITEM, ImmutableSet.of(BBC_NITRO)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -1175,7 +1175,7 @@ public class UpdaterConfigurationRegistry {
                         ImmutableMap.of(
                                 STANDARD_ITEM, ImmutableSet.of(PA, UKTV),
                                 BARB_ITEM, ImmutableSet.of(BARB_MASTER),
-                                BBC_TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
+                                BBC_TO_TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

@@ -74,11 +74,9 @@ public enum ItemEquivalenceUpdaterType {
     TXLOGS_ITEM(
             TxlogsItemUpdaterProvider.create()
     ),
-    //this will be false
     BBC_TO_TXLOGS_ITEM(
             BbcTxlogsItemUpdaterProvider.create(false)
     ),
-    //this will be true
     TXLOGS_TO_BBC_ITEM(
             BbcTxlogsItemUpdaterProvider.create(true)
     ),

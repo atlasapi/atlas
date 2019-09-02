@@ -38,6 +38,8 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQua
 /**
  * This is mostly a copy of {@link BroadcastMatchingItemEquivalenceGeneratorAndScorer} class but with some logic
  * stripped out. For certain channels it also generates candidates from additional channels.
+ * Candidates are expected to have a maximum score of 3, so we do not add up the score from multiple
+ * broadcasts; instead, we replace the existing one (if the new one is higher).
  */
 public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
 
@@ -135,7 +137,9 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasQualifyingBroadcast(scheduleItem, broadcast, flexibility)) {
-                    scores.addEquivalent(scheduleItem, scoreOnMatch);
+                    //we want the maximum score for this scorer to be scoreOnMatch, so we update the
+                    //score of a candidate instead of adding it up via the usual .addEquivalent()
+                    scores.updateEquivalent(scheduleItem, scoreOnMatch);
 
                     if (scheduleItem.getId() != null) {
                         generatorComponent.addComponentResult(

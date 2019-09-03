@@ -12,6 +12,8 @@ import org.atlasapi.remotesite.ContentExtractor;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSetMultimap.Builder;
 import com.google.common.collect.SetMultimap;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.time.Clock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
@@ -22,7 +24,8 @@ import com.sun.syndication.feed.atom.Feed;
  * 
  * @author Fred van den Driessche (fred@metabroadcast.com)
  */
-public class C4SeriesAndEpisodesExtractor implements ContentExtractor<Feed, SetMultimap<Series,Episode>> {
+public class C4SeriesAndEpisodesExtractor implements
+        ContentExtractor<Feed, SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>>> {
 
     private static final Pattern SERIES_ID = Pattern.compile("series-(\\d+)");
 
@@ -38,13 +41,17 @@ public class C4SeriesAndEpisodesExtractor implements ContentExtractor<Feed, SetM
     }
 
     @Override
-    public SetMultimap<Series,Episode> extract(Feed source) {
+    public SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> extract(Feed source) {
 
         Series series = createSeriesFromFeed(source);
         
-        Builder<Series, Episode> result = ImmutableSetMultimap.builder();
+        Builder<ModelWithPayload<Series>, ModelWithPayload<Episode>> result =
+                ImmutableSetMultimap.builder();
         for (Object entry : source.getEntries()) {
-            result.put(series, extractEpisode(series, (Entry) entry));
+            result.put(
+                    new ModelWithPayload<>(series, source),
+                    extractEpisode(series, (Entry) entry)
+            );
         }
 
         return result.build();
@@ -78,10 +85,10 @@ public class C4SeriesAndEpisodesExtractor implements ContentExtractor<Feed, SetM
         return null;
     }
     
-    private Episode extractEpisode(Series series, Entry entry) {
+    private ModelWithPayload<Episode> extractEpisode(Series series, Entry entry) {
         Episode episode = episodeExtractor.extract(entry);
         episode.setSeries(series);
-        return episode;
+        return new ModelWithPayload<>(episode, entry);
     }
 
 }

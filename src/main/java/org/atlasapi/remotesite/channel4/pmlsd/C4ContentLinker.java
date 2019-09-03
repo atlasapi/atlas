@@ -1,6 +1,10 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -14,6 +18,8 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -23,37 +29,42 @@ import com.google.common.collect.SetMultimap;
 
 class C4ContentLinker {
     
-    private static final Series PLACEHOLDER = new Series();
+    private static final ModelWithPayload<Series> PLACEHOLDER = new ModelWithPayload<>(new Series(), null);
     private static final CharSequence PMLSC_URI_PREFIX = "http://pmlsc.channel4.com/pmlsd/";
     private static final CharSequence TAG_URI_PREFIX = "tag:pmlsc.channel4.com,2009:/programmes/";
 
-    public SetMultimap<Series, Episode> link4odToEpg(SetMultimap<Series, Episode> epiosodeGuide, List<Episode> fourOd) {
+    public SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> link4odToEpg(SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> episodeGuide, List<ModelWithPayload<Episode>> fourOd) {
 
-        Map<String, Episode> odIndex = Maps.newHashMap(Maps.uniqueIndex(fourOd, Identified.TO_URI));
+        Map<String, ModelWithPayload<Episode>> odIndex = Maps.newHashMap(
+                Maps.uniqueIndex(
+                        fourOd,
+                        modelWithPayload -> modelWithPayload.getModel().getCanonicalUri())
+        );
 
-        for (Episode episode : epiosodeGuide.values()) {
-            Episode odEpisode = odIndex.remove(episode.getCanonicalUri());
+        for (ModelWithPayload<Episode> episodeWithPayload : episodeGuide.values()) {
+            Episode episode = episodeWithPayload.getModel();
+            ModelWithPayload<Episode> odEpisode = odIndex.remove(episode.getCanonicalUri());
             if (odEpisode != null) {
-                episode.setVersions(odEpisode.getVersions());
-                episode.addAliasUrls(odEpisode.getAliasUrls());
+                episode.setVersions(odEpisode.getModel().getVersions());
+                episode.addAliasUrls(odEpisode.getModel().getAliasUrls());
             }
         }
         
-        for (Episode episode : odIndex.values()) {
-            epiosodeGuide.put(PLACEHOLDER, episode);
+        for (ModelWithPayload<Episode> episode : odIndex.values()) {
+            episodeGuide.put(PLACEHOLDER, episode);
         }
 
-        return epiosodeGuide;
+        return episodeGuide;
     }
 
-    public SetMultimap<Series, Episode> populateBroadcasts(SetMultimap<Series, Episode> episodeGuideContent, List<Episode> epgContent) {
+    public SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> populateBroadcasts(SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> episodeGuideContent, List<Episode> epgContent) {
 
         Multimap<String, Episode> indexedEpg = Multimaps.index(epgContent, TO_TAG_URI);
 
-        for (Episode episode : episodeGuideContent.values()) {
-            for (String alias : episode.getAliasUrls()) {
+        for (ModelWithPayload<Episode> episode : episodeGuideContent.values()) {
+            for (String alias : episode.getModel().getAliasUrls()) {
                 for (Episode broadcastEpisode : indexedEpg.get(alias)) {
-                    Version version = episodeVersion(episode);
+                    Version version = episodeVersion(episode.getModel());
                     Broadcast broadcast = getOnlyBroadcast(broadcastEpisode);
                     addOrUpdateBroadcastInVersion(version, broadcast);
                 }
@@ -96,7 +107,7 @@ class C4ContentLinker {
         return Iterables.getOnlyElement(version.getBroadcasts(), null);
     }
 
-    public SetMultimap<Series, Episode> linkClipsToContent(SetMultimap<Series, Episode> content, List<Clip> clips, Brand brand) {
+    public SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> linkClipsToContent(SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> content, List<Clip> clips, Brand brand) {
 
         Map<String, Content> lookup = toContentLookup(content);
 
@@ -124,12 +135,12 @@ class C4ContentLinker {
         return lookup.get(clip.getClipOf());
     }
 
-    private Map<String, Content> toContentLookup(SetMultimap<Series, Episode> content) {
+    private Map<String, Content> toContentLookup(SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> content) {
         Map<String, Content> lookup = Maps.newHashMap();
-        for (Content c : Iterables.concat(content.keys(), content.values())) {
-            Optional<String> key = createKey(c);
+        for (ModelWithPayload<? extends Content> c : Iterables.concat(content.keys(), content.values())) {
+            Optional<String> key = createKey(c.getModel());
             if (key.isPresent()) {
-                lookup.put(key.get(), c);
+                lookup.put(key.get(), c.getModel());
             }
         }
         return lookup;

@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.http.FixedResponseHttpClient;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.sun.syndication.feed.atom.Entry;
@@ -32,11 +34,14 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.testing.StubContentResolver;
 import org.atlasapi.remotesite.channel4.RecordingContentWriter;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.model.C4EpgEntry;
+
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -88,7 +93,7 @@ public class C4BrandExtractorTest extends TestCase {
 		
 	private final C4AtomApiClient atomApiClient = new C4AtomApiClient(httpClient, "https://pmlsc.channel4.com/pmlsd/", Optional.empty());
 	
-	@Mock private ContentWriter writer;
+	@Mock private C4ContentWriter writer;
 	@Mock private ContentResolver resolver;
 	
 	private ContentFactory<Feed, Feed, Entry> contentFactory 
@@ -119,18 +124,20 @@ public class C4BrandExtractorTest extends TestCase {
 	public void testExtractingABrand() throws Exception {
         
         when(resolver.findByCanonicalUris(anyUris())).thenReturn(ResolvedContent.builder().build());
-		
-		pcUpdater.createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares");
+
+        pcUpdater.createOrUpdateBrand(new ModelWithPayload<>(
+		        "http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares",
+                null
+        ));
 
 		ArgumentCaptor<Container> containerCapturer = ArgumentCaptor.forClass(Container.class);
-		verify(writer, atLeast(1)).createOrUpdate(containerCapturer.capture());
+		verify(writer, atLeast(1)).createOrUpdate(containerCapturer.capture(), any());
 		Map<String, Container> containers = Maps.uniqueIndex(containerCapturer.getAllValues(), Identified.TO_URI);
-		
-		assertThat(containers.keySet(), hasItem("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares"));
+
+        assertThat(containers.keySet(), hasItem("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares"));
 
 		ArgumentCaptor<Item> itemCapturer = ArgumentCaptor.forClass(Item.class);
-		verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture());
-		
+		verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture(), any());
 		Map<String, Item> items = Maps.uniqueIndex(itemCapturer.getAllValues(), Identified.TO_URI);
 		
 		Item firstItem = items.get("http://pmlsc.channel4.com/pmlsd/36423/001");
@@ -164,12 +171,17 @@ public class C4BrandExtractorTest extends TestCase {
     @Test
 	public void testThatBroadcastIsExtractedFromEpg() throws Exception {
         when(resolver.findByCanonicalUris(anyUris())).thenReturn(ResolvedContent.builder().build());
-		
-		pcUpdater.createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares");
+
+        pcUpdater.createOrUpdateBrand(
+                new ModelWithPayload<>(
+                        "http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares",
+                        null
+                )
+        );
 	    
 	    ArgumentCaptor<Item> itemCapturer = ArgumentCaptor.forClass(Item.class);
-        verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture());
-	    
+        verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture(), any());
+
 	    boolean found = false;
 	    for (Item item : itemCapturer.getAllValues()) {
 	        if (item.getCanonicalUri().equals("http://pmlsc.channel4.com/pmlsd/43065/005")) {
@@ -211,11 +223,14 @@ public class C4BrandExtractorTest extends TestCase {
 	    
 	    when(resolver.findByCanonicalUris(argThat(hasItem(episode.getCanonicalUri()))))
 	        .thenReturn(ResolvedContent.builder().put(episode.getCanonicalUri(), episode).build());
-	    
-	    pcUpdater.createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares");
+
+	    pcUpdater.createOrUpdateBrand(new ModelWithPayload<>(
+	            "http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares",
+                null
+        ));
         
 	    ArgumentCaptor<Item> itemCapturer = ArgumentCaptor.forClass(Item.class);
-	    verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture());
+	    verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture(), any());
 	    
         boolean found = false;
         boolean foundOld = false;
@@ -245,10 +260,13 @@ public class C4BrandExtractorTest extends TestCase {
 	public void testFlattenedBrandsItemsAreNotPutIntoSeries() throws Exception {
         when(resolver.findByCanonicalUris(anyUris())).thenReturn(ResolvedContent.builder().build());
 
-        pcUpdater.createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/dispatches");
+        pcUpdater.createOrUpdateBrand(new ModelWithPayload<>(
+                "http://pmlsc.channel4.com/pmlsd/dispatches",
+                null
+        ));
 
         ArgumentCaptor<Item> itemCapturer = ArgumentCaptor.forClass(Item.class);
-        verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture());
+        verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture(), any());
 
         Map<String, Item> items = Maps.uniqueIndex(itemCapturer.getAllValues(), Identified.TO_URI);
 
@@ -266,13 +284,17 @@ public class C4BrandExtractorTest extends TestCase {
 		C4BrandExtractor extractor = new C4BrandExtractor(atomApiClient, Optional.empty(),
 		        Publisher.C4_PMLSD, channelResolver, contentFactory, locationPolicyIds, false);
 		new C4AtomBackedBrandUpdater(apiClient, Optional.empty(), resolver, writer, extractor)
-		        .createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares");
+		        .createOrUpdateBrand(
+		                new ModelWithPayload<>(
+                            "http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares",
+                            null
+                ));
 		
 		ArgumentCaptor<Container> containerCapturer = ArgumentCaptor.forClass(Container.class);
-        verify(writer, atLeast(1)).createOrUpdate(containerCapturer.capture());
+        verify(writer, atLeast(1)).createOrUpdate(containerCapturer.capture(), any());
         
         ArgumentCaptor<Item> itemCapturer = ArgumentCaptor.forClass(Item.class);
-        verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture());
+        verify(writer, atLeast(1)).createOrUpdate(itemCapturer.capture(), any());
 		
         int brandClipsCount = 0;
         int seriesClipsCount = 0;
@@ -294,7 +316,7 @@ public class C4BrandExtractorTest extends TestCase {
     @Test
     public void testPlatformLocation() {
         when(resolver.findByCanonicalUris(anyUris())).thenReturn(ResolvedContent.builder().build());
-        
+
         SimpleHttpClient client = new FixedResponseHttpClient(
             ImmutableMap.<String, String>builder()  
             .put("https://pmlsc.channel4.com/pmlsd/jamie-does.atom?platform=xbox", fileContentsFromResource("jamie-does-xbox.atom"))
@@ -308,11 +330,11 @@ public class C4BrandExtractorTest extends TestCase {
         C4AtomApiClient apiClient = new C4AtomApiClient(client, "https://pmlsc.channel4.com/pmlsd/", Optional.of("xbox"));
 
         RecordingContentWriter recordingWriter = new RecordingContentWriter();
-        
+
         C4BrandExtractor extractor = new C4BrandExtractor(apiClient, Optional.of(Platform.XBOX), 
                 Publisher.C4_PMLSD, channelResolver, contentFactory, locationPolicyIds, false);
         new C4AtomBackedBrandUpdater(apiClient, Optional.of(Platform.XBOX), resolver, recordingWriter, extractor)
-                .createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/jamie-does");
+                .createOrUpdateBrand(new ModelWithPayload<>("http://pmlsc.channel4.com/pmlsd/jamie-does", null));
         
         Item item = findLast("http://pmlsc.channel4.com/pmlsd/48367/006", recordingWriter.updatedItems);
         Episode episode = (Episode) item;
@@ -367,14 +389,14 @@ public class C4BrandExtractorTest extends TestCase {
                 stubResolver,
                 recordingWriter,
                 extractor
-        ).createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/jamie-does");
+        ).createOrUpdateBrand(new ModelWithPayload<>("http://pmlsc.channel4.com/pmlsd/jamie-does", null));
         
         stubResolver.respondTo(findLast("http://pmlsc.channel4.com/pmlsd/48367/006", recordingWriter.updatedItems));
         
         extractor = new C4BrandExtractor(apiClient, Optional.empty(), Publisher.C4_PMLSD,
                 channelResolver, contentFactory, locationPolicyIds, true);
         new C4AtomBackedBrandUpdater(apiClient, Optional.empty(), stubResolver, recordingWriter, extractor)
-            .createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/jamie-does");
+            .createOrUpdateBrand(new ModelWithPayload<>("http://pmlsc.channel4.com/pmlsd/jamie-does", null));
         
         Item item = findLast("http://pmlsc.channel4.com/pmlsd/48367/006", recordingWriter.updatedItems);
         Episode episode = (Episode) item;
@@ -416,5 +438,18 @@ public class C4BrandExtractorTest extends TestCase {
             }
         }
         throw new IllegalStateException("Not found");
+    }
+
+    static <T> ModelWithPayload<T> modelWithPayloadForModel(T model) {
+        return argThat(new ArgumentMatcher<ModelWithPayload<T>>() {
+
+            @Override
+            public boolean matches(Object o) {
+                if (!(o instanceof ModelWithPayload)) {
+                    return false;
+                }
+                return model.equals(((ModelWithPayload) o).getModel());
+            }
+        });
     }
 }

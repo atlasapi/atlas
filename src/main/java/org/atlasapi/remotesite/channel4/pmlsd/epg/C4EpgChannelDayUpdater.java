@@ -19,6 +19,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.system.RemoteSiteClient;
 import org.atlasapi.remotesite.channel4.pmlsd.C4BrandUpdater;
+import org.atlasapi.remotesite.channel4.pmlsd.C4ContentWriter;
 import org.atlasapi.remotesite.channel4.pmlsd.C4LocationPolicyIds;
 import org.atlasapi.remotesite.channel4.pmlsd.ContentFactory;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.model.C4EpgEntry;
@@ -41,7 +42,7 @@ public class C4EpgChannelDayUpdater {
     private final static String epgUriPattern = "https://pmlsc.channel4.com/pmlsd/tv-listings/daily/%s/%s.atom";
 
     private final RemoteSiteClient<List<C4EpgEntry>> scheduleClient;
-    private final ContentWriter writer;
+    private final C4ContentWriter writer;
     private final C4EpgEntryContentExtractor epgEntryContentExtractor;
     private final BroadcastTrimmer trimmer;
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -49,7 +50,7 @@ public class C4EpgChannelDayUpdater {
     private final ScheduleWriter scheduleWriter;
     private final Publisher publisher;
     
-    public C4EpgChannelDayUpdater(RemoteSiteClient<List<C4EpgEntry>> scheduleClient, ContentWriter writer, 
+    public C4EpgChannelDayUpdater(RemoteSiteClient<List<C4EpgEntry>> scheduleClient, C4ContentWriter writer,
             ContentResolver resolver, C4BrandUpdater brandUpdater, BroadcastTrimmer trimmer,
             ScheduleWriter scheduleWriter, Publisher publisher, 
             ContentFactory<C4EpgEntry, C4EpgEntry, C4EpgEntry> contentFactory, Optional<String> platform,
@@ -151,18 +152,18 @@ public class C4EpgChannelDayUpdater {
                 Brand brand = extractedContent.getBrand().get();
                 checkUri(brand);
                 checkSource(brand);
-                writer.createOrUpdate(brand);
+                writer.createOrUpdate(brand, entry);
             }
             if (extractedContent.getSeries().isPresent()) {
                 Series series = extractedContent.getSeries().get();
                 checkUri(series);
                 checkSource(series);
-                writer.createOrUpdate(series);
+                writer.createOrUpdate(series, entry);
             }
             Item item = extractedContent.getItem();
             checkUri(item);
             checkSource(item);
-            writer.createOrUpdate(item);
+            writer.createOrUpdate(item, entry);
             itemAndBroadcast = new ItemRefAndBroadcast(item, extractedContent.getBroadcast());
         } catch (Exception e) {
             log.error(entry.id(), e);

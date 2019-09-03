@@ -8,6 +8,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.http.FixedResponseHttpClient;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.intl.Countries;
@@ -77,11 +79,11 @@ public class C4FourOdEpisodesExtractorTest extends TestCase {
     @Test
 	public void testExtractingEpisodes() throws Exception {
 		
-		List<Episode> episodes = new C4OdEpisodesAdapter(atomApiClient, Optional.empty(),
+		List<ModelWithPayload<Episode>> episodes = new C4OdEpisodesAdapter(atomApiClient, Optional.empty(),
 		                                contentFactory, Publisher.C4_PMLSD, locationPolicyIds, false, new SystemClock())
 		    .fetch("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares");
 
-		Episode firstEpisode = (Episode) Iterables.get(episodes, 0);
+	    Episode firstEpisode = Iterables.get(episodes, 0).getModel();
 		
 		assertThat(firstEpisode.getCanonicalUri(), is("http://pmlsc.channel4.com/pmlsd/36423/001"));
         // TODO new alias
@@ -128,7 +130,7 @@ public class C4FourOdEpisodesExtractorTest extends TestCase {
                 Countries.fromCode("IM"),
                 Countries.IE)));
 		
-		Episode episodeWithABroadcast = (Episode) Iterables.get(episodes, 4);
+		Episode episodeWithABroadcast = Iterables.get(episodes, 4).getModel();
 		Version episodeWithABroadcastVersion = Iterables.get(episodeWithABroadcast.getVersions(), 0);
 		Location locationWithBroadcast = Iterables.get(Iterables.get(episodeWithABroadcastVersion.getManifestedAs(), 0).getAvailableAt(), 0);
 		

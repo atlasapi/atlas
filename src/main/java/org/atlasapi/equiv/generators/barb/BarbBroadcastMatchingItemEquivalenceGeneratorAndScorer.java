@@ -152,7 +152,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                         && hasFlexibleQualifyingBroadcast(
                                 scheduleItem, broadcast, flexibility, EXTENDED_END_TIME_FLEXIBILITY
                 )) {
-                    scores.addEquivalent(scheduleItem, scoreOnExtendedFlexibilityMatch);
+                    scores.updateEquivalent(scheduleItem, scoreOnExtendedFlexibilityMatch);
 
                     generatorComponent.addComponentResult(
                             scheduleItem.getId(),

@@ -146,7 +146,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
                         && hasQualifyingBroadcast(scheduleItem, subjectBroadcast, flexibility)
                         && hasQualifyingActualTransmissionTimeBroadcast(subject, scheduleItem, subjectBroadcast)
                 ) {
-                    scores.addEquivalent(scheduleItem, scoreOnMatch);
+                    scores.updateEquivalent(scheduleItem, scoreOnMatch);
 
                     if (scheduleItem.getId() != null) {
                         generatorComponent.addComponentResult(scheduleItem.getId(), scoreOnMatch.toString());

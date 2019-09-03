@@ -341,38 +341,50 @@ public class ChannelWriteExecutor {
 
     private Optional<Image> getPossibleImageByTheme(Set<Image> channelImages, String imageTheme) {
         return channelImages.stream()
-                .filter(existingImage -> existingImage.getTheme().equals(ImageTheme.valueOf(imageTheme.toUpperCase())))
+                .filter(existingImage -> existingImage.getTheme()
+                        .equals(ImageTheme.valueOf(imageTheme.toUpperCase())))
                 .findFirst();
     }
 
     private void createOrUpdateImage(Channel existingChannel, ImageDetails imageDetails) {
-        Set<Image> originalChannelImages = Sets.newHashSet(existingChannel.getImages());
-        Optional<Image> possibleImage = getPossibleImageByTheme(originalChannelImages, imageDetails.getTheme());
+        Set<Image> channelImages = Sets.newHashSet(existingChannel.getImages());
+        Optional<Image> possibleImage = getPossibleImageByTheme(
+                channelImages,
+                imageDetails.getTheme()
+        );
 
         if (possibleImage.isPresent()) {
             Image imageToBeUpdated = possibleImage.get();
-
-            Set<Image> updatedChannelImages = Sets.newHashSet(originalChannelImages);
-
-            updatedChannelImages.remove(imageToBeUpdated);
-
+            channelImages.remove(imageToBeUpdated);
             Image updatedImage = updateImage(imageDetails, imageToBeUpdated);
-
-            updatedChannelImages.add(updatedImage);
-
-            setImagesOnChannel(existingChannel, updatedChannelImages);
-
+            channelImages.add(updatedImage);
+            setImagesOnChannel(existingChannel, channelImages);
         } else {
             Image newImage = createImage(imageDetails);
-
             existingChannel.addImage(newImage);
         }
+    }
 
-        //Try and prevent concurrency issues caused by updating multiple images at the same time
-        if(!originalChannelImages.equals(existingChannel.getImages())) {
-            createOrUpdateImage(existingChannel, imageDetails);
+    private void createOrUpdateImages(Channel existingChannel, Set<ImageDetails> setOfImageDetails){
+        Set<Image> channelImages = Sets.newHashSet(existingChannel.getImages());
+
+        for (ImageDetails imageDetails : setOfImageDetails) {
+            Optional<Image> possibleImage = getPossibleImageByTheme(
+                    channelImages,
+                    imageDetails.getTheme()
+            );
+
+            if(possibleImage.isPresent()){
+                Image imageToBeUpdated = possibleImage.get();
+                channelImages.remove(imageToBeUpdated);
+                channelImages.add(updateImage(imageDetails, imageToBeUpdated));
+            }
+            else {
+                channelImages.add(createImage(imageDetails));
+            }
         }
 
+        setImagesOnChannel(existingChannel, channelImages);
     }
 
     private void setImagesOnChannel(Channel existingChannel, Set<Image> channelImages) {

@@ -361,6 +361,14 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         );
     }
 
+    @RequestMapping(value = {"/3.0/channels/updateImages"}, method = RequestMethod.POST)
+    public void createChannelImages(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        channelWriteExecutor.createOrUpdateChannelImages(
+                request,
+                response
+        );
+    }
+
     @RequestMapping(value = {"/3.0/channels/updateImage"}, method = RequestMethod.DELETE)
     public void deleteChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         channelWriteExecutor.deleteChannelImage(

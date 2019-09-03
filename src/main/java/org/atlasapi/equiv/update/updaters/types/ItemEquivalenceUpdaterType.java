@@ -74,13 +74,11 @@ public enum ItemEquivalenceUpdaterType {
     TXLOGS_ITEM(
             TxlogsItemUpdaterProvider.create()
     ),
-    BBC_TXLOGS_ITEM(
-//            BbcTxlogsEfficientItemUpdaterProvider.create(
-//                    BarbAliasItemUpdaterProvider.create(),
-//                    BarbBbcBroadcastItemUpdaterProvider.create(),
-//                    BarbBbcActualTransmissionItemUpdaterProvider.create()
-//            )
-            BbcTxlogsItemUpdaterProvider.create()
+    BBC_TO_TXLOGS_ITEM(
+            BbcTxlogsItemUpdaterProvider.create(false)
+    ),
+    TXLOGS_TO_BBC_ITEM(
+            BbcTxlogsItemUpdaterProvider.create(true)
     ),
     WIKIPEDIA_ITEM(
             WikipediaItemUpdateProvider.create()

@@ -83,6 +83,7 @@ import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.IMDB_API;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV_CPS;
+import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.PA;
@@ -150,6 +151,7 @@ public class UpdaterConfigurationRegistry {
                 makeFiveConfiguration(),
                 makeBarbMasterConfiguration(), //CDMF
                 makeBarbTransmissionConfiguration(),
+                makeLayer3TxlogsConfiguration(),
                 makeItvCpsConfiguration(),
                 makeNitroConfiguration(),
                 makeC4PmlsdConfiguration(),
@@ -1140,6 +1142,33 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
+    private static UpdaterConfiguration makeLayer3TxlogsConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(LAYER3_TXLOGS)
+                .withItemEquivalenceUpdater(
+                        ImmutableMap.of(
+                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO)
+                        ),
+                        STANDARD_ITEM_HANDLER,
+                        STANDARD_ITEM_MESSENGER
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
+                )
+                .build();
+    }
+
     private static UpdaterConfiguration makeItvCpsConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(ITV_CPS)
@@ -1176,7 +1205,7 @@ public class UpdaterConfigurationRegistry {
                         ImmutableMap.of(
                                 STANDARD_ITEM, ImmutableSet.of(PA, UKTV),
                                 BARB_ITEM, ImmutableSet.of(BARB_MASTER),
-                                BBC_TO_TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
+                                BBC_TO_TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS, LAYER3_TXLOGS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

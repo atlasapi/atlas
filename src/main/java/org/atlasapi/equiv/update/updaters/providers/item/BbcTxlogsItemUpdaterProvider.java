@@ -72,6 +72,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                 new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
+                                        targetPublishers,
                                         //TODO: we may need to increase the flexibility since supposedly the actual transmission
                                         // can differ by up to at least a few hours - perhaps the generator would first try
                                         // 1 hour and gradually increase the search window up to a given limit?

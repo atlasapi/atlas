@@ -35,6 +35,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.around;
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.expandChannelUris;
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQualifyingBroadcast;
+import static org.atlasapi.equiv.utils.barb.BarbEquivUtils.TXLOG_PUBLISHERS;
 
 /**
  * This call was created as part of the BBC work to fill in missing PIDs in their CCIDSTxLogs
@@ -42,7 +43,11 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQua
  */
 public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
 
-    private static final Set<Publisher> PUBLISHERS = ImmutableSet.of(Publisher.BBC_NITRO, Publisher.BARB_TRANSMISSIONS);
+    private static final Set<Publisher> ALL_PUBLISHERS = ImmutableSet.of(
+            Publisher.BBC_NITRO,
+            Publisher.LAYER3_TXLOGS,
+            Publisher.BARB_TRANSMISSIONS
+    );
 
     // Allow a one second tolerance for the difference between Nitro actual transmission times and txlog broadcast times
     // since txlogs have second level precision but Nitro has millisecond-level precision so we should be lenient around
@@ -56,6 +61,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
 
     private final ScheduleResolver resolver;
     private final Duration flexibility;
+    private final Set<Publisher> publishers;
     private final ChannelResolver channelResolver;
     private final Predicate<? super Broadcast> broadcastFilter;
     private final Score scoreOnMatch;
@@ -63,12 +69,15 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
     public BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
             ScheduleResolver resolver,
             ChannelResolver channelResolver,
+            Set<Publisher> publishers,
             Duration flexibility,
             @Nullable Predicate<? super Broadcast> broadcastFilter,
             Score scoreOnMatch
     ) {
         this.resolver = checkNotNull(resolver);
         this.channelResolver = checkNotNull(channelResolver);
+        this.publishers = ImmutableSet.copyOf(publishers);
+        checkArgument(ALL_PUBLISHERS.containsAll(publishers));
         this.flexibility = checkNotNull(flexibility);
         this.broadcastFilter = broadcastFilter == null ? broadcast -> true : broadcastFilter;
         this.scoreOnMatch = checkNotNull(scoreOnMatch);
@@ -80,7 +89,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
             ResultDescription desc,
             EquivToTelescopeResult equivToTelescopeResult
     ) {
-        checkArgument(PUBLISHERS.contains(subject.getPublisher()));
+        checkArgument(ALL_PUBLISHERS.contains(subject.getPublisher()));
 
         Builder<Item> scores = DefaultScoredCandidates.fromSource("BARB-BBC Actual Transmission");
 
@@ -89,7 +98,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
 
 
         Set<Publisher> validPublishers = Sets.difference(
-                PUBLISHERS,
+                publishers,
                 ImmutableSet.of(subject.getPublisher())
         );
 
@@ -126,7 +135,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
     public EquivalenceGeneratorMetadata getMetadata() {
         return SourceLimitedEquivalenceGeneratorMetadata.create(
                 this.getClass().getCanonicalName(),
-                PUBLISHERS
+                publishers
         );
     }
 
@@ -162,20 +171,19 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
             Item scheduleItem,
             Broadcast subjectBroadcast
     ) {
-        checkArgument(
-                PUBLISHERS.contains(subject.getPublisher())
-                        && PUBLISHERS.contains(scheduleItem.getPublisher())
-                        && subject.getPublisher() != scheduleItem.getPublisher()
-        );
+        boolean subjectIsNitroAndSuggestionIsTxlog = Publisher.BBC_NITRO == subject.getPublisher()
+                && TXLOG_PUBLISHERS.contains(scheduleItem.getPublisher());
+        boolean subjectIsTxlogAndSuggestionIsNitro = TXLOG_PUBLISHERS.contains(subject.getPublisher())
+                && Publisher.BBC_NITRO == scheduleItem.getPublisher();
+        checkArgument(subjectIsNitroAndSuggestionIsTxlog || subjectIsTxlogAndSuggestionIsNitro);
+
         for (Version scheduleVersion : scheduleItem.nativeVersions()) {
             for (Broadcast scheduleBroadcast : scheduleVersion.getBroadcasts()) {
-                if (subject.getPublisher() == Publisher.BARB_TRANSMISSIONS
-                        && scheduleItem.getPublisher() == Publisher.BBC_NITRO
+                if (subjectIsTxlogAndSuggestionIsNitro
                         && hasQualifyingActualTransmissionTime(subjectBroadcast, scheduleBroadcast)
                 ) {
                     return true;
-                } else if (subject.getPublisher() == Publisher.BBC_NITRO
-                        && scheduleItem.getPublisher() == Publisher.BARB_TRANSMISSIONS
+                } else if (subjectIsNitroAndSuggestionIsTxlog
                         && hasQualifyingActualTransmissionTime(scheduleBroadcast, subjectBroadcast)
                 ) {
                     return true;

@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.api.client.repackaged.com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.equiv.utils.barb.BarbEquivUtils.TXLOG_PUBLISHERS;
 
 /**
  * Caveat: Txlog names are scored against a suggestion's brand title as well so do not rely to heavily on this score for equiv
@@ -161,16 +162,16 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private Optional<Score> getParentScore(Item subject, Item suggestion, ResultDescription desc) {
-        boolean singleTxlogPresent = subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
+        boolean singleTxlogPresent = TXLOG_PUBLISHERS.contains(subject.getPublisher())
                 // xor since we need the other publisher to be different and have a parent
-                ^ suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS);
+                ^ TXLOG_PUBLISHERS.contains(suggestion.getPublisher());
         if (contentResolver == null || !singleTxlogPresent) {
             return Optional.empty();
         }
 
         Item txlog;
         Item nonTxlog;
-        if(subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)) {
+        if(TXLOG_PUBLISHERS.contains(subject.getPublisher())) {
             txlog = subject;
             nonTxlog = suggestion;
         } else {
@@ -230,8 +231,8 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 
         //TxLog titles are size capped, so truncate everything if we are equiving to txlogs
-        if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)
-            || (subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS))) {
+        if (TXLOG_PUBLISHERS.contains(suggestion.getPublisher())
+            || (TXLOG_PUBLISHERS.contains(subject.getPublisher()))) {
 
             if (suggestion.getPublisher().equals(Publisher.BBC_NITRO)
                     || subject.getPublisher().equals(Publisher.BBC_NITRO)
@@ -260,10 +261,10 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
 
         //if either subject or candidate is txlog, strip the year from the end
-        if (suggestion.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)) {
+        if (TXLOG_PUBLISHERS.contains(suggestion.getPublisher())) {
             suggestionTitle = removeArbitraryTrailingYear(suggestionTitle);
         }
-        if (subject.getPublisher().equals(Publisher.BARB_TRANSMISSIONS)) {
+        if (TXLOG_PUBLISHERS.contains(subject.getPublisher())) {
             subjectTitle = removeArbitraryTrailingYear(subjectTitle);
         }
 

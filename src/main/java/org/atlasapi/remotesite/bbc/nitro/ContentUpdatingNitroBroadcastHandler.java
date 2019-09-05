@@ -9,6 +9,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.status.api.EntityRef;
 import com.metabroadcast.status.api.NewAlert;

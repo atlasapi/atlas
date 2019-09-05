@@ -12,6 +12,7 @@ import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.status.api.EntityRef;

@@ -10,6 +10,7 @@ import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.status.api.EntityRef;
 import com.metabroadcast.status.api.NewAlert;

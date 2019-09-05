@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -41,6 +42,7 @@ import com.metabroadcast.common.media.MimeType;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import joptsimple.internal.Strings;
 import org.slf4j.Logger;
@@ -134,14 +136,14 @@ public class ChannelWriteExecutor {
             HttpServletResponse response
     ) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        ImageDetails[] detailsOfImages = mapper.readValue(request.getInputStream(), ImageDetails[].class);
+        ImageDetailsRequestBody detailsOfImages = mapper.readValue(request.getInputStream(), ImageDetailsRequestBody.class);
 
         Optional<Void> invalidApplication = validateApplication(request, response);
         if (invalidApplication.isPresent()) {
             return invalidApplication.get();
         }
 
-        Set<ImageDetails> setOfImageDetails = new HashSet<>(Arrays.asList(detailsOfImages));
+        Set<ImageDetails> setOfImageDetails = detailsOfImages.getImageDetails();
 
         boolean notFromSameChannel = false;
         for (ImageDetails imageDetails : setOfImageDetails) {
@@ -559,6 +561,23 @@ public class ChannelWriteExecutor {
 
         public void setWidth(String width) {
             this.width = width;
+        }
+
+    }
+
+    class ImageDetailsRequestBody {
+
+        private Set<ImageDetails> imageDetails;
+
+        public ImageDetailsRequestBody() {
+        }
+
+        public Set<ImageDetails> getImageDetails() {
+            return ImmutableSet.copyOf(imageDetails);
+        }
+
+        public void setImageDetails(Set<ImageDetails> imageDetails) {
+            this.imageDetails = ImmutableSet.copyOf(imageDetails);
         }
 
     }

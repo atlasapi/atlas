@@ -52,7 +52,8 @@ public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpd
                                 Duration.standardMinutes(10),
                                 null,
                                 Score.valueOf(3.0),
-                                Score.nullScore()
+                                Score.nullScore(),
+                                threshold -> threshold > 0.5
                         )
                 )
                 .withScorers(

@@ -47,9 +47,6 @@ public class BarbBbcActualTransmissionItemUpdaterProvider implements Equivalence
                                 dependencies.getScheduleResolver(),
                                 dependencies.getChannelResolver(),
                                 targetPublishers,
-                                //TODO: we may need to increase the flexibility since supposedly the actual transmission
-                                // can differ by up to at least a few hours - perhaps the generator would first try
-                                // 1 hour and gradually increase the search window up to a given limit?
                                 Duration.standardHours(1),
                                 null,
                                 Score.valueOf(4.0)

@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer;
@@ -26,10 +26,9 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.Duration;
+
+import java.util.Set;
 
 public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
@@ -67,18 +66,16 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         Duration.standardMinutes(10),
                                         null,
                                         Score.valueOf(3.0),
-                                        Score.nullScore()
+                                        Score.nullScore(),
+                                        threshold -> threshold > 0.5
                                 ),
                                 new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
                                         targetPublishers,
-                                        //TODO: we may need to increase the flexibility since supposedly the actual transmission
-                                        // can differ by up to at least a few hours - perhaps the generator would first try
-                                        // 1 hour and gradually increase the search window up to a given limit?
                                         Duration.standardHours(1),
                                         null,
-                                        Score.valueOf(6.0)
+                                        Score.valueOf(8.0)
                                 )
                         )
                 )
@@ -112,13 +109,14 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                         ))
                 )
 
-                // See TxlogsItemUpdaterProvider for reason behind 10-4 extractor on txlog->bbc equiv
+                // See TxlogsItemUpdaterProvider for reason behind 6-4 extractor on txlog->bbc equiv
+                // (10-8-4 instead of 10-4 due to actual transmission time also being sufficient for good equiv)
                 // Bbc to txlog should stay the same and equiv to all candidates since some
                 // BBC txlogs are regional variants without bcids that still need to be equived to
                 // even if one exists with a bcid. ENG-447
                 .withExtractor(
                         isSubjectTxlog
-                        ? new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
+                        ? new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 8D, 4D))
                         : AllOverOrEqThresholdExtractor.create(4)
                 )
                 .build();

@@ -26,7 +26,9 @@ import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,6 +39,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.joda.time.Duration.standardMinutes;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -93,12 +97,11 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
     private static final Score SCORE_ON_MATCH = Score.ONE;
 
     private final ScheduleResolver resolver = mock(ScheduleResolver.class);
+    private final ChannelResolver channelResolver = mock(ChannelResolver.class);
     private BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer generator;
 
     @Before
     public void setUp() {
-        final ChannelResolver channelResolver = mock(ChannelResolver.class);
-
         when(channelResolver.fromUri(BBC_ONE.getUri())).thenReturn(Maybe.just(BBC_ONE));
         when(channelResolver.fromUri(BBC_ONE_CAMBRIDGE.getUri())).thenReturn(Maybe.just(BBC_ONE_CAMBRIDGE));
         when(channelResolver.fromUri(BBC_TWO_ENGLAND.getUri())).thenReturn(Maybe.just(BBC_TWO_ENGLAND));
@@ -113,7 +116,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 standardMinutes(1),
                 null,
                 SCORE_ON_MATCH,
-                Score.valueOf(0.1)
+                Score.valueOf(0.1),
+                null
         );
     }
 
@@ -169,11 +173,6 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
 
     @Test
     public void testGenerateIsFlexibleAroundStartTimes() {
-
-        final ChannelResolver channelResolver = mock(ChannelResolver.class, "otherChannelResolver");
-
-        when(channelResolver.fromUri(BBC_ONE.getUri())).thenReturn(Maybe.just(BBC_ONE));
-
         BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer generator =
                 new BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(
                         resolver,
@@ -182,7 +181,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                         standardMinutes(10),
                         null,
                         SCORE_ON_MATCH,
-                        Score.valueOf(0.1)
+                        Score.valueOf(0.1),
+                        null
                 );
 
         final Item item1 = episodeWithBroadcasts(
@@ -245,6 +245,29 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         return item;
     }
 
+    private Episode episodeWithBroadcasts(
+            String episodeId,
+            Publisher publisher,
+            Channel fillerBroadcastChannel,
+            int numberOfFillerBroadcasts,
+            Broadcast... broadcasts
+    ) {
+        Episode item = new Episode(episodeId + "Uri", episodeId + "Curie", publisher);
+        Version version = new Version();
+        version.setCanonicalUri(episodeId + "Version");
+        version.setProvider(publisher);
+        for (Broadcast broadcast : broadcasts) {
+            version.addBroadcast(broadcast);
+        }
+        for (int i = 0; i < numberOfFillerBroadcasts; i++) {
+            version.addBroadcast(
+                    new Broadcast(fillerBroadcastChannel.getUri(), utcTime(i), utcTime(i + 1))
+            );
+        }
+        item.addVersion(version);
+        return item;
+    }
+
     @Test
     public void broadcastsWithDurationLessThanTenMinutesHaveLowerFlexibility() {
         Item item1 = episodeWithBroadcasts(
@@ -282,6 +305,122 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
 
         assertThat(scoreMap.size(), is(1));
         assertThat(scoreMap.get(item2).asDouble(), is(equalTo(1.0)));
+    }
+
+    @Test
+    public void testMatchingBroadcastThreshold() {
+        final Item item1 = episodeWithBroadcasts(
+                "subjectItem",
+                BBC_NITRO,
+                BBC_ONE_CAMBRIDGE,
+                5,
+                new Broadcast(BBC_ONE.getUri(), utcTime(100000), utcTime(2000000)),
+                new Broadcast(BBC_ONE.getUri(), utcTime(4100000), utcTime(6000000)));
+
+        final Item item2 = episodeWithBroadcasts(
+                "equivItem",
+                BARB_TRANSMISSIONS,
+                BBC_ONE_CAMBRIDGE,
+                1,
+                new Broadcast(BBC_ONE.getUri(), utcTime(100000), utcTime(2000000)),
+                new Broadcast(BBC_ONE.getUri(), utcTime(4100000), utcTime(6000000)));
+
+        Score scoreOnPartialMatch = Score.valueOf(0.1);
+
+        BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer lowerThresholdGenerator =
+                new BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(
+                        resolver,
+                        channelResolver,
+                        ImmutableSet.of(BARB_TRANSMISSIONS),
+                        standardMinutes(1),
+                        null,
+                        SCORE_ON_MATCH,
+                        scoreOnPartialMatch,
+                        threshold -> threshold > 0.66
+                );
+        BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer higherThresholdGenerator =
+                new BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(
+                        resolver,
+                        channelResolver,
+                        ImmutableSet.of(BARB_TRANSMISSIONS),
+                        standardMinutes(1),
+                        null,
+                        SCORE_ON_MATCH,
+                        scoreOnPartialMatch,
+                        threshold -> threshold > 0.7
+                );
+
+        when(
+                resolver.unmergedSchedule(
+                        utcTime(40000),
+                        utcTime(2060000),
+                        ImmutableSet.of(BBC_ONE),
+                        ImmutableSet.of(BARB_TRANSMISSIONS)
+                )
+        ).thenReturn(
+                Schedule.fromChannelMap(
+                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
+                        interval(40000, 2060000)
+                )
+        );
+
+        when(
+                resolver.unmergedSchedule(
+                        utcTime(4040000),
+                        utcTime(6060000),
+                        ImmutableSet.of(BBC_ONE),
+                        ImmutableSet.of(BARB_TRANSMISSIONS)
+                )
+        ).thenReturn(
+                Schedule.fromChannelMap(
+                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
+                        interval(4040000, 6060000)
+                )
+        );
+
+        when(
+                resolver.unmergedSchedule(
+                        any(),
+                        any(),
+                        argThat(new ArgumentMatcher<Iterable<Channel>>() {
+                            @Override
+                            public boolean matches(Object argument) {
+                                if (argument instanceof Collection<?>) {
+                                    return ((Collection<?>) argument).contains(BBC_ONE_CAMBRIDGE);
+                                }
+                                return false;
+                            }
+                        }),
+                        any()
+                )
+        ).thenReturn(
+                Schedule.fromChannelMap(
+                        ImmutableMap.of(BBC_ONE_CAMBRIDGE, ImmutableList.of()),
+                        interval(0, 0)
+                )
+        );
+
+        ScoredCandidates<Item> equivalents = lowerThresholdGenerator.generate(
+                item1,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        Map<Item, Score> scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(1));
+        assertThat(scoreMap.get(item2), is(SCORE_ON_MATCH));
+
+        equivalents = higherThresholdGenerator.generate(
+                item1,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(1));
+        assertThat(scoreMap.get(item2), is(scoreOnPartialMatch));
     }
 
     @Test

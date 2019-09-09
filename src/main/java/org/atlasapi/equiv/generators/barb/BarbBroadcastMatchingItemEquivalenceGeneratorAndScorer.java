@@ -121,10 +121,16 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             }
         }
 
+        desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
+
+        desc.startStage("Checking matching broadcast ratios");
         for (Map.Entry<Item, BroadcastMatchingInfo> candidateEntry : broadcastMatchingInfoMap.entrySet()) {
             Item candidate = candidateEntry.getKey();
             BroadcastMatchingInfo info = candidateEntry.getValue();
             Optional<Score> score = Optional.empty();
+            desc.appendText(
+                    String.format("%s : %.2f", candidate.getCanonicalUri(), info.getRatioOfMatchingBroadcasts())
+            );
             if (matchingBroadcastsThresholdFunction.apply(info.getRatioOfMatchingBroadcasts())) {
                 score = Optional.of(scoreOnMatch);
             } else if (info.getNumberOfMatchingBroadcasts() > 0) {
@@ -140,10 +146,9 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 }
             }
         }
+        desc.finishStage();
 
         equivToTelescopeResult.addGeneratorResult(generatorComponent);
-
-        desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
 
         return scores.build();
     }

@@ -48,12 +48,13 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.getQua
  */
 public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
 
+    private static final Duration SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY = Duration.standardMinutes(10);
+    private static final Duration SHORT_BROADCAST_FLEXIBILITY = Duration.standardMinutes(2);
     private final ScheduleResolver resolver;
     private final Set<Publisher> supportedPublishers;
     private final Duration flexibility;
     private final ChannelResolver channelResolver;
     private final Predicate<? super Broadcast> broadcastFilter;
-    private final Duration SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY = Duration.standardMinutes(10);
     private final Score scoreOnMatch;
     private final Score scoreOnPartialMatch;
     private final Function<Double, Boolean> matchingBroadcastsThresholdFunction;
@@ -160,31 +161,38 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
     }
 
     private Set<Item> resolveItemsAroundSchedule(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {
-        Duration shortBroadcastFlexibility = Duration.standardMinutes(2);
-        Duration broadcastPeriod = new Duration(
-                broadcast.getTransmissionTime(),
-                broadcast.getTransmissionEndTime()
-        );
+        Duration scheduleFlexibility = getFlexibility(broadcast);
+        DateTime start = broadcast.getTransmissionTime().minus(scheduleFlexibility);
+        DateTime end = broadcast.getTransmissionEndTime().plus(scheduleFlexibility);
 
-        DateTime start = broadcast.getTransmissionTime().minus(flexibility);
-        DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
-
-        // if the broadcast is less than 10 minutes long, reduce the flexibility
-        if (broadcastPeriod.compareTo(SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY) < 0) {
-            start = broadcast.getTransmissionTime().minus(shortBroadcastFlexibility);
-            end = broadcast.getTransmissionEndTime().plus(shortBroadcastFlexibility);
-        }
         Set<Channel> channels = channelUris.parallelStream()
                 .map(channelResolver::fromUri)
                 .filter(Maybe::hasValue)
                 .map(Maybe::requireValue)
                 .collect(MoreCollectors.toImmutableSet());
+
         return resolver.resolveItems(
                 start,
                 end,
                 channels,
                 publishers
         );
+    }
+
+    private Duration getFlexibility(Broadcast broadcast) {
+        if (SHORT_BROADCAST_FLEXIBILITY.compareTo(flexibility) >= 0) { //we don't want to increase the flexibility
+            return flexibility;
+        }
+        Duration broadcastPeriod = new Duration(
+                broadcast.getTransmissionTime(),
+                broadcast.getTransmissionEndTime()
+        );
+        // if the broadcast is less than 10 minutes long, reduce the flexibility
+        if(broadcastPeriod.compareTo(SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY) < 0) {
+            return SHORT_BROADCAST_FLEXIBILITY;
+        } else {
+            return flexibility;
+        }
     }
 
     private void scoreCandidates(
@@ -208,7 +216,12 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 for (Broadcast broadcast : version.getBroadcasts()) {
                     if (isValidBroadcast(broadcast)) {
                         matchingBroadcasts.addAll(
-                                getQualifyingBroadcasts(candidate, broadcast, flexibility, this::isValidBroadcast)
+                                getQualifyingBroadcasts(
+                                        candidate,
+                                        broadcast,
+                                        getFlexibility(broadcast),
+                                        this::isValidBroadcast
+                                )
                         );
                     }
                 }

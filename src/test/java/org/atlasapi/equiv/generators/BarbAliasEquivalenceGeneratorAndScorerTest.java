@@ -150,6 +150,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         when(aliasLookupEntryStore.entriesForAliases(
                 Optional.of("namespaceOne"),
                 ImmutableSet.of("someBcid"),
+                INCLUDED_PUBLISHERS,
                 INCLUDE_UNPUBLISHED_CONTENT
         )).thenReturn(ImmutableSet.of(lookupEntry));
     }
@@ -242,6 +243,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
             when(aliasLookupEntryStore.entriesForAliases(
                     Optional.of(alias.getNamespace()),
                     ImmutableSet.of(alias.getValue()),
+                    INCLUDED_PUBLISHERS,
                     INCLUDE_UNPUBLISHED_CONTENT
             )).thenReturn(
                     aliasContentMultimap.get(alias).stream()
@@ -735,6 +737,7 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
         when(aliasLookupEntryStore.entriesForAliases(
                 Optional.of(alias.getNamespace()),
                 ImmutableSet.of(alias.getValue()),
+                INCLUDED_PUBLISHERS,
                 INCLUDE_UNPUBLISHED_CONTENT
         )).thenReturn(ImmutableList.of(lookupEntryForContent(item), lookupEntryForContent(differentItem)));
 

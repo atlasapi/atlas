@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 
 import java.util.List;
+import java.util.Set;
 
 import com.metabroadcast.applications.client.model.internal.Application;
 import junit.framework.TestCase;
@@ -139,6 +140,10 @@ public class ScheduleLivenessHealthProbeTest extends TestCase {
 		        Iterable<Publisher> publisher, Optional<Application> mergeApp) {
 		    return null;
 		}
-		
+
+		@Override
+		public Set<Item> resolveItems(DateTime from, DateTime to, Iterable<Channel> channels, Iterable<Publisher> publishers) {
+			return null;
+		}
 	}
 }

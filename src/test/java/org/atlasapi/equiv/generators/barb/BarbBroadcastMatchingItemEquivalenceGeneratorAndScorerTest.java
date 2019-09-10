@@ -1,7 +1,5 @@
 package org.atlasapi.equiv.generators.barb;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
@@ -19,7 +17,6 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.joda.time.DateTime;
@@ -134,30 +131,20 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         );
 
         when(
-                resolver.unmergedSchedule(
+                resolver.resolveItems(
                         utcTime(40000),
                         utcTime(2060000),
                         ImmutableSet.of(BBC_ONE),
                         PUBLISHERS)
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
-                        interval(40000, 2060000)
-                )
-        );
+        ).thenReturn(ImmutableSet.of(item2));
         when(
-                resolver.unmergedSchedule(
+                resolver.resolveItems(
                         utcTime(40000),
                         utcTime(2060000),
                         ImmutableSet.of(BBC_ONE_CAMBRIDGE),
                         PUBLISHERS
                 )
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE_CAMBRIDGE, ImmutableList.of()),
-                        interval(40000, 2060000)
-                )
-        );
+        ).thenReturn(ImmutableSet.of());
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
@@ -198,16 +185,11 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         );
 
         when(
-                resolver.unmergedSchedule(
+                resolver.resolveItems(
                         time("2014-03-21T14:50:00Z"),
                         time("2014-03-21T16:00:00Z"),
                         ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
-                        interval(40000, 260000)
-                )
-        );
+        ).thenReturn(ImmutableSet.of(item2));
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
@@ -283,17 +265,12 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         );
 
         when(
-                resolver.unmergedSchedule(
+                resolver.resolveItems(
                         utcTime(880000),
                         utcTime(1320000),
                         ImmutableSet.of(BBC_ONE_CAMBRIDGE),
                         PUBLISHERS)
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE_CAMBRIDGE, ImmutableList.of(item2)),
-                        interval(880000, 1320000)
-                )
-        );
+        ).thenReturn(ImmutableSet.of(item2));
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
@@ -320,7 +297,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         final Item item2 = episodeWithBroadcasts(
                 "equivItem",
                 BARB_TRANSMISSIONS,
-                BBC_ONE_CAMBRIDGE,
+                BBC_TWO_ENGLAND,
                 1,
                 new Broadcast(BBC_ONE.getUri(), utcTime(100000), utcTime(2000000)),
                 new Broadcast(BBC_ONE.getUri(), utcTime(4100000), utcTime(6000000)));
@@ -351,35 +328,25 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 );
 
         when(
-                resolver.unmergedSchedule(
+                resolver.resolveItems(
                         utcTime(40000),
                         utcTime(2060000),
                         ImmutableSet.of(BBC_ONE),
                         ImmutableSet.of(BARB_TRANSMISSIONS)
                 )
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
-                        interval(40000, 2060000)
-                )
-        );
+        ).thenReturn(ImmutableSet.of(item2));
 
         when(
-                resolver.unmergedSchedule(
+                resolver.resolveItems(
                         utcTime(4040000),
                         utcTime(6060000),
                         ImmutableSet.of(BBC_ONE),
                         ImmutableSet.of(BARB_TRANSMISSIONS)
                 )
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
-                        interval(4040000, 6060000)
-                )
-        );
+        ).thenReturn(ImmutableSet.of(item2));
 
         when(
-                resolver.unmergedSchedule(
+                resolver.resolveItems(
                         any(),
                         any(),
                         argThat(new ArgumentMatcher<Iterable<Channel>>() {
@@ -393,12 +360,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                         }),
                         any()
                 )
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE_CAMBRIDGE, ImmutableList.of()),
-                        interval(0, 0)
-                )
-        );
+        ).thenReturn(ImmutableSet.of());
 
         ScoredCandidates<Item> equivalents = lowerThresholdGenerator.generate(
                 item1,
@@ -443,7 +405,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         );
 
         when(
-                resolver.unmergedSchedule(
+                resolver.resolveItems(
                         utcTime(40000),
                         utcTime(2060000),
                         ImmutableSet.<Channel>builder()
@@ -452,31 +414,16 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                                 .build(),
                         Sets.difference(PUBLISHERS, ImmutableSet.of(BBC_NITRO))
                 )
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(
-                                BBC_TWO_SOUTH_TXLOG, ImmutableList.of(txlogItem1),
-                                BBC_TWO_EAST_TXLOG, ImmutableList.of(txlogItem2)
-                        ),
-                        interval(40000, 2060000)
-                )
-        );
+        ).thenReturn(ImmutableSet.of(txlogItem1, txlogItem2));
 
         when(
-                resolver.unmergedSchedule(
+                resolver.resolveItems(
                         utcTime(40000),
                         utcTime(2060000),
                         ImmutableSet.of(BBC_TWO_ENGLAND, BBC_TWO_SOUTH_TXLOG),
                         Sets.difference(PUBLISHERS, ImmutableSet.of(BARB_TRANSMISSIONS))
                 )
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(
-                                BBC_TWO_ENGLAND, ImmutableList.of(nitroItem)
-                        ),
-                        interval(40000, 2060000)
-                )
-        );
+        ).thenReturn(ImmutableSet.of(nitroItem));
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 nitroItem,

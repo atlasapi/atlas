@@ -453,6 +453,7 @@ public class BarbAliasEquivalenceGeneratorAndScorer<T extends Content> implement
         return lookupEntryStore.entriesForAliases(
                 com.google.common.base.Optional.of(alias.getNamespace()),
                 ImmutableSet.of(alias.getValue()),
+                publishers,
                 includeUnpublishedContent
         );
     }

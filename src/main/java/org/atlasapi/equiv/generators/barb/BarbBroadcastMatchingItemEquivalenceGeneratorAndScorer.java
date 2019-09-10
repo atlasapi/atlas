@@ -124,7 +124,6 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         scoreCandidates(
                 scores,
                 subject,
-                getTotalNumberOfValidBroadcasts(subject),
                 candidates,
                 desc,
                 generatorComponent
@@ -198,17 +197,24 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
     private void scoreCandidates(
             Builder<Item> scores,
             Item subject,
-            int subjectTotalNumberOfValidBroadcasts,
             Set<Item> candidates,
             ResultDescription desc,
             EquivToTelescopeComponent generatorComponent
     ) {
         desc.startStage("Checking matching broadcast ratios");
+        int subjectTotalNumberOfValidBroadcasts = getTotalNumberOfValidBroadcasts(subject);
         for (Item candidate : candidates) {
             int numberOfValidBroadcasts = Math.min(
                             subjectTotalNumberOfValidBroadcasts,
                             getTotalNumberOfValidBroadcasts(candidate)
             );
+
+            if (numberOfValidBroadcasts == 0) {
+                desc.appendText(
+                        String.format("%s : minimum number of valid broadcasts is <=0", candidate.getCanonicalUri())
+                );
+                continue;
+            }
 
             Set<Broadcast> matchingBroadcasts = new HashSet<>();
 

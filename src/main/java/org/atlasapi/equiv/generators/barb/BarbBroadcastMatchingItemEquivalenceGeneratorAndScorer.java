@@ -20,7 +20,6 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.joda.time.DateTime;
@@ -121,7 +120,6 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
 
         desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
 
-        desc.startStage("Checking matching broadcast ratios");
         scoreCandidates(
                 scores,
                 subject,
@@ -131,7 +129,6 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 generatorComponent
 
         );
-        desc.finishStage();
 
         equivToTelescopeResult.addGeneratorResult(generatorComponent);
 
@@ -159,11 +156,10 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             Set<Publisher> validPublishers
     ) {
         Set<String> channelUris = expandChannelUris(broadcast.getBroadcastOn());
-        Schedule schedule = scheduleAround(broadcast, channelUris, validPublishers);
-        return schedule.resolveItems();
+        return resolveItemsAroundSchedule(broadcast, channelUris, validPublishers);
     }
 
-    private Schedule scheduleAround(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {
+    private Set<Item> resolveItemsAroundSchedule(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {
         Duration shortBroadcastFlexibility = Duration.standardMinutes(2);
         Duration broadcastPeriod = new Duration(
                 broadcast.getTransmissionTime(),
@@ -183,7 +179,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 .filter(Maybe::hasValue)
                 .map(Maybe::requireValue)
                 .collect(MoreCollectors.toImmutableSet());
-        return resolver.unmergedSchedule(
+        return resolver.resolveItems(
                 start,
                 end,
                 channels,
@@ -199,6 +195,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             ResultDescription desc,
             EquivToTelescopeComponent generatorComponent
     ) {
+        desc.startStage("Checking matching broadcast ratios");
         for (Item candidate : candidates) {
             int numberOfValidBroadcasts = Math.min(
                             subjectTotalNumberOfValidBroadcasts,
@@ -238,6 +235,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 }
             }
         }
+        desc.finishStage();
     }
 
     @Override

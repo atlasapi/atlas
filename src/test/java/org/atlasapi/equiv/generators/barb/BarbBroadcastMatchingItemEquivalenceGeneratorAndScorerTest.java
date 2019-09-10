@@ -252,6 +252,17 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
 
     @Test
     public void broadcastsWithDurationLessThanTenMinutesHaveLowerFlexibility() {
+        BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer generatorWithLargeFlexibility =
+                new BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(
+                        resolver,
+                        channelResolver,
+                        PUBLISHERS,
+                        standardMinutes(10),
+                        null,
+                        SCORE_ON_MATCH,
+                        Score.valueOf(0.1),
+                        null
+                );
         Item item1 = episodeWithBroadcasts(
                 "subjectitem",
                 Publisher.PA,
@@ -272,7 +283,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                         PUBLISHERS)
         ).thenReturn(ImmutableSet.of(item2));
 
-        ScoredCandidates<Item> equivalents = generator.generate(
+        ScoredCandidates<Item> equivalents = generatorWithLargeFlexibility.generate(
                 item1,
                 new DefaultDescription(),
                 EquivToTelescopeResult.create("id", "publisher")

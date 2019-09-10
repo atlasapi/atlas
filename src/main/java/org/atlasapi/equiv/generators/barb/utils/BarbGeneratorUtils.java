@@ -9,6 +9,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class BarbGeneratorUtils {
     /**
@@ -84,6 +85,28 @@ public class BarbGeneratorUtils {
         }
         return false;
     }
+
+    public static Set<Broadcast> getQualifyingBroadcasts(
+            Item item,
+            Broadcast referenceBroadcast,
+            Duration flexibility,
+            Predicate<Broadcast> broadcastFilter
+    ) {
+        ImmutableSet.Builder<Broadcast> qualifyingBroadcasts = ImmutableSet.builder();
+        for (Version version : item.nativeVersions()) {
+            for (Broadcast broadcast : version.getBroadcasts()) {
+                if (around(broadcast, referenceBroadcast, flexibility) && broadcast.getBroadcastOn() != null
+                        && sameChannel(broadcast.getBroadcastOn(), referenceBroadcast.getBroadcastOn())
+                        && broadcast.isActivelyPublished()
+                        && broadcastFilter.test(broadcast)
+                ) {
+                    qualifyingBroadcasts.add(broadcast);
+                }
+            }
+        }
+        return qualifyingBroadcasts.build();
+    }
+
     public static boolean hasFlexibleQualifyingBroadcast(
             Item item,
             Broadcast referenceBroadcast,

@@ -34,7 +34,7 @@ import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.expandChannelUris;
-import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQualifyingBroadcast;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.getQualifyingBroadcasts;
 
 /**
  * This is similar to {@link BroadcastMatchingItemEquivalenceGeneratorAndScorer}
@@ -202,19 +202,19 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                             getTotalNumberOfValidBroadcasts(candidate)
             );
 
-            int matchingBroadcasts = 0;
+            Set<Broadcast> matchingBroadcasts = new HashSet<>();
 
             for (Version version : subject.getVersions()) {
                 for (Broadcast broadcast : version.getBroadcasts()) {
-                    boolean matchingBroadcast = isValidBroadcast(broadcast)
-                            && hasQualifyingBroadcast(candidate, broadcast, flexibility);
-                    if (matchingBroadcast) {
-                        matchingBroadcasts++;
+                    if (isValidBroadcast(broadcast)) {
+                        matchingBroadcasts.addAll(
+                                getQualifyingBroadcasts(candidate, broadcast, flexibility, this::isValidBroadcast)
+                        );
                     }
                 }
             }
 
-            double ratioOfMatchingBroadcasts = ((double) matchingBroadcasts) / numberOfValidBroadcasts;
+            double ratioOfMatchingBroadcasts = ((double) matchingBroadcasts.size()) / numberOfValidBroadcasts;
 
             Optional<Score> score = Optional.empty();
             desc.appendText(
@@ -222,7 +222,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             );
             if (matchingBroadcastsThresholdFunction.apply(ratioOfMatchingBroadcasts)) {
                 score = Optional.of(scoreOnMatch);
-            } else if (matchingBroadcasts > 0) {
+            } else if (!matchingBroadcasts.isEmpty()) {
                 score = Optional.of(scoreOnPartialMatch);
             }
             if (score.isPresent()) {

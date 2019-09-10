@@ -21,15 +21,13 @@ import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
-import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -91,7 +89,6 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
     ) {
 
         Builder<Item> scores = DefaultScoredCandidates.fromSource("BARB Broadcast");
-        Map<Item, BroadcastMatchingInfo> broadcastMatchingInfoMap = new HashMap<>();
 
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("BARB Broadcast Matching Item Equivalence Generator");
@@ -104,18 +101,19 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         int processedBroadcasts = 0;
         int totalBroadcasts = 0;
 
-        int totalNumberOfValidBroadcasts = getTotalNumberOfValidBroadcasts(subject);
+
+        Set<Item> candidates = new HashSet<>();
 
         for (Version version : subject.getVersions()) {
             for (Broadcast broadcast : version.getBroadcasts()) {
                 totalBroadcasts++;
                 if (isValidBroadcast(broadcast)) {
                     processedBroadcasts++;
-                    findMatchesForBroadcast(
-                            broadcastMatchingInfoMap,
-                            totalNumberOfValidBroadcasts,
-                            broadcast,
-                            validPublishers
+                    candidates.addAll(
+                            findMatchesForBroadcast(
+                                    broadcast,
+                                    validPublishers
+                            )
                     );
                 }
             }
@@ -124,28 +122,15 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
 
         desc.startStage("Checking matching broadcast ratios");
-        for (Map.Entry<Item, BroadcastMatchingInfo> candidateEntry : broadcastMatchingInfoMap.entrySet()) {
-            Item candidate = candidateEntry.getKey();
-            BroadcastMatchingInfo info = candidateEntry.getValue();
-            Optional<Score> score = Optional.empty();
-            desc.appendText(
-                    String.format("%s : %.2f", candidate.getCanonicalUri(), info.getRatioOfMatchingBroadcasts())
-            );
-            if (matchingBroadcastsThresholdFunction.apply(info.getRatioOfMatchingBroadcasts())) {
-                score = Optional.of(scoreOnMatch);
-            } else if (info.getNumberOfMatchingBroadcasts() > 0) {
-                score = Optional.of(scoreOnPartialMatch);
-            }
-            if (score.isPresent()) {
-                scores.addEquivalent(candidate, score.get());
-                if (candidate.getId() != null) {
-                    generatorComponent.addComponentResult(
-                            candidate.getId(),
-                            scoreOnMatch.toString()
-                    );
-                }
-            }
-        }
+        scoreCandidates(
+                scores,
+                subject,
+                getTotalNumberOfValidBroadcasts(subject),
+                candidates,
+                desc,
+                generatorComponent
+
+        );
         desc.finishStage();
 
         equivToTelescopeResult.addGeneratorResult(generatorComponent);
@@ -169,27 +154,13 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         return broadcast.isActivelyPublished() && broadcastFilter.test(broadcast);
     }
 
-    private void findMatchesForBroadcast(
-            Map<Item, BroadcastMatchingInfo> broadcastMatchingInfoMap,
-            int subjectTotalNumberOfValidBroadcasts,
+    private Set<Item> findMatchesForBroadcast(
             Broadcast broadcast,
             Set<Publisher> validPublishers
     ) {
         Set<String> channelUris = expandChannelUris(broadcast.getBroadcastOn());
         Schedule schedule = scheduleAround(broadcast, channelUris, validPublishers);
-        for (ScheduleChannel channel : schedule.scheduleChannels()) {
-            for (Item scheduleItem : channel.items()) {
-                boolean matchingBroadcast = scheduleItem instanceof Item
-                        && scheduleItem.isActivelyPublished()
-                        && hasQualifyingBroadcast(scheduleItem, broadcast, flexibility);
-                updateBroadcastMatchingInfo(
-                        broadcastMatchingInfoMap,
-                        subjectTotalNumberOfValidBroadcasts,
-                        scheduleItem,
-                        matchingBroadcast
-                );
-            }
-        }
+        return schedule.resolveItems();
     }
 
     private Schedule scheduleAround(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {
@@ -220,32 +191,53 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         );
     }
 
-    private void updateBroadcastMatchingInfo(
-            Map<Item, BroadcastMatchingInfo> broadcastMatchingInfoMap,
+    private void scoreCandidates(
+            Builder<Item> scores,
+            Item subject,
             int subjectTotalNumberOfValidBroadcasts,
-            Item scheduleItem,
-            boolean matchingBroadcast
+            Set<Item> candidates,
+            ResultDescription desc,
+            EquivToTelescopeComponent generatorComponent
     ) {
-        broadcastMatchingInfoMap.compute(
-                scheduleItem,
-                (k, v) -> {
-                    BroadcastMatchingInfo info;
-                    if (v == null) {
-                        int numberOfValidBroadcasts =
-                                Math.min(
-                                        subjectTotalNumberOfValidBroadcasts,
-                                        getTotalNumberOfValidBroadcasts(scheduleItem)
-                                );
-                        info = new BroadcastMatchingInfo(numberOfValidBroadcasts);
-                    } else {
-                        info = v;
-                    }
+        for (Item candidate : candidates) {
+            int numberOfValidBroadcasts = Math.min(
+                            subjectTotalNumberOfValidBroadcasts,
+                            getTotalNumberOfValidBroadcasts(candidate)
+            );
+
+            int matchingBroadcasts = 0;
+
+            for (Version version : subject.getVersions()) {
+                for (Broadcast broadcast : version.getBroadcasts()) {
+                    boolean matchingBroadcast = isValidBroadcast(broadcast)
+                            && hasQualifyingBroadcast(candidate, broadcast, flexibility);
                     if (matchingBroadcast) {
-                        info.incrementNumberOfMatchingBroadcasts();
+                        matchingBroadcasts++;
                     }
-                    return info;
                 }
-        );
+            }
+
+            double ratioOfMatchingBroadcasts = ((double) matchingBroadcasts) / numberOfValidBroadcasts;
+
+            Optional<Score> score = Optional.empty();
+            desc.appendText(
+                    String.format("%s : %.2f", candidate.getCanonicalUri(), ratioOfMatchingBroadcasts)
+            );
+            if (matchingBroadcastsThresholdFunction.apply(ratioOfMatchingBroadcasts)) {
+                score = Optional.of(scoreOnMatch);
+            } else if (matchingBroadcasts > 0) {
+                score = Optional.of(scoreOnPartialMatch);
+            }
+            if (score.isPresent()) {
+                scores.addEquivalent(candidate, score.get());
+                if (candidate.getId() != null) {
+                    generatorComponent.addComponentResult(
+                            candidate.getId(),
+                            scoreOnMatch.toString()
+                    );
+                }
+            }
+        }
     }
 
     @Override
@@ -259,30 +251,5 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
     @Override
     public String toString() {
         return "BARB Broadcast-matching generator";
-    }
-
-    private class BroadcastMatchingInfo {
-        private int numberOfMatchingBroadcasts;
-        private final int totalNumberOfBroadcasts;
-
-        public BroadcastMatchingInfo(Integer totalNumberOfBroadcasts) {
-            this.totalNumberOfBroadcasts = checkNotNull(totalNumberOfBroadcasts);
-        }
-
-        public int incrementNumberOfMatchingBroadcasts() {
-            return ++numberOfMatchingBroadcasts;
-        }
-
-        public int getNumberOfMatchingBroadcasts() {
-            return numberOfMatchingBroadcasts;
-        }
-
-        public int getTotalNumberOfBroadcasts() {
-            return totalNumberOfBroadcasts;
-        }
-
-        public double getRatioOfMatchingBroadcasts() {
-            return ((double) numberOfMatchingBroadcasts) / totalNumberOfBroadcasts;
-        }
     }
 }

@@ -80,7 +80,8 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                 new TitleMatchingItemScorer(), // Scores 2 on exact match
                                 //DescriptionMatchingScorer.makeScorer(), TODO sometimes broken ATM
                                 new SequenceItemScorer(Score.ONE),
-                                //matches original behaviour of FilmEquivalenceGeneratorAndScorer scoring, has a 0 year difference tolerance
+                                //matches original behaviour of FilmEquivalenceGeneratorAndScorer
+                                // scoring, has a 0 year difference tolerance (ENG-144)
                                 new FilmYearScorer(Score.ONE, Score.ZERO, Score.ONE)
                         )
                 )

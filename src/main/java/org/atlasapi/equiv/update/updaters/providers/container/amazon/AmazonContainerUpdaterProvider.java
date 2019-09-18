@@ -1,95 +1,93 @@
-package org.atlasapi.equiv.update.updaters.providers.item;
+package org.atlasapi.equiv.update.updaters.providers.container.amazon;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import org.atlasapi.application.v3.DefaultApplication;
-import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
-import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
-import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
+import java.util.Set;
+
+import org.atlasapi.equiv.generators.TitleSearchGenerator;
+import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
-import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
+import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
-import org.atlasapi.equiv.results.filters.FilmYearFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.SequenceItemScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
+import org.atlasapi.equiv.results.scores.ScoreThreshold;
+import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
-import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-public class VodItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
+// N.B. There is some flip-flopping happening on Amazon-PA equiv that has to do with the sequence
+// stitching that happens at container level when equiv is run. This can cause situations such as
+// Amazon items equiv'ing to PA items when equiv run on container level, but not equiv'ing when run
+// on item level.
+public class AmazonContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
-    private VodItemUpdaterProvider() {
+    private AmazonContainerUpdaterProvider() {
     }
 
-    public static VodItemUpdaterProvider create() {
-        return new VodItemUpdaterProvider();
+    public static AmazonContainerUpdaterProvider create() {
+        return new AmazonContainerUpdaterProvider();
     }
 
     @Override
-    public EquivalenceResultUpdater<Item> getUpdater(
+    public EquivalenceResultUpdater<Container> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceResultUpdater.<Item>builder()
+        return ContentEquivalenceResultUpdater.<Container>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
+                      //whatever generators are used here, should prevent the creation of
+                      //candidates which are the item itself (because there is no further filtering
+                      //to remove them, whereas the Publisher filter used elsewhere does that).
                         ImmutableSet.of(
-                                new ContainerCandidatesItemEquivalenceGenerator(
-                                        dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
-                                ),
-                                new FilmEquivalenceGeneratorAndScorer(
+                                TitleSearchGenerator.create(
                                         dependencies.getSearchResolver(),
+                                        Container.class,
                                         targetPublishers,
-                                        DefaultApplication.createWithReads(
-                                                ImmutableList.copyOf(targetPublishers)
-                                        ),
-                                        true)
+                                        2,
+                                        true
+                                )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingItemScorer(),
-                                new SequenceItemScorer(Score.ONE)
+                                new TitleMatchingContainerScorer(2)
                         )
                 )
                 .withCombiner(
                         new RequiredScoreFilteringCombiner<>(
-                                new NullScoreAwareAveragingCombiner<>(),
-                                TitleMatchingItemScorer.NAME
+                                new AddingEquivalenceCombiner<>(),
+                                TitleMatchingContainerScorer.NAME,
+                                ScoreThreshold.greaterThanOrEqual(2)
                         )
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(0.25),
+                                new MinimumScoreFilter<>(1.99999),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
-                                new PublisherFilter<>(),
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),
-                                new FilmYearFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()
                         ))
                 )
                 .withExtractor(
-                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
+                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
+                                .atLeastNTimesGreater(1.5)
                 )
                 .build();
     }

@@ -1,14 +1,11 @@
-package org.atlasapi.equiv.update.updaters.providers.container;
+package org.atlasapi.equiv.update.updaters.providers.container.amazon;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import org.atlasapi.equiv.generators.ExactTitleGenerator;
-import org.atlasapi.equiv.generators.TitleSearchGenerator;
+import java.util.Set;
+
+import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighscoreAndPublisherExtractor;
-import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
-import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -25,15 +22,16 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-public class AmazonContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
+public class AmazonToAmazonContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
-    private AmazonContainerUpdaterProvider() {
+    private AmazonToAmazonContainerUpdaterProvider() {
     }
 
-    public static AmazonContainerUpdaterProvider create() {
-        return new AmazonContainerUpdaterProvider();
+    public static AmazonToAmazonContainerUpdaterProvider create() {
+        return new AmazonToAmazonContainerUpdaterProvider();
     }
 
     @Override
@@ -45,21 +43,14 @@ public class AmazonContainerUpdaterProvider implements EquivalenceResultUpdaterP
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
-//                      whatever generators are used here, should prevent the creation of
-//                      candidates which are the item itself (because there is no further filtering
-//                      to remove them, whereas the Publisher filter used elsewhere does that).
+                        //whatever generators are used here, should prevent the creation of
+                        //candidates which are the item itself (because there is no further filtering
+                        //to remove them, whereas the Publisher filter used elsewhere does that).
                         ImmutableSet.of(
-                                TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
+                                new AmazonTitleGenerator<>(
+                                        dependencies.getAmazonTitleIndexStore(),
+                                        dependencies.getContentResolver(),
                                         Container.class,
-                                        targetPublishers,
-                                        2,
-                                        true
-                                ),
-                                new ExactTitleGenerator<>(
-                                        dependencies.getSearchResolver(),
-                                        Container.class,
-                                        true,
                                         Publisher.AMAZON_UNBOX
                                 )
                         )
@@ -89,16 +80,9 @@ public class AmazonContainerUpdaterProvider implements EquivalenceResultUpdaterP
                                 new UnpublishedContentFilter<>()
                         ))
                 )
-                .withExtractors(
-                        ImmutableList.of(
-                                // Get all amazon items with the same score that scored at least
-                                // perfect for title. Then let it equate with other stuff as well.
-                                RemoveAndCombineExtractor.create(
-                                        AllWithTheSameHighscoreAndPublisherExtractor.create(2.00),
-                                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
-                                                .atLeastNTimesGreater(1.5)
-                                )
-                        )
+                .withExtractor(
+                        //Get all amazon items with same score that scored at least perfect for title
+                        AllWithTheSameHighscoreAndPublisherExtractor.create(2.00)
                 )
                 .build();
     }

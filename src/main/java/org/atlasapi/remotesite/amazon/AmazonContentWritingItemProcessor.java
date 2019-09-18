@@ -32,10 +32,13 @@ import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexEntry;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
+import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import com.metabroadcast.columbus.telescope.client.EntityType;
-import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
+
 import com.metabroadcast.common.base.Maybe;
 
 import com.google.common.collect.BiMap;
@@ -77,6 +80,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     private final Set<String> episodeUris = new HashSet<>();
     private final Set<ModelWithPayload<Episode>> episodesWithoutAvailableSeries = new HashSet<>();
 
+
     private OwlTelescopeReporter telescope;
 
     private final ContentExtractor<AmazonItem, Iterable<Content>> extractor;
@@ -86,6 +90,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
     private final int missingContentPercentage;
     private final AmazonBrandProcessor brandProcessor;
     private final ContentMerger contentMerger;
+    private final AmazonTitleIndexStore amazonTitleIndexStore;
 
     //Title Cleaning
 //    private final Pattern straySymbols = Pattern.compile("^[\\p{Pd}: ]+|[\\p{Pd}: ]+$");//p{Pd}=dashes
@@ -99,7 +104,8 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             ContentWriter writer,
             ContentLister lister,
             int missingContentPercentage,
-            AmazonBrandProcessor brandProcessor
+            AmazonBrandProcessor brandProcessor,
+            AmazonTitleIndexStore amazonTitleIndexStore
     ) {
         this.extractor = checkNotNull(extractor);
         this.resolver = checkNotNull(resolver);
@@ -112,6 +118,7 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                 MergeStrategy.REPLACE,
                 MergeStrategy.REPLACE
         );
+        this.amazonTitleIndexStore = checkNotNull(amazonTitleIndexStore);
     }
 
     @Override
@@ -204,6 +211,8 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
             );
         }
 
+        createTitleIndex();
+
         seenContainer.clear();
         cached.clear();
         topLevelSeries.clear();
@@ -240,6 +249,26 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                 }
             }
         }
+    }
+
+    private void createTitleIndex() {
+        //Title -> Set<Content> (stores object references instead of just uri to reduce memory use)
+        SetMultimap<String, Content> titleIndex = HashMultimap.create();
+        for (ModelWithPayload<Content> content : seenContent.values()) {
+            if(isTopLevelContent(content.getModel())) {
+                titleIndex.put(content.getModel().getTitle(), content.getModel());
+            }
+        }
+        Set<String> titles = titleIndex.keySet();
+        log.info("Creating title index for {} unique titles", titles.size());
+        for (String title : titles) {
+            Set<String> uris = titleIndex.get(title).stream()
+                    .map(Content::getCanonicalUri)
+                    .collect(Collectors.toSet());
+            AmazonTitleIndexEntry indexEntry = new AmazonTitleIndexEntry(title, uris);
+            amazonTitleIndexStore.createOrUpdateIndex(indexEntry);
+        }
+        log.info("Title index creation finished");
     }
 
     private void assignImageToParent(Series series) {
@@ -714,5 +743,23 @@ public class AmazonContentWritingItemProcessor implements AmazonItemProcessor {
                     content.getPayload()
             );
         }
+    }
+
+    public static boolean isTopLevelContent(Content content) {
+        if(content instanceof Item) {
+            if (content instanceof Episode) {
+                return false;
+            }
+            if (((Item) content).getContainer() != null) {
+                return false;
+            }
+        } else if(content instanceof Container) {
+            if (content instanceof Series) {
+                if (((Series) content).getParent() != null) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

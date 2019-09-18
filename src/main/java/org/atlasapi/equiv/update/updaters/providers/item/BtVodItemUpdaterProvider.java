@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
-import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
+import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
@@ -53,7 +53,7 @@ public class BtVodItemUpdaterProvider implements EquivalenceResultUpdaterProvide
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore()
                                 ),
-                                new FilmEquivalenceGenerator(
+                                new FilmEquivalenceGeneratorAndScorer(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(

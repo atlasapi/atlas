@@ -46,6 +46,7 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,6 +77,8 @@ public class EquivModule {
 
     @Autowired private KafkaMessagingModule messaging;
 
+    @Autowired private AmazonTitleIndexStore amazonTitleIndexStore;
+
     @Bean
     public EquivalenceUpdater<Content> contentUpdater() {
         EquivalenceUpdaterProviderDependencies dependencies = EquivalenceUpdaterProviderDependencies
@@ -91,6 +94,7 @@ public class EquivModule {
                 .withMessageSender(equivAssertDestination())
                 .withExcludedUris(excludedContentFromProperties(excludedUris))
                 .withExcludedIds(excludedContentFromProperties(excludedIds))
+                .withAmazonTitleIndexStore(amazonTitleIndexStore)
                 .build();
 
         UpdaterConfigurationRegistry registry = UpdaterConfigurationRegistry.create();

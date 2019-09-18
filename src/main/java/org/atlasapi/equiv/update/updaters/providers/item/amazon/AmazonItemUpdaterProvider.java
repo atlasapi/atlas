@@ -1,15 +1,12 @@
-package org.atlasapi.equiv.update.updaters.providers.item;
+package org.atlasapi.equiv.update.updaters.providers.item.amazon;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
-import org.atlasapi.equiv.generators.ExactTitleGenerator;
-import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
+import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
-import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
-import org.atlasapi.equiv.results.extractors.ExcludePublisherThenExtractExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
@@ -20,6 +17,7 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.FilmYearScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
@@ -29,10 +27,13 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
-
+// N.B. There is some flip-flopping happening on Amazon-PA equiv that has to do with the sequence
+// stitching that happens at container level when equiv is run. This can cause situations such as
+// Amazon items equiv'ing to PA items when equiv run on container level, but not equiv'ing when run
+// on item level.
 public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private AmazonItemUpdaterProvider() {
@@ -55,30 +56,33 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                         //candidates which are the item itself (because there is no further filtering
                         //to remove them, whereas the Publisher filter used elsewhere does that).
                         ImmutableSet.of(
-                                new ExactTitleGenerator<>(
-                                        dependencies.getSearchResolver(),
-                                        Item.class,
-                                        true,
-                                        AMAZON_UNBOX
-                                ),
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers
                                 ),
-                                new FilmEquivalenceGenerator(
+                                new FilmEquivalenceGeneratorAndScorer(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)),
                                         true,
-                                        0) //only equiv on exact year, as agreed
+                                        0, //only equiv on exact year, as agreed
+                                        Score.nullScore(), //score with ItemYearScorer
+                                        Score.nullScore(),
+                                        Score.nullScore(),
+                                        Score.nullScore()
+                                )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(), // Scores 2 on exact match
                                 //DescriptionMatchingScorer.makeScorer(), TODO sometimes broken ATM
-                                new SequenceItemScorer(Score.ONE)
+                                new SequenceItemScorer(Score.ONE),
+                                //matches original behaviour of FilmEquivalenceGeneratorAndScorer
+                                // scoring, has a 0 year difference tolerance (ENG-144)
+                                new FilmYearScorer(Score.ONE, Score.ZERO, Score.ONE)
                         )
                 )
                 .withCombiner(
@@ -101,18 +105,8 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                 new UnpublishedContentFilter<>()
                         ))
                 )
-                .withExtractors(
-                        ImmutableList.of(
-                                //get all items that scored perfectly everywhere.
-                                //this should equiv all amazon versions of the same content together
-                                //then let it equate with other stuff as well.
-                                AllOverOrEqThresholdExtractor.create(3.00), // TODO: dropped as Description scorer removed
-                                ExcludePublisherThenExtractExtractor.create(
-                                        AMAZON_UNBOX, //we don't want to equiv with remaining amazon items if they don't have a perfect score
-                                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
-                                )
-
-                        )
+                .withExtractor(
+                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
                 )
                 .build();
     }

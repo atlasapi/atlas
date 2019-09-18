@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers;
 
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.queue.MessageSender;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -9,10 +11,7 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-
-import com.metabroadcast.common.queue.MessageSender;
-
-import com.google.common.collect.ImmutableSet;
+import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -30,6 +29,8 @@ public class EquivalenceUpdaterProviderDependencies {
     private final ImmutableSet<String> excludedUris;
     private final ImmutableSet<String> excludedIds;
 
+    private final AmazonTitleIndexStore amazonTitleIndexStore;
+
     private EquivalenceUpdaterProviderDependencies(
             ScheduleResolver scheduleResolver,
             SearchResolver searchResolver,
@@ -41,7 +42,8 @@ public class EquivalenceUpdaterProviderDependencies {
             RecentEquivalenceResultStore equivalenceResultStore,
             MessageSender<ContentEquivalenceAssertionMessage> messageSender,
             ImmutableSet<String> excludedUris,
-            ImmutableSet<String> excludedIds
+            ImmutableSet<String> excludedIds,
+            AmazonTitleIndexStore amazonTitleIndexStore
     ) {
         this.scheduleResolver = checkNotNull(scheduleResolver);
         this.searchResolver = checkNotNull(searchResolver);
@@ -54,6 +56,7 @@ public class EquivalenceUpdaterProviderDependencies {
         this.messageSender = checkNotNull(messageSender);
         this.excludedUris = ImmutableSet.copyOf(excludedUris);
         this.excludedIds = ImmutableSet.copyOf(excludedIds);
+        this.amazonTitleIndexStore = checkNotNull(amazonTitleIndexStore);
     }
 
     public static ScheduleResolverStep builder() {
@@ -102,6 +105,10 @@ public class EquivalenceUpdaterProviderDependencies {
 
     public ImmutableSet<String> getExcludedIds() {
         return excludedIds;
+    }
+
+    public AmazonTitleIndexStore getAmazonTitleIndexStore() {
+        return amazonTitleIndexStore;
     }
 
     public interface ScheduleResolverStep {
@@ -158,7 +165,13 @@ public class EquivalenceUpdaterProviderDependencies {
 
     public interface ExcludedIdsStep {
 
-        BuildStep withExcludedIds(ImmutableSet<String> excludedIds);
+        AmazonTitleIndexStoreStep withExcludedIds(ImmutableSet<String> excludedIds);
+    }
+
+    public interface AmazonTitleIndexStoreStep {
+
+        BuildStep withAmazonTitleIndexStore(AmazonTitleIndexStore amazonTitleIndexStore);
+
     }
 
     public interface BuildStep {
@@ -170,6 +183,7 @@ public class EquivalenceUpdaterProviderDependencies {
             implements ScheduleResolverStep, SearchResolverStep, ContentResolverStep,
             ChannelResolverStep, EquivSummaryStoreStep, LookupWriterStep, LookupEntryStoreStep,
             EquivalenceResultStoreStep, MessageSenderStep, ExcludedUrisStep, ExcludedIdsStep,
+            AmazonTitleIndexStoreStep,
             BuildStep {
 
         private ScheduleResolver scheduleResolver;
@@ -183,6 +197,7 @@ public class EquivalenceUpdaterProviderDependencies {
         private MessageSender<ContentEquivalenceAssertionMessage> messageSender;
         private ImmutableSet<String> excludedUris;
         private ImmutableSet<String> excludedIds;
+        private AmazonTitleIndexStore amazonTitleIndexStore;
 
         private Builder() {
         }
@@ -250,8 +265,14 @@ public class EquivalenceUpdaterProviderDependencies {
         }
 
         @Override
-        public BuildStep withExcludedIds(ImmutableSet<String> excludedIds) {
+        public AmazonTitleIndexStoreStep withExcludedIds(ImmutableSet<String> excludedIds) {
             this.excludedIds = excludedIds;
+            return this;
+        }
+
+        @Override
+        public BuildStep withAmazonTitleIndexStore(AmazonTitleIndexStore amazonTitleIndexStore) {
+            this.amazonTitleIndexStore = amazonTitleIndexStore;
             return this;
         }
 
@@ -268,7 +289,8 @@ public class EquivalenceUpdaterProviderDependencies {
                     this.equivalenceResultStore,
                     this.messageSender,
                     this.excludedUris,
-                    this.excludedIds
+                    this.excludedIds,
+                    this.amazonTitleIndexStore
             );
         }
     }

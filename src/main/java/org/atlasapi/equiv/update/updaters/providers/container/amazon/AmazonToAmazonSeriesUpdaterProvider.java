@@ -1,13 +1,10 @@
-package org.atlasapi.equiv.update.updaters.providers.container;
+package org.atlasapi.equiv.update.updaters.providers.container.amazon;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
-import org.atlasapi.equiv.generators.ExactTitleGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighscoreAndPublisherExtractor;
-import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
-import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
@@ -26,17 +23,20 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
+/***
+ * Like {@link AmazonSeriesUpdaterProvider}, except different extractor (as before the split of
+ * Amazon equiv into Amazon-Amazon and Amazon-Everything else)
+ */
+public class AmazonToAmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
-public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
-
-    private AmazonSeriesUpdaterProvider() {
+    private AmazonToAmazonSeriesUpdaterProvider() {
     }
 
-    public static AmazonSeriesUpdaterProvider create() {
-        return new AmazonSeriesUpdaterProvider();
+    public static AmazonToAmazonSeriesUpdaterProvider create() {
+        return new AmazonToAmazonSeriesUpdaterProvider();
     }
 
     @Override
@@ -49,15 +49,13 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProv
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                new ExactTitleGenerator<>(
-                                        dependencies.getSearchResolver(),
-                                        Container.class,
-                                        true,
-                                        AMAZON_UNBOX
-                                ),
+                                // This should only generate the candidates based on the container's
+                                // strong candidates, otherwise we get candidates from other brands
                                 new ContainerCandidatesContainerEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers,
+                                        true
                                 )
                         )
                 )
@@ -85,17 +83,10 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProv
                                 new ContainerHierarchyFilter()
                         ))
                 )
-                .withExtractors(
-                        ImmutableList.of(
-                                //get all items that scored perfectly everywhere.
-                                //this should equiv all amazon versions of the same content together
-                                //then let it equate with other stuff as well.
-                                RemoveAndCombineExtractor.create(
-                                        AllWithTheSameHighscoreAndPublisherExtractor.create(3.00),
-                                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
-                                                .atLeastNTimesGreater(1.5)
-                                )
-                        )
+                .withExtractor(
+                        //get all items that scored perfectly everywhere.
+                        //this should equiv all amazon versions of the same content together
+                        AllWithTheSameHighscoreAndPublisherExtractor.create(3.00)
                 )
                 .build();
     }

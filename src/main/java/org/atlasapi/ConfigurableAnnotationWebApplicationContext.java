@@ -29,6 +29,7 @@ import org.atlasapi.query.QueryWebModule;
 import org.atlasapi.query.SearchModule;
 import org.atlasapi.remotesite.RemoteSiteModule;
 import org.atlasapi.remotesite.RemoteSiteModuleConfigurer;
+import org.atlasapi.remotesite.amazon.AmazonPersistenceModule;
 import org.atlasapi.remotesite.bbc.nitro.BbcNitroModule;
 import org.atlasapi.remotesite.health.RemoteSiteHealthModule;
 import org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionModule;
@@ -83,7 +84,8 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 SimilarContentModule.class,
                 ContentPurgeWebModule.class,
                 KnowledgeMotionModule.class,
-                QueryExecutorModule.class
+                QueryExecutorModule.class,
+                AmazonPersistenceModule.class
             );
             if (youViewUploadEnabled()) {
                 builder.add(

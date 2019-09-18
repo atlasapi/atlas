@@ -12,14 +12,32 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * This will score a candidate if and only if it has the exact same Year as the subject.
+ *
+ * Default scores are zero on mismatch, and null if either are missing a Year.
+ */
 public class ItemYearScorer implements EquivalenceScorer<Item> {
 
     private static final String NAME = "Item-Year";
 
-    private final Score matchScore;
+    private static final Score DEFAULT_MISMATCH_SCORE = Score.ZERO;
+    private static final Score DEFAULT_NULL_YEAR_SCORE = Score.nullScore();
+
+    protected final Score matchScore;
+    protected final Score mismatchScore;
+    protected final Score nullYearScore;
 
     public ItemYearScorer(Score matchScore) {
         this.matchScore = checkNotNull(matchScore);
+        this.mismatchScore = DEFAULT_MISMATCH_SCORE;
+        this.nullYearScore = DEFAULT_NULL_YEAR_SCORE;
+    }
+
+    public ItemYearScorer(Score matchScore, Score mismatchScore, Score nullYearScore) {
+        this.matchScore = checkNotNull(matchScore);
+        this.mismatchScore = checkNotNull(mismatchScore);
+        this.nullYearScore = checkNotNull(nullYearScore);
     }
 
     @Override
@@ -48,11 +66,11 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
         return scoredCandidates.build();
     }
 
-    private Score score(Item subject, Item candidate) {
+    protected Score score(Item subject, Item candidate) {
         if (subject.getYear() == null || candidate.getYear() == null) {
-            return Score.nullScore();
+            return nullYearScore;
         }
-        return subject.getYear().equals(candidate.getYear()) ? matchScore : Score.ZERO;
+        return subject.getYear().equals(candidate.getYear()) ? matchScore : mismatchScore;
     }
 
     @Override

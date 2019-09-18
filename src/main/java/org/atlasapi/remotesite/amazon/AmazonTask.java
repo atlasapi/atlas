@@ -81,27 +81,6 @@ public class AmazonTask extends ScheduledTask {
             Throwables.propagate(e);
         }
         telescope.endReporting();
-        //When done, trigger a reindexing of the whole amazon catalogue.
-        //The endpoint does not reply in a meaningful fashion, so just hit it and hope.
-        try {
-            URL url = new URL("http://search.owl.atlas.mbst.tv:8181/index?publisher=AMAZON_UNBOX");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setConnectTimeout(5000);
-            con.setReadTimeout(5000);
-            int responseCode = con.getResponseCode();
-            if(responseCode != HttpStatus.SC_ACCEPTED){
-                throw new IllegalStateException("Request not accepted. Response code was "+responseCode);
-            }
-            con.disconnect();
-        } catch (IOException | IllegalStateException e) {
-            log.error(
-                    "The Amazon ingester has failed to hit the reindex endpoint. "
-                    + "Based on past experience owl search will"
-                    + "not properly index amazon content after ingest. If we are still relying on"
-                    + "this logic, hit the endpoint manually. {}",
-                    "http://search.owl.atlas.mbst.tv:8181/index?publisher=AMAZON_UNBOX", e);
-        }
     }
 
     private AmazonProcessor<UpdateProgress> processor(

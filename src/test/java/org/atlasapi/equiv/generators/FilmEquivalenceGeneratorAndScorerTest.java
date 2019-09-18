@@ -31,12 +31,12 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 @RunWith(JMock.class)
-public class FilmEquivalenceGeneratorTest extends TestCase {
+public class FilmEquivalenceGeneratorAndScorerTest extends TestCase {
 
     private final Mockery context = new Mockery();
     private final SearchResolver resolver = context.mock(SearchResolver.class);
     private final Application application = mock(Application.class);
-    private final FilmEquivalenceGenerator generator = new FilmEquivalenceGenerator(resolver, ImmutableSet.of(Publisher.PREVIEW_NETWORKS), application, false);
+    private final FilmEquivalenceGeneratorAndScorer generator = new FilmEquivalenceGeneratorAndScorer(resolver, ImmutableSet.of(Publisher.PREVIEW_NETWORKS), application, false);
     
     private final Film subjectFilm = aFilm(10L,
             Publisher.PA, "test film title", 2000, "http://imdb.com/title/tt0409345");

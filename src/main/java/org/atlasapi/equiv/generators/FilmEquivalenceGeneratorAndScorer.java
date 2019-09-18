@@ -28,15 +28,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 
-public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
+public class FilmEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
     
     private static final Pattern IMDB_REF = Pattern.compile("http://imdb.com/title/[\\d\\w]+");
 
     private static final float TITLE_WEIGHTING = 1.0f;
     private static final float BROADCAST_WEIGHTING = 0.0f;
     private static final float CATCHUP_WEIGHTING = 0.0f;
+    private static final int DEFAULT_TOLERABLE_YEAR_DIFFERENCE = 1;
+    private static final Score DEFAULT_SCORE_ON_IMDB_MATCH = Score.ONE;
+    private static final Score DEFAULT_SCORE_ON_YEAR_MISMATCH = Score.negativeOne();
+    private static final Score DEFAULT_SCORE_ON_TITLE_MATCH = Score.ONE;
+    private static final Score DEFAULT_SCORE_ON_TITLE_MISMATCH = Score.ZERO;
 
     private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
 
@@ -54,29 +60,59 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
 
     private final List<Publisher> publishers;
 
+    private Score scoreOnImdbMatch;
+    private Score scoreOnYearMismatch;
 
-    public FilmEquivalenceGenerator(
+
+    public FilmEquivalenceGeneratorAndScorer(
             SearchResolver searchResolver,
             Iterable<Publisher> publishers,
             Application application,
             boolean acceptNullYears
     ) {
-        this(searchResolver, publishers, application, acceptNullYears, 1);
+        this(
+                searchResolver,
+                publishers,
+                application,
+                acceptNullYears,
+                DEFAULT_TOLERABLE_YEAR_DIFFERENCE,
+                DEFAULT_SCORE_ON_IMDB_MATCH,
+                DEFAULT_SCORE_ON_YEAR_MISMATCH,
+                DEFAULT_SCORE_ON_TITLE_MATCH,
+                DEFAULT_SCORE_ON_TITLE_MISMATCH
+        );
     }
 
-    public FilmEquivalenceGenerator(
+    /**
+     * This constructor allows you to set each of the individual score values that are used by both the generator
+     * and its internal FilmTitleMatcher. It also allows you to specify a tolerance for how much the years can differ by
+     * to still be considered a match.
+     * @param acceptNullYears if true will match if the subject on candidate year is null
+     * @param tolerableYearDifference the maximum amount the subject and candidate years can differ by to still match
+     * @param scoreOnImdbMatch the score given on an IMDB match
+     * @param scoreOnYearMismatch the score given if there is no IMDB match and the years do not match
+     * @param scoreOnTitleMatch the score given if there is no IMDB match and the year and title match
+     * @param scoreOnTitleMismatch the score given if there is no IMDB match and the year matches but the title does not
+     */
+    public FilmEquivalenceGeneratorAndScorer(
             SearchResolver searchResolver,
             Iterable<Publisher> publishers,
             Application application,
             boolean acceptNullYears,
-            Integer tolerableYearDifference
+            int tolerableYearDifference,
+            Score scoreOnImdbMatch,
+            Score scoreOnYearMismatch,
+            Score scoreOnTitleMatch,
+            Score scoreOnTitleMismatch
     ) {
         this.searchResolver = searchResolver;
         this.publishers = ImmutableList.copyOf(publishers);
         this.searchApplication = application;
         this.acceptNullYears = acceptNullYears;
-        this.titleMatcher = new FilmTitleMatcher(titleExpander);
         this.tolerableYearDifference = tolerableYearDifference;
+        this.scoreOnImdbMatch = checkNotNull(scoreOnImdbMatch);
+        this.scoreOnYearMismatch = checkNotNull(scoreOnYearMismatch);
+        this.titleMatcher = new FilmTitleMatcher(titleExpander, scoreOnTitleMatch, scoreOnTitleMismatch);
     }
 
     @Override
@@ -91,6 +127,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         generatorComponent.setComponentName("Film Equivalence Generator");
 
         if (!(item instanceof Film) || !item.isActivelyPublished()) {
+            desc.appendText("Won't generate: subject is not a film");
             return scores.build();
         }
         
@@ -142,35 +179,35 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
 
             Maybe<String> equivImdbRef = getImdbRef(equivFilm);
             if(imdbRef.hasValue() && equivImdbRef.hasValue() && Objects.equal(imdbRef.requireValue(), equivImdbRef.requireValue())) {
-                desc.appendText("%s (%s) scored 1.0 (IMDB match)", equivFilm.getTitle(), equivFilm.getCanonicalUri());
-                scores.addEquivalent(equivFilm, Score.valueOf(1.0));
+                desc.appendText("%s (%s) scored %s (IMDB match)", equivFilm.getTitle(), equivFilm.getCanonicalUri(), scoreOnImdbMatch);
+                scores.addEquivalent(equivFilm, scoreOnImdbMatch);
 
                 if (equivFilm.getId() != null) {
                     generatorComponent.addComponentResult(
                             equivFilm.getId(),
-                            "1.0"
+                            scoreOnImdbMatch.toString()
                     );
                 }
                 
             } else if ((film.getYear() != null && tolerableYearDifference(film, equivFilm)) || (film.getYear() == null && acceptNullYears)) {
-                Score score = Score.valueOf(titleMatcher.titleMatch(film, equivFilm));
+                Score score = titleMatcher.titleMatch(film, equivFilm);
                 desc.appendText("%s (%s) scored %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), score);
                 scores.addEquivalent(equivFilm, score);
 
                 if (equivFilm.getId() != null) {
                     generatorComponent.addComponentResult(
                             equivFilm.getId(),
-                            String.valueOf(score.asDouble())
+                            score.toString()
                     );
                 }
             } else {
-                scores.addEquivalent(equivFilm, Score.negativeOne());
+                scores.addEquivalent(equivFilm, scoreOnYearMismatch);
 
                 if (equivFilm.getId() != null) {
                     desc.appendText("%s (%s) ignored. Wrong year %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), equivFilm.getYear());
                     generatorComponent.addComponentResult(
                             equivFilm.getId(),
-                            "-1.0"
+                            scoreOnYearMismatch.toString()
                     );
                 }
             }

@@ -34,10 +34,6 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexEntry;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
-import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
-import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.base.Maybe;
 
 import com.google.common.collect.BiMap;

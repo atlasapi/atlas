@@ -32,6 +32,17 @@ public class DefaultScoredCandidates<T> implements ScoredCandidates<T> {
             return this;
         }
 
+        /**
+         * Replace existing score if new score is higher
+         */
+        public Builder<T> updateEquivalent(T equivalent, Score score) {
+            Score current = equivs.get(equivalent);
+            if(current == null || !current.isRealScore() || score.asDouble() > current.asDouble()) {
+                equivs.put(equivalent, score);
+            }
+            return this;
+        }
+
         public ScoredCandidates<T> build() {
             return fromMappedEquivs(source, equivs);
         }

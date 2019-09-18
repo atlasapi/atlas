@@ -32,8 +32,8 @@ import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquiva
 import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest.BBC_TWO_ENGLAND;
 import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest.BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP;
 import static org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest.BBC_TWO_SOUTH_TXLOG;
-import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
+import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.joda.time.Duration.standardHours;
@@ -80,6 +80,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
         generator = new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                 resolver,
                 channelResolver,
+                ImmutableSet.of(BBC_NITRO, LAYER3_TXLOGS),
                 FLEXIBILITY,
                 null,
                 SCORE_ON_MATCH
@@ -99,7 +100,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -148,7 +149,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -195,7 +196,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -242,7 +243,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -291,7 +292,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -339,7 +340,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -385,7 +386,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -432,7 +433,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -478,7 +479,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -534,7 +535,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item txlogItem = episodeWithBroadcasts(
                 "subjectItem",
-                Publisher.BARB_TRANSMISSIONS,
+                Publisher.LAYER3_TXLOGS,
                 txlogBroadcast
         );
 
@@ -591,13 +592,13 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
 
         final Item southTxlogItem = episodeWithBroadcasts(
                 "southTxlogItem",
-                BARB_TRANSMISSIONS,
+                LAYER3_TXLOGS,
                 txlogSouthBroadcast
         );
 
         final Item eastTxlogItem = episodeWithBroadcasts(
                 "eastTxlogItem",
-                BARB_TRANSMISSIONS,
+                LAYER3_TXLOGS,
                 txlogEastBroadcast
         );
 
@@ -612,7 +613,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorerTest {
                                 .add(BBC_TWO_ENGLAND)
                                 .addAll(BBC_TWO_ENGLAND_TXLOG_CHANNEL_MAP.values())
                                 .build(),
-                        ImmutableSet.of(BARB_TRANSMISSIONS)
+                        ImmutableSet.of(LAYER3_TXLOGS)
                 )
         ).thenReturn(
                 Schedule.fromChannelMap(

@@ -4,6 +4,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.Resources;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.time.SystemClock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
@@ -18,6 +20,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Map;
 
+import static org.atlasapi.remotesite.channel4.pmlsd.C4BrandExtractorTest.modelWithPayloadForModel;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -35,9 +38,9 @@ public class C4SeriesAndEpisodesExtractorTest {
 	@Test
 	public void testParsingASeries() throws Exception {
 		
-		SetMultimap<Series, Episode> seriesAndEpisodes = new C4SeriesAndEpisodesExtractor(contentFactory, new SystemClock())
+		SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> seriesAndEpisodes = new C4SeriesAndEpisodesExtractor(contentFactory, new SystemClock())
 		    .extract(seriesFeed.build());
-		Series series = Iterables.getOnlyElement(seriesAndEpisodes.keySet());
+		Series series = Iterables.getOnlyElement(seriesAndEpisodes.keySet()).getModel();
 		
 		assertThat(series.getCanonicalUri(), is("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares/episode-guide/series-3"));
 		// TODO new alias
@@ -52,9 +55,12 @@ public class C4SeriesAndEpisodesExtractorTest {
 		assertThat(series.getTitle(), is("Series 3 - Ramsay's Kitchen Nightmares"));
 		assertThat(series.getDescription(), startsWith("Multi Michelin-starred chef Gordon Ramsay"));
 		
-		Map<String,Episode> episodes = Maps.uniqueIndex(seriesAndEpisodes.values(), Identified.TO_URI);
+		Map<String, ModelWithPayload<Episode>> episodes = Maps.uniqueIndex(
+						seriesAndEpisodes.values(),
+						modelWithPayload -> modelWithPayload.getModel().getCanonicalUri()
+		);
 		
-		Episode firstEpisode = episodes.get("http://pmlsc.channel4.com/pmlsd/41337/001");
+		Episode firstEpisode = episodes.get("http://pmlsc.channel4.com/pmlsd/41337/001").getModel();
 		
 		assertThat(firstEpisode.getCanonicalUri(), is("http://pmlsc.channel4.com/pmlsd/41337/001"));
 		assertThat(firstEpisode.getThumbnail(), is("http://www.channel4.com/assets/programmes/images/ramsays-kitchen-nightmares/series-3/ramsays-kitchen-nightmares-s3-20090617160853_200x113.jpg"));

@@ -1,11 +1,12 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqHighestNonEmptyThresholdExtractor;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
@@ -25,18 +26,21 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-import org.joda.time.Duration;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import org.joda.time.Duration;
 
 public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
-    private BbcTxlogsItemUpdaterProvider() {
+    public final boolean isSubjectTxlog;
 
+    private BbcTxlogsItemUpdaterProvider(boolean isSubjectTxlog) {
+        this.isSubjectTxlog = isSubjectTxlog;
     }
 
-    public static BbcTxlogsItemUpdaterProvider create() {
-        return new BbcTxlogsItemUpdaterProvider();
+    public static BbcTxlogsItemUpdaterProvider create(boolean isSubjectTxlog) {
+        return new BbcTxlogsItemUpdaterProvider(isSubjectTxlog);
     }
 
     @Override
@@ -68,6 +72,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                 new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
+                                        targetPublishers,
                                         //TODO: we may need to increase the flexibility since supposedly the actual transmission
                                         // can differ by up to at least a few hours - perhaps the generator would first try
                                         // 1 hour and gradually increase the search window up to a given limit?
@@ -106,8 +111,15 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                 new UnpublishedContentFilter<>()
                         ))
                 )
+
+                // See TxlogsItemUpdaterProvider for reason behind 10-4 extractor on txlog->bbc equiv
+                // Bbc to txlog should stay the same and equiv to all candidates since some
+                // BBC txlogs are regional variants without bcids that still need to be equived to
+                // even if one exists with a bcid. ENG-447
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(4)
+                        isSubjectTxlog
+                        ? new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
+                        : AllOverOrEqThresholdExtractor.create(4)
                 )
                 .build();
     }

@@ -16,8 +16,11 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.Set;
+
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -26,6 +29,9 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     private final Set<EquivalenceResultUpdater<T>> equivalenceResultUpdaters;
     private final EquivalenceResultHandler<T> handler;
     private final EquivalenceResultMessenger<T> messenger;
+
+    private final SubstitutionTableNumberCodec codec
+            = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private final EquivalenceUpdaterMetadata metadata;
 
@@ -48,7 +54,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         ReadableDescription desc = new DefaultDescription();
 
         EquivToTelescopeResults resultsForTelescope = EquivToTelescopeResults.create(
-                String.valueOf(content.getId()),
+                codec.encode(BigInteger.valueOf(content.getId())),
                 content.getPublisher().toString()
         );
 

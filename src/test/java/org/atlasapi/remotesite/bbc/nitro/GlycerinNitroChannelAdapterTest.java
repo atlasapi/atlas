@@ -18,6 +18,7 @@ import com.metabroadcast.atlas.glycerin.model.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Service;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

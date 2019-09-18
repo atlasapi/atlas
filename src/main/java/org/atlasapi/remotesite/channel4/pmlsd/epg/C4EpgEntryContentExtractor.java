@@ -23,6 +23,9 @@ import org.joda.time.DateTime;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import org.springframework.ui.Model;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.SystemClock;
 
@@ -153,12 +156,12 @@ public class C4EpgEntryContentExtractor implements
     }
 
     private Optional<Brand> fetchBrand(C4EpgChannelEntry source) {
-        return source.hasRelatedLink()  ? fetchBrand(source.getRelatedLinkUri()) 
+        return source.hasRelatedLink()  ? fetchBrand(new ModelWithPayload<>(source.getRelatedLinkUri(), source.getEpgEntry()))
                                         : Optional.empty();
     }
 
-    private Optional<Brand> fetchBrand(String relatedLinkUri) {
-        return Optional.ofNullable(brandUpdater.createOrUpdateBrand(relatedLinkUri));
+    private Optional<Brand> fetchBrand(ModelWithPayload<String> relatedLinkUriWithPayload) {
+        return Optional.ofNullable(brandUpdater.createOrUpdateBrand(relatedLinkUriWithPayload));
     }
 
     private Optional<Brand> resolveBrand(C4EpgChannelEntry source) {

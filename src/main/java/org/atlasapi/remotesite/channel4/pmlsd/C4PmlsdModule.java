@@ -6,8 +6,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
-import com.metabroadcast.common.http.SimpleHttpClientBuilder;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
@@ -16,14 +14,29 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.HttpClients;
-import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
+import org.atlasapi.remotesite.channel4.pirate.C4PirateClient;
+import org.atlasapi.remotesite.channel4.pirate.C4PirateForceIngestController;
+import org.atlasapi.remotesite.channel4.pirate.C4PirateItemTransformer;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgChannelDayUpdater;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgClient;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgEntryUriExtractor;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgUpdater;
-import org.atlasapi.remotesite.channel4.pirate.C4PirateClient;
-import org.atlasapi.remotesite.channel4.pirate.C4PirateForceIngestController;
-import org.atlasapi.remotesite.channel4.pirate.C4PirateItemTransformer;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
+import org.atlasapi.reporting.OwlReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.common.http.SimpleHttpClient;
+import com.metabroadcast.common.http.SimpleHttpClientBuilder;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.time.DayRangeGenerator;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -33,14 +46,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import com.metabroadcast.common.http.SimpleHttpClient;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.time.DayRangeGenerator;
 
 @Configuration
 public class C4PmlsdModule {
@@ -57,7 +62,7 @@ public class C4PmlsdModule {
 	private final static RepetitionRule TWO_HOURS = RepetitionRules.every(Duration.standardHours(2));
 	private final static RepetitionRule TWO_HOURS_WITH_OFFSET = RepetitionRules.every(Duration.standardHours(2)).withOffset(Duration.standardHours(1));
 
-	private @Autowired SimpleScheduler scheduler;
+    private @Autowired SimpleScheduler scheduler;
 
 	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
 	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
@@ -121,29 +126,33 @@ public class C4PmlsdModule {
         return new C4AtomApi(channelResolver);
     }
     
-	@Bean public C4EpgUpdater pcC4Pmlsd15DayEpgUpdater() {
-	    return new C4EpgUpdater(
+	private C4EpgUpdater pcC4Pmlsd15DayEpgUpdater() {
+        OwlReporter owlReporter = getOwlReporter();
+        return new C4EpgUpdater(
 	            atomPmlsdApi(),
-	            pcC4PlmsdEpgChannelDayUpdater(),
-	            new DayRangeGenerator().withLookAhead(7).withLookBack(7)
+	            pcC4PlmsdEpgChannelDayUpdater(owlReporter),
+	            new DayRangeGenerator().withLookAhead(7).withLookBack(7),
+                owlReporter
         );
     }
 
-    @Bean public C4EpgUpdater pcC4PmlsdLastMonthEpgUpdater() {
+    private C4EpgUpdater pcC4PmlsdLastMonthEpgUpdater() {
+        OwlReporter owlReporter = getOwlReporter();
         return new C4EpgUpdater(
                 atomPmlsdApi(),
-                pcC4PlmsdEpgChannelDayUpdater(),
-                new DayRangeGenerator().withLookAhead(0).withLookBack(31)
+                pcC4PlmsdEpgChannelDayUpdater(owlReporter),
+                new DayRangeGenerator().withLookAhead(0).withLookBack(31),
+                owlReporter
         );
     }
 
-    @Bean public C4EpgChannelDayUpdater pcC4PlmsdEpgChannelDayUpdater() {
-	    ScheduleResolverBroadcastTrimmer trimmer = new ScheduleResolverBroadcastTrimmer(SOURCE, scheduleResolver, contentResolver, pmlsdLastUpdatedSettingContentWriter());
+    private C4EpgChannelDayUpdater pcC4PlmsdEpgChannelDayUpdater(OwlReporter owlReporter) {
+	    ScheduleResolverBroadcastTrimmer trimmer = new ScheduleResolverBroadcastTrimmer(SOURCE, scheduleResolver, contentResolver, contentWriter);
         return new C4EpgChannelDayUpdater(
                 new C4EpgClient(c4HttpsClient()),
-                pmlsdLastUpdatedSettingContentWriter(),
+                pmlsdLastUpdatedSettingContentWriter(owlReporter),
                 contentResolver,
-                pcPmlsdBrandFetcher(Optional.empty(), Optional.empty()),
+                pcPmlsdBrandFetcher(Optional.empty(), Optional.empty(), owlReporter),
                 trimmer,
                 scheduleWriter,
                 Publisher.C4_PMLSD,
@@ -168,28 +177,33 @@ public class C4PmlsdModule {
 //                Optional.of(P06_PLATFORM));
 //    }
     
-	@Bean protected C4AtoZAtomContentUpdateTask pcC4PmlsdAtozUpdater() {
-		return new C4AtoZAtomContentUpdateTask(
+	private C4AtoZAtomContentUpdateTask pcC4PmlsdAtozUpdater() {
+        OwlReporter owlReporter = getAtoZOwlReporter();
+        return new C4AtoZAtomContentUpdateTask(
 		        c4HttpsClient(),
 		        ATOZ_BASE,
-		        pcPmlsdBrandFetcher(Optional.empty(), Optional.empty()),
-		        Publisher.C4_PMLSD
+		        pcPmlsdBrandFetcher(Optional.empty(), Optional.empty(), owlReporter),
+		        Publisher.C4_PMLSD,
+                owlReporter
         );
 	}
 	
-	@Bean protected C4AtoZAtomContentUpdateTask xboxC4PmlsdAtozUpdater() {
-	    return new C4AtoZAtomContentUpdateTask(
+	private C4AtoZAtomContentUpdateTask xboxC4PmlsdAtozUpdater() {
+        OwlReporter owlReporter = getAtoZOwlReporter();
+        return new C4AtoZAtomContentUpdateTask(
 	            c4HttpsClient(),
 	            ATOZ_BASE,
 	            Optional.of(P06_PLATFORM),
-	            xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX), Optional.of(P06_PLATFORM)),
-	            Publisher.C4_PMLSD_P06
+	            xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX), Optional.of(P06_PLATFORM), owlReporter),
+	            Publisher.C4_PMLSD_P06,
+                owlReporter
         );
 	}
 	
-	protected C4AtomBackedBrandUpdater pcPmlsdBrandFetcher(
+	private C4AtomBackedBrandUpdater pcPmlsdBrandFetcher(
 	        Optional<Platform> platform,
-	        Optional<String> platformParam
+	        Optional<String> platformParam,
+            OwlReporter owlReporter
     ) {
 	    C4AtomApiClient client = new C4AtomApiClient(c4HttpsClient(), ATOZ_BASE, platformParam);
 	    C4BrandExtractor extractor = new C4BrandExtractor(
@@ -205,12 +219,12 @@ public class C4PmlsdModule {
 		        client,
 		        platform,
 		        contentResolver,
-		        pmlsdLastUpdatedSettingContentWriter(),
+		        pmlsdLastUpdatedSettingContentWriter(owlReporter),
 		        extractor
         );
 	}
 	
-	protected C4AtomBackedBrandUpdater xboxPmlsdBrandFetcher(Optional<Platform> platform, Optional<String> platformParam) {
+	private C4AtomBackedBrandUpdater xboxPmlsdBrandFetcher(Optional<Platform> platform, Optional<String> platformParam, OwlReporter owlReporter) {
         C4AtomApiClient client = new C4AtomApiClient(c4HttpsClient(), ATOZ_BASE, platformParam);
         C4BrandExtractor extractor = new C4BrandExtractor(
                 client,
@@ -225,27 +239,27 @@ public class C4PmlsdModule {
                 client,
                 platform,
                 contentResolver,
-                pmlsdLastUpdatedSettingContentWriter(),
+                pmlsdLastUpdatedSettingContentWriter(owlReporter),
                 extractor
         );
     }
 	
-	@Bean protected C4BrandUpdateController c4BrandUpdateController() {
+	private C4BrandUpdateController c4BrandUpdateController(OwlReporter owlReporter) {
 	    return new C4BrandUpdateController(
-	            pcPmlsdBrandFetcher(Optional.empty(), Optional.empty()),
+	            pcPmlsdBrandFetcher(Optional.empty(), Optional.empty(), owlReporter),
 	            ImmutableMap.of(
 	                    Platform.XBOX,
-	                    xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX), Optional.of(P06_PLATFORM))
+	                    xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX), Optional.of(P06_PLATFORM), owlReporter)
                 )
         );
 	}
 	
-	@Bean protected C4EpgChannelDayUpdateController c4EpgChannelDayUpdateController() {
-	    return new C4EpgChannelDayUpdateController(atomPmlsdApi(), pcC4PlmsdEpgChannelDayUpdater());
+	private C4EpgChannelDayUpdateController c4EpgChannelDayUpdateController(OwlReporter owlReporter) {
+	    return new C4EpgChannelDayUpdateController(atomPmlsdApi(), pcC4PlmsdEpgChannelDayUpdater(owlReporter));
 	}
 	
-    @Bean protected LastUpdatedSettingContentWriter pmlsdLastUpdatedSettingContentWriter() {
-        return new LastUpdatedSettingContentWriter(contentResolver, new LastUpdatedCheckingContentWriter(contentWriter));
+    private LastUpdatedSettingContentWriter pmlsdLastUpdatedSettingContentWriter(OwlReporter owlReporter) {
+        return new LastUpdatedSettingContentWriter(contentResolver, new LastUpdatedCheckingContentWriter(contentWriter), owlReporter);
     }
     
     @Bean protected C4LocationPolicyIds c4PCLocationPolicyIds() {
@@ -267,6 +281,18 @@ public class C4PmlsdModule {
                 C4PirateItemTransformer.create(),
                 C4PirateClient.create(c4PirateUser, c4PiratePass, c4PirateUrl)
         );
+    }
+
+    private OwlReporter getOwlReporter() {
+        return new OwlReporter(
+                OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
+                        OwlTelescopeReporters.CHANNEL_4_INGEST_UPDATER, Event.Type.INGEST));
+    }
+
+    private OwlReporter getAtoZOwlReporter() {
+        return new OwlReporter(
+                OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
+                        OwlTelescopeReporters.CHANNEL_4_INGEST_ATOZ, Event.Type.INGEST));
     }
     
 }

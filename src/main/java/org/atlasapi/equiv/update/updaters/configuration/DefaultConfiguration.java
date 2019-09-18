@@ -85,6 +85,7 @@ import static org.atlasapi.media.entity.Publisher.KM_BLOOMBERG;
 import static org.atlasapi.media.entity.Publisher.KM_GETTY;
 import static org.atlasapi.media.entity.Publisher.KM_GLOBALIMAGEWORKS;
 import static org.atlasapi.media.entity.Publisher.KM_MOVIETONE;
+import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
 import static org.atlasapi.media.entity.Publisher.LONDON_ALSO;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.LYREBIRD_YOUTUBE;
@@ -207,6 +208,7 @@ public class DefaultConfiguration {
                             YOUVIEW_SCOTLAND_RADIO_STAGE,
                             BARB_MASTER,
                             BARB_TRANSMISSIONS,
+                            LAYER3_TXLOGS,
                             BARB_OVERRIDES,
                             ITV_CPS,
                             BBC_NITRO,

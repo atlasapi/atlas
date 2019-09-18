@@ -1,27 +1,31 @@
 package org.atlasapi.remotesite.channel4.pmlsd.epg;
 
 import org.atlasapi.remotesite.channel4.pmlsd.C4BrandUpdater;
-import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgRelatedLinkBrandUpdater;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.integration.junit4.JMock;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-@RunWith(JMock.class)
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
+
+import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 public class C4EpgRelatedLinkBrandUpdaterTest {
 
-    private final Mockery context = new Mockery();
-    private final C4BrandUpdater backingUpdater = context.mock(C4BrandUpdater.class);
+    private final C4BrandUpdater backingUpdater = mock(C4BrandUpdater.class);
     
     private final C4EpgRelatedLinkBrandUpdater updater = new C4EpgRelatedLinkBrandUpdater(backingUpdater);
     
     @Test(expected=IllegalArgumentException.class)
     public void testDoesntUpdateInvalidUriAndThrowsException() {
-        context.checking(new Expectations(){{
-            never(backingUpdater).createOrUpdateBrand(with(any(String.class)));
-        }});
-        updater.createOrUpdateBrand("this is not a URI");
+        updater.createOrUpdateBrand(new ModelWithPayload<>(
+                "this is not a URI",
+                null));
+        verify(backingUpdater, never()).createOrUpdateBrand(anyModelWithPayload());
     }
 
     @Test()
@@ -42,10 +46,24 @@ public class C4EpgRelatedLinkBrandUpdaterTest {
     }
 
     private void checkUpdates(String input, final String delegate) {
-        context.checking(new Expectations(){{
-            one(backingUpdater).createOrUpdateBrand(delegate);
-        }});
-        updater.createOrUpdateBrand(input);
+        updater.createOrUpdateBrand(new ModelWithPayload<>(
+                input,
+                null));
+        verify(backingUpdater, atMost(1)).createOrUpdateBrand(anyModelWithPayload());
+        verify(backingUpdater, atLeast(1)).createOrUpdateBrand(anyModelWithPayload());
+    }
+
+    static <T> ModelWithPayload<T> anyModelWithPayload() {
+        return argThat(new ArgumentMatcher<ModelWithPayload<T>>() {
+
+            @Override
+            public boolean matches(Object o) {
+                if (!(o instanceof ModelWithPayload)) {
+                    return false;
+                }
+                return true;
+            }
+        });
     }
 
 }

@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.atlasapi.media.entity.Identified.TO_URI;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,7 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Clip;
@@ -22,8 +18,8 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
-import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Policy.Platform;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
@@ -31,9 +27,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.FetchException;
-import org.joda.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -46,6 +41,12 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 import com.sun.syndication.feed.atom.Feed;
+import org.joda.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.atlasapi.media.entity.Identified.TO_URI;
 
 public class C4AtomBackedBrandUpdater implements C4BrandUpdater {
 
@@ -55,11 +56,11 @@ public class C4AtomBackedBrandUpdater implements C4BrandUpdater {
 	
 	private final C4AtomApiClient feedClient;
 	private final C4AtomContentResolver resolver;
-	private final ContentWriter writer;
+	private final C4ContentWriter writer;
 	private final ContentExtractor<Feed, BrandSeriesAndEpisodes> extractor;
 	private final Optional<Platform> platform;
 	
-	public C4AtomBackedBrandUpdater(C4AtomApiClient feedClient, Optional<Platform> platform, ContentResolver contentResolver, ContentWriter contentWriter, ContentExtractor<Feed, BrandSeriesAndEpisodes> extractor) {
+	public C4AtomBackedBrandUpdater(C4AtomApiClient feedClient, Optional<Platform> platform, ContentResolver contentResolver, C4ContentWriter contentWriter, ContentExtractor<Feed, BrandSeriesAndEpisodes> extractor) {
 		this.feedClient = feedClient;
         this.platform = platform;
 		this.resolver = new C4AtomContentResolver(contentResolver);
@@ -72,7 +73,10 @@ public class C4AtomBackedBrandUpdater implements C4BrandUpdater {
 		return BRAND_PAGE_PATTERN.matcher(uri).matches();
 	}
 
-	public Brand createOrUpdateBrand(String uri) {
+	public Brand createOrUpdateBrand(ModelWithPayload<String> uriWithPayload) {
+
+	    String uri = uriWithPayload.getModel();
+
 	    Preconditions.checkArgument(canFetch(uri), "Cannot fetch C4 uri: %s as it is not in the expected format: %s",uri, BRAND_PAGE_PATTERN.toString());
 
 	    try {
@@ -84,7 +88,7 @@ public class C4AtomBackedBrandUpdater implements C4BrandUpdater {
 			    Brand brand = resolveAndUpdate(brandHierarchy.getBrand());
 			    checkUri(brand);
 			    checkSource(brand);
-                writer.createOrUpdate(brand);
+                writer.createOrUpdate(brand, uriWithPayload.getPayload());
 			    
 			    write(brandHierarchy.getSeriesAndEpisodes(), brand);
 			    
@@ -97,19 +101,22 @@ public class C4AtomBackedBrandUpdater implements C4BrandUpdater {
 		}
 	}
 
-    private void write(SetMultimap<Series, Episode> seriesAndEpisodes, Brand brand) {
-        for (Entry<Series, Collection<Episode>> seryAndEpisodes : seriesAndEpisodes.asMap().entrySet()) {
+    private void write(SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> seriesAndEpisodes, Brand brand) {
+        for (Entry<ModelWithPayload<Series>, Collection<ModelWithPayload<Episode>>> seryAndEpisodes : seriesAndEpisodes.asMap().entrySet()) {
             Series series = null;
-            if (seryAndEpisodes.getKey().getCanonicalUri() != null) {
-                series = resolveAndUpdate(seryAndEpisodes.getKey());
+            ModelWithPayload<Series> seryModelWithPayload = seryAndEpisodes.getKey();
+            if (seryModelWithPayload.getModel().getCanonicalUri() != null) {
+                series = resolveAndUpdate(seryModelWithPayload.getModel());
                 series.setParent(brand);
                 checkUri(series);
                 checkSource(brand);
-                writer.createOrUpdate(series);
+                writer.createOrUpdate(seryModelWithPayload.getModel(), seryModelWithPayload.getPayload());
+
             }
             
-            for (Episode episode : seryAndEpisodes.getValue()) {
+            for (ModelWithPayload<Episode> episodeModelWithPayload : seryAndEpisodes.getValue()) {
                 try {
+                    Episode episode = episodeModelWithPayload.getModel();
                     episode = resolveAndUpdate(episode);
                     episode.setContainer(brand);
                     if (series != null) {
@@ -117,9 +124,9 @@ public class C4AtomBackedBrandUpdater implements C4BrandUpdater {
                     }
                     checkUri(episode);
                     checkSource(episode);
-                    writer.createOrUpdate(episode);
+                    writer.createOrUpdate(episode, episodeModelWithPayload.getPayload());
                 } catch (Exception e) {
-                    log.warn("Failed to write " + episode.getCanonicalUri(), e);
+                    log.warn("Failed to write " + episodeModelWithPayload.getModel().getCanonicalUri(), e);
                 }
             }
         }

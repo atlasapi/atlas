@@ -1,22 +1,33 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import com.google.common.io.Resources;
-import com.metabroadcast.common.http.SimpleHttpClient;
-import com.metabroadcast.common.http.SimpleHttpRequest;
-import com.sun.syndication.feed.atom.Feed;
-import junit.framework.TestCase;
+import java.util.Optional;
+
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.model.C4EpgEntry;
+import org.atlasapi.reporting.OwlReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
+import com.metabroadcast.common.http.SimpleHttpClient;
+import com.metabroadcast.common.http.SimpleHttpRequest;
+
+import com.google.common.io.Resources;
+import com.sun.syndication.feed.atom.Feed;
+import junit.framework.TestCase;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Optional;
-
+import static org.atlasapi.remotesite.channel4.pmlsd.C4BrandExtractorTest.modelWithPayloadForModel;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,23 +46,36 @@ public class C4AtoZAtomContentUpdateTaskTest extends TestCase {
 
 	private final AtomFeedBuilder ps3atoza = new AtomFeedBuilder(Resources.getResource(getClass(), "atoz-ps3.atom"));
 
+    private final static OwlReporter owlReporterAtoz = new OwlReporter(
+            OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
+                    OwlTelescopeReporters.CHANNEL_4_INGEST_ATOZ, Event.Type.INGEST));
+
     @Test
 	public void testRequestsFeedsAndPassesExtractedUrisToAdapter() throws Exception {
         
-        C4AtoZAtomContentUpdateTask adapter = new C4AtoZAtomContentUpdateTask(client, apiBase, brandAdapter, Publisher.C4_PMLSD);
+        C4AtoZAtomContentUpdateTask adapter = new C4AtoZAtomContentUpdateTask(client, apiBase, brandAdapter, Publisher.C4_PMLSD, owlReporterAtoz);
 	
 		when(client.get(requestFor("http://pmlsc.channel4.com/pmlsd/atoz/a.atom"))).thenReturn(atoza.build());
 		when(client.get(requestFor("http://pmlsc.channel4.com/pmlsd/atoz/a/page-2.atom"))).thenReturn(atoza2.build());
 		when(brandAdapter.canFetch(anyString())).thenReturn(true);
 
-		adapter.run();
+        adapter.run();
 
 		verify(brandAdapter).canFetch("http://pmlsc.channel4.com/pmlsd/a-bipolar-expedition");
-		verify(brandAdapter).createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/a-bipolar-expedition");
+        verify(brandAdapter).createOrUpdateBrand(
+                modelWithPayloadForModel(
+                        "http://pmlsc.channel4.com/pmlsd/a-bipolar-expedition"
+                )
+        );
 		verify(brandAdapter).canFetch("http://pmlsc.channel4.com/pmlsd/a-bipolar-expedition-part-2");
-		verify(brandAdapter).createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/a-bipolar-expedition-part-2");
+        verify(brandAdapter).createOrUpdateBrand(
+                modelWithPayloadForModel(
+                        "http://pmlsc.channel4.com/pmlsd/a-bipolar-expedition-part-2"
+                )
+        );
 	
     }
+
     
     @Test
     public void testRequestsFeedsAndPassesExtractedUrisToAdapterWithPlatform() throws Exception {
@@ -61,7 +85,8 @@ public class C4AtoZAtomContentUpdateTaskTest extends TestCase {
                 apiBase,
                 Optional.of(Platform.XBOX.key().toLowerCase()),
                 brandAdapter,
-                Publisher.C4_PMLSD
+                Publisher.C4_PMLSD,
+                owlReporterAtoz
         );
     
         when(client.get(requestFor("http://pmlsc.channel4.com/pmlsd/atoz/a.atom?platform=xbox"))).thenReturn(ps3atoza.build());
@@ -70,10 +95,13 @@ public class C4AtoZAtomContentUpdateTaskTest extends TestCase {
         adapter.run();
 
         verify(brandAdapter).canFetch("http://pmlsc.channel4.com/pmlsd/a-place-by-the-sea");
-        verify(brandAdapter).createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/a-place-by-the-sea");
+        verify(brandAdapter).createOrUpdateBrand(modelWithPayloadForModel(
+                "http://pmlsc.channel4.com/pmlsd/a-place-by-the-sea"
+        ));
         verify(brandAdapter).canFetch("http://pmlsc.channel4.com/pmlsd/a-place-in-the-sun-home-or-away");
-        verify(brandAdapter).createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/a-place-in-the-sun-home-or-away");
-    
+        verify(brandAdapter).createOrUpdateBrand(modelWithPayloadForModel(
+                "http://pmlsc.channel4.com/pmlsd/a-place-in-the-sun-home-or-away"
+        ));
     }
     
     private SimpleHttpRequest<Feed> requestFor(final String uri) {

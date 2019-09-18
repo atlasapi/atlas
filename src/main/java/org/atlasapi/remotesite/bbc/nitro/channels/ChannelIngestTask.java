@@ -1,28 +1,30 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelWriter;
+import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
+import org.atlasapi.reporting.OwlReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
+import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.UpdateProgress;
+import com.metabroadcast.status.api.EntityRef;
+import com.metabroadcast.status.api.NewAlert;
+
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.metabroadcast.atlas.glycerin.GlycerinException;
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.client.EntityType;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.UpdateProgress;
-import com.metabroadcast.status.api.EntityRef;
-import com.metabroadcast.status.api.NewAlert;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.channel.ChannelWriter;
-import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
-import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
-import org.atlasapi.reporting.OwlReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -37,7 +37,8 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQua
 
 /**
  * This is mostly a copy of {@link BroadcastMatchingItemEquivalenceGeneratorAndScorer} class but with some logic
- * stripped out. For certain channels it also generates candidates from additional channels.
+ * stripped out. For certain channels it also generates candidates from additional channels. Highest
+ * score is taken for each candidate (as opposed to summing them as per regular broadcast generator)
  */
 public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
 
@@ -135,7 +136,9 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasQualifyingBroadcast(scheduleItem, broadcast, flexibility)) {
-                    scores.addEquivalent(scheduleItem, scoreOnMatch);
+                    //we want the maximum score for this scorer to be scoreOnMatch, so we update the
+                    //score of a candidate instead of adding it up via the usual .addEquivalent()
+                    scores.updateEquivalent(scheduleItem, scoreOnMatch);
 
                     if (scheduleItem.getId() != null) {
                         generatorComponent.addComponentResult(
@@ -149,7 +152,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                         && hasFlexibleQualifyingBroadcast(
                                 scheduleItem, broadcast, flexibility, EXTENDED_END_TIME_FLEXIBILITY
                 )) {
-                    scores.addEquivalent(scheduleItem, scoreOnExtendedFlexibilityMatch);
+                    scores.updateEquivalent(scheduleItem, scoreOnExtendedFlexibilityMatch);
 
                     generatorComponent.addComponentResult(
                             scheduleItem.getId(),

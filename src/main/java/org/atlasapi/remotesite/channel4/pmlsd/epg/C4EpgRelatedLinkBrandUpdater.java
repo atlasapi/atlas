@@ -7,6 +7,8 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.remotesite.channel4.pmlsd.C4AtomApi;
 import org.atlasapi.remotesite.channel4.pmlsd.C4BrandUpdater;
 
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
+
 import com.google.common.base.Preconditions;
 
 public class C4EpgRelatedLinkBrandUpdater implements C4BrandUpdater {
@@ -20,11 +22,12 @@ public class C4EpgRelatedLinkBrandUpdater implements C4BrandUpdater {
     }
     
     @Override
-    public Brand createOrUpdateBrand(String uri) {
-        Matcher matcher = brandUriPattern.matcher(uri);
-        Preconditions.checkArgument(matcher.matches(), "Invalid URI for brand fetch: " + uri);
+    public Brand createOrUpdateBrand(ModelWithPayload<String> uriWithPayload) {
+        Matcher matcher = brandUriPattern.matcher(uriWithPayload.getModel());
+        Preconditions.checkArgument(matcher.matches(), "Invalid URI for brand fetch: " + uriWithPayload
+                .getModel());
         
-        return delegate.createOrUpdateBrand(C4AtomApi.PROGRAMMES_BASE+matcher.group(1));
+        return delegate.createOrUpdateBrand(new ModelWithPayload<>(C4AtomApi.PROGRAMMES_BASE+matcher.group(1), uriWithPayload.getPayload()));
     }
 
     @Override

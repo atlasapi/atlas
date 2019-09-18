@@ -16,17 +16,19 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSetMultimap.Builder;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.time.Clock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 
-public class C4EpisodeGuideAdapter implements SiteSpecificAdapter<SetMultimap<Series,Episode>> {
+public class C4EpisodeGuideAdapter implements SiteSpecificAdapter<SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>>> {
 
     private static final String BRAND_FLATTENED_NAME = "relation.BrandFlattened";
     private static final String SERIES_NUMBER = "relation.SeriesNumber";
     
     private final C4AtomApiClient client;
-    private final ContentExtractor<Feed, SetMultimap<Series,Episode>> seriesAndEpisodeExtractor;
+    private final ContentExtractor<Feed, SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>>> seriesAndEpisodeExtractor;
     
     public C4EpisodeGuideAdapter(C4AtomApiClient client, ContentFactory<Feed, Feed, Entry> contentFactory, 
             Clock clock) {
@@ -40,7 +42,7 @@ public class C4EpisodeGuideAdapter implements SiteSpecificAdapter<SetMultimap<Se
     }
     
     @Override
-    public SetMultimap<Series,Episode> fetch(String uri) {
+    public SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> fetch(String uri) {
         Preconditions.checkArgument(canFetch(uri));
         try {
             Optional<Feed> episodeGuide = client.brandEpisodeGuideFeed(uri);
@@ -56,7 +58,7 @@ public class C4EpisodeGuideAdapter implements SiteSpecificAdapter<SetMultimap<Se
         }
     }
 
-    private SetMultimap<Series,Episode> extractSeriesAndEpisodes(String uri, Feed feed) {
+    private SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> extractSeriesAndEpisodes(String uri, Feed feed) {
         if (isFlattenedBrandGuide(feed)) {
             return extractFromFlattenedEpg(uri, feed);
         } else {
@@ -64,8 +66,8 @@ public class C4EpisodeGuideAdapter implements SiteSpecificAdapter<SetMultimap<Se
         }
     }
 
-    private SetMultimap<Series,Episode> extractFromFullEpg(String uri, Feed feed) {
-        Builder<Series, Episode> result = ImmutableSetMultimap.builder();
+    private SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> extractFromFullEpg(String uri, Feed feed) {
+        Builder<ModelWithPayload<Series>, ModelWithPayload<Episode>> result = ImmutableSetMultimap.builder();
         for (Object entry : feed.getEntries()) {
             Optional<Feed> seriesFeed = fetchFeed(seriesNumber((Entry)entry), uri);
             if (seriesFeed.isPresent()) {
@@ -75,9 +77,9 @@ public class C4EpisodeGuideAdapter implements SiteSpecificAdapter<SetMultimap<Se
         return result.build();
     }
 
-    private SetMultimap<Series,Episode> extractFromFlattenedEpg(String uri, Feed feed) {
+    private SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> extractFromFlattenedEpg(String uri, Feed feed) {
         Set<Integer> seriesNumbers = seriesNumbers(feed);
-        Builder<Series, Episode> result = ImmutableSetMultimap.builder();
+        Builder<ModelWithPayload<Series>, ModelWithPayload<Episode>> result = ImmutableSetMultimap.builder();
         for (Integer seriesNumber : seriesNumbers) {
             Optional<Feed> seriesFeed = fetchFeed(seriesNumber, uri);
             if (seriesFeed.isPresent()) {

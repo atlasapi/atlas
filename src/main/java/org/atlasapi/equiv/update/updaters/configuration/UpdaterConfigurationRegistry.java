@@ -47,7 +47,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_X_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BBC_TXLOGS_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BBC_TO_TXLOGS_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
@@ -60,6 +60,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STANDARD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STRICT_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_TO_BBC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_WITH_SERIES_SEQUENCE_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.WIKIPEDIA_ITEM;
@@ -87,6 +88,7 @@ import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.IMDB_API;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV_CPS;
+import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.PA;
@@ -154,6 +156,7 @@ public class UpdaterConfigurationRegistry {
                 makeFiveConfiguration(),
                 makeBarbMasterConfiguration(), //CDMF
                 makeBarbTransmissionConfiguration(),
+                makeLayer3TxlogsConfiguration(),
                 makeItvCpsConfiguration(),
                 makeNitroConfiguration(),
                 makeC4PmlsdConfiguration(),
@@ -1127,7 +1130,7 @@ public class UpdaterConfigurationRegistry {
                                         BARB_TRANSMISSIONS,
                                         BARB_MASTER
                                 ),
-                                BBC_TXLOGS_ITEM, ImmutableSet.of(BBC_NITRO)
+                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -1149,6 +1152,33 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
+    private static UpdaterConfiguration makeLayer3TxlogsConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(LAYER3_TXLOGS)
+                .withItemEquivalenceUpdater(
+                        ImmutableMap.of(
+                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO)
+                        ),
+                        STANDARD_ITEM_HANDLER,
+                        STANDARD_ITEM_MESSENGER
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
+                )
+                .build();
+    }
+
     private static UpdaterConfiguration makeItvCpsConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(ITV_CPS)
@@ -1162,7 +1192,8 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of(PA, BBC_NITRO, UKTV)
+                                //nitro and uktv were removed since they are explicitly equived to by editors
+                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of(PA)
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
@@ -1184,14 +1215,15 @@ public class UpdaterConfigurationRegistry {
                         ImmutableMap.of(
                                 STANDARD_ITEM, ImmutableSet.of(PA, UKTV),
                                 BARB_ITEM, ImmutableSet.of(BARB_MASTER),
-                                BBC_TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
+                                BBC_TO_TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS, LAYER3_TXLOGS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of(PA, UKTV)
+                                //uktv was removed since it is explicitly equived to by editors
+                                STANDARD_TOP_LEVEL_CONTAINER, ImmutableSet.of(PA)
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
@@ -1207,6 +1239,12 @@ public class UpdaterConfigurationRegistry {
     }
 
     private static UpdaterConfiguration makeC4PmlsdConfiguration() {
+        ImmutableSet<Publisher> topLevelContainerTargetSources =
+                Sets.difference(
+                        TARGET_SOURCES,
+                        //Top level containers from the following sources are explicitly equived to by editors
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, C4_PMLSD, C5_DATA_SUBMISSION, UKTV)
+                ).immutableCopy();
         return UpdaterConfiguration.builder()
                 .withSource(C4_PMLSD)
                 .withItemEquivalenceUpdater(
@@ -1219,7 +1257,7 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, TARGET_SOURCES
+                                STANDARD_TOP_LEVEL_CONTAINER, topLevelContainerTargetSources
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
@@ -1235,6 +1273,12 @@ public class UpdaterConfigurationRegistry {
     }
 
     private static UpdaterConfiguration makeUktvConfiguration() {
+        ImmutableSet<Publisher> topLevelContainerTargetSources =
+                Sets.difference(
+                        TARGET_SOURCES,
+                        //Top level containers from the following sources are explicitly equived to by editors
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, C4_PMLSD, C5_DATA_SUBMISSION, UKTV)
+                ).immutableCopy();
         return UpdaterConfiguration.builder()
                 .withSource(UKTV)
                 .withItemEquivalenceUpdater(
@@ -1247,7 +1291,7 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, TARGET_SOURCES
+                                STANDARD_TOP_LEVEL_CONTAINER, topLevelContainerTargetSources
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
@@ -1263,6 +1307,12 @@ public class UpdaterConfigurationRegistry {
     }
 
     private static UpdaterConfiguration makeC5DataSubmissionConfiguration() {
+        ImmutableSet<Publisher> topLevelContainerTargetSources =
+                Sets.difference(
+                        TARGET_SOURCES,
+                        //Top level containers from the following sources are explicitly equived to by editors
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, C4_PMLSD, C5_DATA_SUBMISSION, UKTV)
+                ).immutableCopy();
         return UpdaterConfiguration.builder()
                 .withSource(C5_DATA_SUBMISSION)
                 .withItemEquivalenceUpdater(
@@ -1275,7 +1325,7 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, TARGET_SOURCES
+                                STANDARD_TOP_LEVEL_CONTAINER, topLevelContainerTargetSources
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER

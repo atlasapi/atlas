@@ -12,6 +12,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.Clock;

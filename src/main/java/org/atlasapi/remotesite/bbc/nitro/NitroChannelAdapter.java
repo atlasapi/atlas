@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import org.atlasapi.media.channel.Channel;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 public interface NitroChannelAdapter {
 

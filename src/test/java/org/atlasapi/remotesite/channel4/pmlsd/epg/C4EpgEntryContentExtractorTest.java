@@ -34,6 +34,8 @@ import org.junit.runner.RunWith;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.DateTimeZones;
@@ -76,7 +78,7 @@ public class C4EpgEntryContentExtractorTest {
         when(contentFactory.createEpisode(entry)).thenReturn(Optional.of(new Episode(idUri, null, Publisher.C4_PMLSD)));
         when(contentFactory.createSeries(entry)).thenReturn(Optional.of(new Series(seriesUri, null, Publisher.C4_PMLSD)));
         when(resolver.findByCanonicalUris(any())).thenReturn(ResolvedContent.builder().build());
-        when(brandUpdater.createOrUpdateBrand(brandUri)).thenReturn(null);
+        when(brandUpdater.createOrUpdateBrand(new ModelWithPayload<>(brandUri, source.getEpgEntry()))).thenReturn(null);
         
         ContentHierarchyAndBroadcast extracted = extractor.extract(source);
         
@@ -130,7 +132,7 @@ public class C4EpgEntryContentExtractorTest {
         final String brandUri = "http://pmlsc.channel4.com/pmlsd/the-hoobs";
 
         when(resolver.findByCanonicalUris(any())).thenReturn(ResolvedContent.builder().build());
-        when(brandUpdater.createOrUpdateBrand(brandUri)).thenReturn(null);
+        when(brandUpdater.createOrUpdateBrand(new ModelWithPayload<>(brandUri, source.getEpgEntry()))).thenReturn(null);
         when(contentFactory.createBrand(entry)).thenReturn(Optional.of(new Brand(brandUri, null, Publisher.C4_PMLSD)));
         when(contentFactory.createEpisode(entry)).thenReturn(Optional.of(new Episode(idUri, null, Publisher.C4_PMLSD)));
         when(contentFactory.createSeries(entry)).thenReturn(Optional.of(new Series(seriesUri, null, Publisher.C4_PMLSD)));

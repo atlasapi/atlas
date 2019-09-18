@@ -15,6 +15,8 @@ import org.atlasapi.remotesite.ContentExtractor;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.SetMultimap;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.time.SystemClock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
@@ -62,12 +64,12 @@ public class C4BrandExtractor implements ContentExtractor<Feed, BrandSeriesAndEp
         
         Brand brand = basicDetailsExtractor.extract(source);
         
-        SetMultimap<Series, Episode> seriesAndEpisodes = HashMultimap.create();
+        SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> seriesAndEpisodes = HashMultimap.create();
         
         String c4CanonicalUri = c4CanonicalBrandUri(source);
         seriesAndEpisodes.putAll(episodeGuideAdapter.fetch(c4CanonicalUri));
 
-        List<Episode> fourOdContent = fourOditemAdapter.fetch(c4CanonicalUri);
+        List<ModelWithPayload<Episode>> fourOdContent = fourOditemAdapter.fetch(c4CanonicalUri);
         seriesAndEpisodes = linker.link4odToEpg(seriesAndEpisodes, fourOdContent);
         
         List<Episode> epgContent = brandEpgAdatper.fetch(c4CanonicalUri);
@@ -82,8 +84,10 @@ public class C4BrandExtractor implements ContentExtractor<Feed, BrandSeriesAndEp
     }
 
 
-    private SetMultimap<Series, Episode> setBrandProperties(SetMultimap<Series, Episode> content, Brand brand) {
-        for (Episode episode : content.values()) {
+    private SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> setBrandProperties(SetMultimap<ModelWithPayload<Series>, ModelWithPayload<Episode>> content, Brand brand) {
+
+        for (ModelWithPayload<Episode> episodeModelWithPayload : content.values()) {
+            Episode episode = episodeModelWithPayload.getModel();
             if (equivalentTitles(brand, episode)) {
                 setHierarchicalTitle(episode);
             }

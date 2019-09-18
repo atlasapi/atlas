@@ -25,7 +25,7 @@ public class EquivToTelescopeComponent {
     }
 
     public void addComponentResult(long longId, String score) {
-        String id = new SubstitutionTableNumberCodec().encode(
+        String id = new SubstitutionTableNumberCodec().lowerCaseOnly().encode(
                 BigInteger.valueOf(longId)
         );
         componentResults.put(id, score);

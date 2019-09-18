@@ -25,6 +25,7 @@ import com.metabroadcast.atlas.glycerin.queries.MasterBrandsMixin;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;

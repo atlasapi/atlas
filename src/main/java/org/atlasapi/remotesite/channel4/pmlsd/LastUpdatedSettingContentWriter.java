@@ -3,6 +3,8 @@ package org.atlasapi.remotesite.channel4.pmlsd;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
@@ -16,16 +18,20 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.model.C4EpgEntry;
 import org.atlasapi.reporting.OwlReporter;
-import com.metabroadcast.columbus.telescope.api.Event;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.sun.istack.Nullable;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.Clock;
+import com.metabroadcast.common.time.SystemClock;
+import com.metabroadcast.status.api.EntityRef;
+import com.metabroadcast.status.api.NewAlert;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
@@ -33,39 +39,37 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.Clock;
-import com.metabroadcast.common.time.SystemClock;
-import com.metabroadcast.status.api.EntityRef;
-import com.metabroadcast.status.api.NewAlert;
+import com.hp.hpl.jena.sparql.pfunction.library.container;
+import com.sun.syndication.feed.atom.Entry;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import static com.metabroadcast.status.util.Utils.encode;
 import static org.atlasapi.reporting.status.Utils.getPartialStatusForContent;
 
-public class LastUpdatedSettingContentWriter implements ContentWriter {
+public class LastUpdatedSettingContentWriter implements C4ContentWriter {
 
     private final ContentResolver resolver;
     private final ContentWriter writer;
     private final Clock clock;
     private final OwlReporter owlReporter;
 
-    public LastUpdatedSettingContentWriter(ContentResolver resolver, ContentWriter writer, Clock clock) {
+    public LastUpdatedSettingContentWriter(ContentResolver resolver, ContentWriter writer, Clock clock, OwlReporter owlReporter) {
         this.resolver = resolver;
         this.writer = writer;
         this.clock = clock;
-        this.owlReporter = new OwlReporter(OwlTelescopeReporterFactory.getInstance()
-                .getTelescopeReporter(OwlTelescopeReporters.CHANNEL_4_INGEST, Event.Type.INGEST));
+        this.owlReporter = owlReporter;
     }
     
-    public LastUpdatedSettingContentWriter(ContentResolver resolver, ContentWriter writer) {
-        this(resolver, writer, new SystemClock());
+    public LastUpdatedSettingContentWriter(ContentResolver resolver, ContentWriter writer, OwlReporter owlReporter) {
+        this(resolver, writer, new SystemClock(), owlReporter);
     }
-    
+
     @Override
-    public Item createOrUpdate(Item item) {
+    public Item createOrUpdate(Item item, @Nullable Object entry) {
+
         Maybe<Identified> previously = resolver.findByCanonicalUris(ImmutableList.of(item.getCanonicalUri())).get(item.getCanonicalUri());
-        
+
         DateTime now = clock.now();
         if(previously.hasValue() && previously.requireValue() instanceof Item) {
             Item prevItem = (Item) previously.requireValue();
@@ -75,14 +79,32 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             setUpdatedVersions(prevItem.getVersions(), item.getVersions(), now);
         }
         else {
-        	setUpdatedVersions(Sets.<Version>newHashSet(), item.getVersions(), now);
+            setUpdatedVersions(Sets.<Version>newHashSet(), item.getVersions(), now);
         }
-        
+
         if(item.getLastUpdated() == null  || previously.isNothing()) {
             item.setLastUpdated(clock.now());
         }
 
-        item = writer.createOrUpdate(item); // do this first, as we need the ID for new content
+        try {
+            item = writer.createOrUpdate(item); // do this first, as we need the ID for new content
+
+            owlReporter.getTelescopeReporter().reportSuccessfulEvent(
+                    item.getId(),
+                    item.getAliases(),
+                    EntityType.CONTENT,
+                    entry
+            );
+        } catch (Exception e) {
+            owlReporter.getTelescopeReporter().reportFailedEvent(
+                    item.getId(),
+                    String.format("Failed to create or update item %s.",
+                            encode(item.getId())
+                    ),
+                    EntityType.CONTENT,
+                    entry
+            );
+        }
 
         if (Strings.isNullOrEmpty(item.getTitle())){
             owlReporter.getStatusReporter().updateStatus(
@@ -90,7 +112,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
                     item,
                     getPartialStatusForContent(
                             item.getId(),
-                            "hhhh",//owlReporter.getTelescopeReporter().getTaskId(),
+                            owlReporter.getTelescopeReporter().getTaskId(),
                             NewAlert.Key.Check.MISSING,
                             NewAlert.Key.Field.TITLE,
                             String.format("Content %s is missing a title.",
@@ -107,7 +129,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
                     item,
                     getPartialStatusForContent(
                             item.getId(),
-                            "hhhh",
+                            owlReporter.getTelescopeReporter().getTaskId(),
                             NewAlert.Key.Check.MISSING,
                             NewAlert.Key.Field.TITLE,
                             null,
@@ -118,41 +140,43 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             );
         }
 
-        if (item instanceof Episode)
-            if(((Episode) item).getEpisodeNumber() == null) {
-            owlReporter.getStatusReporter().updateStatus(
-                    EntityRef.Type.CONTENT,
-                    item,
-                    getPartialStatusForContent(
-                            item.getId(),
-                            "hhhh",
-                            NewAlert.Key.Check.MISSING,
-                            NewAlert.Key.Field.EPISODE_NUMBER,
-                            String.format("Content %s is missing an episode number.",
-                                    encode(item.getId())
-                            ),
-                            EntityRef.Type.CONTENT,
-                            item.getPublisher().key(),
-                            false
-                    )
-            );
-        } else {
-            owlReporter.getStatusReporter().updateStatus(
-                    EntityRef.Type.CONTENT,
-                    item,
-                    getPartialStatusForContent(
-                            item.getId(),
-                            "hhhh",
-                            NewAlert.Key.Check.MISSING,
-                            NewAlert.Key.Field.EPISODE_NUMBER,
-                            null,
-                            EntityRef.Type.CONTENT,
-                            item.getPublisher().key(),
-                            true
-                    )
-            );
+        if (item instanceof Episode) {
+            if (((Episode) item).getEpisodeNumber() == null) {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item,
+                        getPartialStatusForContent(
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.EPISODE_NUMBER,
+                                String.format(
+                                        "Content %s is missing an episode number.",
+                                        encode(item.getId())
+                                ),
+                                EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
+                                false
+                        )
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item,
+                        getPartialStatusForContent(
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.EPISODE_NUMBER,
+                                null,
+                                EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
+                                true
+                        )
+                );
+            }
         }
-        
+
         return item;
     }
 
@@ -234,8 +258,8 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     }
 
     @Override
-    public void createOrUpdate(Container container) {
-        
+    public void createOrUpdate(Container container, @Nullable Object entry) {
+
         Maybe<Identified> previously = resolver.findByCanonicalUris(ImmutableList.of(container.getCanonicalUri())).get(container.getCanonicalUri());
         
         if(previously.hasValue() && previously.requireValue() instanceof Container) {
@@ -250,8 +274,26 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             container.setLastUpdated(clock.now());
             container.setThisOrChildLastUpdated(clock.now());
         }
-        
-        writer.createOrUpdate(container);
+
+        try {
+            writer.createOrUpdate(container);
+
+            owlReporter.getTelescopeReporter().reportSuccessfulEvent(
+                    container.getId(),
+                    container.getAliases(),
+                    EntityType.CONTENT,
+                    entry
+            );
+        } catch (Exception e) {
+            owlReporter.getTelescopeReporter().reportFailedEvent(
+                    container.getId(),
+                    String.format("Failed to create or update item %s.",
+                            encode(container.getId())
+                    ),
+                    EntityType.CONTENT,
+                    entry
+            );
+        }
 
         if (container instanceof Series) {
             if (Strings.isNullOrEmpty(container.getTitle())) {
@@ -288,7 +330,6 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
                         )
                 );
             }
-
         }
         else if(container instanceof Brand){
             if (Strings.isNullOrEmpty(container.getTitle())) {

@@ -15,7 +15,6 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
-import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.LocatorWithRegions;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewMasterbrand;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewService;
@@ -27,6 +26,8 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 
 public class NitroChannelHydrator {
 

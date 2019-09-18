@@ -17,6 +17,8 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
+import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
+
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;

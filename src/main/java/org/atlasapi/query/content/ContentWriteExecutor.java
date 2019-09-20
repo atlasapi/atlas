@@ -139,7 +139,7 @@ public class ContentWriteExecutor {
             String type,
             boolean shouldMerge,
             BroadcastMerger broadcastMerger,
-            boolean nullRemoveFields
+            Iterable<String> nullRemoveFields
     ) {
         writeContentInternal(content, type, shouldMerge, broadcastMerger, nullRemoveFields);
     }
@@ -150,7 +150,7 @@ public class ContentWriteExecutor {
             boolean shouldMerge,
             BroadcastMerger broadcastMerger
     ) {
-        writeContentInternal(content, type, shouldMerge, broadcastMerger, false);
+        writeContentInternal(content, type, shouldMerge, broadcastMerger, ImmutableSet.of());
     }
 
     private void writeContentInternal(
@@ -158,7 +158,7 @@ public class ContentWriteExecutor {
             String type,
             boolean shouldMerge,
             BroadcastMerger broadcastMerger,
-            boolean nullRemoveFields
+            Iterable<String> fieldsToRemove
     ) {
         checkArgument(content.getId() != null, "Cannot write content without an ID");
 
@@ -180,8 +180,8 @@ public class ContentWriteExecutor {
             writer.createOrUpdate(item);
             updateSchedule(content, item);
         } else {
-            if (nullRemoveFields) {
-                writer.createOrUpdate((Container) updatedContent, true);
+            if (!Iterables.isEmpty(fieldsToRemove)) {
+                writer.createOrUpdate((Container) updatedContent, fieldsToRemove);
             } else {
                 writer.createOrUpdate((Container) updatedContent);
             }

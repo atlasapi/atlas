@@ -791,6 +791,7 @@ public class ContentWriteController {
     ) {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT_PARAMETER));
+        boolean nullRemoveFields = Boolean.parseBoolean(req.getParameter("nullRemoveFields"));
 
         String broadcastAssertionsParameter = req.getParameter(BROADCAST_ASSERTIONS_PARAMETER);
         BroadcastMerger broadcastMerger = BroadcastMerger.parse(
@@ -873,9 +874,22 @@ public class ContentWriteController {
 
                 content.setId(contentId);
                 long startTime = System.nanoTime();
-                writeExecutor.writeContent(content, inputContent.getType(), merge,
-                        broadcastMerger
-                );
+                if (nullRemoveFields) {
+                    writeExecutor.writeContent(
+                            content,
+                            inputContent.getType(),
+                            merge,
+                            broadcastMerger,
+                            nullRemoveFields
+                    );
+                } else {
+                    writeExecutor.writeContent(
+                            content,
+                            inputContent.getType(),
+                            merge,
+                            broadcastMerger
+                    );
+                }
                 long endTime = System.nanoTime();
 
                 long duration = (endTime - startTime)/1000000;

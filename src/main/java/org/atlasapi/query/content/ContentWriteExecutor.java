@@ -134,11 +134,31 @@ public class ContentWriteExecutor {
         writeContentInternal(content, type, shouldMerge, broadcastMerger);
     }
 
+    public void writeContent(
+            Content content,
+            String type,
+            boolean shouldMerge,
+            BroadcastMerger broadcastMerger,
+            boolean nullRemoveFields
+    ) {
+        writeContentInternal(content, type, shouldMerge, broadcastMerger, nullRemoveFields);
+    }
+
     private void writeContentInternal(
             Content content,
             String type,
             boolean shouldMerge,
             BroadcastMerger broadcastMerger
+    ) {
+        writeContentInternal(content, type, shouldMerge, broadcastMerger, false);
+    }
+
+    private void writeContentInternal(
+            Content content,
+            String type,
+            boolean shouldMerge,
+            BroadcastMerger broadcastMerger,
+            boolean nullRemoveFields
     ) {
         checkArgument(content.getId() != null, "Cannot write content without an ID");
 
@@ -160,7 +180,7 @@ public class ContentWriteExecutor {
             writer.createOrUpdate(item);
             updateSchedule(content, item);
         } else {
-            writer.createOrUpdate((Container) updatedContent);
+            writer.createOrUpdate((Container) updatedContent, nullRemoveFields);
         }
 
         long duration = (System.nanoTime() - startTime)/1000000;

@@ -180,7 +180,11 @@ public class ContentWriteExecutor {
             writer.createOrUpdate(item);
             updateSchedule(content, item);
         } else {
-            writer.createOrUpdate((Container) updatedContent, nullRemoveFields);
+            if (nullRemoveFields) {
+                writer.createOrUpdate((Container) updatedContent, true);
+            } else {
+                writer.createOrUpdate((Container) updatedContent);
+            }
         }
 
         long duration = (System.nanoTime() - startTime)/1000000;

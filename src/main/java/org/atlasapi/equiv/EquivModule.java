@@ -77,7 +77,7 @@ public class EquivModule {
 
     @Autowired private KafkaMessagingModule messaging;
 
-    @Autowired @Qualifier("AmazonTitleIndexStore") private AmazonTitleIndexStore amazonTitleIndexStore;
+    @Autowired private AmazonTitleIndexStore amazonTitleIndexStore;
 
     @Bean
     public EquivalenceUpdater<Content> contentUpdater() {

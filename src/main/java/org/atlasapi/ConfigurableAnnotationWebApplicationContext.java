@@ -68,7 +68,8 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
             EquivModule.class,
             ChannelEquivModule.class,
             TVAnytimeFeedsModule.class,
-            NitroYouViewResolutionModule.class
+            NitroYouViewResolutionModule.class,
+            AmazonPersistenceModule.class
         );
         
         if(runProcessingOnly()) {
@@ -84,8 +85,7 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 SimilarContentModule.class,
                 ContentPurgeWebModule.class,
                 KnowledgeMotionModule.class,
-                QueryExecutorModule.class,
-                AmazonPersistenceModule.class
+                QueryExecutorModule.class
             );
             if (youViewUploadEnabled()) {
                 builder.add(

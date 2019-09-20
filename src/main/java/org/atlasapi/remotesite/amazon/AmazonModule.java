@@ -15,7 +15,6 @@ import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +30,7 @@ public class AmazonModule {
     private @Autowired ContentWriter contentWriter;
     private @Autowired ContentLister contentLister;
     private @Autowired ContentResolver contentResolver;
-    private @Autowired @Qualifier("AmazonTitleIndexStore") AmazonTitleIndexStore  amazonTitleIndexStore;
+    private @Autowired AmazonTitleIndexStore  amazonTitleIndexStore;
 
     private @Value("${unbox.url}") String amazonUrl;
     private @Value("${unbox.missingContent.percentage}") Integer missingContentPercentage;

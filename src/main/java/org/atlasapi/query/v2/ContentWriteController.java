@@ -792,9 +792,6 @@ public class ContentWriteController {
     ) {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT_PARAMETER));
-        Iterable<String> fieldsToRemove = COMMA_SPLITTER.split(
-                req.getParameter(FIELDS_TO_REMOVE_PARAMETER)
-        );
 
         String broadcastAssertionsParameter = req.getParameter(BROADCAST_ASSERTIONS_PARAMETER);
         BroadcastMerger broadcastMerger = BroadcastMerger.parse(
@@ -877,13 +874,13 @@ public class ContentWriteController {
 
                 content.setId(contentId);
                 long startTime = System.nanoTime();
-                if (!Iterables.isEmpty(fieldsToRemove)) {
+                if (!Strings.isNullOrEmpty(req.getParameter(FIELDS_TO_REMOVE_PARAMETER))) {
                     writeExecutor.writeContent(
                             content,
                             inputContent.getType(),
                             merge,
                             broadcastMerger,
-                            fieldsToRemove
+                            COMMA_SPLITTER.split(req.getParameter(FIELDS_TO_REMOVE_PARAMETER))
                     );
                 } else {
                     writeExecutor.writeContent(

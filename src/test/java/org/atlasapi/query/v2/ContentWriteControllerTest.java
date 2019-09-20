@@ -202,8 +202,8 @@ public class ContentWriteControllerTest {
 
     @Test
     public void postSynchronously() throws Exception {
-        when(request.getParameter(ContentWriteController.ASYNC_PARAMETER))
-                .thenReturn("false");
+        when(request.getParameter(ContentWriteController.ASYNC_PARAMETER)).thenReturn("false");
+        when(request.getParameter("fieldsToRemove")).thenReturn("");
 
         String assertionParameterValue =
                 "\"channelUri\"|\"2016-01-01T00:00:00Z\"|\"2016-01-02T00:00:00Z\"";
@@ -244,8 +244,8 @@ public class ContentWriteControllerTest {
 
     @Test
     public void postAsynchronously() throws Exception {
-        when(request.getParameter(ContentWriteController.ASYNC_PARAMETER))
-                .thenReturn("true");
+        when(request.getParameter(ContentWriteController.ASYNC_PARAMETER)).thenReturn("true");
+        when(request.getParameter("fieldsToRemove")).thenReturn("");
 
         controller.postContent(request, response);
 

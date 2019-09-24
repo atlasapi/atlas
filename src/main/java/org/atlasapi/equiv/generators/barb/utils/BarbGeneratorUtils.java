@@ -9,6 +9,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class BarbGeneratorUtils {
     /**
@@ -71,13 +72,30 @@ public class BarbGeneratorUtils {
         return false;
     }
 
+    public static Predicate<Broadcast> minimumDuration(Duration duration) {
+        return broadcast -> {
+            Duration broadcastDuration = new Duration(
+                    broadcast.getTransmissionTime(),
+                    broadcast.getTransmissionEndTime()
+            );
+            return broadcastDuration.isLongerThan(duration);
+        };
+    }
 
-    public static boolean hasQualifyingBroadcast(Item item, Broadcast referenceBroadcast, Duration flexibility) {
+
+    public static boolean hasQualifyingBroadcast(
+            Item item,
+            Broadcast referenceBroadcast,
+            Duration flexibility,
+            Predicate<? super Broadcast> broadcastFilter
+    ) {
         for (Version version : item.nativeVersions()) {
             for (Broadcast broadcast : version.getBroadcasts()) {
                 if (around(broadcast, referenceBroadcast, flexibility) && broadcast.getBroadcastOn() != null
                         && sameChannel(broadcast.getBroadcastOn(), referenceBroadcast.getBroadcastOn())
-                        && broadcast.isActivelyPublished()) {
+                        && broadcast.isActivelyPublished()
+                        && broadcastFilter.test(broadcast)
+                ) {
                     return true;
                 }
             }
@@ -88,14 +106,17 @@ public class BarbGeneratorUtils {
             Item item,
             Broadcast referenceBroadcast,
             Duration flexibility,
-            Duration extendedEndTimeFlexibility
+            Duration extendedEndTimeFlexibility,
+            Predicate<? super Broadcast> broadcastFilter
     ) {
         for (Version version : item.nativeVersions()) {
             for (Broadcast broadcast : version.getBroadcasts()) {
                 if (flexibleAround(broadcast, referenceBroadcast, flexibility, extendedEndTimeFlexibility)
                         && broadcast.getBroadcastOn() != null
                         && sameChannel(broadcast.getBroadcastOn(), referenceBroadcast.getBroadcastOn())
-                        && broadcast.isActivelyPublished()) {
+                        && broadcast.isActivelyPublished()
+                        && broadcastFilter.test(broadcast)
+                ) {
                     return true;
                 }
             }

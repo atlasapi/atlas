@@ -152,7 +152,7 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
         for (ScheduleChannel channel : schedule.scheduleChannels()) {
             for (Item scheduleItem : channel.items()) {
                 if (scheduleItem.isActivelyPublished()
-                        && hasQualifyingBroadcast(scheduleItem, subjectBroadcast, flexibility)
+                        && hasQualifyingBroadcast(scheduleItem, subjectBroadcast, flexibility, broadcastFilter)
                         && hasQualifyingActualTransmissionTimeBroadcast(subject, scheduleItem, subjectBroadcast)
                 ) {
                     scores.updateEquivalent(scheduleItem, scoreOnMatch);
@@ -179,6 +179,9 @@ public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implemen
 
         for (Version scheduleVersion : scheduleItem.nativeVersions()) {
             for (Broadcast scheduleBroadcast : scheduleVersion.getBroadcasts()) {
+                if (!scheduleBroadcast.isActivelyPublished() || !broadcastFilter.test(scheduleBroadcast)) {
+                    continue;
+                }
                 if (subjectIsTxlogAndSuggestionIsNitro
                         && hasQualifyingActualTransmissionTime(subjectBroadcast, scheduleBroadcast)
                 ) {

@@ -26,6 +26,8 @@ import org.joda.time.Duration;
 
 import java.util.Set;
 
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.minimumDuration;
+
 public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
 
@@ -50,7 +52,7 @@ public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpd
                                 dependencies.getChannelResolver(),
                                 targetPublishers,
                                 Duration.standardMinutes(10),
-                                null,
+                                minimumDuration(Duration.standardMinutes(5)),
                                 Score.valueOf(3.0),
                                 Score.nullScore()
                         )

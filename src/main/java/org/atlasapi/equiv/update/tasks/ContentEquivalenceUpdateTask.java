@@ -64,6 +64,7 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
     private String schedulingKey = "equivalence";
     private List<Publisher> publishers;
     private UpdateProgress progress = UpdateProgress.START;
+    private String initialProcessingContentUri = null;
 
     public ContentEquivalenceUpdateTask(SelectedContentLister contentLister,
             ContentResolver contentResolver, ScheduleTaskProgressStore progressStore,
@@ -222,7 +223,11 @@ public final class ContentEquivalenceUpdateTask extends ScheduledTask {
 
     protected boolean handle(Content content) {
         if (!ignored.contains(content.getCanonicalUri())) {
-            reportStatus(String.format("%s. Processing %s.", progress, content));
+            if (initialProcessingContentUri == null) {
+                initialProcessingContentUri = content.getCanonicalUri();
+            }
+            reportStatus(String.format("%s. Started on %s. Processing %s.",
+                    progress, initialProcessingContentUri, content));
             try {
                 updater.updateEquivalences(content, telescope);
                 progress = progress.reduce(SUCCESS);

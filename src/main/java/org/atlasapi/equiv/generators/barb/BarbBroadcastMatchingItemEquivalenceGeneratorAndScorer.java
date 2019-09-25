@@ -135,7 +135,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             for (Item scheduleItem : channel.items()) {
                 if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
-                        && hasQualifyingBroadcast(scheduleItem, broadcast, flexibility)) {
+                        && hasQualifyingBroadcast(scheduleItem, broadcast, flexibility, broadcastFilter)) {
                     //we want the maximum score for this scorer to be scoreOnMatch, so we update the
                     //score of a candidate instead of adding it up via the usual .addEquivalent()
                     scores.updateEquivalent(scheduleItem, scoreOnMatch);
@@ -150,7 +150,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 } else if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasFlexibleQualifyingBroadcast(
-                                scheduleItem, broadcast, flexibility, EXTENDED_END_TIME_FLEXIBILITY
+                                scheduleItem, broadcast, flexibility, EXTENDED_END_TIME_FLEXIBILITY, broadcastFilter
                 )) {
                     scores.updateEquivalent(scheduleItem, scoreOnExtendedFlexibilityMatch);
 

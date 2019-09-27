@@ -41,6 +41,7 @@ import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
 import org.atlasapi.output.exceptions.ForbiddenException;
 import org.atlasapi.output.exceptions.UnauthorizedException;
+import org.atlasapi.persistence.ApiContentFields;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
@@ -78,6 +79,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -875,12 +877,19 @@ public class ContentWriteController {
                 content.setId(contentId);
                 long startTime = System.nanoTime();
                 if (!Strings.isNullOrEmpty(req.getParameter(FIELDS_TO_REMOVE_PARAMETER))) {
+                    ImmutableSet<ApiContentFields> fieldsToRemove = StreamSupport.stream(
+                            COMMA_SPLITTER.split(req.getParameter(FIELDS_TO_REMOVE_PARAMETER))
+                                    .spliterator(),
+                            true
+                    )
+                            .map(ApiContentFields::valueOf)
+                            .collect(MoreCollectors.toImmutableSet());
                     writeExecutor.writeContent(
                             content,
                             inputContent.getType(),
                             merge,
                             broadcastMerger,
-                            COMMA_SPLITTER.split(req.getParameter(FIELDS_TO_REMOVE_PARAMETER))
+                            fieldsToRemove
                     );
                 } else {
                     writeExecutor.writeContent(

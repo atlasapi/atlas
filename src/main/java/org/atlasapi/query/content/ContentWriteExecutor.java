@@ -22,6 +22,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.simple.Description;
+import org.atlasapi.persistence.ApiContentFields;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.EquivalenceContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
@@ -139,9 +140,9 @@ public class ContentWriteExecutor {
             String type,
             boolean shouldMerge,
             BroadcastMerger broadcastMerger,
-            Iterable<String> nullRemoveFields
+            Iterable<ApiContentFields> fieldsToRemove
     ) {
-        writeContentInternal(content, type, shouldMerge, broadcastMerger, nullRemoveFields);
+        writeContentInternal(content, type, shouldMerge, broadcastMerger, fieldsToRemove);
     }
 
     private void writeContentInternal(
@@ -158,7 +159,7 @@ public class ContentWriteExecutor {
             String type,
             boolean shouldMerge,
             BroadcastMerger broadcastMerger,
-            Iterable<String> fieldsToRemove
+            Iterable<ApiContentFields> fieldsToRemove
     ) {
         checkArgument(content.getId() != null, "Cannot write content without an ID");
 

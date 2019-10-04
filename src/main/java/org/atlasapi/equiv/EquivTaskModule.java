@@ -175,7 +175,7 @@ public class EquivTaskModule {
     private static final RepetitionRule TXLOGS_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(9, 0));
     private static final RepetitionRule LAYER3_TXLOGS_EQUIVALENCE_DELTA_REPETITION =
-            RepetitionRules.daily(new LocalTime(9, 0));
+            RepetitionRules.daily(new LocalTime(15, 0));
     private static final RepetitionRule XCDMF_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(1, 30));
     private static final RepetitionRule CDMF_EQUIVALENCE_DELTA_REPETITION =

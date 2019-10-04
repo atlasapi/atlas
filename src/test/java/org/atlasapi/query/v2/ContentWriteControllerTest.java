@@ -22,6 +22,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.persistence.ApiContentFields;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
@@ -40,6 +41,7 @@ import com.metabroadcast.common.queue.MessageSender;
 
 import com.amazonaws.util.IOUtils;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -271,6 +273,28 @@ public class ContentWriteControllerTest {
         String expectedEncodedId = codec.encode(BigInteger.valueOf(contentId));
         assertThat(locationCaptor.getValue().contains("/3.0/content.json?id=" + expectedEncodedId),
                 is(true));
+    }
+
+    @Test
+    public void writeContentWithFieldsToRemove() {
+        when(request.getParameter("fieldsToRemove")).thenReturn("title");
+
+        String assertionParameterValue =
+                "\"channelUri\"|\"2019-10-04T00:00:00Z\"|\"2019-10-05T00:00:00Z\"";
+        when(request.getParameter(ContentWriteController.BROADCAST_ASSERTIONS_PARAMETER))
+                .thenReturn(assertionParameterValue);
+
+        BroadcastMerger expectedMerger = BroadcastMerger.parse(assertionParameterValue);
+
+        controller.postContent(request, response);
+
+        verify(writeExecutor).writeContent(
+                contentCaptor.capture(),
+                eq(inputContent.getType()),
+                eq(true),
+                eq(expectedMerger),
+                eq(ImmutableSet.of(ApiContentFields.title))
+        );
     }
 
     @Test

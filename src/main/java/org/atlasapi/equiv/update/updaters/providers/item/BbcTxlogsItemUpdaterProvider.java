@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer;
@@ -26,12 +26,9 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.Duration;
 
-import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.minimumDuration;
+import java.util.Set;
 
 public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
@@ -66,10 +63,15 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
                                         targetPublishers,
-                                        Duration.standardMinutes(10),
-                                        minimumDuration(Duration.standardMinutes(5)),
+                                        Duration.standardHours(3),
+                                        null,
                                         Score.valueOf(3.0),
-                                        Score.nullScore()
+                                        BarbTitleMatchingItemScorer.builder()
+                                                .withContentResolver(dependencies.getContentResolver())
+                                                .withScoreOnMismatch(Score.nullScore())
+                                                .withScoreOnPartialMatch(Score.nullScore())
+                                                .withScoreOnPerfectMatch(Score.ONE)
+                                                .build()
                                 ),
                                 new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),

@@ -168,12 +168,15 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             }
             desc.startStage("Resolving candidate schedule for " + candidateScheduleChannel.channel().getUri());
             Item[] candidateItemArray = candidateItemList.toArray(new Item[0]);
+            desc.startStage("Finding a suitable item in the candidate schedule");
             int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast, desc);
             if (candidateItemIndex < 0) {
                 desc.appendText("Could not find a suitable item in the candidate schedule");
                 desc.finishStage();
                 continue;
             }
+            desc.finishStage();
+            desc.startStage("Determining candidate from schedule");
             Optional<Item> foundCandidate = findCandidate(
                     subjectItemArray,
                     subjectItemIndex,
@@ -186,17 +189,16 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 desc.finishStage();
                 continue;
             }
+            desc.finishStage();
 
             Item candidate = foundCandidate.get();
             if(candidate.isActivelyPublished()) {
                 Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, desc);
                 desc.appendText(
-                        String.format(
-                                "Found candidate %s with broadcast [%s - %s]",
-                                candidate.getCanonicalUri(),
-                                candidateBroadcast.getTransmissionTime(),
-                                candidateBroadcast.getTransmissionEndTime()
-                        )
+                        "Found candidate %s with broadcast [%s - %s]",
+                        candidate.getCanonicalUri(),
+                        candidateBroadcast.getTransmissionTime(),
+                        candidateBroadcast.getTransmissionEndTime()
                 );
                 //we want the maximum score for this scorer to be scoreOnMatch, so we update the
                 //score of a candidate instead of adding it up via the usual .addEquivalent()
@@ -310,7 +312,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         //The schedule resolver should return items each with a single broadcast corresponding to their schedule slot
         if (broadcasts.size() != 1) {
             desc.appendText(
-                    "Expected one but found multiple broadcasts for schedule item with uri: " + item.getCanonicalUri());
+                    "Expected one broadcast but found multiple for schedule item %s", item.getCanonicalUri());
         }
         return broadcasts.get(0);
     }

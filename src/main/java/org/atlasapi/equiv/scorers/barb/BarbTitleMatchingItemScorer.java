@@ -234,15 +234,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         Content compareTo = suggestionParent.isPresent() ? suggestionParent.get() : suggestion;
 
         Score parentScore = scoreContent(compareFrom, compareTo, desc);
-        desc.appendText(
-                String.format(
-                        "%s (for %s) against %s (for %s) scored %.2f",
-                        compareFrom.getCanonicalUri(),
-                        subject.getCanonicalUri(),
-                        compareTo.getCanonicalUri(),
-                        suggestion.getCanonicalUri(),
-                        parentScore.asDouble()
-                ));
         return Optional.of(parentScore);
     }
 
@@ -250,10 +241,16 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         Score score = Score.nullScore();
         if (!Strings.isNullOrEmpty(subject.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
-                desc.appendText("No Title (%s) scored: %s", suggestion.getCanonicalUri(), score);
+                desc.appendText("No Title (%s) scored %s", suggestion.getCanonicalUri(), score);
             } else {
                 score = scoreContent(subject, suggestion);
-                desc.appendText("%s (%s) scored: %s", suggestion.getTitle(), suggestion.getCanonicalUri(), score);
+                desc.appendText("%s (%s) against %s (%s) scored %s",
+                        suggestion.getTitle(),
+                        suggestion.getCanonicalUri(),
+                        subject.getTitle(),
+                        subject.getCanonicalUri(),
+                        score
+                );
             }
         }
         return score;

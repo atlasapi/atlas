@@ -137,15 +137,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         for (Item suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
-            if (equivScore != scoreOnPerfectMatch) {
-                // txlog titles are often just the title of the brand so score the txlog title
-                // against a brand title as well if applicable
-                Optional<Score> parentScore = getParentScore(subject, suggestion, desc);
-                if (parentScore.isPresent() && parentScore.get().isRealScore()
-                    && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
-                    equivScore = parentScore.get();
-                }
-            }
 
             equivalents.addEquivalent(suggestion, equivScore);
             if (suggestion.getId() != null) {
@@ -159,6 +150,20 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         equivToTelescopeResult.addScorerResult(scorerComponent);
 
         return equivalents.build();
+    }
+
+    public Score score(Item subject, Item suggestion, ResultDescription desc) {
+        Score equivScore = scoreContent(subject, suggestion, desc);
+        if (equivScore != scoreOnPerfectMatch) {
+            // txlog titles are often just the title of the brand so score the txlog title
+            // against a brand title as well if applicable
+            Optional<Score> parentScore = getParentScore(subject, suggestion, desc);
+            if (parentScore.isPresent() && parentScore.get().isRealScore()
+                    && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
+                equivScore = parentScore.get();
+            }
+        }
+        return equivScore;
     }
 
     private Optional<Score> getParentScore(Item subject, Item suggestion, ResultDescription desc) {
@@ -199,7 +204,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     }
                 }
             }
-            Score parentScore = score(txlog, parent, desc);
+            Score parentScore = scoreContent(txlog, parent, desc);
             desc.appendText(
                     String.format(
                             "Parent (%s) for %s scored %.2f",
@@ -212,13 +217,13 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return Optional.empty();
     }
 
-    private Score score(Item subject, Content suggestion, ResultDescription desc) {
+    private Score scoreContent(Item subject, Content suggestion, ResultDescription desc) {
         Score score = Score.nullScore();
         if (!Strings.isNullOrEmpty(subject.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title (%s) scored: %s", suggestion.getCanonicalUri(), score);
             } else {
-                score = score(subject, suggestion);
+                score = scoreContent(subject, suggestion);
                 desc.appendText("%s (%s) scored: %s", suggestion.getTitle(), suggestion.getCanonicalUri(), score);
             }
         }
@@ -226,7 +231,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    public Score score(Item subject, Content suggestion) {
+    private Score scoreContent(Item subject, Content suggestion) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 

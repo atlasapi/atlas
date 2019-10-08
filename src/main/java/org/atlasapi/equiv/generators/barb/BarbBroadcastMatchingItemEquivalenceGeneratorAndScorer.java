@@ -161,7 +161,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             desc.startStage("Resolving candidate schedule for " + candidateScheduleChannel.channel().getUri());
             List<Item> candidateItemList = candidateScheduleChannel.items();
             Item[] candidateItemArray = candidateItemList.toArray(new Item[0]);
-            int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast);
+            int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast, desc);
             if (candidateItemIndex < 0) {
                 desc.appendText("Could not find candidate item in the schedule");
                 desc.finishStage();
@@ -171,7 +171,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                     subjectItemArray,
                     subjectItemIndex,
                     candidateItemArray,
-                    candidateItemIndex
+                    candidateItemIndex,
+                    desc
             );
             if (!foundCandidate.isPresent()) {
                 desc.appendText("Could not determine candidate from schedule");
@@ -246,7 +247,12 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         return false;
     }
 
-    private int findSuitableCandidateInArray(Item[] items, Item subject, Broadcast subjectBroadcast) {
+    private int findSuitableCandidateInArray(
+            Item[] items,
+            Item subject,
+            Broadcast subjectBroadcast,
+            ResultDescription desc
+    ) {
         if (items.length <= 0) {
             return -1;
         }
@@ -269,7 +275,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 );
             }
             if (shortestDurationOffset == null || offset.isShorterThan(shortestDurationOffset)) {
-                if (isRealPositiveScore(titleMatchingScorer.score(subject, candidate))) {
+                if (isRealPositiveScore(titleMatchingScorer.score(subject, candidate, desc))) {
                     shortestDurationOffset = offset;
                     bestCandidateFound = i;
                 }
@@ -282,7 +288,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             Item[] subjectItemArray,
             int subjectItemPosition,
             Item[] candidateItemArray,
-            int candidateItemPosition
+            int candidateItemPosition,
+            ResultDescription desc
     ) {
         Item subject = subjectItemArray[subjectItemPosition];
         Item possibleCandidate = candidateItemArray[candidateItemPosition];
@@ -292,7 +299,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 && isRealPositiveScore(
                 titleMatchingScorer.score(
                         subject,
-                        subjectItemArray[subjectPreviousBlockEnd]
+                        subjectItemArray[subjectPreviousBlockEnd],
+                        desc
                 )
         )) {
             subjectPreviousBlockEnd--;
@@ -303,7 +311,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 && isRealPositiveScore(
                 titleMatchingScorer.score(
                         possibleCandidate,
-                        candidateItemArray[candidatePreviousBlockEnd]
+                        candidateItemArray[candidatePreviousBlockEnd],
+                        desc
                 )
         )) {
             candidatePreviousBlockEnd--;
@@ -320,7 +329,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 && isRealPositiveScore(
                 titleMatchingScorer.score(
                         subject,
-                        subjectItemArray[subjectNextBlockStart]
+                        subjectItemArray[subjectNextBlockStart],
+                        desc
                 )
         )) {
             subjectNextBlockStart++;
@@ -331,7 +341,9 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 && isRealPositiveScore(
                 titleMatchingScorer.score(
                         possibleCandidate,
-                        candidateItemArray[candidateNextBlockStart])
+                        candidateItemArray[candidateNextBlockStart],
+                        desc
+                )
         )) {
             candidateNextBlockStart++;
         }

@@ -9,6 +9,7 @@ import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils;
 import org.atlasapi.equiv.results.description.DefaultDescription;
+import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.scorers.barb.BarbTitleMatchingItemScorer;
@@ -187,7 +188,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 )
         );
 
-        when(titleMatchingScorer.score(any(Item.class), any(Item.class))).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class))).thenReturn(Score.ONE);
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
@@ -255,7 +256,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 )
         );
 
-        when(titleMatchingScorer.score(any(Item.class), any(Item.class))).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class))).thenReturn(Score.ONE);
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
@@ -341,7 +342,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 )
         );
 
-        when(titleMatchingScorer.score(any(Item.class), any(Item.class))).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class))).thenReturn(Score.ONE);
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 nitroItem,
@@ -506,26 +507,28 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 similarAfterCandidateInSeparateBlock
         );
 
-        when(titleMatchingScorer.score(subject, similarBeforeSubject)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarBeforeSubject2)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarAfterSubject)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, previousUnrelatedToSubject)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(subject, nextUnrelatedToSubject)).thenReturn(Score.nullScore());
+        ResultDescription desc = new DefaultDescription();
 
-        when(titleMatchingScorer.score(subject, candidate)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarBeforeCandidate)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarBeforeCandidate2)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarAfterCandidate)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, previousUnrelatedToCandidate)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(subject, nextUnrelatedToCandidate)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(subject, similarAfterCandidateInSeparateBlock)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(subject, similarBeforeSubject, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(subject, similarBeforeSubject2, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(subject, similarAfterSubject, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(subject, previousUnrelatedToSubject, desc)).thenReturn(Score.nullScore());
+        when(titleMatchingScorer.score(subject, nextUnrelatedToSubject, desc)).thenReturn(Score.nullScore());
 
-        when(titleMatchingScorer.score(similarBeforeCandidate, similarBeforeCandidate2)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(similarBeforeCandidate, candidate)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(similarBeforeCandidate, similarAfterCandidate)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(similarBeforeCandidate, previousUnrelatedToCandidate)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(similarBeforeCandidate, nextUnrelatedToCandidate)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(similarBeforeCandidate, similarAfterCandidateInSeparateBlock)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(subject, candidate, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(subject, similarBeforeCandidate, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(subject, similarBeforeCandidate2, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(subject, similarAfterCandidate, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(subject, previousUnrelatedToCandidate, desc)).thenReturn(Score.nullScore());
+        when(titleMatchingScorer.score(subject, nextUnrelatedToCandidate, desc)).thenReturn(Score.nullScore());
+        when(titleMatchingScorer.score(subject, similarAfterCandidateInSeparateBlock, desc)).thenReturn(Score.ONE);
+
+        when(titleMatchingScorer.score(similarBeforeCandidate, similarBeforeCandidate2, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(similarBeforeCandidate, candidate, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(similarBeforeCandidate, similarAfterCandidate, desc)).thenReturn(Score.ONE);
+        when(titleMatchingScorer.score(similarBeforeCandidate, previousUnrelatedToCandidate, desc)).thenReturn(Score.nullScore());
+        when(titleMatchingScorer.score(similarBeforeCandidate, nextUnrelatedToCandidate, desc)).thenReturn(Score.nullScore());
+        when(titleMatchingScorer.score(similarBeforeCandidate, similarAfterCandidateInSeparateBlock, desc)).thenReturn(Score.ONE);
 
         when(
                 resolver.unmergedSchedule(
@@ -553,7 +556,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 subject,
-                new DefaultDescription(),
+                desc,
                 EquivToTelescopeResult.create("id", "publisher")
         );
 

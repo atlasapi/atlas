@@ -158,8 +158,11 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             return;
         }
         for (ScheduleChannel candidateScheduleChannel : candidateSchedule.scheduleChannels()) {
-            desc.startStage("Resolving candidate schedule for " + candidateScheduleChannel.channel().getUri());
             List<Item> candidateItemList = candidateScheduleChannel.items();
+            if (candidateItemList.isEmpty()) {
+                continue;
+            }
+            desc.startStage("Resolving candidate schedule for " + candidateScheduleChannel.channel().getUri());
             Item[] candidateItemArray = candidateItemList.toArray(new Item[0]);
             int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast, desc);
             if (candidateItemIndex < 0) {
@@ -193,6 +196,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                     );
                 }
             }
+            desc.finishStage();
         }
         desc.finishStage();
     }

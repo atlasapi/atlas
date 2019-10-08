@@ -138,7 +138,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             EquivToTelescopeComponent generatorComponent
     ) {
         desc.startStage(
-                "Schedule for " + String.format(
+                "Finding matches for broadcast: " + String.format(
                         "%s [%s - %s]",
                         subjectBroadcast.getBroadcastOn(),
                         subjectBroadcast.getTransmissionTime(),
@@ -200,15 +200,19 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                         candidateBroadcast.getTransmissionTime(),
                         candidateBroadcast.getTransmissionEndTime()
                 );
-                //we want the maximum score for this scorer to be scoreOnMatch, so we update the
-                //score of a candidate instead of adding it up via the usual .addEquivalent()
-                scores.updateEquivalent(candidate, scoreOnMatch);
+                if (broadcastFilter.test(candidateBroadcast)) {
+                    //we want the maximum score for this scorer to be scoreOnMatch, so we update the
+                    //score of a candidate instead of adding it up via the usual .addEquivalent()
+                    scores.updateEquivalent(candidate, scoreOnMatch);
 
-                if (candidate.getId() != null) {
-                    generatorComponent.addComponentResult(
-                            candidate.getId(),
-                            scoreOnMatch.toString()
-                    );
+                    if (candidate.getId() != null) {
+                        generatorComponent.addComponentResult(
+                                candidate.getId(),
+                                scoreOnMatch.toString()
+                        );
+                    }
+                } else {
+                    desc.appendText("Candidate broadcast did not pass the broadcast filter");
                 }
             }
             desc.finishStage();

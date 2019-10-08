@@ -27,7 +27,10 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -43,6 +46,7 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQua
  * score is taken for each candidate (as opposed to summing them as per regular broadcast generator)
  */
 public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
+    private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
 
     private final ScheduleResolver resolver;
     private final Set<Publisher> supportedPublishers;
@@ -185,6 +189,15 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
 
             Item candidate = foundCandidate.get();
             if(candidate.isActivelyPublished()) {
+                Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, desc);
+                desc.appendText(
+                        String.format(
+                                "Found candidate %s with broadcast [%s - %s]",
+                                candidate.getCanonicalUri(),
+                                candidateBroadcast.getTransmissionTime(),
+                                candidateBroadcast.getTransmissionEndTime()
+                        )
+                );
                 //we want the maximum score for this scorer to be scoreOnMatch, so we update the
                 //score of a candidate instead of adding it up via the usual .addEquivalent()
                 scores.updateEquivalent(candidate, scoreOnMatch);
@@ -264,8 +277,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         Duration shortestDurationOffset = null;
         for (int i = 0; i < items.length; i++) {
             Item candidate = items[i];
-            //The schedule resolver should return items each with a single broadcast corresponding to their schedule slot
-            Broadcast candidateBroadcast = candidate.getVersions().iterator().next().getBroadcasts().iterator().next();
+            Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, desc);
             Duration offset;
             if (subjectBroadcast.getTransmissionTime().isAfter(candidateBroadcast.getTransmissionTime())) {
                 offset = new Duration(
@@ -286,6 +298,21 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             }
         }
         return bestCandidateFound;
+    }
+
+    private Broadcast getBroadcastFromScheduleItem(Item item, ResultDescription desc) {
+        List<Broadcast> broadcasts = item.getVersions().stream()
+                .map(Version::getBroadcasts)
+                .flatMap(Collection::stream)
+                .filter(Broadcast::isActivelyPublished)
+                .collect(MoreCollectors.toImmutableList());
+
+        //The schedule resolver should return items each with a single broadcast corresponding to their schedule slot
+        if (broadcasts.size() != 1) {
+            desc.appendText(
+                    "Expected one but found multiple broadcasts for schedule item with uri: " + item.getCanonicalUri());
+        }
+        return broadcasts.get(0);
     }
 
     private Optional<Item> findCandidate(

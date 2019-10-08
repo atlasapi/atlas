@@ -63,7 +63,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
                                         targetPublishers,
-                                        Duration.standardHours(3),
+                                        Duration.standardHours(1),
                                         null,
                                         Score.valueOf(3.0),
                                         BarbTitleMatchingItemScorer.builder()

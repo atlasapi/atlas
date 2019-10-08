@@ -163,7 +163,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             Item[] candidateItemArray = candidateItemList.toArray(new Item[0]);
             int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast, desc);
             if (candidateItemIndex < 0) {
-                desc.appendText("Could not find candidate item in the schedule");
+                desc.appendText("Could not find a suitable item in the candidate schedule");
                 desc.finishStage();
                 continue;
             }

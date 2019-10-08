@@ -72,6 +72,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                                 .withScoreOnPartialMatch(Score.nullScore())
                                                 .withScoreOnPerfectMatch(Score.ONE)
                                                 .withContainerCacheDuration(60)
+                                                .withCheckContainersForAllPublishers(true)
                                                 .build()
                                 ),
                                 new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
@@ -96,6 +97,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         .withScoreOnPartialMatch(Score.ONE)
                                         .withScoreOnMismatch(Score.ZERO)
                                         .withContainerCacheDuration(60)
+                                        .withCheckContainersForAllPublishers(false)
                                         .build(),
                                 DescriptionMatchingScorer.makeScorer()
                         )

@@ -27,6 +27,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
@@ -57,6 +58,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final Score DEFAULT_SCORE_ON_PARTIAL_MATCH = Score.ONE;
     private static final Score DEFAULT_SCORE_ON_MISMATCH = Score.ZERO;
     private static final int DEFAULT_CONTAINER_CACHE_DURATION = 60;
+    private static final boolean DEFAULT_CHECK_CONTAINERS_FOR_ALL_PUBLISHERS = false;
     private static final int TXLOG_TITLE_LENGTH = 40;
 
     //Nitro<->Txlog specific rules
@@ -80,6 +82,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private final Score scoreOnPerfectMatch;
     private final Score scoreOnPartialMatch;
     private final Score scoreOnMismatch;
+    private final boolean checkContainersForAllPublishers;
     @Nullable private final ContentResolver contentResolver;
     private final LoadingCache<String, Optional<Container>> containerCache;
 
@@ -119,12 +122,13 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         scoreOnPerfectMatch = checkNotNull(builder.scoreOnPerfectMatch);
         scoreOnPartialMatch = checkNotNull(builder.scoreOnPartialMatch);
         scoreOnMismatch = checkNotNull(builder.scoreOnMismatch);
+        checkContainersForAllPublishers = checkNotNull(builder.checkContainersForAllPublishers);
         contentResolver = builder.contentResolver;
         containerCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(checkNotNull(builder.containerCacheDuration), TimeUnit.SECONDS)
                 .build(new CacheLoader<String, Optional<Container>>() {
                     @Override
-                    public Optional<Container> load(String containerUri) throws Exception {
+                    public Optional<Container> load(@Nonnull String containerUri) {
                         return getContainer(containerUri);
                     }
                 });
@@ -210,41 +214,39 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         boolean singleTxlogPresent = TXLOG_PUBLISHERS.contains(subject.getPublisher())
                 // xor since we need the other publisher to be different and have a parent
                 ^ TXLOG_PUBLISHERS.contains(suggestion.getPublisher());
-        if (contentResolver == null || !singleTxlogPresent) {
+
+        if (contentResolver == null || !(checkContainersForAllPublishers || singleTxlogPresent)) {
             return Optional.empty();
         }
 
-        Item txlog;
-        Item nonTxlog;
-        if(TXLOG_PUBLISHERS.contains(subject.getPublisher())) {
-            txlog = subject;
-            nonTxlog = suggestion;
-        } else {
-            txlog = suggestion;
-            nonTxlog = subject;
-        }
+        Optional<Container> subjectParent = subject.getContainer() != null
+                ? containerCache.getUnchecked(subject.getContainer().getUri())
+                : Optional.empty();
+        Optional<Container> suggestionParent = suggestion.getContainer() != null
+                ? containerCache.getUnchecked(suggestion.getContainer().getUri())
+                : Optional.empty();
 
-        if (nonTxlog.getContainer() == null) {
+        if (!subjectParent.isPresent() && !suggestionParent.isPresent()) {
             return Optional.empty();
         }
 
-        Optional<Container> parent = containerCache.getUnchecked(nonTxlog.getContainer().getUri());
+        Content compareFrom = subjectParent.isPresent() ? subjectParent.get() : subject;
+        Content compareTo = suggestionParent.isPresent() ? suggestionParent.get() : suggestion;
 
-        if(parent.isPresent()) {
-            Score parentScore = scoreContent(txlog, parent.get(), desc);
-            desc.appendText(
-                    String.format(
-                            "Parent (%s) for %s scored %.2f",
-                            parent.get().getCanonicalUri(),
-                            nonTxlog.getCanonicalUri(),
-                            parentScore.asDouble()
-                    ));
-            return Optional.of(parentScore);
-        }
-        return Optional.empty();
+        Score parentScore = scoreContent(compareFrom, compareTo, desc);
+        desc.appendText(
+                String.format(
+                        "%s (for %s) against %s (for %s) scored %.2f",
+                        compareFrom.getCanonicalUri(),
+                        subject.getCanonicalUri(),
+                        compareTo.getCanonicalUri(),
+                        suggestion.getCanonicalUri(),
+                        parentScore.asDouble()
+                ));
+        return Optional.of(parentScore);
     }
 
-    private Score scoreContent(Item subject, Content suggestion, ResultDescription desc) {
+    private Score scoreContent(Content subject, Content suggestion, ResultDescription desc) {
         Score score = Score.nullScore();
         if (!Strings.isNullOrEmpty(subject.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
@@ -258,7 +260,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    private Score scoreContent(Item subject, Content suggestion) {
+    private Score scoreContent(Content subject, Content suggestion) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 
@@ -527,6 +529,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         private Score scoreOnPerfectMatch = DEFAULT_SCORE_ON_PERFECT_MATCH;
         private Score scoreOnPartialMatch = DEFAULT_SCORE_ON_PARTIAL_MATCH;
         private Score scoreOnMismatch = DEFAULT_SCORE_ON_MISMATCH;
+        private boolean checkContainersForAllPublishers = DEFAULT_CHECK_CONTAINERS_FOR_ALL_PUBLISHERS;
         private ContentResolver contentResolver;
         private int containerCacheDuration = DEFAULT_CONTAINER_CACHE_DURATION; //seconds
 
@@ -545,6 +548,11 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         public Builder withScoreOnMismatch(Score scoreOnMismatch) {
             this.scoreOnMismatch = scoreOnMismatch;
+            return this;
+        }
+
+        public Builder withCheckContainersForAllPublishers(boolean checkContainersForAllPublishers) {
+            this.checkContainersForAllPublishers = checkContainersForAllPublishers;
             return this;
         }
 

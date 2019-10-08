@@ -58,6 +58,7 @@ public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpd
                                         .withScoreOnPartialMatch(Score.nullScore())
                                         .withScoreOnPerfectMatch(Score.ONE)
                                         .withContainerCacheDuration(60)
+                                        .withCheckContainersForAllPublishers(true)
                                         .build()
                         )
                 )
@@ -69,6 +70,7 @@ public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpd
                                         .withScoreOnPartialMatch(Score.ONE)
                                         .withScoreOnMismatch(Score.ZERO)
                                         .withContainerCacheDuration(60)
+                                        .withCheckContainersForAllPublishers(false)
                                         .build(),
                                 DescriptionMatchingScorer.makeScorer()
                         )

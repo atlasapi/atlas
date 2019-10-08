@@ -31,6 +31,7 @@ public class BarbTitleMatchingItemScorerTest {
 
     private BarbTitleMatchingItemScorer scorer;
     private BarbTitleMatchingItemScorer cachedScorer;
+    private BarbTitleMatchingItemScorer allContainerCheckingScorer;
 
     @Before
     public void setUp() throws Exception {
@@ -40,6 +41,7 @@ public class BarbTitleMatchingItemScorerTest {
                 .withScoreOnMismatch(scoreOnMismatch)
                 .withContentResolver(contentResolver)
                 .withContainerCacheDuration(0) //caching will break some tests due to reusing the same brand uri
+                .withCheckContainersForAllPublishers(false)
                 .build();
 
         cachedScorer = BarbTitleMatchingItemScorer.builder()
@@ -48,6 +50,16 @@ public class BarbTitleMatchingItemScorerTest {
                 .withScoreOnMismatch(scoreOnMismatch)
                 .withContentResolver(contentResolver)
                 .withContainerCacheDuration(60)
+                .withCheckContainersForAllPublishers(false)
+                .build();
+
+        allContainerCheckingScorer = BarbTitleMatchingItemScorer.builder()
+                .withScoreOnPerfectMatch(scoreOnMatch)
+                .withScoreOnPartialMatch(scoreOnPartialMatch)
+                .withScoreOnMismatch(scoreOnMismatch)
+                .withContentResolver(contentResolver)
+                .withContainerCacheDuration(0) //caching will break some tests due to reusing the same brand uri
+                .withCheckContainersForAllPublishers(true)
                 .build();
     }
 
@@ -91,17 +103,11 @@ public class BarbTitleMatchingItemScorerTest {
     }
 
     private Score score(Item subject, Item candidate) {
-        ScoredCandidates<Item> scoredCandidates = scorer.score(
-                subject,
-                ImmutableSet.of(candidate),
-                new DefaultDescription(),
-                EquivToTelescopeResult.create(subject.getCanonicalUri(), subject.getPublisher().key())
-        );
-        return scoredCandidates.candidates().get(candidate);
+        return score(subject, candidate, scorer);
     }
 
-    private Score cachedScore(Item subject, Item candidate) {
-        ScoredCandidates<Item> scoredCandidates = cachedScorer.score(
+    private Score score(Item subject, Item candidate, BarbTitleMatchingItemScorer scorer) {
+        ScoredCandidates<Item> scoredCandidates = scorer.score(
                 subject,
                 ImmutableSet.of(candidate),
                 new DefaultDescription(),
@@ -144,21 +150,33 @@ public class BarbTitleMatchingItemScorerTest {
     }
 
     @Test
-    public void testBrandsAreCached() {
+    public void testContainersAreCached() {
         Item txlog = txlog("t1");
         Brand nitroBrand = nitroBrand("t1", "1");
         Episode nitroEpisode = nitroEpisode("t2", nitroBrand);
         setUpContentResolving(nitroBrand);
         assertThat(score(txlog, nitroEpisode), is(scoreOnMatch));
         assertThat(score(nitroEpisode, txlog), is(scoreOnMatch));
-        assertThat(cachedScore(txlog, nitroEpisode), is(scoreOnMatch));
-        assertThat(cachedScore(nitroEpisode, txlog), is(scoreOnMatch));
+        assertThat(score(txlog, nitroEpisode, cachedScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog, cachedScorer), is(scoreOnMatch));
         nitroBrand = nitroBrand("t3", "1");
         setUpContentResolving(nitroBrand);
         assertThat(score(txlog, nitroEpisode), is(scoreOnMismatch));
         assertThat(score(nitroEpisode, txlog), is(scoreOnMismatch));
-        assertThat(cachedScore(txlog, nitroEpisode), is(scoreOnMatch));
-        assertThat(cachedScore(nitroEpisode, txlog), is(scoreOnMatch));
+        assertThat(score(txlog, nitroEpisode, cachedScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog, cachedScorer), is(scoreOnMatch));
+    }
+
+    @Test
+    public void testContainersFromAllPublishersAreConsideredIfSpecified() {
+        Brand nitroBrand = nitroBrand("t1", "1");
+        Episode nitroEpisode = nitroEpisode("t2", nitroBrand);
+        Brand nitroBrand2 = nitroBrand("t1", "2");
+        Episode nitroEpisode2 = nitroEpisode("t3", nitroBrand2);
+        setUpContentResolving(nitroBrand);
+        setUpContentResolving(nitroBrand2);
+        assertThat(score(nitroEpisode, nitroEpisode2, allContainerCheckingScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode2, nitroEpisode, allContainerCheckingScorer), is(scoreOnMatch));
     }
 
 }

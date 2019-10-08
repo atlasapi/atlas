@@ -138,7 +138,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                         "%s [%s - %s]",
                         subjectBroadcast.getBroadcastOn(),
                         subjectBroadcast.getTransmissionTime(),
-                        subjectBroadcast.getActualTransmissionEndTime())
+                        subjectBroadcast.getTransmissionEndTime())
         );
         Set<String> channelUris = expandChannelUris(subjectBroadcast.getBroadcastOn());
         Schedule subjectSchedule = scheduleAround(

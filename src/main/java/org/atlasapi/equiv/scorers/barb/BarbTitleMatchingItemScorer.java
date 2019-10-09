@@ -84,7 +84,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private final Score scoreOnMismatch;
     private final boolean checkContainersForAllPublishers;
     @Nullable private final ContentResolver contentResolver;
-    private final LoadingCache<String, Optional<Container>> containerCache;
+    private final LoadingCache<String, Optional<ContentTitleMatchingFields>> containerCache;
 
     public enum TitleType {
 
@@ -126,9 +126,9 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         contentResolver = builder.contentResolver;
         containerCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(checkNotNull(builder.containerCacheDuration), TimeUnit.SECONDS)
-                .build(new CacheLoader<String, Optional<Container>>() {
+                .build(new CacheLoader<String, Optional<ContentTitleMatchingFields>>() {
                     @Override
-                    public Optional<Container> load(@Nonnull String containerUri) {
+                    public Optional<ContentTitleMatchingFields> load(@Nonnull String containerUri) {
                         return getContainer(containerUri);
                     }
                 });
@@ -171,7 +171,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return equivalents.build();
     }
 
-    private Optional<Container> getContainer(String containerUri) {
+    private Optional<ContentTitleMatchingFields> getContainer(String containerUri) {
         if (contentResolver == null) {
             return Optional.empty();
         }
@@ -191,13 +191,17 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     }
                 }
             }
-            return Optional.of(parent);
+            return Optional.of(new ContentTitleMatchingFields(parent));
         }
         return Optional.empty();
     }
 
     public Score score(Item subject, Item suggestion, ResultDescription desc) {
-        Score equivScore = scoreContent(subject, suggestion, desc);
+        Score equivScore = scoreContent(
+                new ContentTitleMatchingFields(subject),
+                new ContentTitleMatchingFields(suggestion),
+                desc
+        );
         if (equivScore != scoreOnPerfectMatch) {
             // txlog titles are often just the title of the brand so score the txlog title
             // against a brand title as well if applicable
@@ -219,10 +223,10 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             return Optional.empty();
         }
 
-        Optional<Container> subjectParent = subject.getContainer() != null
+        Optional<ContentTitleMatchingFields> subjectParent = subject.getContainer() != null
                 ? containerCache.getUnchecked(subject.getContainer().getUri())
                 : Optional.empty();
-        Optional<Container> suggestionParent = suggestion.getContainer() != null
+        Optional<ContentTitleMatchingFields> suggestionParent = suggestion.getContainer() != null
                 ? containerCache.getUnchecked(suggestion.getContainer().getUri())
                 : Optional.empty();
 
@@ -230,14 +234,19 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             return Optional.empty();
         }
 
-        Content compareFrom = subjectParent.isPresent() ? subjectParent.get() : subject;
-        Content compareTo = suggestionParent.isPresent() ? suggestionParent.get() : suggestion;
+        ContentTitleMatchingFields compareFrom = subjectParent
+                .orElseGet(() -> new ContentTitleMatchingFields(subject));
+        ContentTitleMatchingFields compareTo = suggestionParent
+                .orElseGet(() -> new ContentTitleMatchingFields(suggestion));
 
         Score parentScore = scoreContent(compareFrom, compareTo, desc);
         return Optional.of(parentScore);
     }
 
-    private Score scoreContent(Content subject, Content suggestion, ResultDescription desc) {
+    private Score scoreContent(
+            ContentTitleMatchingFields subject,
+            ContentTitleMatchingFields suggestion,
+            ResultDescription desc) {
         Score score = Score.nullScore();
         if (!Strings.isNullOrEmpty(subject.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
@@ -257,7 +266,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    private Score scoreContent(Content subject, Content suggestion) {
+    private Score scoreContent(ContentTitleMatchingFields subject, ContentTitleMatchingFields suggestion) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 
@@ -565,6 +574,38 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         public BarbTitleMatchingItemScorer build() {
             return new BarbTitleMatchingItemScorer(this);
+        }
+    }
+
+
+    // Mainly used so that we only cache necessary fields for containers
+    private class ContentTitleMatchingFields {
+        private final String canonicalUri;
+        private final String title;
+        private final Publisher publisher;
+        private final Integer year;
+
+        public ContentTitleMatchingFields(Content content) {
+            this.canonicalUri = content.getCanonicalUri();
+            this.title = content.getTitle();
+            this.publisher = content.getPublisher();
+            this.year = content.getYear();
+        }
+
+        public String getCanonicalUri() {
+            return canonicalUri;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public Publisher getPublisher() {
+            return publisher;
+        }
+
+        public Integer getYear() {
+            return year;
         }
     }
 }

@@ -169,11 +169,11 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             if (candidateItemList.isEmpty()) {
                 continue;
             }
-            desc.startStage("Resolving candidate schedule for " + candidateScheduleChannel.channel().getUri());
+            desc.startStage("Candidate schedule found for " + candidateScheduleChannel.channel().getUri());
             Item[] candidateItemArray = candidateItemList.toArray(new Item[0]);
             int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast, nopDesc);
             if (candidateItemIndex < 0) {
-                desc.appendText("Could not find a suitable item in the candidate schedule");
+                desc.appendText("Could not find any suitable items in the candidate schedule");
                 desc.finishStage();
                 continue;
             }

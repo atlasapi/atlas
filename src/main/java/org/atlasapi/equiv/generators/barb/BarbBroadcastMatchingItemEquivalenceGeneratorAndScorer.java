@@ -176,6 +176,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             if (candidateItemIndex < 0) {
                 desc.appendText("Could not find a suitable item in the candidate schedule");
                 desc.finishStage();
+                desc.finishStage();
                 continue;
             }
             desc.finishStage();

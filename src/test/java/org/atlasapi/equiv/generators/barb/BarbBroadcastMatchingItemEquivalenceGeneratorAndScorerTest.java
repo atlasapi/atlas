@@ -44,6 +44,7 @@ import static org.joda.time.Duration.standardHours;
 import static org.joda.time.Duration.standardMinutes;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -507,28 +508,26 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 similarAfterCandidateInSeparateBlock
         );
 
-        ResultDescription desc = new DefaultDescription();
+        setupTitleScoring(subject, similarBeforeSubject, Score.ONE);
+        setupTitleScoring(subject, similarBeforeSubject2, Score.ONE);
+        setupTitleScoring(subject, similarAfterSubject, Score.ONE);
+        setupTitleScoring(subject, previousUnrelatedToSubject, Score.nullScore());
+        setupTitleScoring(subject, nextUnrelatedToSubject, Score.nullScore());
 
-        when(titleMatchingScorer.score(subject, similarBeforeSubject, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarBeforeSubject2, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarAfterSubject, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, previousUnrelatedToSubject, desc)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(subject, nextUnrelatedToSubject, desc)).thenReturn(Score.nullScore());
+        setupTitleScoring(subject, candidate, Score.ONE);
+        setupTitleScoring(subject, similarBeforeCandidate, Score.ONE);
+        setupTitleScoring(subject, similarBeforeCandidate2, Score.ONE);
+        setupTitleScoring(subject, similarAfterCandidate, Score.ONE);
+        setupTitleScoring(subject, previousUnrelatedToCandidate, Score.nullScore());
+        setupTitleScoring(subject, nextUnrelatedToCandidate, Score.nullScore());
+        setupTitleScoring(subject, similarAfterCandidateInSeparateBlock, Score.ONE);
 
-        when(titleMatchingScorer.score(subject, candidate, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarBeforeCandidate, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarBeforeCandidate2, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, similarAfterCandidate, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(subject, previousUnrelatedToCandidate, desc)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(subject, nextUnrelatedToCandidate, desc)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(subject, similarAfterCandidateInSeparateBlock, desc)).thenReturn(Score.ONE);
-
-        when(titleMatchingScorer.score(similarBeforeCandidate, similarBeforeCandidate2, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(similarBeforeCandidate, candidate, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(similarBeforeCandidate, similarAfterCandidate, desc)).thenReturn(Score.ONE);
-        when(titleMatchingScorer.score(similarBeforeCandidate, previousUnrelatedToCandidate, desc)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(similarBeforeCandidate, nextUnrelatedToCandidate, desc)).thenReturn(Score.nullScore());
-        when(titleMatchingScorer.score(similarBeforeCandidate, similarAfterCandidateInSeparateBlock, desc)).thenReturn(Score.ONE);
+        setupTitleScoring(similarBeforeCandidate, similarBeforeCandidate2, Score.ONE);
+        setupTitleScoring(similarBeforeCandidate, candidate, Score.ONE);
+        setupTitleScoring(similarBeforeCandidate, similarAfterCandidate, Score.ONE);
+        setupTitleScoring(similarBeforeCandidate, previousUnrelatedToCandidate, Score.nullScore());
+        setupTitleScoring(similarBeforeCandidate, nextUnrelatedToCandidate, Score.nullScore());
+        setupTitleScoring(similarBeforeCandidate, similarAfterCandidateInSeparateBlock, Score.ONE);
 
         when(
                 resolver.unmergedSchedule(
@@ -556,7 +555,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 subject,
-                desc,
+                new DefaultDescription(),
                 EquivToTelescopeResult.create("id", "publisher")
         );
 
@@ -566,6 +565,11 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         Item scored = Iterables.getOnlyElement(scoreMap.keySet());
         assertEquals(candidate, scored);
         assertEquals(SCORE_ON_MATCH, scoreMap.get(scored));
+    }
+
+    private void setupTitleScoring(Item item1, Item item2, Score score) {
+        when(titleMatchingScorer.score(argThat(is(item1)), argThat(is(item2)), any(ResultDescription.class)))
+                .thenReturn(score);
     }
 
 }

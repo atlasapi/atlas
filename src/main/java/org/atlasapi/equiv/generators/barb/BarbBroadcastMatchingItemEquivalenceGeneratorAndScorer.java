@@ -8,6 +8,7 @@ import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAn
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
+import org.atlasapi.equiv.results.description.NopDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -55,6 +56,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
     private final Score scoreOnMatch;
     private final Duration scheduleWindow; //for offset calculation
     private final BarbTitleMatchingItemScorer titleMatchingScorer;
+    private final NopDescription nopDesc;
 
     public BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(
             ScheduleResolver resolver,
@@ -72,6 +74,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         this.scoreOnMatch = checkNotNull(scoreOnMatch);
         this.titleMatchingScorer = checkNotNull(titleMatchingScorer);
         this.scheduleWindow = checkNotNull(scheduleWindow);
+        this.nopDesc = new NopDescription();
     }
 
     @Override
@@ -169,7 +172,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             desc.startStage("Resolving candidate schedule for " + candidateScheduleChannel.channel().getUri());
             Item[] candidateItemArray = candidateItemList.toArray(new Item[0]);
             desc.startStage("Finding a suitable item in the candidate schedule");
-            int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast, desc);
+            int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast, nopDesc);
             if (candidateItemIndex < 0) {
                 desc.appendText("Could not find a suitable item in the candidate schedule");
                 desc.finishStage();
@@ -193,7 +196,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
 
             Item candidate = foundCandidate.get();
             if(candidate.isActivelyPublished()) {
-                Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, desc);
+                Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, nopDesc);
                 desc.appendText(
                         "Found candidate %s with broadcast [%s - %s]",
                         candidate.getCanonicalUri(),

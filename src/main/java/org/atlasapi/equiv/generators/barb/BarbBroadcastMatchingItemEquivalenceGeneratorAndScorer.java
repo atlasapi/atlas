@@ -191,6 +191,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             if (!foundCandidate.isPresent()) {
                 desc.appendText("Could not determine candidate from schedule");
                 desc.finishStage();
+                desc.finishStage();
                 continue;
             }
             desc.finishStage();

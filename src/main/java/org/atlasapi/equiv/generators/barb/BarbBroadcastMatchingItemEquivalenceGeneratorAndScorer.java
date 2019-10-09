@@ -171,16 +171,12 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             }
             desc.startStage("Resolving candidate schedule for " + candidateScheduleChannel.channel().getUri());
             Item[] candidateItemArray = candidateItemList.toArray(new Item[0]);
-            desc.startStage("Finding a suitable item in the candidate schedule");
             int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast, nopDesc);
             if (candidateItemIndex < 0) {
                 desc.appendText("Could not find a suitable item in the candidate schedule");
                 desc.finishStage();
-                desc.finishStage();
                 continue;
             }
-            desc.finishStage();
-            desc.startStage("Determining candidate from schedule");
             Optional<Item> foundCandidate = findCandidate(
                     subjectItemArray,
                     subjectItemIndex,
@@ -191,10 +187,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             if (!foundCandidate.isPresent()) {
                 desc.appendText("Could not determine candidate from schedule");
                 desc.finishStage();
-                desc.finishStage();
                 continue;
             }
-            desc.finishStage();
 
             Item candidate = foundCandidate.get();
             if(candidate.isActivelyPublished()) {

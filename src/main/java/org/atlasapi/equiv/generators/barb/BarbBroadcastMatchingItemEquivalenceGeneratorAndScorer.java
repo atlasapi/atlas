@@ -11,7 +11,6 @@ import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorM
 import org.atlasapi.equiv.results.description.NopDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
-import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.scorers.barb.BarbTitleMatchingItemScorer;
@@ -37,7 +36,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.around;
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.expandChannelUris;
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQualifyingBroadcast;
 
@@ -49,33 +50,37 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQua
 public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
     private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
 
-    private final ScheduleResolver resolver;
+    private final ScheduleResolver scheduleResolver;
     private final Set<Publisher> supportedPublishers;
     private final ChannelResolver channelResolver;
     private final Predicate<? super Broadcast> broadcastFilter;
     private final Score scoreOnMatch;
     private final Duration scheduleWindow; //for offset calculation
+    private final Duration broadcastFlexibility;
+    private final Duration shortBroadcastFlexibility;
+    private final Duration shortBroadcastMaxDuration;
     private final BarbTitleMatchingItemScorer titleMatchingScorer;
     private final NopDescription nopDesc;
 
-    public BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(
-            ScheduleResolver resolver,
-            ChannelResolver channelResolver,
-            Set<Publisher> supportedPublishers,
-            Duration scheduleWindow,
-            Predicate<? super Broadcast> broadcastFilter,
-            Score scoreOnMatch,
-            BarbTitleMatchingItemScorer titleMatchingScorer
-    ) {
-        this.resolver = checkNotNull(resolver);
-        this.channelResolver = checkNotNull(channelResolver);
-        this.supportedPublishers = checkNotNull(supportedPublishers);
-        this.broadcastFilter = broadcastFilter == null ? broadcast -> true : broadcastFilter;
-        this.scoreOnMatch = checkNotNull(scoreOnMatch);
-        this.titleMatchingScorer = checkNotNull(titleMatchingScorer);
-        this.scheduleWindow = checkNotNull(scheduleWindow);
-        this.nopDesc = new NopDescription();
+    private BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(Builder builder) {
+        scheduleResolver = checkNotNull(builder.scheduleResolver);
+        supportedPublishers = checkNotNull(builder.supportedPublishers);
+        channelResolver = checkNotNull(builder.channelResolver);
+        broadcastFilter = checkNotNull(builder.broadcastFilter);
+        scoreOnMatch = checkNotNull(builder.scoreOnMatch);
+        scheduleWindow = checkNotNull(builder.scheduleWindow);
+        broadcastFlexibility = checkNotNull(builder.broadcastFlexibility);
+        shortBroadcastFlexibility = checkNotNull(builder.shortBroadcastFlexibility);
+        checkArgument(!shortBroadcastFlexibility.isLongerThan(broadcastFlexibility));
+        shortBroadcastMaxDuration = checkNotNull(builder.shortBroadcastMaxDuration);
+        titleMatchingScorer = checkNotNull(builder.titleMatchingScorer);
+        nopDesc = new NopDescription();
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
 
     @Override
     public ScoredCandidates<Item> generate(
@@ -84,7 +89,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             EquivToTelescopeResult equivToTelescopeResult
     ) {
 
-        Builder<Item> scores = DefaultScoredCandidates.fromSource("BARB Broadcast");
+        DefaultScoredCandidates.Builder<Item> scores = DefaultScoredCandidates.fromSource("BARB Broadcast");
 
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("BARB Broadcast Matching Item Equivalence Generator");
@@ -132,7 +137,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
     }
 
     private void findMatchesForBroadcast(
-            Builder<Item> scores,
+            DefaultScoredCandidates.Builder<Item> scores,
             Item subject,
             Broadcast subjectBroadcast,
             Publisher subjectPublisher,
@@ -228,7 +233,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 .filter(Maybe::hasValue)
                 .map(Maybe::requireValue)
                 .collect(MoreCollectors.toImmutableSet());
-        return resolver.unmergedSchedule(
+        return scheduleResolver.unmergedSchedule(
                 start,
                 end,
                 channels,
@@ -295,7 +300,13 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                         candidateBroadcast.getTransmissionTime()
                 );
             }
-            if (shortestDurationOffset == null || offset.isShorterThan(shortestDurationOffset)) {
+            boolean shorterOffset = shortestDurationOffset == null || offset.isShorterThan(shortestDurationOffset);
+            boolean withinFlexibility = around(
+                    subjectBroadcast,
+                    candidateBroadcast,
+                    getFlexibility(subjectBroadcast, candidateBroadcast)
+            );
+            if (shorterOffset && withinFlexibility) {
                 if (isRealPositiveScore(titleMatchingScorer.score(subject, candidate, desc))) {
                     shortestDurationOffset = offset;
                     bestCandidateFound = i;
@@ -312,12 +323,26 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 .filter(Broadcast::isActivelyPublished)
                 .collect(MoreCollectors.toImmutableList());
 
-        //The schedule resolver should return items each with a single broadcast corresponding to their schedule slot
+        //The schedule scheduleResolver should return items each with a single broadcast corresponding to their schedule slot
         if (broadcasts.size() != 1) {
             desc.appendText(
                     "Expected one broadcast but found multiple for schedule item %s", item.getCanonicalUri());
         }
         return broadcasts.get(0);
+    }
+
+    private Duration getFlexibility(Broadcast... broadcasts) {
+        for (Broadcast broadcast : broadcasts) {
+            Duration broadcastPeriod = new Duration(
+                    broadcast.getTransmissionTime(),
+                    broadcast.getTransmissionEndTime()
+            );
+            // if the broadcast is less than 10 minutes long, reduce the flexibility
+            if (!broadcastPeriod.isLongerThan(shortBroadcastMaxDuration)) {
+                return shortBroadcastFlexibility;
+            }
+        }
+        return broadcastFlexibility;
     }
 
     private Optional<Item> findCandidate(
@@ -411,5 +436,78 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
     @Override
     public String toString() {
         return "BARB Broadcast-matching generator";
+    }
+
+    public static final class Builder {
+        private ScheduleResolver scheduleResolver;
+        private Set<Publisher> supportedPublishers;
+        private ChannelResolver channelResolver;
+        private Predicate<? super Broadcast> broadcastFilter = broadcast -> true;
+        private Score scoreOnMatch;
+        private Duration scheduleWindow;
+        private Duration broadcastFlexibility;
+        private Duration shortBroadcastFlexibility;
+        private Duration shortBroadcastMaxDuration;
+        private BarbTitleMatchingItemScorer titleMatchingScorer;
+
+        private Builder() {
+        }
+
+        public Builder withScheduleResolver(ScheduleResolver resolver) {
+            this.scheduleResolver = resolver;
+            return this;
+        }
+
+        public Builder withSupportedPublishers(Set<Publisher> supportedPublishers) {
+            this.supportedPublishers = supportedPublishers;
+            return this;
+        }
+
+        public Builder withChannelResolver(ChannelResolver channelResolver) {
+            this.channelResolver = channelResolver;
+            return this;
+        }
+
+        /**
+         * Optional
+         */
+        public Builder withBroadcastFilter(Predicate<? super Broadcast> broadcastFilter) {
+            this.broadcastFilter = broadcastFilter;
+            return this;
+        }
+
+        public Builder withScoreOnMatch(Score scoreOnMatch) {
+            this.scoreOnMatch = scoreOnMatch;
+            return this;
+        }
+
+        public Builder withScheduleWindow(Duration scheduleWindow) {
+            this.scheduleWindow = scheduleWindow;
+            return this;
+        }
+
+        public Builder withBroadcastFlexibility(Duration broadcastFlexibility) {
+            this.broadcastFlexibility = broadcastFlexibility;
+            return this;
+        }
+
+        public Builder withShortBroadcastFlexibility(Duration shortBroadcastFlexibility) {
+            this.shortBroadcastFlexibility = shortBroadcastFlexibility;
+            return this;
+        }
+
+        public Builder withShortBroadcastMaxDuration(Duration shortBroadcastMaxDuration) {
+            this.shortBroadcastMaxDuration = shortBroadcastMaxDuration;
+            return this;
+        }
+
+        public Builder withTitleMatchingScorer(BarbTitleMatchingItemScorer titleMatchingScorer) {
+            this.titleMatchingScorer = titleMatchingScorer;
+            return this;
+        }
+
+        public BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer build() {
+            return new BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(this);
+        }
     }
 }

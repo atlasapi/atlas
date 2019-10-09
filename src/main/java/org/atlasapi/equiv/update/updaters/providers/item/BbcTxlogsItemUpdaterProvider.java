@@ -59,22 +59,26 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         Score.ZERO,
                                         false
                                 ),
-                                new BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(
-                                        dependencies.getScheduleResolver(),
-                                        dependencies.getChannelResolver(),
-                                        targetPublishers,
-                                        Duration.standardHours(1),
-                                        null,
-                                        Score.valueOf(3.0),
-                                        BarbTitleMatchingItemScorer.builder()
-                                                .withContentResolver(dependencies.getContentResolver())
-                                                .withScoreOnMismatch(Score.nullScore())
-                                                .withScoreOnPartialMatch(Score.nullScore())
-                                                .withScoreOnPerfectMatch(Score.ONE)
-                                                .withContainerCacheDuration(60)
-                                                .withCheckContainersForAllPublishers(true)
-                                                .build()
-                                ),
+                                BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer.builder()
+                                        .withScheduleResolver(dependencies.getScheduleResolver())
+                                        .withChannelResolver(dependencies.getChannelResolver())
+                                        .withSupportedPublishers(targetPublishers)
+                                        .withScheduleWindow(Duration.standardHours(1))
+                                        .withBroadcastFlexibility(Duration.standardMinutes(10))
+                                        .withShortBroadcastFlexibility(Duration.standardMinutes(10))
+                                        .withShortBroadcastMaxDuration(Duration.standardMinutes(10))
+                                        .withScoreOnMatch(Score.valueOf(3.0))
+                                        .withTitleMatchingScorer(
+                                                BarbTitleMatchingItemScorer.builder()
+                                                        .withContentResolver(dependencies.getContentResolver())
+                                                        .withScoreOnMismatch(Score.nullScore())
+                                                        .withScoreOnPartialMatch(Score.nullScore())
+                                                        .withScoreOnPerfectMatch(Score.ONE)
+                                                        .withContainerCacheDuration(60)
+                                                        .withCheckContainersForAllPublishers(true)
+                                                        .build()
+                                        )
+                                        .build(),
                                 new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),

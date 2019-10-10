@@ -1,6 +1,9 @@
 package org.atlasapi.equiv.scorers.barb;
 
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -14,6 +17,7 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -23,9 +27,11 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,6 +57,8 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final Score DEFAULT_SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
     private static final Score DEFAULT_SCORE_ON_PARTIAL_MATCH = Score.ONE;
     private static final Score DEFAULT_SCORE_ON_MISMATCH = Score.ZERO;
+    private static final int DEFAULT_CONTAINER_CACHE_DURATION = 60;
+    private static final boolean DEFAULT_CHECK_CONTAINERS_FOR_ALL_PUBLISHERS = false;
     private static final int TXLOG_TITLE_LENGTH = 40;
 
     //Nitro<->Txlog specific rules
@@ -74,7 +82,9 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private final Score scoreOnPerfectMatch;
     private final Score scoreOnPartialMatch;
     private final Score scoreOnMismatch;
+    private final boolean checkContainersForAllPublishers;
     @Nullable private final ContentResolver contentResolver;
+    private final LoadingCache<String, Optional<ContentTitleMatchingFields>> containerCache;
 
     public enum TitleType {
 
@@ -112,7 +122,16 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         scoreOnPerfectMatch = checkNotNull(builder.scoreOnPerfectMatch);
         scoreOnPartialMatch = checkNotNull(builder.scoreOnPartialMatch);
         scoreOnMismatch = checkNotNull(builder.scoreOnMismatch);
+        checkContainersForAllPublishers = checkNotNull(builder.checkContainersForAllPublishers);
         contentResolver = builder.contentResolver;
+        containerCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(checkNotNull(builder.containerCacheDuration), TimeUnit.SECONDS)
+                .build(new CacheLoader<String, Optional<ContentTitleMatchingFields>>() {
+                    @Override
+                    public Optional<ContentTitleMatchingFields> load(@Nonnull String containerUri) {
+                        return getContainer(containerUri);
+                    }
+                });
     }
 
     public static Builder builder() {
@@ -137,15 +156,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         for (Item suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
-            if (equivScore != scoreOnPerfectMatch) {
-                // txlog titles are often just the title of the brand so score the txlog title
-                // against a brand title as well if applicable
-                Optional<Score> parentScore = getParentScore(subject, suggestion, desc);
-                if (parentScore.isPresent() && parentScore.get().isRealScore()
-                    && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
-                    equivScore = parentScore.get();
-                }
-            }
 
             equivalents.addEquivalent(suggestion, equivScore);
             if (suggestion.getId() != null) {
@@ -161,72 +171,102 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return equivalents.build();
     }
 
-    private Optional<Score> getParentScore(Item subject, Item suggestion, ResultDescription desc) {
-        boolean singleTxlogPresent = TXLOG_PUBLISHERS.contains(subject.getPublisher())
-                // xor since we need the other publisher to be different and have a parent
-                ^ TXLOG_PUBLISHERS.contains(suggestion.getPublisher());
-        if (contentResolver == null || !singleTxlogPresent) {
+    private Optional<ContentTitleMatchingFields> getContainer(String containerUri) {
+        if (contentResolver == null) {
             return Optional.empty();
         }
-
-        Item txlog;
-        Item nonTxlog;
-        if(TXLOG_PUBLISHERS.contains(subject.getPublisher())) {
-            txlog = subject;
-            nonTxlog = suggestion;
-        } else {
-            txlog = suggestion;
-            nonTxlog = subject;
-        }
-
-        if (nonTxlog.getContainer() == null) {
-            return Optional.empty();
-        }
-
         Maybe<Identified> resolved = contentResolver.findByCanonicalUris(
-                ImmutableSet.of(nonTxlog.getContainer().getUri())
+                ImmutableSet.of(containerUri)
         ).getFirstValue();
         if(resolved.hasValue()) {
-            Content parent = (Content) resolved.requireValue();
-            if(parent instanceof Series) { //this shouldn't be required but is being included as a sanity check
+            Container parent = (Container) resolved.requireValue();
+            if (parent instanceof Series) { //this shouldn't be required but is being included as a sanity check
                 Series series = (Series) parent;
-                if(series.getParent() != null) {
+                if (series.getParent() != null) {
                     resolved = contentResolver.findByCanonicalUris(
                             ImmutableSet.of(series.getParent().getUri()))
-                    .getFirstValue();
-                    if(resolved.hasValue()) {
-                        parent = (Content) resolved.requireValue();
+                            .getFirstValue();
+                    if (resolved.hasValue()) {
+                        parent = (Container) resolved.requireValue();
                     }
                 }
             }
-            Score parentScore = score(txlog, parent, desc);
-            desc.appendText(
-                    String.format(
-                            "Parent (%s) for %s scored %.2f",
-                            parent.getCanonicalUri(),
-                            nonTxlog.getCanonicalUri(),
-                            parentScore.asDouble()
-                    ));
-            return Optional.of(parentScore);
+            return Optional.of(new ContentTitleMatchingFields(parent));
         }
         return Optional.empty();
     }
 
-    private Score score(Item subject, Content suggestion, ResultDescription desc) {
+    public Score score(Item subject, Item suggestion, ResultDescription desc) {
+        Score equivScore = scoreContent(
+                new ContentTitleMatchingFields(subject),
+                new ContentTitleMatchingFields(suggestion),
+                desc
+        );
+        if (equivScore != scoreOnPerfectMatch) {
+            // txlog titles are often just the title of the brand so score the txlog title
+            // against a brand title as well if applicable
+            Optional<Score> parentScore = getParentScore(subject, suggestion, desc);
+            if (parentScore.isPresent() && parentScore.get().isRealScore()
+                    && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
+                equivScore = parentScore.get();
+            }
+        }
+        return equivScore;
+    }
+
+    private Optional<Score> getParentScore(Item subject, Item suggestion, ResultDescription desc) {
+        boolean singleTxlogPresent = TXLOG_PUBLISHERS.contains(subject.getPublisher())
+                // xor since we need the other publisher to be different and have a parent
+                ^ TXLOG_PUBLISHERS.contains(suggestion.getPublisher());
+
+        if (contentResolver == null || !(checkContainersForAllPublishers || singleTxlogPresent)) {
+            return Optional.empty();
+        }
+
+        Optional<ContentTitleMatchingFields> subjectParent = subject.getContainer() != null
+                ? containerCache.getUnchecked(subject.getContainer().getUri())
+                : Optional.empty();
+        Optional<ContentTitleMatchingFields> suggestionParent = suggestion.getContainer() != null
+                ? containerCache.getUnchecked(suggestion.getContainer().getUri())
+                : Optional.empty();
+
+        if (!subjectParent.isPresent() && !suggestionParent.isPresent()) {
+            return Optional.empty();
+        }
+
+        ContentTitleMatchingFields compareFrom = subjectParent
+                .orElseGet(() -> new ContentTitleMatchingFields(subject));
+        ContentTitleMatchingFields compareTo = suggestionParent
+                .orElseGet(() -> new ContentTitleMatchingFields(suggestion));
+
+        Score parentScore = scoreContent(compareFrom, compareTo, desc);
+        return Optional.of(parentScore);
+    }
+
+    private Score scoreContent(
+            ContentTitleMatchingFields subject,
+            ContentTitleMatchingFields suggestion,
+            ResultDescription desc) {
         Score score = Score.nullScore();
         if (!Strings.isNullOrEmpty(subject.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
-                desc.appendText("No Title (%s) scored: %s", suggestion.getCanonicalUri(), score);
+                desc.appendText("No Title (%s) scored %s", suggestion.getCanonicalUri(), score);
             } else {
-                score = score(subject, suggestion);
-                desc.appendText("%s (%s) scored: %s", suggestion.getTitle(), suggestion.getCanonicalUri(), score);
+                score = scoreContent(subject, suggestion);
+                desc.appendText("%s (%s) against %s (%s) scored %s",
+                        suggestion.getTitle(),
+                        suggestion.getCanonicalUri(),
+                        subject.getTitle(),
+                        subject.getCanonicalUri(),
+                        score
+                );
             }
         }
         return score;
     }
 
 
-    public Score score(Item subject, Content suggestion) {
+    private Score scoreContent(ContentTitleMatchingFields subject, ContentTitleMatchingFields suggestion) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 
@@ -495,7 +535,9 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         private Score scoreOnPerfectMatch = DEFAULT_SCORE_ON_PERFECT_MATCH;
         private Score scoreOnPartialMatch = DEFAULT_SCORE_ON_PARTIAL_MATCH;
         private Score scoreOnMismatch = DEFAULT_SCORE_ON_MISMATCH;
+        private boolean checkContainersForAllPublishers = DEFAULT_CHECK_CONTAINERS_FOR_ALL_PUBLISHERS;
         private ContentResolver contentResolver;
+        private int containerCacheDuration = DEFAULT_CONTAINER_CACHE_DURATION; //seconds
 
         private Builder() {
         }
@@ -515,13 +557,55 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             return this;
         }
 
+        public Builder withCheckContainersForAllPublishers(boolean checkContainersForAllPublishers) {
+            this.checkContainersForAllPublishers = checkContainersForAllPublishers;
+            return this;
+        }
+
         public Builder withContentResolver(ContentResolver contentResolver) {
             this.contentResolver = contentResolver;
             return this;
         }
 
+        public Builder withContainerCacheDuration(int seconds) {
+            this.containerCacheDuration = seconds;
+            return this;
+        }
+
         public BarbTitleMatchingItemScorer build() {
             return new BarbTitleMatchingItemScorer(this);
+        }
+    }
+
+
+    // Mainly used so that we only cache necessary fields for containers
+    private class ContentTitleMatchingFields {
+        private final String canonicalUri;
+        private final String title;
+        private final Publisher publisher;
+        private final Integer year;
+
+        public ContentTitleMatchingFields(Content content) {
+            this.canonicalUri = content.getCanonicalUri();
+            this.title = content.getTitle();
+            this.publisher = content.getPublisher();
+            this.year = content.getYear();
+        }
+
+        public String getCanonicalUri() {
+            return canonicalUri;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public Publisher getPublisher() {
+            return publisher;
+        }
+
+        public Integer getYear() {
+            return year;
         }
     }
 }

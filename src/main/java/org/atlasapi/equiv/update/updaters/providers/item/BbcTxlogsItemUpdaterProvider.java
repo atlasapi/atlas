@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer;
@@ -26,12 +26,9 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.Duration;
 
-import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.minimumDuration;
+import java.util.Set;
 
 public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
@@ -62,15 +59,26 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         Score.ZERO,
                                         false
                                 ),
-                                new BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(
-                                        dependencies.getScheduleResolver(),
-                                        dependencies.getChannelResolver(),
-                                        targetPublishers,
-                                        Duration.standardMinutes(10),
-                                        minimumDuration(Duration.standardMinutes(5)),
-                                        Score.valueOf(3.0),
-                                        Score.nullScore()
-                                ),
+                                BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer.builder()
+                                        .withScheduleResolver(dependencies.getScheduleResolver())
+                                        .withChannelResolver(dependencies.getChannelResolver())
+                                        .withSupportedPublishers(targetPublishers)
+                                        .withScheduleWindow(Duration.standardHours(1))
+                                        .withBroadcastFlexibility(Duration.standardMinutes(10))
+                                        .withShortBroadcastFlexibility(Duration.standardMinutes(10))
+                                        .withShortBroadcastMaxDuration(Duration.standardMinutes(10))
+                                        .withScoreOnMatch(Score.valueOf(3.0))
+                                        .withTitleMatchingScorer(
+                                                BarbTitleMatchingItemScorer.builder()
+                                                        .withContentResolver(dependencies.getContentResolver())
+                                                        .withScoreOnMismatch(Score.nullScore())
+                                                        .withScoreOnPartialMatch(Score.nullScore())
+                                                        .withScoreOnPerfectMatch(Score.ONE)
+                                                        .withContainerCacheDuration(60)
+                                                        .withCheckContainersForAllPublishers(true)
+                                                        .build()
+                                        )
+                                        .build(),
                                 new BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer(
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
@@ -92,6 +100,8 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         .withScoreOnPerfectMatch(Score.valueOf(2.0))
                                         .withScoreOnPartialMatch(Score.ONE)
                                         .withScoreOnMismatch(Score.ZERO)
+                                        .withContainerCacheDuration(60)
+                                        .withCheckContainersForAllPublishers(false)
                                         .build(),
                                 DescriptionMatchingScorer.makeScorer()
                         )

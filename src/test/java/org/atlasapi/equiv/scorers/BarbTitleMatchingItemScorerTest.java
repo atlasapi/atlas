@@ -14,6 +14,7 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,12 +29,39 @@ public class BarbTitleMatchingItemScorerTest {
 
     private final ContentResolver contentResolver = mock(ContentResolver.class);
 
-    private final BarbTitleMatchingItemScorer scorer = BarbTitleMatchingItemScorer.builder()
-            .withScoreOnPerfectMatch(scoreOnMatch)
-            .withScoreOnPartialMatch(scoreOnPartialMatch)
-            .withScoreOnMismatch(scoreOnMismatch)
-            .withContentResolver(contentResolver)
-            .build();
+    private BarbTitleMatchingItemScorer scorer;
+    private BarbTitleMatchingItemScorer cachedScorer;
+    private BarbTitleMatchingItemScorer allContainerCheckingScorer;
+
+    @Before
+    public void setUp() throws Exception {
+        scorer = BarbTitleMatchingItemScorer.builder()
+                .withScoreOnPerfectMatch(scoreOnMatch)
+                .withScoreOnPartialMatch(scoreOnPartialMatch)
+                .withScoreOnMismatch(scoreOnMismatch)
+                .withContentResolver(contentResolver)
+                .withContainerCacheDuration(0) //caching will break some tests due to reusing the same brand uri
+                .withCheckContainersForAllPublishers(false)
+                .build();
+
+        cachedScorer = BarbTitleMatchingItemScorer.builder()
+                .withScoreOnPerfectMatch(scoreOnMatch)
+                .withScoreOnPartialMatch(scoreOnPartialMatch)
+                .withScoreOnMismatch(scoreOnMismatch)
+                .withContentResolver(contentResolver)
+                .withContainerCacheDuration(60)
+                .withCheckContainersForAllPublishers(false)
+                .build();
+
+        allContainerCheckingScorer = BarbTitleMatchingItemScorer.builder()
+                .withScoreOnPerfectMatch(scoreOnMatch)
+                .withScoreOnPartialMatch(scoreOnPartialMatch)
+                .withScoreOnMismatch(scoreOnMismatch)
+                .withContentResolver(contentResolver)
+                .withContainerCacheDuration(0) //caching will break some tests due to reusing the same brand uri
+                .withCheckContainersForAllPublishers(true)
+                .build();
+    }
 
     @Test
     public void testBbcTxlogCustomRuleExamples() {
@@ -75,6 +103,10 @@ public class BarbTitleMatchingItemScorerTest {
     }
 
     private Score score(Item subject, Item candidate) {
+        return score(subject, candidate, scorer);
+    }
+
+    private Score score(Item subject, Item candidate, BarbTitleMatchingItemScorer scorer) {
         ScoredCandidates<Item> scoredCandidates = scorer.score(
                 subject,
                 ImmutableSet.of(candidate),
@@ -115,6 +147,36 @@ public class BarbTitleMatchingItemScorerTest {
         nitroEpisode.setPublisher(Publisher.BBC_NITRO);
         nitroEpisode.setParentRef(ParentRef.parentRefFrom(nitroBrand));
         return nitroEpisode;
+    }
+
+    @Test
+    public void testContainersAreCached() {
+        Item txlog = txlog("t1");
+        Brand nitroBrand = nitroBrand("t1", "1");
+        Episode nitroEpisode = nitroEpisode("t2", nitroBrand);
+        setUpContentResolving(nitroBrand);
+        assertThat(score(txlog, nitroEpisode), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog), is(scoreOnMatch));
+        assertThat(score(txlog, nitroEpisode, cachedScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog, cachedScorer), is(scoreOnMatch));
+        nitroBrand = nitroBrand("t3", "1");
+        setUpContentResolving(nitroBrand);
+        assertThat(score(txlog, nitroEpisode), is(scoreOnMismatch));
+        assertThat(score(nitroEpisode, txlog), is(scoreOnMismatch));
+        assertThat(score(txlog, nitroEpisode, cachedScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog, cachedScorer), is(scoreOnMatch));
+    }
+
+    @Test
+    public void testContainersFromAllPublishersAreConsideredIfSpecified() {
+        Brand nitroBrand = nitroBrand("t1", "1");
+        Episode nitroEpisode = nitroEpisode("t2", nitroBrand);
+        Brand nitroBrand2 = nitroBrand("t1", "2");
+        Episode nitroEpisode2 = nitroEpisode("t3", nitroBrand2);
+        setUpContentResolving(nitroBrand);
+        setUpContentResolving(nitroBrand2);
+        assertThat(score(nitroEpisode, nitroEpisode2, allContainerCheckingScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode2, nitroEpisode, allContainerCheckingScorer), is(scoreOnMatch));
     }
 
 }

@@ -26,8 +26,6 @@ import org.joda.time.Duration;
 
 import java.util.Set;
 
-import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.minimumDuration;
-
 public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
 
@@ -47,15 +45,26 @@ public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpd
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
-                        new BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer(
-                                dependencies.getScheduleResolver(),
-                                dependencies.getChannelResolver(),
-                                targetPublishers,
-                                Duration.standardMinutes(10),
-                                minimumDuration(Duration.standardMinutes(5)),
-                                Score.valueOf(3.0),
-                                Score.nullScore()
-                        )
+                        BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer.builder()
+                                .withScheduleResolver(dependencies.getScheduleResolver())
+                                .withChannelResolver(dependencies.getChannelResolver())
+                                .withSupportedPublishers(targetPublishers)
+                                .withScheduleWindow(Duration.standardHours(1))
+                                .withBroadcastFlexibility(Duration.standardMinutes(10))
+                                .withShortBroadcastFlexibility(Duration.standardMinutes(10))
+                                .withShortBroadcastMaxDuration(Duration.standardMinutes(10))
+                                .withScoreOnMatch(Score.valueOf(3.0))
+                                .withTitleMatchingScorer(
+                                        BarbTitleMatchingItemScorer.builder()
+                                                .withContentResolver(dependencies.getContentResolver())
+                                                .withScoreOnMismatch(Score.nullScore())
+                                                .withScoreOnPartialMatch(Score.nullScore())
+                                                .withScoreOnPerfectMatch(Score.ONE)
+                                                .withContainerCacheDuration(60)
+                                                .withCheckContainersForAllPublishers(true)
+                                                .build()
+                                )
+                                .build()
                 )
                 .withScorers(
                         ImmutableSet.of(
@@ -64,6 +73,8 @@ public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpd
                                         .withScoreOnPerfectMatch(Score.valueOf(2.0))
                                         .withScoreOnPartialMatch(Score.ONE)
                                         .withScoreOnMismatch(Score.ZERO)
+                                        .withContainerCacheDuration(60)
+                                        .withCheckContainersForAllPublishers(false)
                                         .build(),
                                 DescriptionMatchingScorer.makeScorer()
                         )

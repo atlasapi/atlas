@@ -1,9 +1,11 @@
 package org.atlasapi.equiv.generators.barb;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.stream.MoreCollectors;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
@@ -25,16 +27,16 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -379,9 +381,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             candidatePreviousBlockEnd--;
         }
 
-        if ((subjectPreviousBlockEnd < 0 && candidatePreviousBlockEnd >= 0)
-                || (candidatePreviousBlockEnd < 0 && subjectPreviousBlockEnd >= 0)
-        ) {
+        if ((subjectPreviousBlockEnd < 0 || candidatePreviousBlockEnd < 0)) {
             return Optional.empty();
         }
 
@@ -409,9 +409,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             candidateNextBlockStart++;
         }
 
-        if ((subjectNextBlockStart >= subjectItemArray.length && candidateNextBlockStart < candidateItemArray.length)
-                || (candidateNextBlockStart >= candidateItemArray.length && subjectNextBlockStart < subjectItemArray.length)
-        ) {
+        if (subjectNextBlockStart >= subjectItemArray.length
+            || candidateNextBlockStart >= candidateItemArray.length) {
             return Optional.empty();
         }
 

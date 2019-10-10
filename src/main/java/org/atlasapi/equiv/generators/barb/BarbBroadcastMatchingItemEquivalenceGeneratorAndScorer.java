@@ -43,9 +43,16 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.expand
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQualifyingBroadcast;
 
 /**
- * This is mostly a copy of {@link BroadcastMatchingItemEquivalenceGeneratorAndScorer} class but with some logic
- * stripped out. For certain channels it also generates candidates from additional channels. Highest
- * score is taken for each candidate (as opposed to summing them as per regular broadcast generator)
+ * This is a heavily adapted take on {@link BroadcastMatchingItemEquivalenceGeneratorAndScorer}.
+ * For certain channels it also generates candidates from additional channels e.g. BBC Two England
+ * is a single channel in Nitro but multiple regional channels in TxLogs.
+ *
+ * This generator aims to deal with edge cases where multiple episodes of the same show are broadcast multiple times,
+ * and the schedules of the subject and candidate are offset a slight amount with the end result that the closest
+ * matching broadcast is actually for a different episode of the same show. Since txlog title scoring often uses
+ * the brand titles, this could easily lead to the wrong episodes being equived together. To solve this we try to
+ * identify if the subject and candidate exist as part of such a block of multiple episodes, and if so take the candidate
+ * whose position in its block is the same as the position of the subject within its block.
  */
 public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
     private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
@@ -136,6 +143,12 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         );
     }
 
+    /**
+     * Resolves the subject's schedule and the candidate schedules for the given subject's broadcast; for each candidate
+     * schedule finds the block of similar episodes which contains a broadcast within the specified flexibility to the
+     * subject broadcast. Compares this block with the block containing the subject episode and if the same size will
+     * generate and score the candidate whose position in the block is the same as the subject within its block.
+     */
     private void findMatchesForBroadcast(
             DefaultScoredCandidates.Builder<Item> scores,
             Item subject,
@@ -159,30 +172,36 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                 , ImmutableSet.of(subjectPublisher)
         );
         ScheduleChannel subjectScheduleChannel = subjectSchedule.scheduleChannels().iterator().next();
-        Schedule candidateSchedule = scheduleAround(subjectBroadcast, channelUris, validPublishers);
 
-        List<Item> subjectItemList = subjectScheduleChannel.items();
-        Item[] subjectItemArray = subjectItemList.toArray(new Item[0]);
-        int subjectItemIndex = findItemInArray(subjectItemArray, subjectBroadcast);
+        Item[] subjectItemArray = subjectScheduleChannel.items().toArray(new Item[0]);
+        int subjectItemIndex = findSubjectInSchedule(subjectItemArray, subjectBroadcast);
         if (subjectItemIndex < 0) {
             desc.appendText("Could not find subject item in the schedule");
             desc.finishStage();
             return;
         }
+
+        Schedule candidateSchedule = scheduleAround(subjectBroadcast, channelUris, validPublishers);
         for (ScheduleChannel candidateScheduleChannel : candidateSchedule.scheduleChannels()) {
-            List<Item> candidateItemList = candidateScheduleChannel.items();
-            if (candidateItemList.isEmpty()) {
+            if (candidateScheduleChannel.items().isEmpty()) {
                 continue;
             }
             desc.startStage("Candidate schedule found for " + candidateScheduleChannel.channel().getUri());
-            Item[] candidateItemArray = candidateItemList.toArray(new Item[0]);
-            int candidateItemIndex = findSuitableCandidateInArray(candidateItemArray, subject, subjectBroadcast, nopDesc);
+
+            Item[] candidateItemArray = candidateScheduleChannel.items().toArray(new Item[0]);
+            int candidateItemIndex = findClosestCandidateInSchedule(
+                    candidateItemArray,
+                    subject,
+                    subjectBroadcast,
+                    nopDesc
+            );
             if (candidateItemIndex < 0) {
-                desc.appendText("Could not find any suitable items in the candidate schedule");
+                desc.appendText("Could not find any suitable candidate in the schedule");
                 desc.finishStage();
                 continue;
             }
-            Optional<Item> foundCandidate = findCandidate(
+
+            Optional<Item> foundCandidate = checkBlocksAndDetermineCandidate(
                     subjectItemArray,
                     subjectItemIndex,
                     candidateItemArray,
@@ -204,7 +223,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                         candidateBroadcast.getTransmissionTime(),
                         candidateBroadcast.getTransmissionEndTime()
                 );
-                if (broadcastFilter.test(candidateBroadcast)) {
+                if (candidateBroadcast.isActivelyPublished() && broadcastFilter.test(candidateBroadcast)) {
                     //we want the maximum score for this scorer to be scoreOnMatch, so we update the
                     //score of a candidate instead of adding it up via the usual .addEquivalent()
                     scores.updateEquivalent(candidate, scoreOnMatch);
@@ -241,22 +260,25 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         );
     }
 
-    private int findItemInArray(Item[] items, Broadcast broadcast) {
-        if (items.length <= 0) {
+    /**
+     * Find the Item whose schedule slot has the same start and end time as the subject broadcast.
+     */
+    private int findSubjectInSchedule(Item[] scheduleItems, Broadcast subjectBroadcast) {
+        if (scheduleItems.length <= 0) {
             return -1;
         }
-        int start = items.length / 2; //it's probably around the middle
-        if (itemMatchesBroadcast(items[start], broadcast)) {
+        int start = scheduleItems.length / 2; //it's probably around the middle
+        if (itemMatchesBroadcast(scheduleItems[start], subjectBroadcast)) {
             return start;
         }
         int d = 1;
         int l = start - d;
         int r = start + d;
-        while (l >= 0 || r < items.length) {
-            if (l >= 0 && itemMatchesBroadcast(items[l], broadcast)) {
+        while (l >= 0 || r < scheduleItems.length) {
+            if (l >= 0 && itemMatchesBroadcast(scheduleItems[l], subjectBroadcast)) {
                 return l;
             }
-            if (r < items.length && itemMatchesBroadcast(items[r], broadcast)) {
+            if (r < scheduleItems.length && itemMatchesBroadcast(scheduleItems[r], subjectBroadcast)) {
                 return r;
             }
             d++;
@@ -274,19 +296,24 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         return false;
     }
 
-    private int findSuitableCandidateInArray(
-            Item[] items,
+    /**
+     * Find the Item whose schedule slot start time is closest to the subject broadcast's start time which satisfies
+     * the specified broadcast flexibility and has the same title as the subject as determined by the title matching
+     * scorer.
+     */
+    private int findClosestCandidateInSchedule(
+            Item[] scheduleItems,
             Item subject,
             Broadcast subjectBroadcast,
             ResultDescription desc
     ) {
-        if (items.length <= 0) {
+        if (scheduleItems.length <= 0) {
             return -1;
         }
         int bestCandidateFound = -1;
         Duration shortestDurationOffset = null;
-        for (int i = 0; i < items.length; i++) {
-            Item candidate = items[i];
+        for (int i = 0; i < scheduleItems.length; i++) {
+            Item candidate = scheduleItems[i];
             Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, desc);
             Duration offset;
             if (subjectBroadcast.getTransmissionTime().isAfter(candidateBroadcast.getTransmissionTime())) {
@@ -345,7 +372,13 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         return broadcastFlexibility;
     }
 
-    private Optional<Item> findCandidate(
+    /**
+     * Determines the start and end of the block of similar episodes containing the subject and candidate;
+     * If the block sizes are the same and do not extend past the corresponding list of schedule items the candidate
+     * item is returned that is in the same position within its block as the subject is in its. Otherwise no item is
+     * returned.
+     */
+    private Optional<Item> checkBlocksAndDetermineCandidate(
             Item[] subjectItemArray,
             int subjectItemPosition,
             Item[] candidateItemArray,

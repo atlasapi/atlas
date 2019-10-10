@@ -29,9 +29,11 @@ import org.joda.time.Interval;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BBC;
@@ -116,6 +118,9 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
             when(channelResolver.fromUri(channel.getUri())).thenReturn(Maybe.just(channel));
         }
 
+        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class)))
+                .thenReturn(Score.nullScore());
+
         generator = BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer.builder()
                 .withScheduleResolver(resolver)
                 .withChannelResolver(channelResolver)
@@ -142,57 +147,12 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z"))
         );
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:00:00Z"),
-                        time("2014-03-21T17:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(PA))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item1)),
-                        interval("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_ONE, PA, item1);
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_ONE_CAMBRIDGE, PA, item1);
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_ONE, PUBLISHERS, item2);
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_ONE_CAMBRIDGE, PUBLISHERS);
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:00:00Z"),
-                        time("2014-03-21T17:00:00Z"),
-                        ImmutableSet.of(BBC_ONE_CAMBRIDGE), ImmutableSet.of(PA))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE_CAMBRIDGE, ImmutableList.of(item1)),
-                        interval("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z")
-                )
-        );
-
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:00:00Z"),
-                        time("2014-03-21T17:00:00Z"),
-                        ImmutableSet.of(BBC_ONE),
-                        PUBLISHERS)
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
-                        interval("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z")
-                )
-        );
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:00:00Z"),
-                        time("2014-03-21T17:00:00Z"),
-                        ImmutableSet.of(BBC_ONE_CAMBRIDGE),
-                        PUBLISHERS
-                )
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE_CAMBRIDGE, ImmutableList.of()),
-                        interval("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z")
-                )
-        );
-
-        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class))).thenReturn(Score.ONE);
+        setupTitleScoring(item1, item2, SCORE_ON_MATCH);
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
@@ -256,32 +216,13 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:11:00Z"), time("2014-03-21T15:50:00Z"))
         );
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(PA))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item1)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, PA, item1);
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, BBC, item2);
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
-
-        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class))).thenReturn(Score.ONE);
-
+        setupTitleScoring(item1, item2, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item3, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item4, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item5, SCORE_ON_MATCH);
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 item1,
@@ -294,17 +235,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertEquals(1, scoreMap.size());
         assertEquals(SCORE_ON_MATCH, scoreMap.get(item2));
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item3)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, BBC, item3);
 
         equivalents = generator.generate(
                 item1,
@@ -315,17 +246,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         scoreMap = equivalents.candidates();
         assertTrue(scoreMap.isEmpty());
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item4)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, BBC, item4);
 
         equivalents = generator.generate(
                 item1,
@@ -338,17 +259,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertEquals(1, scoreMap.size());
         assertEquals(SCORE_ON_MATCH, scoreMap.get(item4));
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item5)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, BBC, item5);
 
         equivalents = generator.generate(
                 item1,
@@ -410,31 +321,13 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T15:39:00Z"))
         );
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(PA))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item1)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, PA, item1);
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, BBC, item2);
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
-
-        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class))).thenReturn(Score.ONE);
+        setupTitleScoring(item1, item2, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item3, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item4, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item5, SCORE_ON_MATCH);
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
@@ -448,17 +341,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertEquals(1, scoreMap.size());
         assertEquals(SCORE_ON_MATCH, scoreMap.get(item2));
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item3)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, BBC, item3);
 
         equivalents = generator.generate(
                 item1,
@@ -469,17 +352,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         scoreMap = equivalents.candidates();
         assertTrue(scoreMap.isEmpty());
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item4)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, BBC, item4);
 
         equivalents = generator.generate(
                 item1,
@@ -492,17 +365,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertEquals(1, scoreMap.size());
         assertEquals(SCORE_ON_MATCH, scoreMap.get(item4));
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T16:00:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item5)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T16:00:00Z", BBC_ONE, BBC, item5);
 
         equivalents = generator.generate(
                 item1,
@@ -564,31 +427,13 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:03:00Z"), time("2014-03-21T15:05:00Z"))
         );
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(PA))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item1)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, PA, item1);
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, BBC, item2);
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
-
-        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class))).thenReturn(Score.ONE);
+        setupTitleScoring(item1, item2, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item3, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item4, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item5, SCORE_ON_MATCH);
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
@@ -602,17 +447,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertEquals(1, scoreMap.size());
         assertEquals(SCORE_ON_MATCH, scoreMap.get(item2));
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item3)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, BBC, item3);
 
         equivalents = generator.generate(
                 item1,
@@ -623,17 +458,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         scoreMap = equivalents.candidates();
         assertTrue(scoreMap.isEmpty());
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item4)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, BBC, item4);
 
         equivalents = generator.generate(
                 item1,
@@ -646,17 +471,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertEquals(1, scoreMap.size());
         assertEquals(SCORE_ON_MATCH, scoreMap.get(item4));
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item5)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, BBC, item5);
 
         equivalents = generator.generate(
                 item1,
@@ -718,31 +533,13 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T15:08:00Z"))
         );
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(PA))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item1)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, PA, item1);
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, BBC, item2);
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item2)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
-
-        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class))).thenReturn(Score.ONE);
+        setupTitleScoring(item1, item2, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item3, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item4, SCORE_ON_MATCH);
+        setupTitleScoring(item1, item5, SCORE_ON_MATCH);
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
@@ -756,17 +553,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertEquals(1, scoreMap.size());
         assertEquals(SCORE_ON_MATCH, scoreMap.get(item2));
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item3)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, BBC, item3);
 
         equivalents = generator.generate(
                 item1,
@@ -777,17 +564,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         scoreMap = equivalents.candidates();
         assertTrue(scoreMap.isEmpty());
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item4)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, BBC, item4);
 
         equivalents = generator.generate(
                 item1,
@@ -800,17 +577,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertEquals(1, scoreMap.size());
         assertEquals(SCORE_ON_MATCH, scoreMap.get(item4));
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:50:00Z"),
-                        time("2014-03-21T15:15:00Z"),
-                        ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_ONE, ImmutableList.of(item5)),
-                        interval("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:50:00Z", "2014-03-21T15:15:00Z", BBC_ONE, BBC, item5);
 
         equivalents = generator.generate(
                 item1,
@@ -820,26 +587,6 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
 
         scoreMap = equivalents.candidates();
         assertTrue(scoreMap.isEmpty());
-    }
-
-    private Interval interval(String startDate, String endDate) {
-        return new Interval(time(startDate), time(endDate));
-    }
-
-    private DateTime time(String date) {
-        return new DateTime(date);
-    }
-
-    private Episode episodeWithBroadcasts(String episodeId, Publisher publisher, Broadcast... broadcasts) {
-        Episode item = new Episode(episodeId + "Uri", episodeId + "Curie", publisher);
-        Version version = new Version();
-        version.setCanonicalUri(episodeId + "Version");
-        version.setProvider(publisher);
-        for (Broadcast broadcast : broadcasts) {
-            version.addBroadcast(broadcast);
-        }
-        item.addVersion(version);
-        return item;
     }
 
     @Test
@@ -861,17 +608,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 new Broadcast(BBC_TWO_EAST_TXLOG.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z"))
         );
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:00:00Z"),
-                        time("2014-03-21T17:00:00Z"),
-                        ImmutableSet.of(BBC_TWO_ENGLAND), ImmutableSet.of(BBC_NITRO))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_TWO_ENGLAND, ImmutableList.of(nitroItem)),
-                        interval("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_TWO_ENGLAND, BBC_NITRO, nitroItem);
 
         when(
                 resolver.unmergedSchedule(
@@ -886,14 +623,25 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         ).thenReturn(
                 Schedule.fromChannelMap(
                         ImmutableMap.of(
-                                BBC_TWO_SOUTH_TXLOG, ImmutableList.of(txlogItem1),
-                                BBC_TWO_EAST_TXLOG, ImmutableList.of(txlogItem2)
+                                BBC_TWO_SOUTH_TXLOG, ImmutableList.of(
+                                        fillerScheduleStartEpisode(BARB_TRANSMISSIONS, BBC_TWO_SOUTH_TXLOG),
+                                        txlogItem1,
+                                        fillerScheduleEndEpisode(BARB_TRANSMISSIONS, BBC_TWO_SOUTH_TXLOG)
+                                ),
+                                BBC_TWO_EAST_TXLOG, ImmutableList.of(
+                                        fillerScheduleStartEpisode(BARB_TRANSMISSIONS, BBC_TWO_EAST_TXLOG),
+                                        txlogItem2,
+                                        fillerScheduleEndEpisode(BARB_TRANSMISSIONS, BBC_TWO_EAST_TXLOG)
+                                )
                         ),
                         interval("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z")
                 )
         );
 
-        when(titleMatchingScorer.score(any(Item.class), any(Item.class), any(ResultDescription.class))).thenReturn(Score.ONE);
+        setupTitleScoring(nitroItem, txlogItem1, SCORE_ON_MATCH);
+        setupTitleScoring(nitroItem, txlogItem2, SCORE_ON_MATCH);
+        setupTitleScoring(txlogItem1, nitroItem, SCORE_ON_MATCH);
+        setupTitleScoring(txlogItem2, nitroItem, SCORE_ON_MATCH);
 
         ScoredCandidates<Item> equivalents = generator.generate(
                 nitroItem,
@@ -907,17 +655,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertThat(scoreMap.get(txlogItem1), is(SCORE_ON_MATCH));
         assertThat(scoreMap.get(txlogItem2), is(SCORE_ON_MATCH));
 
-        when(
-                resolver.unmergedSchedule(
-                        time("2014-03-21T14:00:00Z"),
-                        time("2014-03-21T17:00:00Z"),
-                        ImmutableSet.of(BBC_TWO_SOUTH_TXLOG), ImmutableSet.of(BARB_TRANSMISSIONS))
-        ).thenReturn(
-                Schedule.fromChannelMap(
-                        ImmutableMap.of(BBC_TWO_SOUTH_TXLOG, ImmutableList.of(txlogItem1)),
-                        interval("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z")
-                )
-        );
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_TWO_SOUTH_TXLOG, BARB_TRANSMISSIONS, txlogItem1);
 
         when(
                 resolver.unmergedSchedule(
@@ -929,7 +667,11 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         ).thenReturn(
                 Schedule.fromChannelMap(
                         ImmutableMap.of(
-                                BBC_TWO_ENGLAND, ImmutableList.of(nitroItem)
+                                BBC_TWO_ENGLAND, ImmutableList.of(
+                                        fillerScheduleStartEpisode(BBC_NITRO, BBC_TWO_ENGLAND),
+                                        nitroItem,
+                                        fillerScheduleEndEpisode(BBC_NITRO, BBC_TWO_ENGLAND)
+                                )
                         ),
                         interval("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z")
                 )
@@ -1120,9 +862,81 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         assertEquals(SCORE_ON_MATCH, scoreMap.get(scored));
     }
 
+    private void setupScheduleResolving(
+            String start,
+            String end,
+            Channel channel,
+            Publisher publisher,
+            Item... items
+    ) {
+        setupScheduleResolving(start, end, channel, ImmutableSet.of(publisher), items);
+    }
+
+    private void setupScheduleResolving(
+            String start,
+            String end,
+            Channel channel,
+            Collection<Publisher> publishers,
+            Item... items
+    ) {
+        Publisher firstPublisher = publishers.iterator().next();
+        List<Item> itemList = ImmutableList.<Item>builder()
+                .add(fillerScheduleStartEpisode(firstPublisher, channel))
+                .addAll(ImmutableList.copyOf(items))
+                .add(fillerScheduleEndEpisode(firstPublisher, channel))
+                .build();
+        when(
+                resolver.unmergedSchedule(
+                        time(start),
+                        time(end),
+                        ImmutableSet.of(channel), ImmutableSet.copyOf(publishers))
+        ).thenReturn(
+                Schedule.fromChannelMap(
+                        ImmutableMap.of(channel, itemList),
+                        interval(start, end)
+                )
+        );
+    }
+
     private void setupTitleScoring(Item item1, Item item2, Score score) {
         when(titleMatchingScorer.score(argThat(is(item1)), argThat(is(item2)), any(ResultDescription.class)))
                 .thenReturn(score);
+    }
+
+    private Interval interval(String startDate, String endDate) {
+        return new Interval(time(startDate), time(endDate));
+    }
+
+    private DateTime time(String date) {
+        return new DateTime(date);
+    }
+
+    private Episode episodeWithBroadcasts(String episodeId, Publisher publisher, Broadcast... broadcasts) {
+        Episode item = new Episode(episodeId + "Uri", episodeId + "Curie", publisher);
+        Version version = new Version();
+        version.setCanonicalUri(episodeId + "Version");
+        version.setProvider(publisher);
+        for (Broadcast broadcast : broadcasts) {
+            version.addBroadcast(broadcast);
+        }
+        item.addVersion(version);
+        return item;
+    }
+
+    private Episode fillerScheduleStartEpisode(Publisher publisher, Channel channel) {
+        return fillerEpisode(publisher, channel, "1111-01-01T01:00:00Z", "1111-01-01T02:00:00Z");
+    }
+
+    private Episode fillerScheduleEndEpisode(Publisher publisher, Channel channel) {
+        return fillerEpisode(publisher, channel, "3333-01-01T01:00:00Z", "3333-01-01T02:00:00Z");
+    }
+
+    private Episode fillerEpisode(Publisher publisher, Channel channel, String start, String end) {
+        return episodeWithBroadcasts(
+                UUID.randomUUID().toString(),
+                publisher,
+                new Broadcast(channel.getUri(), time(start), time(end))
+        );
     }
 
 }

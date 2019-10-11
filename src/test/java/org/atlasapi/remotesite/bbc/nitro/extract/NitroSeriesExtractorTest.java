@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
+import java.math.BigInteger;
+
 import com.google.common.collect.Iterables;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
@@ -8,10 +10,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.metabroadcast.atlas.glycerin.model.Brand;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Series;
 import com.metabroadcast.common.time.SystemClock;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class NitroSeriesExtractorTest {
 
@@ -33,6 +37,32 @@ public class NitroSeriesExtractorTest {
 
         assertEquals("http://ichef.bbci.co.uk/images/ic/1024x576/p028s846.png", extractedGenericImage.getImage());
         assertEquals(ImageType.GENERIC_IMAGE_CONTENT_ORIGINATOR, genericImage.getType());
+    }
+
+    @Test
+    public void testSeriesNumber() {
+        Series series = new Series();
+        series.setPid("b04t74m8");
+        series.setTitle("Series 11");
+
+        org.atlasapi.media.entity.Series atlaseries = extractor.extract(series);
+
+        assertEquals((long) 11, (long) atlaseries.getSeriesNumber());
+    }
+
+    @Test
+    public void testSeriesNumberNotFromPosition() {
+        Series series = new Series();
+        series.setPid("b04t74m8");
+        PidReference ref = new PidReference();
+        ref.setPosition(BigInteger.valueOf(11));
+        series.setSeriesOf(ref);
+
+        org.atlasapi.media.entity.Series atlaseries = extractor.extract(series);
+
+        assertNull(
+                "Series number should not be coming from position (ENG-508)",
+                atlaseries.getSeriesNumber());
     }
 
     private Series audioSeries() {

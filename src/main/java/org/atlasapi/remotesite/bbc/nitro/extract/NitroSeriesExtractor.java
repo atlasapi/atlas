@@ -12,6 +12,8 @@ import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A {@link NitroContentExtractor} for extracting
@@ -66,17 +68,43 @@ public class NitroSeriesExtractor
     @Override
     protected void extractAdditionalFields(Series source, org.atlasapi.media.entity.Series content,
             DateTime now) {
+        //Dont use source.getSeriesOf().getPosition(), as per ENG-508
+        Integer seriesNum = getSeriesNumberFromTitle(source.getTitle());
+        if (seriesNum != null) {
+            content.withSeriesNumber(seriesNum);
+        }
+
         if (source.getSeriesOf() != null) {
-            BigInteger position = source.getSeriesOf().getPosition();
-            if (position != null) {
-                content.withSeriesNumber(position.intValue());
-            }
             content.setParentRef(new ParentRef(BbcFeeds.nitroUriForPid(source.getSeriesOf()
                     .getPid())));
         }
         BigInteger expectedChildCount = source.getExpectedChildCount();
         if (expectedChildCount != null) {
             content.setTotalEpisodes(expectedChildCount.intValue());
+        }
+    }
+
+    // Pattern based on data pulled from nitro records, not confirmed with clients. Series titles
+    // with any characters after the series number are not matched to avoid creation of bad data.
+    // i.e. match "Series 11", but do not match "Series 11: Reversions"
+    private final Pattern seriesTitlePattern = Pattern.compile("^[Ss](eries|eason) ([0-9]{1,3})$");
+
+    @Nullable
+    private Integer getSeriesNumberFromTitle(String title) {
+
+        if (title == null) {
+            return null;
+        }
+
+        Matcher matcher = seriesTitlePattern.matcher(title);
+        if (matcher.find()) {
+            try {
+                return Integer.parseInt(matcher.group(2));
+            } catch (Exception e) {
+                return null;
+            }
+        } else {
+            return null;
         }
     }
 

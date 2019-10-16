@@ -77,7 +77,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingItemScorer(), // Scores 2 on exact match
+                                new TitleMatchingItemScorer(), // Scores 2 on exact match.
                                 //DescriptionMatchingScorer.makeScorer(), TODO sometimes broken ATM
                                 new SequenceItemScorer(Score.ONE),
                                 //matches original behaviour of FilmEquivalenceGeneratorAndScorer

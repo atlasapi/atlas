@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -390,25 +391,23 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
 
         int subjectPreviousBlockEnd = subjectItemPosition - 1;
         while (subjectPreviousBlockEnd >= 0
-                && isRealPositiveScore(
-                titleMatchingScorer.score(
+                && similarEpisodes(
                         subject,
                         subjectItemArray[subjectPreviousBlockEnd],
                         desc
                 )
-        )) {
+        ) {
             subjectPreviousBlockEnd--;
         }
 
         int candidatePreviousBlockEnd = candidateItemPosition - 1;
         while (candidatePreviousBlockEnd >= 0
-                && isRealPositiveScore(
-                titleMatchingScorer.score(
+                && similarEpisodes(
                         possibleCandidate,
                         candidateItemArray[candidatePreviousBlockEnd],
                         desc
                 )
-        )) {
+        ) {
             candidatePreviousBlockEnd--;
         }
 
@@ -418,25 +417,23 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
 
         int subjectNextBlockStart = subjectItemPosition + 1;
         while (subjectNextBlockStart < subjectItemArray.length
-                && isRealPositiveScore(
-                titleMatchingScorer.score(
+                && similarEpisodes(
                         subject,
                         subjectItemArray[subjectNextBlockStart],
                         desc
                 )
-        )) {
+        ) {
             subjectNextBlockStart++;
         }
 
         int candidateNextBlockStart = candidateItemPosition + 1;
         while (candidateNextBlockStart < candidateItemArray.length
-                && isRealPositiveScore(
-                titleMatchingScorer.score(
+                && similarEpisodes(
                         possibleCandidate,
                         candidateItemArray[candidateNextBlockStart],
                         desc
                 )
-        )) {
+        ) {
             candidateNextBlockStart++;
         }
 
@@ -462,6 +459,18 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         return score.isRealScore() && score.asDouble() > 0D;
     }
 
+    private boolean similarEpisodes(Item subject, Item candidate, ResultDescription desc) {
+        if (subject.getContainer() != null || candidate.getContainer() != null) {
+            return Objects.equals(subject.getContainer(), candidate.getContainer());
+        }
+        return isRealPositiveScore(
+                titleMatchingScorer.score(
+                        subject,
+                        candidate,
+                        desc
+                )
+        );
+    }
 
     @Override
     public String toString() {

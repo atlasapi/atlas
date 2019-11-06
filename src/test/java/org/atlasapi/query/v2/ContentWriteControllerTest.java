@@ -86,6 +86,7 @@ public class ContentWriteControllerTest {
     private @Mock LookupEntryStore lookupEntryStore;
     private @Mock ContentResolver contentResolver;
     private @Mock ContentWriter contentWriter;
+    private @Mock ContentWriter noEquivalenceWritingContentWriter;
     private @Mock EquivalenceBreaker equivalenceBreaker;
 
     private @Mock HttpServletRequest request;
@@ -157,6 +158,7 @@ public class ContentWriteControllerTest {
                 lookupEntryStore,
                 contentResolver,
                 contentWriter,
+                noEquivalenceWritingContentWriter,
                 equivalenceBreaker,
                 oldContentDeactivator
         );

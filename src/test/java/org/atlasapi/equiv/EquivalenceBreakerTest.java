@@ -105,12 +105,16 @@ public class EquivalenceBreakerTest {
                         .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
                         .build());
 
-        ImmutableSet<String> allEquivs = EXAMPLE_ITEM_LOOKUP.directEquivalents()
+        ImmutableSet<String> directEquivs = EXAMPLE_ITEM_LOOKUP.directEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(MoreCollectors.toImmutableSet());
+        ImmutableSet<String> explicitEquivs = EXAMPLE_ITEM_LOOKUP.explicitEquivalents()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
 
-        equivalenceBreaker.removeFromSet(EXAMPLE_ITEM, EXAMPLE_ITEM_LOOKUP, allEquivs);
+        equivalenceBreaker.removeFromSet(EXAMPLE_ITEM, EXAMPLE_ITEM_LOOKUP, directEquivs, explicitEquivs);
 
         verify(lookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))),
                 argThat(is(ImmutableList.of())), argThat(is(Publisher.all())));

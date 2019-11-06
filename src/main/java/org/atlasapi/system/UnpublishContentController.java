@@ -94,7 +94,9 @@ public class UnpublishContentController {
         Optional<Identified> identified = resolveContent(lookupEntry);
         Described described = validatePublisher(publisher, identified);
 
-        removeItemFromEquivSet(described, lookupEntry);
+        if(!status){
+            removeEquivSetOfItem(described, lookupEntry);
+        }
         described.setActivelyPublished(status);
         writeUpdate(described);
     }
@@ -151,14 +153,19 @@ public class UnpublishContentController {
     /**
      * This will take an item, and remove all direct equivalences from it
      */
-    private void removeItemFromEquivSet(Described described, LookupEntry lookupEntry){
+    private void removeEquivSetOfItem(Described described, LookupEntry lookupEntry){
 
-        ImmutableSet<String> equivsToRemove = lookupEntry.directEquivalents()
+        ImmutableSet<String> allDirectEquivs = lookupEntry.directEquivalents()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
 
-        equivalenceBreaker.removeFromSet(described, lookupEntry, equivsToRemove);
+        ImmutableSet<String> allExplicitEquivs = lookupEntry.explicitEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(MoreCollectors.toImmutableSet());
+
+        equivalenceBreaker.removeFromSet(described, lookupEntry, allDirectEquivs, allExplicitEquivs);
     }
 
     private void writeUpdate(Described described) {

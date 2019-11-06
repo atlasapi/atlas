@@ -101,6 +101,7 @@ import org.atlasapi.output.simple.TopicModelSimplifier;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.EquivalenceContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
@@ -163,6 +164,7 @@ import tva.metadata._2010.TVAMainType;
 import javax.xml.bind.JAXBElement;
 
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
+import static org.atlasapi.persistence.MongoContentPersistenceModule.NO_EQUIVALENCE_WRITING_CONTENT_WRITER;
 
 @Configuration
 @Import({ WatermarkModule.class, QueryExecutorModule.class })
@@ -176,6 +178,7 @@ public class QueryWebModule {
     @Autowired private ContentGroupWriter contentGroupWriter;
     @Autowired private ContentGroupResolver contentGroupResolver;
     @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private EquivalenceContentWriter contentWriter;
+    @Autowired @Qualifier(NO_EQUIVALENCE_WRITING_CONTENT_WRITER) private ContentWriter noEquivalenceWritingContentWriter;
     @Autowired private LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     @Autowired private ScheduleWriter scheduleWriter;
     @Autowired private ContentResolver contentResolver;
@@ -417,6 +420,7 @@ public class QueryWebModule {
                 lookupStore,
                 contentResolver,
                 contentWriter,
+                noEquivalenceWritingContentWriter,
                 EquivalenceBreaker.create(
                         contentResolver,
                         entryStore,

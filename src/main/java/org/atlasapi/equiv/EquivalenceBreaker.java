@@ -16,6 +16,8 @@ import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.collect.MoreSets;
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -102,11 +104,16 @@ public class EquivalenceBreaker {
      *
      * @param source The item we want to remove equivalences from
      * @param sourceLE The lookup record of the source item
-     * @param directEquivUrisToRemove All the equivalence uris we want to remove. If source uri is
-     *                                included, this method will ignore it.
+     * @param directEquivUrisToRemove The direct equivalence uris we want to remove.
+     *                                If source uri is included, this method will ignore it.
+     * @param explicitEquivUrisToRemove The explicit equivalence uris we want to remove.
+     *                                If source uri is included, this method will ignore it.
      */
-    public void removeFromSet(Described source, LookupEntry sourceLE, Set<String> directEquivUrisToRemove){
-
+    public void removeFromSet(Described source,
+            LookupEntry sourceLE,
+            Set<String> directEquivUrisToRemove,
+            Set<String> explicitEquivUrisToRemove
+    ){
         //make sure to not remove yourself.
         directEquivUrisToRemove =
                 Sets.difference(directEquivUrisToRemove, ImmutableSet.of(source.getCanonicalUri()));
@@ -119,11 +126,11 @@ public class EquivalenceBreaker {
         Sets.SetView<String> remainingDirectEquivalences =
                 Sets.difference(existingDirectEquivUris, directEquivUrisToRemove);
 
-        ResolvedContent resolvedEquivList =
+        ResolvedContent resolvedDirectEquivList =
                 contentResolver.findByCanonicalUris(remainingDirectEquivalences);
-        List<ContentRef> newDirectEquivs = ImmutableList.of();
-        if (resolvedEquivList != null) {
-            newDirectEquivs = resolvedEquivList
+        List<ContentRef> newEquivs = ImmutableList.of();
+        if (resolvedDirectEquivList != null) {
+            newEquivs = resolvedDirectEquivList
                     .getAllResolvedResults()
                     .stream()
                     .filter(Described.class::isInstance)
@@ -132,6 +139,34 @@ public class EquivalenceBreaker {
                     .collect(Collectors.toList());
         }
 
-        lookupWriter.writeLookup(ContentRef.valueOf(source), newDirectEquivs, Publisher.all());
+        if(!explicitEquivUrisToRemove.isEmpty()){
+            explicitEquivUrisToRemove =
+                    Sets.difference(explicitEquivUrisToRemove, ImmutableSet.of(source.getCanonicalUri()));
+            Set<String> existingExplicitEquivUris = sourceLE.explicitEquivalents()
+                    .stream()
+                    .map(LookupRef::uri)
+                    .collect(Collectors.toSet());
+            Sets.SetView<String> remainingExplicitEquivUris =
+                    Sets.difference(existingExplicitEquivUris, explicitEquivUrisToRemove);
+            ResolvedContent resolvedExplicitEquivList =
+                    contentResolver.findByCanonicalUris(remainingExplicitEquivUris);
+            if (resolvedExplicitEquivList != null) {
+                newEquivs.addAll(resolvedExplicitEquivList.getAllResolvedResults()
+                        .stream()
+                        .filter(Described.class::isInstance)
+                        .map(Described.class::cast)
+                        .map(ContentRef.FROM_CONTENT::apply)
+                        .collect(Collectors.toList()));
+            }
+        }
+
+        lookupWriter.writeLookup(ContentRef.valueOf(source), newEquivs, Publisher.all());
+    }
+
+    public void removeFromSet(Described source,
+            LookupEntry sourceLE,
+            Set<String> directEquivUrisToRemove
+    ){
+        removeFromSet(source, sourceLE, directEquivUrisToRemove, Sets.newHashSet());
     }
 }

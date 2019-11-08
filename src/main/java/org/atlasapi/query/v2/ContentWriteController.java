@@ -733,13 +733,14 @@ public class ContentWriteController {
                 noEquivalenceWritingContentWriter.createOrUpdate((Container) described);
             }
         }
-
-        // write back to DB
-        if (described instanceof Item) {
-            contentWriter.createOrUpdate((Item) described);
-        }
-        if (described instanceof Container) {
-            contentWriter.createOrUpdate((Container) described);
+        else {
+            // write back to DB
+            if (described instanceof Item) {
+                contentWriter.createOrUpdate((Item) described);
+            }
+            if (described instanceof Container) {
+                contentWriter.createOrUpdate((Container) described);
+            }
         }
 
         // return all good

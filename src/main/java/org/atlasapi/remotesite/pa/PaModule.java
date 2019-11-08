@@ -88,6 +88,7 @@ import static com.metabroadcast.common.scheduling.RepetitionRules.NEVER;
 import static com.metabroadcast.common.scheduling.RepetitionRules.daily;
 import static com.metabroadcast.common.scheduling.RepetitionRules.every;
 import static com.metabroadcast.common.scheduling.RepetitionRules.weekly;
+import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
 
 @SuppressWarnings("PublicConstructor")
 @Configuration
@@ -129,6 +130,7 @@ public class PaModule {
     private @Autowired ContentLister contentLister;
     private @Autowired LookupEntryStore lookupEntryStore;
     private @Autowired LookupWriter lookupWriter;
+    @Autowired @Qualifier(EXPLICIT_LOOKUP_WRITER) private LookupWriter explicitLookupWriter;
 
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();
@@ -534,7 +536,8 @@ public class PaModule {
                 EquivalenceBreaker.create(
                         contentResolver,
                         lookupEntryStore,
-                        lookupWriter
+                        lookupWriter,
+                        explicitLookupWriter
                 ),
                 true
         );

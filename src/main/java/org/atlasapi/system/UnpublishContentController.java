@@ -100,9 +100,11 @@ public class UnpublishContentController {
         described.setActivelyPublished(status);
         if(!status){
             removeEquivSetOfItem(described, lookupEntry);
-            writeUpdate(described, noEquivalenceContentWriter); //if unpublshing, then ignore equivs
+            writeUpdate(described, noEquivalenceContentWriter); //write to db ignoring equivs
         }
-        writeUpdate(described, contentWriter);
+        else {
+            writeUpdate(described, contentWriter);
+        }
     }
 
     private LookupEntry getLookupEntry(Optional<String> id, Optional<String> uri) {

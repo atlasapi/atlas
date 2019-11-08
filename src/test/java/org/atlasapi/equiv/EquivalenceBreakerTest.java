@@ -32,19 +32,27 @@ import static org.mockito.Mockito.when;
 public class EquivalenceBreakerTest {
 
     private static final String REMOVE_FROM_URI = "http://example.org/item/1";
-    private static final String ITEM_TO_REMOVE_URI = "http://bad.apple.org/item/1";
+    private static final String DIRECT_EQUIV_TO_REMOVE_URI = "http://bad.apple.org/item/1";
+    private static final String EXPLICIT_EQUIV_TO_REMOVE_URI = "http://bad.apple.org/item/2";
     private static final String ITEM_TO_KEEP_URI = "http://good.apple.org/item/1";
-    
+
     private final Described EXAMPLE_ITEM = ComplexItemTestDataBuilder
-                                                .complexItem()
-                                                .withUri(REMOVE_FROM_URI)
-                                                .build();
-    
-    private final Described ITEM_TO_REMOVE = ComplexItemTestDataBuilder
-                                                .complexItem()
-                                                .withUri(ITEM_TO_REMOVE_URI)
-                                                .build();
-    
+            .complexItem()
+            .withUri(REMOVE_FROM_URI)
+            .build();
+
+    //directly equiv'd item that we want to remove
+    private final Described DIRECT_EQUIV_TO_REMOVE = ComplexItemTestDataBuilder
+            .complexItem()
+            .withUri(DIRECT_EQUIV_TO_REMOVE_URI)
+            .build();
+
+    //explicitly equiv'd item that we want to remove
+    private final Described EXPLICIT_EQUIV_TO_REMOVE = ComplexItemTestDataBuilder
+            .complexItem()
+            .withUri(EXPLICIT_EQUIV_TO_REMOVE_URI)
+            .build();
+
     private final Described ITEM_TO_KEEP = ComplexItemTestDataBuilder
                                                 .complexItem()
                                                 .withUri(ITEM_TO_KEEP_URI)
@@ -52,24 +60,29 @@ public class EquivalenceBreakerTest {
     
     private final LookupEntry EXAMPLE_ITEM_LOOKUP = new LookupEntry(REMOVE_FROM_URI, 1L,  
             LookupRef.from(EXAMPLE_ITEM), ImmutableSet.<String>of(), ImmutableSet.<Alias>of(), 
-            ImmutableSet.of(LookupRef.from(ITEM_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)), 
-            ImmutableSet.<LookupRef>of(), 
-            ImmutableSet.of(LookupRef.from(ITEM_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)), 
+            ImmutableSet.of(LookupRef.from(DIRECT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
+            ImmutableSet.<LookupRef>of(LookupRef.from(EXPLICIT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
+            ImmutableSet.of(LookupRef.from(DIRECT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
             new DateTime(), new DateTime(), true);
 
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final LookupWriter lookupWriter = mock(LookupWriter.class);
+    private final LookupWriter explicitLookupWriter = mock(LookupWriter.class);
     private final LookupEntryStore lookupEntryStore = mock(LookupEntryStore.class);
     
     private final EquivalenceBreaker equivalenceBreaker = EquivalenceBreaker.create(
             contentResolver,
             lookupEntryStore,
-            lookupWriter
+            lookupWriter,
+            explicitLookupWriter
     );
     
     @Before
     public void setUp() {
-        EXAMPLE_ITEM.setEquivalentTo(ImmutableSet.of(LookupRef.from(ITEM_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)));
+        EXAMPLE_ITEM.setEquivalentTo(ImmutableSet.of(
+                LookupRef.from(EXPLICIT_EQUIV_TO_REMOVE),
+                LookupRef.from(ITEM_TO_KEEP)
+        ));
     }
     
     @Test
@@ -85,7 +98,7 @@ public class EquivalenceBreakerTest {
                                        .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
                                        .build());
         
-        equivalenceBreaker.removeFromSet(REMOVE_FROM_URI, ITEM_TO_REMOVE_URI);
+        equivalenceBreaker.removeFromSet(REMOVE_FROM_URI, DIRECT_EQUIV_TO_REMOVE_URI);
         
         verify(lookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))), 
                 argThat(hasItem(ContentRef.valueOf(ITEM_TO_KEEP))), argThat(is(Publisher.all())));
@@ -105,21 +118,66 @@ public class EquivalenceBreakerTest {
                         .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
                         .build());
 
-        ImmutableSet<String> directEquivs = EXAMPLE_ITEM_LOOKUP.directEquivalents()
+        ImmutableSet<String> directEquivUris = EXAMPLE_ITEM_LOOKUP.directEquivalents()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
-        ImmutableSet<String> explicitEquivs = EXAMPLE_ITEM_LOOKUP.explicitEquivalents()
-                .stream()
-                .map(LookupRef::uri)
-                .collect(MoreCollectors.toImmutableSet());
-
-        equivalenceBreaker.removeFromSet(EXAMPLE_ITEM, EXAMPLE_ITEM_LOOKUP, directEquivs, explicitEquivs);
+        equivalenceBreaker.removeEquivs(EXAMPLE_ITEM, EXAMPLE_ITEM_LOOKUP, directEquivUris, false);
 
         verify(lookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))),
                 argThat(is(ImmutableList.of())), argThat(is(Publisher.all())));
     }
 
-    //TODO test unpublishing without copying over equivalences?
+    @Test
+    public void testRemovesExplicitEquivsFromEquivalentSet() {
+        when(lookupEntryStore.entriesForCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
+                .thenReturn(ImmutableSet.of(EXAMPLE_ITEM_LOOKUP));
+
+        when(contentResolver.findByCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
+                .thenReturn(ResolvedContent.builder().put(REMOVE_FROM_URI, EXAMPLE_ITEM).build());
+
+        when(contentResolver.findByCanonicalUris(argThat(hasItem(ITEM_TO_KEEP_URI))))
+                .thenReturn(ResolvedContent.builder()
+                        .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
+                        .build());
+
+        ImmutableSet<String> explicitEquivUris = EXAMPLE_ITEM_LOOKUP.explicitEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(MoreCollectors.toImmutableSet());
+        equivalenceBreaker.removeEquivs(EXAMPLE_ITEM, EXAMPLE_ITEM_LOOKUP, explicitEquivUris, true);
+
+        verify(explicitLookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))),
+                argThat(is(ImmutableList.of())), argThat(is(Publisher.all())));
+    }
+
+    @Test
+    public void testRemovesAllEquivsFromEquivalentSet() {
+        when(lookupEntryStore.entriesForCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
+                .thenReturn(ImmutableSet.of(EXAMPLE_ITEM_LOOKUP));
+
+        when(contentResolver.findByCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
+                .thenReturn(ResolvedContent.builder().put(REMOVE_FROM_URI, EXAMPLE_ITEM).build());
+
+        when(contentResolver.findByCanonicalUris(argThat(hasItem(ITEM_TO_KEEP_URI))))
+                .thenReturn(ResolvedContent.builder()
+                        .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
+                        .build());
+
+        ImmutableSet<String> directEquivUris = EXAMPLE_ITEM_LOOKUP.directEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(MoreCollectors.toImmutableSet());
+        ImmutableSet<String> explicitEquivUris = EXAMPLE_ITEM_LOOKUP.explicitEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(MoreCollectors.toImmutableSet());
+        equivalenceBreaker.removeFromSet(EXAMPLE_ITEM, EXAMPLE_ITEM_LOOKUP, directEquivUris, explicitEquivUris);
+
+        verify(lookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))),
+                argThat(is(ImmutableList.of())), argThat(is(Publisher.all())));
+        verify(explicitLookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))),
+                argThat(is(ImmutableList.of())), argThat(is(Publisher.all())));
+    }
 
 }

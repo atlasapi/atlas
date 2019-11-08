@@ -56,6 +56,8 @@ import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
 import org.atlasapi.util.AlwaysBlockingQueue;
+
+import com.netflix.discovery.converters.Auto;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.joda.time.Period;
@@ -126,6 +128,7 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
+import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
 
 @Configuration
 @Import({ EquivModule.class, KafkaMessagingModule.class, YouViewCoreModule.class })
@@ -223,6 +226,7 @@ public class EquivTaskModule {
     @Autowired private ScheduleResolver scheduleResolver;
     @Autowired private ChannelResolver channelResolver;
     @Autowired private LookupWriter lookupWriter;
+    @Autowired @Qualifier(EXPLICIT_LOOKUP_WRITER) private LookupWriter explicitLookupWriter;
     @Autowired private YouViewChannelResolver youviewChannelResolver;
 
     @Autowired @Qualifier("contentUpdater") private EquivalenceUpdater<Content> equivUpdater;
@@ -798,7 +802,7 @@ public class EquivTaskModule {
 
     @Bean
     public EquivalenceBreaker equivalenceBreaker() {
-        return EquivalenceBreaker.create(contentResolver, lookupStore, lookupWriter);
+        return EquivalenceBreaker.create(contentResolver, lookupStore, lookupWriter, explicitLookupWriter);
     }
 
     //Probes...

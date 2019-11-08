@@ -165,6 +165,7 @@ import javax.xml.bind.JAXBElement;
 
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NO_EQUIVALENCE_WRITING_CONTENT_WRITER;
+import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
 
 @Configuration
 @Import({ WatermarkModule.class, QueryExecutorModule.class })
@@ -208,6 +209,7 @@ public class QueryWebModule {
     @Autowired private ChannelStore channelStore;
     @Autowired private LookupEntryStore entryStore;
     @Autowired private LookupWriter lookupWriter;
+    @Autowired @Qualifier(EXPLICIT_LOOKUP_WRITER) private LookupWriter explicitLookupWriter;
 
     @Autowired private KnownTypeQueryExecutor queryExecutor;
     @Autowired @Qualifier("YouviewQueryExecutor")  private KnownTypeQueryExecutor allowMultipleFromSamePublisherExecutor;
@@ -424,7 +426,8 @@ public class QueryWebModule {
                 EquivalenceBreaker.create(
                         contentResolver,
                         entryStore,
-                        lookupWriter
+                        lookupWriter,
+                        explicitLookupWriter
                 ),
                 OldContentDeactivator.create(
                         new MongoContentLister(

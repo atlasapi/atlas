@@ -29,24 +29,27 @@ public class EquivalenceBreaker {
 
     private final LookupEntryStore entryStore;
     private final LookupWriter lookupWriter;
+    private final LookupWriter explicitLookupWriter;
     private final ContentResolver contentResolver;
-    
+
     private EquivalenceBreaker(
             ContentResolver contentResolver,
             LookupEntryStore entryStore,
-            LookupWriter lookupWriter
-    ) {
+            LookupWriter lookupWriter,
+            LookupWriter explicitLookupWriter) {
         this.entryStore = checkNotNull(entryStore);
         this.lookupWriter = checkNotNull(lookupWriter);
         this.contentResolver = checkNotNull(contentResolver);
+        this.explicitLookupWriter = checkNotNull(explicitLookupWriter);
     }
 
     public static EquivalenceBreaker create(
             ContentResolver contentResolver,
             LookupEntryStore entryStore,
-            LookupWriter lookupWriter
+            LookupWriter lookupWriter,
+            LookupWriter explicitLookupWriter
     ) {
-        return new EquivalenceBreaker(contentResolver, entryStore, lookupWriter);
+        return new EquivalenceBreaker(contentResolver, entryStore, lookupWriter, explicitLookupWriter);
     }
 
     /**
@@ -56,6 +59,10 @@ public class EquivalenceBreaker {
      * everything in the set all the time.
      * @param sourceUri The uri of the item, that we want to remove the equivalence from
      * @param directEquivUriToRemove The equivalence to remove from the source item
+     *
+     * NOTE: This will not remove explicit equivs. Furthermore, if there are any equivs in the
+     *       content record of the sourceUri, then they will be added in the explicit equvs in
+     *       the lookup record.
      */
     public void removeFromSet(String sourceUri, final String directEquivUriToRemove) {
         Maybe<Identified> possibleSource = 
@@ -98,6 +105,39 @@ public class EquivalenceBreaker {
         lookupWriter.writeLookup(ContentRef.valueOf(source), equivalents, Publisher.all());
     }
 
+    public void removeEquivs(
+            Described source,
+            LookupEntry sourceLE,
+            Set<String> equivUrisToRemove,
+            boolean explicit
+    ){
+
+        if(equivUrisToRemove.isEmpty()){    // nothing to do here
+            return;
+        }
+        Set<LookupRef> existingEquivs;
+        LookupWriter writer;
+        if (explicit) {
+            existingEquivs = sourceLE.explicitEquivalents();
+            writer = explicitLookupWriter;
+        } else {
+            existingEquivs = sourceLE.directEquivalents();
+            writer = lookupWriter;
+        }
+
+        //make sure to not remove yourself.
+        equivUrisToRemove =
+                Sets.difference(equivUrisToRemove, ImmutableSet.of(source.getCanonicalUri()));
+        Set<String> existingEquivUris = existingEquivs
+                .stream()
+                .map(LookupRef::uri)
+                .collect(Collectors.toSet());
+        List<ContentRef> newEquivs;
+        newEquivs = urisToContentRef(existingEquivUris, equivUrisToRemove);
+
+        writer.writeLookup(ContentRef.valueOf(source), newEquivs, Publisher.all());
+    }
+
     /**
      * @param source The item we want to remove equivalences from
      * @param sourceLE The lookup record of the source item
@@ -106,41 +146,26 @@ public class EquivalenceBreaker {
      * @param explicitEquivUrisToRemove The explicit equivalence uris we want to remove.
      *                                If source uri is included, this method will ignore it.
      */
-    public void removeFromSet(Described source,
+    public void removeFromSet(
+            Described source,
             LookupEntry sourceLE,
             Set<String> directEquivUrisToRemove,
             Set<String> explicitEquivUrisToRemove
     ){
-
-        //make sure to not remove yourself.
-        directEquivUrisToRemove =
-                Sets.difference(directEquivUrisToRemove, ImmutableSet.of(source.getCanonicalUri()));
-        Set<String> existingDirectEquivUris = sourceLE.directEquivalents()
-                .stream()
-                .map(LookupRef::uri)
-                .collect(Collectors.toSet());
-        List<ContentRef> newEquivs;
-        newEquivs = urisToContentRef(existingDirectEquivUris, directEquivUrisToRemove);
-
-        if(explicitEquivUrisToRemove.isEmpty()){
-            lookupWriter.writeLookup(ContentRef.valueOf(source), newEquivs, Publisher.all());
-        }
-        explicitEquivUrisToRemove =
-                Sets.difference(explicitEquivUrisToRemove, ImmutableSet.of(source.getCanonicalUri()));
-        Set<String> existingExplicitEquivUris = sourceLE.explicitEquivalents()
-                .stream()
-                .map(LookupRef::uri)
-                .collect(Collectors.toSet());
-        newEquivs.addAll(urisToContentRef(existingExplicitEquivUris, explicitEquivUrisToRemove));
-
-        lookupWriter.writeLookup(ContentRef.valueOf(source), newEquivs, Publisher.all());
+        removeEquivs(source, sourceLE, directEquivUrisToRemove, false);
+        removeEquivs(source, sourceLE, explicitEquivUrisToRemove, true);
     }
 
-    public void removeFromSet(Described source,
+    /**
+     * Use {@link #removeFromSet(Described, LookupEntry, Set, Set)} or {@link #removeEquivs}
+     */
+    @Deprecated
+    public void removeFromSet(
+            Described source,
             LookupEntry sourceLE,
             Set<String> directEquivUrisToRemove
     ){
-        removeFromSet(source, sourceLE, directEquivUrisToRemove, Sets.newHashSet());
+        removeEquivs(source, sourceLE, directEquivUrisToRemove, false);
     }
 
     private List<ContentRef> urisToContentRef(

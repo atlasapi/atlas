@@ -36,6 +36,7 @@ public class UnpublishContentController {
     private final LookupEntryStore lookupEntryStore;
     private final NumberToShortStringCodec idCodec;
     private final ContentWriter contentWriter;
+    private final ContentWriter noEquivalenceContentWriter;
     private final EquivalenceBreaker equivalenceBreaker;
 
     public UnpublishContentController(
@@ -43,12 +44,14 @@ public class UnpublishContentController {
             ContentResolver contentResolver,
             LookupEntryStore lookupEntryStore,
             ContentWriter contentWriter,
+            ContentWriter noEquivalenceContentWriter,
             EquivalenceBreaker equivalenceBreaker
     ) {
         this.idCodec = checkNotNull(idCodec);
         this.contentResolver = checkNotNull(contentResolver);
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
         this.contentWriter = checkNotNull(contentWriter);
+        this.noEquivalenceContentWriter = checkNotNull(noEquivalenceContentWriter);
         this.equivalenceBreaker = checkNotNull(equivalenceBreaker);
     }
 
@@ -94,11 +97,12 @@ public class UnpublishContentController {
         Optional<Identified> identified = resolveContent(lookupEntry);
         Described described = validatePublisher(publisher, identified);
 
+        described.setActivelyPublished(status);
         if(!status){
             removeEquivSetOfItem(described, lookupEntry);
+            writeUpdate(described, noEquivalenceContentWriter); //if unpublshing, then ignore equivs
         }
-        described.setActivelyPublished(status);
-        writeUpdate(described);
+        writeUpdate(described, contentWriter);
     }
 
     private LookupEntry getLookupEntry(Optional<String> id, Optional<String> uri) {
@@ -168,7 +172,7 @@ public class UnpublishContentController {
         equivalenceBreaker.removeFromSet(described, lookupEntry, allDirectEquivs, allExplicitEquivs);
     }
 
-    private void writeUpdate(Described described) {
+    private void writeUpdate(Described described, ContentWriter contentWriter) {
         if(described instanceof Item) {
             contentWriter.createOrUpdate((Item) described);
             return;

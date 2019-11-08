@@ -56,7 +56,7 @@ public class EquivalenceBreakerTest {
             ImmutableSet.<LookupRef>of(), 
             ImmutableSet.of(LookupRef.from(ITEM_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)), 
             new DateTime(), new DateTime(), true);
-    
+
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final LookupWriter lookupWriter = mock(LookupWriter.class);
     private final LookupEntryStore lookupEntryStore = mock(LookupEntryStore.class);
@@ -120,7 +120,6 @@ public class EquivalenceBreakerTest {
                 argThat(is(ImmutableList.of())), argThat(is(Publisher.all())));
     }
 
-    //TODO test 2 sets of multiple items from equivalent set?
     //TODO test unpublishing without copying over equivalences?
 
 }

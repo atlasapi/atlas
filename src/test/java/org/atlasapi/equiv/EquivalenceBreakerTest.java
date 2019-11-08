@@ -120,4 +120,7 @@ public class EquivalenceBreakerTest {
                 argThat(is(ImmutableList.of())), argThat(is(Publisher.all())));
     }
 
+    //TODO test 2 sets of multiple items from equivalent set?
+    //TODO test unpublishing without copying over equivalences?
+
 }

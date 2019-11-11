@@ -60,7 +60,7 @@ public class EquivalenceBreakerTest {
             LookupRef.from(EXAMPLE_ITEM), ImmutableSet.<String>of(), ImmutableSet.<Alias>of(), 
             ImmutableSet.of(LookupRef.from(DIRECT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
             ImmutableSet.<LookupRef>of(LookupRef.from(EXPLICIT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
-            ImmutableSet.of(LookupRef.from(DIRECT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
+            ImmutableSet.of(LookupRef.from(DIRECT_EQUIV_TO_REMOVE), LookupRef.from(EXPLICIT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
             new DateTime(), new DateTime(), true);
 
     private final ContentResolver contentResolver = mock(ContentResolver.class);
@@ -81,30 +81,7 @@ public class EquivalenceBreakerTest {
                 LookupRef.from(EXPLICIT_EQUIV_TO_REMOVE),
                 LookupRef.from(ITEM_TO_KEEP)
         ));
-    }
-    
-    @Test
-    public void testRemovesItemFromEquivalentSet() {
-        when(lookupEntryStore.entriesForCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
-            .thenReturn(ImmutableSet.of(EXAMPLE_ITEM_LOOKUP));
-        
-        when(contentResolver.findByCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
-            .thenReturn(ResolvedContent.builder().put(REMOVE_FROM_URI, EXAMPLE_ITEM).build());
-        
-        when(contentResolver.findByCanonicalUris(argThat(hasItem(ITEM_TO_KEEP_URI))))
-            .thenReturn(ResolvedContent.builder()   
-                                       .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
-                                       .build());
-        
-        equivalenceBreaker.removeFromSet(REMOVE_FROM_URI, DIRECT_EQUIV_TO_REMOVE_URI);
-        
-        verify(lookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))), 
-                argThat(hasItem(ContentRef.valueOf(ITEM_TO_KEEP))), argThat(is(Publisher.all())));
-    }
 
-
-    @Test
-    public void testRemovesMultipleItemsFromEquivalentSet() {
         when(lookupEntryStore.entriesForCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
                 .thenReturn(ImmutableSet.of(EXAMPLE_ITEM_LOOKUP));
 
@@ -115,7 +92,19 @@ public class EquivalenceBreakerTest {
                 .thenReturn(ResolvedContent.builder()
                         .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
                         .build());
+    }
+    
+    @Test
+    public void testRemovesItemFromEquivalentSet() {
+        equivalenceBreaker.removeFromSet(REMOVE_FROM_URI, DIRECT_EQUIV_TO_REMOVE_URI);
+        
+        verify(lookupWriter).writeLookup(argThat(is(ContentRef.valueOf(EXAMPLE_ITEM))), 
+                argThat(hasItem(ContentRef.valueOf(ITEM_TO_KEEP))), argThat(is(Publisher.all())));
+    }
 
+
+    @Test
+    public void testRemovesMultipleItemsFromEquivalentSet() {
         ImmutableSet<String> directEquivUris = EXAMPLE_ITEM_LOOKUP.directEquivalents()
                 .stream()
                 .map(LookupRef::uri)
@@ -128,17 +117,6 @@ public class EquivalenceBreakerTest {
 
     @Test
     public void testRemovesExplicitEquivsFromEquivalentSet() {
-        when(lookupEntryStore.entriesForCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
-                .thenReturn(ImmutableSet.of(EXAMPLE_ITEM_LOOKUP));
-
-        when(contentResolver.findByCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
-                .thenReturn(ResolvedContent.builder().put(REMOVE_FROM_URI, EXAMPLE_ITEM).build());
-
-        when(contentResolver.findByCanonicalUris(argThat(hasItem(ITEM_TO_KEEP_URI))))
-                .thenReturn(ResolvedContent.builder()
-                        .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
-                        .build());
-
         ImmutableSet<String> explicitEquivUris = EXAMPLE_ITEM_LOOKUP.explicitEquivalents()
                 .stream()
                 .map(LookupRef::uri)
@@ -151,17 +129,6 @@ public class EquivalenceBreakerTest {
 
     @Test
     public void testRemovesAllEquivsFromEquivalentSet() {
-        when(lookupEntryStore.entriesForCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
-                .thenReturn(ImmutableSet.of(EXAMPLE_ITEM_LOOKUP));
-
-        when(contentResolver.findByCanonicalUris(argThat(hasItem(REMOVE_FROM_URI))))
-                .thenReturn(ResolvedContent.builder().put(REMOVE_FROM_URI, EXAMPLE_ITEM).build());
-
-        when(contentResolver.findByCanonicalUris(argThat(hasItem(ITEM_TO_KEEP_URI))))
-                .thenReturn(ResolvedContent.builder()
-                        .put(ITEM_TO_KEEP_URI, ITEM_TO_KEEP)
-                        .build());
-
         ImmutableSet<String> directEquivUris = EXAMPLE_ITEM_LOOKUP.directEquivalents()
                 .stream()
                 .map(LookupRef::uri)

@@ -9,9 +9,12 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
+import static org.atlasapi.persistence.MongoContentPersistenceModule.NO_EQUIVALENCE_WRITING_CONTENT_WRITER;
 
 @Configuration
 @Import( { MongoContentPersistenceModule.class, EquivTaskModule.class })
@@ -39,6 +42,10 @@ public class ContentPurgeWebModule {
     private ContentWriter contentWriter;
 
     @Autowired
+    @Qualifier(NO_EQUIVALENCE_WRITING_CONTENT_WRITER)
+    private ContentWriter noEquivalenceWritingContentWriter;
+
+    @Autowired
     private EquivalenceBreaker equivalenceBreaker;
 
     @Bean
@@ -63,6 +70,7 @@ public class ContentPurgeWebModule {
                 contentResolver,
                 lookupEntryStore,
                 contentWriter,
+                noEquivalenceWritingContentWriter,
                 equivalenceBreaker
         );
     }

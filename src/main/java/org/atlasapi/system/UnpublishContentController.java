@@ -36,6 +36,7 @@ public class UnpublishContentController {
     private final LookupEntryStore lookupEntryStore;
     private final NumberToShortStringCodec idCodec;
     private final ContentWriter contentWriter;
+    private final ContentWriter noEquivalenceContentWriter;
     private final EquivalenceBreaker equivalenceBreaker;
 
     public UnpublishContentController(
@@ -43,12 +44,14 @@ public class UnpublishContentController {
             ContentResolver contentResolver,
             LookupEntryStore lookupEntryStore,
             ContentWriter contentWriter,
+            ContentWriter noEquivalenceContentWriter,
             EquivalenceBreaker equivalenceBreaker
     ) {
         this.idCodec = checkNotNull(idCodec);
         this.contentResolver = checkNotNull(contentResolver);
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
         this.contentWriter = checkNotNull(contentWriter);
+        this.noEquivalenceContentWriter = checkNotNull(noEquivalenceContentWriter);
         this.equivalenceBreaker = checkNotNull(equivalenceBreaker);
     }
 
@@ -94,9 +97,14 @@ public class UnpublishContentController {
         Optional<Identified> identified = resolveContent(lookupEntry);
         Described described = validatePublisher(publisher, identified);
 
-        removeItemFromEquivSet(described, lookupEntry);
         described.setActivelyPublished(status);
-        writeUpdate(described);
+        if(!status){
+            removeEquivSetOfItem(described, lookupEntry);
+            writeUpdate(described, noEquivalenceContentWriter); //write to db ignoring equivs
+        }
+        else {
+            writeUpdate(described, contentWriter);
+        }
     }
 
     private LookupEntry getLookupEntry(Optional<String> id, Optional<String> uri) {
@@ -151,17 +159,22 @@ public class UnpublishContentController {
     /**
      * This will take an item, and remove all direct equivalences from it
      */
-    private void removeItemFromEquivSet(Described described, LookupEntry lookupEntry){
+    private void removeEquivSetOfItem(Described described, LookupEntry lookupEntry){
 
-        ImmutableSet<String> equivsToRemove = lookupEntry.directEquivalents()
+        ImmutableSet<String> allDirectEquivs = lookupEntry.directEquivalents()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
 
-        equivalenceBreaker.removeFromSet(described, lookupEntry, equivsToRemove);
+        ImmutableSet<String> allExplicitEquivs = lookupEntry.explicitEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(MoreCollectors.toImmutableSet());
+
+        equivalenceBreaker.removeFromSet(described, lookupEntry, allDirectEquivs, allExplicitEquivs);
     }
 
-    private void writeUpdate(Described described) {
+    private void writeUpdate(Described described, ContentWriter contentWriter) {
         if(described instanceof Item) {
             contentWriter.createOrUpdate((Item) described);
             return;

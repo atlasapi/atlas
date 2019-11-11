@@ -115,6 +115,7 @@ public class ContentWriteController {
     private final LookupEntryStore lookupEntryStore;
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
+    private final ContentWriter noEquivalenceWritingContentWriter;
     private final EquivalenceBreaker equivalenceBreaker;
     private final OldContentDeactivator oldContentDeactivator;
 
@@ -127,6 +128,7 @@ public class ContentWriteController {
             LookupEntryStore lookupEntryStore,
             ContentResolver contentResolver,
             ContentWriter contentWriter,
+            ContentWriter noEquivalenceWritingContentWriter,
             EquivalenceBreaker equivalenceBreaker,
             OldContentDeactivator oldContentDeactivator
     ) {
@@ -138,6 +140,7 @@ public class ContentWriteController {
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
         this.contentResolver = checkNotNull(contentResolver);
         this.contentWriter = checkNotNull(contentWriter);
+        this.noEquivalenceWritingContentWriter = checkNotNull(noEquivalenceWritingContentWriter);
         this.equivalenceBreaker = checkNotNull(equivalenceBreaker);
         this.oldContentDeactivator = checkNotNull(oldContentDeactivator);
     }
@@ -151,6 +154,7 @@ public class ContentWriteController {
             LookupEntryStore lookupEntryStore,
             ContentResolver contentResolver,
             ContentWriter contentWriter,
+            ContentWriter noEquivalenceWritingContentWriter,
             EquivalenceBreaker equivalenceBreaker,
             OldContentDeactivator oldContentDeactivator
     ) {
@@ -163,6 +167,7 @@ public class ContentWriteController {
                 lookupEntryStore,
                 contentResolver,
                 contentWriter,
+                noEquivalenceWritingContentWriter,
                 equivalenceBreaker,
                 oldContentDeactivator
         );
@@ -715,20 +720,24 @@ public class ContentWriteController {
             return error(req, resp, apiKeyErrorSummary.get());
         }
 
-        // remove from equivset if un-publishing
+        // set publish status
+        described.setActivelyPublished(publishStatus);
+
+        ContentWriter writer;
+        // remove from equiv set if un-publishing, and write back to DB without changing equiv sets
         if(!publishStatus){
             removeItemFromEquivSet(described, lookupEntry);
+            writer = noEquivalenceWritingContentWriter;
+        } else {
+            writer = contentWriter;
         }
-
-        // set publisher status
-        described.setActivelyPublished(publishStatus);
 
         // write back to DB
         if (described instanceof Item) {
-            contentWriter.createOrUpdate((Item) described);
+            writer.createOrUpdate((Item) described);
         }
         if (described instanceof Container) {
-            contentWriter.createOrUpdate((Container) described);
+            writer.createOrUpdate((Container) described);
         }
 
         // return all good
@@ -741,12 +750,17 @@ public class ContentWriteController {
      */
     private void removeItemFromEquivSet(Described described, LookupEntry lookupEntry){
 
-        ImmutableSet<String> equivsToRemove = lookupEntry.directEquivalents()
+        ImmutableSet<String> directEquivsToRemove = lookupEntry.directEquivalents()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
 
-        equivalenceBreaker.removeFromSet(described, lookupEntry, equivsToRemove);
+        ImmutableSet<String> explicitEquivsToRemove = lookupEntry.explicitEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .collect(MoreCollectors.toImmutableSet());
+
+        equivalenceBreaker.removeFromSet(described, lookupEntry, directEquivsToRemove, explicitEquivsToRemove);
     }
 
     private String uriForId(String id) {

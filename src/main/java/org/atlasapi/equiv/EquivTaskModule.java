@@ -56,8 +56,6 @@ import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
 import org.atlasapi.util.AlwaysBlockingQueue;
-
-import com.netflix.discovery.converters.Auto;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.joda.time.Period;

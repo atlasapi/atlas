@@ -1,11 +1,9 @@
 package org.atlasapi.equiv;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.LookupRef;
@@ -16,11 +14,11 @@ import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -28,17 +26,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class EquivalenceBreaker {
 
     private final LookupEntryStore entryStore;
-    private final LookupWriter lookupWriter;
+    private final LookupWriter directLookupWriter;
     private final LookupWriter explicitLookupWriter;
     private final ContentResolver contentResolver;
 
     private EquivalenceBreaker(
             ContentResolver contentResolver,
             LookupEntryStore entryStore,
-            LookupWriter lookupWriter,
-            LookupWriter explicitLookupWriter) {
+            LookupWriter directLookupWriter,
+            LookupWriter explicitLookupWriter
+    ) {
         this.entryStore = checkNotNull(entryStore);
-        this.lookupWriter = checkNotNull(lookupWriter);
+        this.directLookupWriter = checkNotNull(directLookupWriter);
         this.contentResolver = checkNotNull(contentResolver);
         this.explicitLookupWriter = checkNotNull(explicitLookupWriter);
     }
@@ -46,10 +45,40 @@ public class EquivalenceBreaker {
     public static EquivalenceBreaker create(
             ContentResolver contentResolver,
             LookupEntryStore entryStore,
-            LookupWriter lookupWriter,
+            LookupWriter directLookupWriter,
             LookupWriter explicitLookupWriter
     ) {
-        return new EquivalenceBreaker(contentResolver, entryStore, lookupWriter, explicitLookupWriter);
+        return new EquivalenceBreaker(contentResolver, entryStore, directLookupWriter, explicitLookupWriter);
+    }
+
+    /**
+     * @param source The item we want to remove equivalences from
+     * @param sourceLE The lookup record of the source item
+     * @param directEquivUrisToRemove The direct equivalence uris we want to remove.
+     *                                If source uri is included, this method will ignore it.
+     * @param explicitEquivUrisToRemove The explicit equivalence uris we want to remove.
+     *                                If source uri is included, this method will ignore it.
+     */
+    public void removeFromSet(
+            Described source,
+            LookupEntry sourceLE,
+            Set<String> directEquivUrisToRemove,
+            Set<String> explicitEquivUrisToRemove
+    ){
+        removeDirectEquivs(source, sourceLE, directEquivUrisToRemove);
+        removeExplicitEquivs(source, sourceLE, explicitEquivUrisToRemove);
+    }
+
+    /**
+     * Use {@link #removeFromSet(Described, LookupEntry, Set, Set)} or {@link #removeEquivs}
+     */
+    @Deprecated
+    public void removeFromSet(
+            Described source,
+            LookupEntry sourceLE,
+            Set<String> directEquivUrisToRemove
+    ){
+        removeDirectEquivs(source, sourceLE, directEquivUrisToRemove);
     }
 
     /**
@@ -102,10 +131,26 @@ public class EquivalenceBreaker {
                 .map(ContentRef.FROM_CONTENT::apply)
                 .collect(Collectors.toList());
         
-        lookupWriter.writeLookup(ContentRef.valueOf(source), equivalents, Publisher.all());
+        directLookupWriter.writeLookup(ContentRef.valueOf(source), equivalents, Publisher.all());
     }
 
-    public void removeEquivs(
+    public void removeDirectEquivs(
+            Described source,
+            LookupEntry sourceLE,
+            Set<String> directEquivUrisToRemove
+    ) {
+        removeEquivs(source, sourceLE, directEquivUrisToRemove, false);
+    }
+
+    public void removeExplicitEquivs(
+            Described source,
+            LookupEntry sourceLE,
+            Set<String> explicitEquivUrisToRemove
+    ) {
+        removeEquivs(source, sourceLE, explicitEquivUrisToRemove, true);
+    }
+
+    private void removeEquivs(
             Described source,
             LookupEntry sourceLE,
             Set<String> equivUrisToRemove,
@@ -122,59 +167,29 @@ public class EquivalenceBreaker {
             writer = explicitLookupWriter;
         } else {
             existingEquivs = sourceLE.directEquivalents();
-            writer = lookupWriter;
+            writer = directLookupWriter;
         }
 
         //make sure to not remove yourself.
         equivUrisToRemove =
                 Sets.difference(equivUrisToRemove, ImmutableSet.of(source.getCanonicalUri()));
-        Set<String> existingEquivUris = existingEquivs
-                .stream()
-                .map(LookupRef::uri)
-                .collect(Collectors.toSet());
-        List<ContentRef> newEquivs;
-        newEquivs = urisToContentRef(existingEquivUris, equivUrisToRemove);
+
+        Set<String> newEquivUris = calculateNewEquivUris(equivUrisToRemove, existingEquivs);
+        List<ContentRef> newEquivs = urisToContentRef(newEquivUris);
 
         writer.writeLookup(ContentRef.valueOf(source), newEquivs, Publisher.all());
     }
 
-    /**
-     * @param source The item we want to remove equivalences from
-     * @param sourceLE The lookup record of the source item
-     * @param directEquivUrisToRemove The direct equivalence uris we want to remove.
-     *                                If source uri is included, this method will ignore it.
-     * @param explicitEquivUrisToRemove The explicit equivalence uris we want to remove.
-     *                                If source uri is included, this method will ignore it.
-     */
-    public void removeFromSet(
-            Described source,
-            LookupEntry sourceLE,
-            Set<String> directEquivUrisToRemove,
-            Set<String> explicitEquivUrisToRemove
-    ){
-        removeEquivs(source, sourceLE, directEquivUrisToRemove, false);
-        removeEquivs(source, sourceLE, explicitEquivUrisToRemove, true);
+    private Set<String> calculateNewEquivUris(Set<String> equivUrisToRemove, Set<LookupRef> existingEquivs) {
+        Set<String> existingEquivUris = existingEquivs
+                .stream()
+                .map(LookupRef::uri)
+                .collect(Collectors.toSet());
+        return Sets.difference(existingEquivUris, equivUrisToRemove);
     }
 
-    /**
-     * Use {@link #removeFromSet(Described, LookupEntry, Set, Set)} or {@link #removeEquivs}
-     */
-    @Deprecated
-    public void removeFromSet(
-            Described source,
-            LookupEntry sourceLE,
-            Set<String> directEquivUrisToRemove
-    ){
-        removeEquivs(source, sourceLE, directEquivUrisToRemove, false);
-    }
-
-    private List<ContentRef> urisToContentRef(
-            Set<String> existingEquivUris,
-            Set<String> equivUrisToRemove
-    ) {
-        Sets.SetView<String> remainingEquivUris =
-                Sets.difference(existingEquivUris, equivUrisToRemove);
-        ResolvedContent resolvedEquivList = contentResolver.findByCanonicalUris(remainingEquivUris);
+    private List<ContentRef> urisToContentRef(Set<String> uris) {
+        ResolvedContent resolvedEquivList = contentResolver.findByCanonicalUris(uris);
         if (resolvedEquivList != null) {
             return resolvedEquivList.getAllResolvedResults()
                     .stream()

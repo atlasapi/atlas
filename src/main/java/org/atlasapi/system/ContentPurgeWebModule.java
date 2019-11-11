@@ -41,7 +41,6 @@ public class ContentPurgeWebModule {
     @Autowired
     private ContentWriter contentWriter;
 
-    //TODO add a non-equiv content writer?
     @Autowired
     @Qualifier(NO_EQUIVALENCE_WRITING_CONTENT_WRITER)
     private ContentWriter noEquivalenceWritingContentWriter;

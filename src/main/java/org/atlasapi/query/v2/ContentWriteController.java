@@ -723,24 +723,21 @@ public class ContentWriteController {
         // set publish status
         described.setActivelyPublished(publishStatus);
 
-        // remove from equivset if un-publishing, and write back to DB without changing equiv sets
+        ContentWriter writer;
+        // remove from equiv set if un-publishing, and write back to DB without changing equiv sets
         if(!publishStatus){
             removeItemFromEquivSet(described, lookupEntry);
-            if (described instanceof Item) {
-                noEquivalenceWritingContentWriter.createOrUpdate((Item) described);
-            }
-            if (described instanceof Container) {
-                noEquivalenceWritingContentWriter.createOrUpdate((Container) described);
-            }
+            writer = noEquivalenceWritingContentWriter;
+        } else {
+            writer = contentWriter;
         }
-        else {
-            // write back to DB
-            if (described instanceof Item) {
-                contentWriter.createOrUpdate((Item) described);
-            }
-            if (described instanceof Container) {
-                contentWriter.createOrUpdate((Container) described);
-            }
+
+        // write back to DB
+        if (described instanceof Item) {
+            writer.createOrUpdate((Item) described);
+        }
+        if (described instanceof Container) {
+            writer.createOrUpdate((Container) described);
         }
 
         // return all good

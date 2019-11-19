@@ -87,6 +87,7 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 KnowledgeMotionModule.class,
                 QueryExecutorModule.class
             );
+
             if (youViewUploadEnabled()) {
                 builder.add(
                         YouViewUploadModule.class

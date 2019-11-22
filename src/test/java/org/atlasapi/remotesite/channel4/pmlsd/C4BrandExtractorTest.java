@@ -154,7 +154,7 @@ public class C4BrandExtractorTest extends TestCase {
 
         assertThat(firstItem.getAliases(), hasItem(new Alias("gb:channel4:prod:pmlsd:programmeId", "36423/001")));
 		
-		assertThat(firstItem.getTitle(), is(("Series 1 Episode 1")));
+		assertThat(firstItem.getTitle(), is(("Ramsay's Kitchen Nightmares")));
 		
 		Version firstItemVersion = Iterables.getOnlyElement(firstItem.getVersions());
 		

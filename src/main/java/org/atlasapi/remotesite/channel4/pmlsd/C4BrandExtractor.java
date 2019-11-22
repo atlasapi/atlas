@@ -88,9 +88,9 @@ public class C4BrandExtractor implements ContentExtractor<Feed, BrandSeriesAndEp
 
         for (ModelWithPayload<Episode> episodeModelWithPayload : content.values()) {
             Episode episode = episodeModelWithPayload.getModel();
-            if (equivalentTitles(brand, episode)) {
-                setHierarchicalTitle(episode);
-            }
+//            if (equivalentTitles(brand, episode)) {
+//                setHierarchicalTitle(episode);
+//            }
             if (episode.getImage() == null) {
                 episode.setImage(brand.getImage());
                 episode.setThumbnail(brand.getThumbnail());

@@ -1,10 +1,9 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
+import org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqHighestNonEmptyThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -57,14 +56,26 @@ public class TxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         Score.ZERO,
                                         false
                                 ),
-                                new BroadcastMatchingItemEquivalenceGeneratorAndScorer(
-                                        dependencies.getScheduleResolver(),
-                                        dependencies.getChannelResolver(),
-                                        targetPublishers,
-                                        Duration.standardMinutes(5),
-                                        Predicates.alwaysTrue(),
-                                        3.0
-                                )
+                                BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer.builder()
+                                        .withScheduleResolver(dependencies.getScheduleResolver())
+                                        .withChannelResolver(dependencies.getChannelResolver())
+                                        .withSupportedPublishers(targetPublishers)
+                                        .withScheduleWindow(Duration.standardHours(1))
+                                        .withBroadcastFlexibility(Duration.standardMinutes(10))
+                                        .withShortBroadcastFlexibility(Duration.standardMinutes(10))
+                                        .withShortBroadcastMaxDuration(Duration.standardMinutes(10))
+                                        .withScoreOnMatch(Score.valueOf(3.0))
+                                        .withTitleMatchingScorer(
+                                                BarbTitleMatchingItemScorer.builder()
+                                                        .withContentResolver(dependencies.getContentResolver())
+                                                        .withScoreOnMismatch(Score.nullScore())
+                                                        .withScoreOnPartialMatch(Score.nullScore())
+                                                        .withScoreOnPerfectMatch(Score.ONE)
+                                                        .withContainerCacheDuration(60)
+                                                        .withCheckContainersForAllPublishers(true)
+                                                        .build()
+                                        )
+                                        .build()
                         )
                 )
                 .withScorers(

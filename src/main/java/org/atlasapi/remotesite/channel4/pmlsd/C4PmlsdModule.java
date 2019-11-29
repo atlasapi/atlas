@@ -1,11 +1,15 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.common.http.SimpleHttpClient;
+import com.metabroadcast.common.http.SimpleHttpClientBuilder;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.time.DayRangeGenerator;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
@@ -25,18 +29,6 @@ import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimm
 import org.atlasapi.reporting.OwlReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.common.http.SimpleHttpClient;
-import com.metabroadcast.common.http.SimpleHttpClientBuilder;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.time.DayRangeGenerator;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -46,6 +38,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class C4PmlsdModule {
@@ -244,7 +241,8 @@ public class C4PmlsdModule {
         );
     }
 	
-	private C4BrandUpdateController c4BrandUpdateController(OwlReporter owlReporter) {
+	@Bean protected C4BrandUpdateController c4BrandUpdateController() {
+        OwlReporter owlReporter = getOwlReporter();
 	    return new C4BrandUpdateController(
 	            pcPmlsdBrandFetcher(Optional.empty(), Optional.empty(), owlReporter),
 	            ImmutableMap.of(

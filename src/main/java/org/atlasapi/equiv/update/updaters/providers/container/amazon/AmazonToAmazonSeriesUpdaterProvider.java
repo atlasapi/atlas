@@ -1,13 +1,12 @@
 package org.atlasapi.equiv.update.updaters.providers.container.amazon;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighscoreAndPublisherExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
-import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.FilmYearFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
@@ -23,8 +22,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 /***
  * Like {@link AmazonSeriesUpdaterProvider}, except different extractor (as before the split of
@@ -78,7 +76,6 @@ public class AmazonToAmazonSeriesUpdaterProvider implements EquivalenceResultUpd
                                         dependencies.getExcludedIds()
                                 ),
                                 new FilmYearFilter<>(),
-                                new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
                                 new ContainerHierarchyFilter()
                         ))

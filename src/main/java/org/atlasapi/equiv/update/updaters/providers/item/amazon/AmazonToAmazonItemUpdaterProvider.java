@@ -1,14 +1,13 @@
 package org.atlasapi.equiv.update.updaters.providers.item.amazon;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.amazon.AmazonTitleGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
-import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.FilmYearFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
@@ -26,8 +25,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 
@@ -96,7 +94,6 @@ public class AmazonToAmazonItemUpdaterProvider implements EquivalenceResultUpdat
                                         dependencies.getExcludedIds()
                                 ),
                                 new FilmYearFilter<>(),
-                                new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()
                         ))
                 )

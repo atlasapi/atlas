@@ -50,7 +50,7 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                                         dependencies.getSearchResolver(),
                                         Container.class,
                                         targetPublishers,
-                                        0,
+                                        2, //TitleMatchingContainerScorer uses same scoring name
                                         true
                                 )
                         )

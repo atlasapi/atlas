@@ -58,7 +58,7 @@ public class ImdbPaItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         dependencies.getSearchResolver(),
                                         Item.class,
                                         targetPublishers,
-                                        0,
+                                        2, //TitleMatchingItemScorer uses same scoring name
                                         true,
                                         true
                                 ),

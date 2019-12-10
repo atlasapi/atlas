@@ -80,12 +80,8 @@ public class ContentUpdatingNitroBroadcastHandler
             containerIds = topLevelContainerIds(items);
             lock.lock(containerIds);
 
-            ImmutableSet<ModelWithPayload<Container>> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(items);
-            ImmutableSet<ModelWithPayload<Container>> resolvedBrands = localOrRemoteFetcher.resolveOrFetchBrand(items);
-
-            Iterable<ModelWithPayload<Container>> seriesAndBrands =
-                    Iterables.concat(resolvedSeries,resolvedBrands);
-
+            ImmutableSet<ModelWithPayload<? extends Container>> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(items);
+            ImmutableSet<ModelWithPayload<? extends Container>> resolvedBrands = localOrRemoteFetcher.resolveOrFetchBrand(items);
 
             ImmutableSet<ModelWithPayload<Series>> series =
                     Stream.concat(resolvedSeries.stream(), resolvedBrands.stream())

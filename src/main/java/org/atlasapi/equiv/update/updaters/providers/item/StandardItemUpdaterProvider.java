@@ -62,8 +62,8 @@ public class StandardItemUpdaterProvider implements EquivalenceResultUpdaterProv
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
                                 new SequenceItemScorer(Score.ONE),
-                                new DescriptionTitleMatchingScorer(),
-                                DescriptionMatchingScorer.makeScorer()
+                                DescriptionTitleMatchingScorer.createItemScorer(),
+                                DescriptionMatchingScorer.makeItemScorer()
                         )
                 )
                 .withCombiner(

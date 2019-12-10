@@ -9,6 +9,8 @@ import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
 
 import java.util.Arrays;
@@ -16,9 +18,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
+public class DescriptionTitleMatchingScorer<T extends Described> implements EquivalenceScorer<T> {
 
-    public static final String NAME = "Description Title Matching Item Scorer";
+    public static final String NAME = "Description Title Matching Scorer";
 
     private final Set<String> commonWords = ImmutableSet.of(
             "the", "in", "a", "and", "&", "of", "to", "show", "peppa", "pig"
@@ -29,28 +31,40 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
     // This can be calibrated to change how often matching occurs
     private final double divisionFactor;
 
-    public DescriptionTitleMatchingScorer() {
-        this(Score.nullScore(), 2.0);
-    }
-
-    public DescriptionTitleMatchingScorer(Score scoreOnMismatch, double divisionFactor) {
+    private DescriptionTitleMatchingScorer(Score scoreOnMismatch, double divisionFactor) {
         this.scoreOnMismatch = scoreOnMismatch;
         this.divisionFactor = divisionFactor;
     }
 
+    public static DescriptionTitleMatchingScorer<Item> createItemScorer() {
+        return new DescriptionTitleMatchingScorer<>(Score.nullScore(), 2.0);
+    }
+
+    public static DescriptionTitleMatchingScorer<Item> createItemScorer(Score scoreOnMismatch, double divisionFactor) {
+        return new DescriptionTitleMatchingScorer<>(scoreOnMismatch, divisionFactor);
+    }
+
+    public static DescriptionTitleMatchingScorer<Container> createContainerScorer() {
+        return new DescriptionTitleMatchingScorer<>(Score.nullScore(), 2.0);
+    }
+
+    public static DescriptionTitleMatchingScorer<Container> createContainerScorer(Score scoreOnMismatch, double divisionFactor) {
+        return new DescriptionTitleMatchingScorer<>(scoreOnMismatch, divisionFactor);
+    }
+
     @Override
-    public ScoredCandidates<Item> score(
-            Item subject,
-            Set<? extends Item> suggestions,
+    public ScoredCandidates<T> score(
+            T subject,
+            Set<? extends T> suggestions,
             ResultDescription desc,
             EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Description Title Matching Scorer");
 
-        Builder<Item> equivalents = DefaultScoredCandidates.fromSource(NAME);
+        Builder<T> equivalents = DefaultScoredCandidates.fromSource(NAME);
 
-        for (Item suggestion : suggestions) {
+        for (T suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
             equivalents.addEquivalent(suggestion, equivScore);
 
@@ -67,7 +81,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
         return equivalents.build();
     }
 
-    private Score score(Item subject, Item suggestion, ResultDescription desc) {
+    private Score score(T subject, T suggestion, ResultDescription desc) {
 
         Score score = score(subject, suggestion);
         desc.appendText("%s (%s) scored: %s", suggestion.getTitle(), suggestion.getCanonicalUri(), score);
@@ -75,11 +89,11 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
         return score;
     }
 
-    private Score score(Item subject, Item suggestion) {
+    private Score score(T subject, T suggestion) {
         return descriptionTitleMatch(subject, suggestion)? Score.ONE: Score.nullScore();
     }
 
-    private boolean descriptionTitleMatch(Item subject, Item candidate) {
+    private boolean descriptionTitleMatch(T subject, T candidate) {
         Set<String> candidateList = descriptionToProcessedList(candidate.getDescription());
         Set<String> subjectList = descriptionToProcessedList(subject.getDescription());
 

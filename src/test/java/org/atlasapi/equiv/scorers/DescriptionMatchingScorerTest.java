@@ -17,7 +17,7 @@ public class DescriptionMatchingScorerTest {
 
     @Before
     public void setUp() {
-        this.scorer = DescriptionMatchingScorer.makeScorer();
+        this.scorer = DescriptionMatchingScorer.makeItemScorer();
     }
 
     private Score score(Item subject, Item candidate) {

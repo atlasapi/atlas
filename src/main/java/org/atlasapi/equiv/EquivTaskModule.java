@@ -98,6 +98,7 @@ import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
+import static org.atlasapi.media.entity.Publisher.IMDB;
 import static org.atlasapi.media.entity.Publisher.IMDB_API;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV;
@@ -189,6 +190,10 @@ public class EquivTaskModule {
             RepetitionRules.daily(new LocalTime(7, 0));
     private static final RepetitionRule BARB_NLE_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(7, 0));
+    private static final RepetitionRule IMDB_EQUIVALENCE_REPETITION =
+            RepetitionRules.NEVER;
+    private static final RepetitionRule IMDB_EQUIVALENCE_DELTA_REPETITION =
+            RepetitionRules.daily(new LocalTime(23, 0));
     private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
@@ -659,6 +664,22 @@ public class EquivTaskModule {
                 publisherUpdateTask(BARB_NLE).withName("BARB NLE Updater"),
                 RepetitionRules.NEVER,
                 jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(IMDB).withName("IMDB Updater"),
+                IMDB_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored
+                )
+                        .forPublisher(IMDB)
+                        .forLast(new Period().withDays(3))
+                        .withName("IMDB Delta Updater (last 72h)"),
+                IMDB_EQUIVALENCE_DELTA_REPETITION
         );
     }
 

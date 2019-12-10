@@ -76,7 +76,7 @@ public class BarbBbcBroadcastItemUpdaterProvider implements EquivalenceResultUpd
                                         .withContainerCacheDuration(60)
                                         .withCheckContainersForAllPublishers(false)
                                         .build(),
-                                DescriptionMatchingScorer.makeScorer()
+                                DescriptionMatchingScorer.makeItemScorer()
                         )
                 )
                 .withCombiner(

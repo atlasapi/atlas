@@ -87,7 +87,7 @@ public class TxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         .withScoreOnPartialMatch(Score.ONE)
                                         .withScoreOnMismatch(Score.ZERO)
                                         .build(),
-                                DescriptionMatchingScorer.makeScorer()
+                                DescriptionMatchingScorer.makeItemScorer()
                         )
                 )
                 .withCombiner(

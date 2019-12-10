@@ -2,6 +2,7 @@ package org.atlasapi.equiv.update.updaters.providers.container;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
@@ -52,6 +53,10 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                                         targetPublishers,
                                         2, //TitleMatchingContainerScorer uses same scoring name
                                         true
+                                ),
+                                new ContainerChildEquivalenceGenerator(
+                                        dependencies.getContentResolver(),
+                                        dependencies.getEquivSummaryStore()
                                 )
                         )
                 )
@@ -84,7 +89,7 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3)
+                        AllOverOrEqThresholdExtractor.create(2.6)
                 )
                 .build();
     }

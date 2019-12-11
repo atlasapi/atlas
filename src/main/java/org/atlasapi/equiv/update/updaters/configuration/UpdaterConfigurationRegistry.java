@@ -13,6 +13,7 @@ import java.util.Set;
 import static java.lang.String.format;
 import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.NOP_CONTAINER_HANDLER;
 import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.STANDARD_CONTAINER_HANDLER;
+import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER;
 import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.STANDARD_SERIES_HANDLER;
 import static org.atlasapi.equiv.update.handlers.types.ItemEquivalenceHandlerType.NOP_ITEM_HANDLER;
 import static org.atlasapi.equiv.update.handlers.types.ItemEquivalenceHandlerType.STANDARD_ITEM_HANDLER;
@@ -1411,7 +1412,7 @@ public class UpdaterConfigurationRegistry {
                         ImmutableMap.of(
                                 IMDB_PA_CONTAINER, ImmutableSet.of(PA)
                         ),
-                        STANDARD_CONTAINER_HANDLER,
+                        STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(

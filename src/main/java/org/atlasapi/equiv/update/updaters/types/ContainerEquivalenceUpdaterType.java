@@ -5,6 +5,8 @@ import org.atlasapi.equiv.update.updaters.providers.container.BroadcastItemConta
 import org.atlasapi.equiv.update.updaters.providers.container.BtVodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.FacebookContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.ImdbApiContainerUpdateProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.ImdbPaContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.ImdbPaSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.NopContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RtUpcomingContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RteContainerUpdaterProvider;
@@ -12,10 +14,10 @@ import org.atlasapi.equiv.update.updaters.providers.container.StandardSeriesUpda
 import org.atlasapi.equiv.update.updaters.providers.container.StandardTopLevelContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.VodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.WikipediaContainerUpdateProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonContainerUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonSeriesUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonSeriesUpdaterProvider;
 import org.atlasapi.media.entity.Container;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -65,6 +67,12 @@ public enum ContainerEquivalenceUpdaterType {
     ),
     IMDB_API_CONTAINER(
             ImdbApiContainerUpdateProvider.create()
+    ),
+    IMDB_PA_CONTAINER(
+            ImdbPaContainerUpdaterProvider.create()
+    ),
+    IMDB_PA_SERIES(
+            ImdbPaSeriesUpdaterProvider.create()
     ),
     ;
 

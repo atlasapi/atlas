@@ -9,6 +9,8 @@ import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
 
 import java.util.LinkedList;
@@ -18,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
+public class DescriptionMatchingScorer<T extends Described> implements EquivalenceScorer<T> {
 
     public static final String NAME = "Description Matching";
     private static final Set<String> commonWords = ImmutableSet.of(
@@ -35,24 +37,28 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
     private DescriptionMatchingScorer() {
     }
 
-    public static DescriptionMatchingScorer makeScorer(){
-        return new DescriptionMatchingScorer();
+    public static DescriptionMatchingScorer<Item> makeItemScorer(){
+        return new DescriptionMatchingScorer<>();
+    }
+
+    public static DescriptionMatchingScorer<Container> makeContainerScorer(){
+        return new DescriptionMatchingScorer<>();
     }
 
     @Override
-    public ScoredCandidates<Item> score(
-            Item subject,
-            Set<? extends Item> candidates,
+    public ScoredCandidates<T> score(
+            T subject,
+            Set<? extends T> candidates,
             ResultDescription desc,
             EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Description Matching Scorer");
 
-        DefaultScoredCandidates.Builder<Item> equivalents =
+        DefaultScoredCandidates.Builder<T> equivalents =
                 DefaultScoredCandidates.fromSource(NAME);
 
-        for (Item candidate : candidates) {
+        for (T candidate : candidates) {
             Score equivScore = score(subject, candidate, desc);
             equivalents.addEquivalent(candidate, equivScore);
 
@@ -69,7 +75,7 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
         return equivalents.build();
     }
 
-    private Score score(Item subject, Item candidate, ResultDescription desc) {
+    private Score score(T subject, T candidate, ResultDescription desc) {
         Score score = score(subject, candidate);
         desc.appendText(
                 "%s (%s) scored: %s",
@@ -81,11 +87,11 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
         return score;
     }
 
-    private Score score(Item subject, Item candidate) {
+    private Score score(T subject, T candidate) {
         return descriptionMatch(subject, candidate) ? Score.ONE : Score.nullScore();
     }
 
-    private boolean descriptionMatch(Item subject, Item candidate) {
+    private boolean descriptionMatch(T subject, T candidate) {
         Set<String> candidateList = descriptionToProcessedList(candidate.getDescription());
         Set<String> subjectList = descriptionToProcessedList(subject.getDescription());
 
@@ -120,6 +126,6 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
 
     @Override
     public String toString() {
-        return "Description-matching Item Scorer";
+        return "Description-matching Scorer";
     }
 }

@@ -13,10 +13,10 @@ import static org.junit.Assert.assertEquals;
 
 public class DescriptionTitleMatchingScorerTest {
 
-    private DescriptionTitleMatchingScorer scorer;
+    private DescriptionTitleMatchingScorer<Item> scorer;
 
     public DescriptionTitleMatchingScorerTest() {
-        this.scorer = new DescriptionTitleMatchingScorer();
+        this.scorer = DescriptionTitleMatchingScorer.createItemScorer();
     }
 
     @Test

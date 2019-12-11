@@ -13,13 +13,13 @@ import org.atlasapi.media.entity.Publisher;
 
 import java.util.Set;
 
-public class StandardSeriesHandlerProvider implements EquivalenceResultHandlerProvider<Container> {
+public class StandardNoEpisodeMatchingContainerHandlerProvider implements EquivalenceResultHandlerProvider<Container> {
 
-    private StandardSeriesHandlerProvider() {
+    private StandardNoEpisodeMatchingContainerHandlerProvider() {
     }
 
-    public static StandardSeriesHandlerProvider create() {
-        return new StandardSeriesHandlerProvider();
+    public static StandardNoEpisodeMatchingContainerHandlerProvider create() {
+        return new StandardNoEpisodeMatchingContainerHandlerProvider();
     }
 
     @Override

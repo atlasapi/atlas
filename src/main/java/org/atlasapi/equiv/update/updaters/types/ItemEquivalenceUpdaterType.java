@@ -8,6 +8,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvide
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.ImdbApitemUpdateProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.ImdbPaItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.MusicItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.NopItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RoviItemUpdaterProvider;
@@ -20,8 +21,8 @@ import org.atlasapi.equiv.update.updaters.providers.item.VodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToAmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToAmazonItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -92,7 +93,10 @@ public enum ItemEquivalenceUpdaterType {
     ),
     IMDB_API_ITEM(
             ImdbApitemUpdateProvider.create()
-    )
+    ),
+    IMDB_PA_ITEM(
+            ImdbPaItemUpdaterProvider.create()
+    ),
     ;
 
     private final EquivalenceResultUpdaterProvider<Item> provider;

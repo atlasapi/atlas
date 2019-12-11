@@ -77,8 +77,8 @@ public class YouviewItemUpdaterProvider implements EquivalenceResultUpdaterProvi
                                         80
                                 ),
                                 new BroadcastAliasScorer(Score.nullScore()),
-                                new DescriptionTitleMatchingScorer(),
-                                DescriptionMatchingScorer.makeScorer()
+                                DescriptionTitleMatchingScorer.createItemScorer(),
+                                DescriptionMatchingScorer.makeItemScorer()
                         )
                 )
                 .withCombiner(

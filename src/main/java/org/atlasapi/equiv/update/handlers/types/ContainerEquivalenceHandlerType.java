@@ -2,7 +2,7 @@ package org.atlasapi.equiv.update.handlers.types;
 
 import org.atlasapi.equiv.update.handlers.providers.EquivalenceResultHandlerProvider;
 import org.atlasapi.equiv.update.handlers.providers.container.NopContainerHandlerProvider;
-import org.atlasapi.equiv.update.handlers.providers.container.StandardSeriesHandlerProvider;
+import org.atlasapi.equiv.update.handlers.providers.container.StandardNoEpisodeMatchingContainerHandlerProvider;
 import org.atlasapi.equiv.update.handlers.providers.container.StandardTopLevelContainerHandlerProvider;
 import org.atlasapi.media.entity.Container;
 
@@ -16,8 +16,11 @@ public enum ContainerEquivalenceHandlerType {
             StandardTopLevelContainerHandlerProvider.create()
     ),
     STANDARD_SERIES_HANDLER(
-            StandardSeriesHandlerProvider.create()
-    )
+            StandardNoEpisodeMatchingContainerHandlerProvider.create()
+    ),
+    STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER(
+            StandardNoEpisodeMatchingContainerHandlerProvider.create()
+    ),
     ;
 
     private final EquivalenceResultHandlerProvider<Container> handlerProvider;

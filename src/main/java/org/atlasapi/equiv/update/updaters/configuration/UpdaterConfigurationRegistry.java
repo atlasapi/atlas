@@ -1,20 +1,19 @@
 package org.atlasapi.equiv.update.updaters.configuration;
 
-import java.util.Set;
-
-import org.atlasapi.media.entity.Publisher;
-
-import com.metabroadcast.common.collect.MoreSets;
-import com.metabroadcast.common.stream.MoreCollectors;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.metabroadcast.common.collect.MoreSets;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.media.entity.Publisher;
+
+import java.util.Set;
 
 import static java.lang.String.format;
 import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.NOP_CONTAINER_HANDLER;
 import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.STANDARD_CONTAINER_HANDLER;
+import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER;
 import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.STANDARD_SERIES_HANDLER;
 import static org.atlasapi.equiv.update.handlers.types.ItemEquivalenceHandlerType.NOP_ITEM_HANDLER;
 import static org.atlasapi.equiv.update.handlers.types.ItemEquivalenceHandlerType.STANDARD_ITEM_HANDLER;
@@ -36,6 +35,8 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.BT_VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.FACEBOOK_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_API_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_PA_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_PA_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.NOP_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RTE_VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RT_UPCOMING_CONTAINER;
@@ -52,6 +53,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_API_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_PA_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
@@ -85,6 +87,7 @@ import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
+import static org.atlasapi.media.entity.Publisher.IMDB;
 import static org.atlasapi.media.entity.Publisher.IMDB_API;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV_CPS;
@@ -166,7 +169,8 @@ public class UpdaterConfigurationRegistry {
                 makeImdbApiConfiguration(),
                 makeC5DataSubmissionConfiguration(),
                 makeBarbCensusConfiguration(),
-                makeBarbNleConfiguration()
+                makeBarbNleConfiguration(),
+                makeImdbConfiguration()
         );
 
         configurations.add(
@@ -1386,7 +1390,34 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                            STANDARD_SERIES, ImmutableSet.of()
+                                STANDARD_SERIES, ImmutableSet.of()
+                        ),
+                        STANDARD_SERIES_HANDLER,
+                        STANDARD_SERIES_MESSENGER
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeImdbConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(IMDB)
+                .withItemEquivalenceUpdater(
+                        ImmutableMap.of(
+                                IMDB_PA_ITEM, ImmutableSet.of(PA)
+                        ),
+                        STANDARD_ITEM_HANDLER,
+                        STANDARD_ITEM_MESSENGER
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                IMDB_PA_CONTAINER, ImmutableSet.of(PA)
+                        ),
+                        STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER,
+                        STANDARD_CONTAINER_MESSENGER
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                IMDB_PA_SERIES, ImmutableSet.of(PA)
                         ),
                         STANDARD_SERIES_HANDLER,
                         STANDARD_SERIES_MESSENGER

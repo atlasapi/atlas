@@ -103,7 +103,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         .withContainerCacheDuration(60)
                                         .withCheckContainersForAllPublishers(false)
                                         .build(),
-                                DescriptionMatchingScorer.makeScorer()
+                                DescriptionMatchingScorer.makeItemScorer()
                         )
                 )
                 .withCombiner(

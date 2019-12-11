@@ -72,6 +72,7 @@ import static org.atlasapi.media.entity.Publisher.FLICKR;
 import static org.atlasapi.media.entity.Publisher.HBO;
 import static org.atlasapi.media.entity.Publisher.HULU;
 import static org.atlasapi.media.entity.Publisher.ICTOMORROW;
+import static org.atlasapi.media.entity.Publisher.IMDB;
 import static org.atlasapi.media.entity.Publisher.IMDB_API;
 import static org.atlasapi.media.entity.Publisher.INTERNET_VIDEO_ARCHIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
@@ -220,7 +221,8 @@ public class DefaultConfiguration {
                             C5_DATA_SUBMISSION,
                             BARB_CENSUS,
                             BARB_NLE,
-                            BARB_EDITOR_OVERRIDES
+                            BARB_EDITOR_OVERRIDES,
+                            IMDB
                     )
             )
             .addAll(MUSIC_SOURCES)

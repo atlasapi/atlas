@@ -104,6 +104,7 @@ import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV;
 import static org.atlasapi.media.entity.Publisher.ITV_CPS;
 import static org.atlasapi.media.entity.Publisher.ITV_INTERLINKING;
+import static org.atlasapi.media.entity.Publisher.JUSTWATCH;
 import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
@@ -194,6 +195,10 @@ public class EquivTaskModule {
             RepetitionRules.NEVER;
     private static final RepetitionRule IMDB_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(23, 0));
+    private static final RepetitionRule JUSTWATCH_EQUIVALENCE_REPETITION =
+            RepetitionRules.NEVER;
+    private static final RepetitionRule JUSTWATCH_EQUIVALENCE_DELTA_REPETITION =
+            RepetitionRules.daily(new LocalTime(22, 0));
     private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
@@ -680,6 +685,22 @@ public class EquivTaskModule {
                         .forLast(new Period().withDays(3))
                         .withName("IMDB Delta Updater (last 72h)"),
                 IMDB_EQUIVALENCE_DELTA_REPETITION
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(JUSTWATCH).withName("JustWatch Updater"),
+                JUSTWATCH_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored
+                )
+                        .forPublisher(JUSTWATCH)
+                        .forLast(new Period().withDays(3))
+                        .withName("JustWatch Delta Updater (last 72h)"),
+                JUSTWATCH_EQUIVALENCE_DELTA_REPETITION
         );
     }
 

@@ -11,12 +11,14 @@ import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
+import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 import java.util.Set;
 
@@ -44,10 +46,6 @@ public class FacebookContainerUpdaterProvider implements EquivalenceResultUpdate
                                         Container.class,
                                         targetPublishers,
                                         2
-                                ),
-                                AliasResolvingEquivalenceGenerator.aliasResolvingGenerator(
-                                        dependencies.getContentResolver(),
-                                        Container.class
                                 )
                 ))
                 .withScorers(

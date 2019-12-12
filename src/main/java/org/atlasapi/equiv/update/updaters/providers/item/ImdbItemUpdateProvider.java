@@ -1,10 +1,8 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import org.atlasapi.application.v3.DefaultApplication;
-import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
-import org.atlasapi.equiv.generators.TitleSearchGenerator;
+import java.util.Set;
+
+import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -15,8 +13,6 @@ import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.ItemYearScorer;
-import org.atlasapi.equiv.scorers.barb.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
@@ -24,16 +20,24 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-public class ImdbApitemUpdateProvider implements EquivalenceResultUpdaterProvider<Item> {
+public class ImdbItemUpdateProvider implements EquivalenceResultUpdaterProvider<Item> {
 
-    private ImdbApitemUpdateProvider() {
+    private final String IMDB_NAMESPACE = "imdb:id";
+    private final String AMAZON_IMDB_NAMESPACE = "zz:imdb:id";
+    private final String JUSTWATCH_IMDB_NAMESPACE = "justwatch:imdb:id";
+    private final Set<Set<String>> NAMESPACES_SET = ImmutableSet.of(
+            ImmutableSet.of(IMDB_NAMESPACE, AMAZON_IMDB_NAMESPACE, JUSTWATCH_IMDB_NAMESPACE)
+    );
+
+    private ImdbItemUpdateProvider() {
 
     }
 
-    public static ImdbApitemUpdateProvider create() {
-        return new ImdbApitemUpdateProvider();
+    public static ImdbItemUpdateProvider create() {
+        return new ImdbItemUpdateProvider();
     }
 
     @Override
@@ -46,31 +50,19 @@ public class ImdbApitemUpdateProvider implements EquivalenceResultUpdaterProvide
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                new FilmEquivalenceGeneratorAndScorer(
-                                        dependencies.getSearchResolver(),
-                                        targetPublishers,
-                                        DefaultApplication.createWithReads(
-                                                ImmutableList.copyOf(targetPublishers)
-                                        ),
-                                        true),
-                                TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
-                                        Item.class,
-                                        targetPublishers,
-                                        0,
-                                        false,
-                                        false
-                                )
+                                AliasResolvingEquivalenceGenerator.<Item>builder()
+                                    .withResolver(dependencies.getContentResolver())
+                                    .withPublishers(targetPublishers)
+                                    .withLookupEntryStore(dependencies.getLookupEntryStore())
+                                    .withNamespacesSet(NAMESPACES_SET)
+                                    .withAliasMatchingScore(Score.valueOf(3D))
+                                    .withIncludeUnpublishedContent(false)
+                                    .withClass(Item.class)
+                                    .build()
                         )
                 )
                 .withScorers(
-                        ImmutableSet.of(
-                                BarbTitleMatchingItemScorer.builder()
-                                        .withScoreOnPerfectMatch(Score.valueOf(2.0))
-                                        .withScoreOnMismatch(Score.ZERO)
-                                        .build(),
-                                new ItemYearScorer(Score.ONE)
-                        )
+                        ImmutableSet.of()
                 )
                 .withCombiner(
                         new AddingEquivalenceCombiner<>()
@@ -89,7 +81,7 @@ public class ImdbApitemUpdateProvider implements EquivalenceResultUpdaterProvide
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3D)
+                        AllOverOrEqThresholdExtractor.create(3)
                 )
                 .build();
     }

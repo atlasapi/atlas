@@ -1,14 +1,16 @@
 package org.atlasapi.equiv.update.updaters.configuration;
 
+import java.util.Set;
+
+import org.atlasapi.media.entity.Publisher;
+
+import com.metabroadcast.common.collect.MoreSets;
+import com.metabroadcast.common.stream.MoreCollectors;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.collect.MoreSets;
-import com.metabroadcast.common.stream.MoreCollectors;
-import org.atlasapi.media.entity.Publisher;
-
-import java.util.Set;
 
 import static java.lang.String.format;
 import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.NOP_CONTAINER_HANDLER;
@@ -34,7 +36,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.BROADCAST_ITEM_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.BT_VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.FACEBOOK_CONTAINER;
-import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_API_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_PA_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_PA_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.NOP_CONTAINER;
@@ -52,7 +54,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_API_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_PA_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
@@ -88,9 +90,9 @@ import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.IMDB;
-import static org.atlasapi.media.entity.Publisher.IMDB_API;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV_CPS;
+import static org.atlasapi.media.entity.Publisher.JUSTWATCH;
 import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
@@ -166,11 +168,11 @@ public class UpdaterConfigurationRegistry {
                 makeUktvConfiguration(),
                 makeWikipediaConfiguration(),
                 makeBarbXMasterConfiguration(), //X-CDMF
-                makeImdbApiConfiguration(),
+                makeImdbConfiguration(),
+                makeJustWatchConfiguration(),
                 makeC5DataSubmissionConfiguration(),
                 makeBarbCensusConfiguration(),
-                makeBarbNleConfiguration(),
-                makeImdbConfiguration()
+                makeBarbNleConfiguration()
         );
 
         configurations.add(
@@ -317,31 +319,56 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private static UpdaterConfiguration makeImdbApiConfiguration() {
+    private static UpdaterConfiguration makeImdbConfiguration() {
         return UpdaterConfiguration.builder()
-                .withSource(IMDB_API)
+                .withSource(IMDB)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                IMDB_API_ITEM, ImmutableSet.of(
-                                        BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION,
-                                        BARB_OVERRIDES, BARB_TRANSMISSIONS, BARB_MASTER
-                                )
+                                IMDB_PA_ITEM, ImmutableSet.of(PA),
+                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                IMDB_API_CONTAINER, ImmutableSet.of(
-                                        BBC_NITRO, ITV_CPS, UKTV, C4_PMLSD, C5_DATA_SUBMISSION, BARB_OVERRIDES
-                                )
+                                IMDB_PA_CONTAINER, ImmutableSet.of(PA),
+                                IMDB_CONTAINER, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH)
                         ),
-                        STANDARD_CONTAINER_HANDLER,
+                        STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                IMDB_API_CONTAINER, ImmutableSet.of()
+                                IMDB_PA_SERIES, ImmutableSet.of(PA),
+                                IMDB_CONTAINER, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH)
+                        ),
+                        STANDARD_CONTAINER_HANDLER,
+                        STANDARD_CONTAINER_MESSENGER
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeJustWatchConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(JUSTWATCH)
+                .withItemEquivalenceUpdater(
+                        ImmutableMap.of(
+                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, IMDB)
+                        ),
+                        STANDARD_ITEM_HANDLER,
+                        STANDARD_ITEM_MESSENGER
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                IMDB_CONTAINER, ImmutableSet.of(AMAZON_UNBOX, IMDB)
+                        ),
+                        STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER,
+                        STANDARD_CONTAINER_MESSENGER
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                IMDB_CONTAINER, ImmutableSet.of(AMAZON_UNBOX, IMDB)
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
@@ -891,7 +918,8 @@ public class UpdaterConfigurationRegistry {
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
                                 AMAZON_AMAZON_ITEM, amazonSource,
-                                AMAZON_ITEM, otherSources
+                                AMAZON_ITEM, otherSources,
+                                IMDB_ITEM, ImmutableSet.of(IMDB, JUSTWATCH)
                         ),
                         STRICT_EPISODE_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -899,16 +927,18 @@ public class UpdaterConfigurationRegistry {
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
                                 AMAZON_AMAZON_CONTAINER, amazonSource,
-                                AMAZON_CONTAINER, otherSources
-                                ),
+                                AMAZON_CONTAINER, otherSources,
+                                IMDB_CONTAINER, ImmutableSet.of(IMDB, JUSTWATCH)
+                        ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
                                 AMAZON_AMAZON_SERIES, amazonSource,
-                                AMAZON_SERIES, otherSources
-                                ),
+                                AMAZON_SERIES, otherSources,
+                                IMDB_CONTAINER, ImmutableSet.of(IMDB, JUSTWATCH)
+                        ),
                         STANDARD_SERIES_HANDLER,
                         STANDARD_SERIES_MESSENGER
                 )
@@ -1390,34 +1420,7 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_SERIES, ImmutableSet.of()
-                        ),
-                        STANDARD_SERIES_HANDLER,
-                        STANDARD_SERIES_MESSENGER
-                )
-                .build();
-    }
-
-    private static UpdaterConfiguration makeImdbConfiguration() {
-        return UpdaterConfiguration.builder()
-                .withSource(IMDB)
-                .withItemEquivalenceUpdater(
-                        ImmutableMap.of(
-                                IMDB_PA_ITEM, ImmutableSet.of(PA)
-                        ),
-                        STANDARD_ITEM_HANDLER,
-                        STANDARD_ITEM_MESSENGER
-                )
-                .withTopLevelContainerEquivalenceUpdater(
-                        ImmutableMap.of(
-                                IMDB_PA_CONTAINER, ImmutableSet.of(PA)
-                        ),
-                        STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER,
-                        STANDARD_CONTAINER_MESSENGER
-                )
-                .withNonTopLevelContainerEquivalenceUpdater(
-                        ImmutableMap.of(
-                                IMDB_PA_SERIES, ImmutableSet.of(PA)
+                            STANDARD_SERIES, ImmutableSet.of()
                         ),
                         STANDARD_SERIES_HANDLER,
                         STANDARD_SERIES_MESSENGER

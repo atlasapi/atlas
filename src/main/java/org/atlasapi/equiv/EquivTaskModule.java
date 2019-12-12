@@ -666,7 +666,7 @@ public class EquivTaskModule {
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                publisherUpdateTask(IMDB).withName("IMDB Updater"),
+                publisherUpdateTask(500, IMDB).withName("IMDB Updater"),
                 IMDB_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
@@ -767,20 +767,24 @@ public class EquivTaskModule {
         return new MongoScheduleTaskProgressStore(db);
     }
 
-    private ContentEquivalenceUpdateTask publisherUpdateTask(final Publisher... publishers) {
+    private ContentEquivalenceUpdateTask publisherUpdateTask(int numberOfThreads, final Publisher... publishers) {
         return new ContentEquivalenceUpdateTask(
                 contentLister,
                 contentResolver,
-                getNewDefaultExecutor(),
+                getNewDefaultExecutor(numberOfThreads),
                 progressStore(),
                 equivUpdater,
                 ignored
         ).forPublishers(publishers);
     }
 
-    private ExecutorService getNewDefaultExecutor(){
+    private ContentEquivalenceUpdateTask publisherUpdateTask(final Publisher... publishers) {
+        return publisherUpdateTask(EQUIV_THREADS_PER_JOB, publishers);
+    }
+
+    private ExecutorService getNewDefaultExecutor(int numberOfThreads) {
         ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                EQUIV_THREADS_PER_JOB, EQUIV_THREADS_PER_JOB, //this is used by all equiv tasks, so increase with caution.
+                numberOfThreads, numberOfThreads,
                 60, TimeUnit.SECONDS,
                 new AlwaysBlockingQueue<>(SAVE_EVERY_BLOCK_SIZE)
         );

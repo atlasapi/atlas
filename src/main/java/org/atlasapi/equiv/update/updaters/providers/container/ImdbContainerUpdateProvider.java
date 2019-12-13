@@ -25,10 +25,11 @@ import com.google.common.collect.ImmutableSet;
 public class ImdbContainerUpdateProvider implements EquivalenceResultUpdaterProvider<Container> {
 
     private final String IMDB_NAMESPACE = "imdb:id";
+    private final String OLD_IMDB_NAMESPACE = "gb:imdb:resourceId";
     private final String AMAZON_IMDB_NAMESPACE = "zz:imdb:id";
     private final String JUSTWATCH_IMDB_NAMESPACE = "justwatch:imdb:id";
     private final Set<Set<String>> NAMESPACES_SET = ImmutableSet.of(
-            ImmutableSet.of(IMDB_NAMESPACE, AMAZON_IMDB_NAMESPACE, JUSTWATCH_IMDB_NAMESPACE)
+            ImmutableSet.of(IMDB_NAMESPACE, OLD_IMDB_NAMESPACE, AMAZON_IMDB_NAMESPACE, JUSTWATCH_IMDB_NAMESPACE)
     );
 
     private ImdbContainerUpdateProvider() {

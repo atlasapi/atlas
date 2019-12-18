@@ -133,6 +133,10 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         return source.getProgramme().getReleaseDate();
     }
 
+    protected XMLGregorianCalendar extractReleaseYear(NitroItemSource<Episode> source) {
+        return source.getProgramme().getReleaseYear();
+    }
+
     @Override
     protected void extractAdditionalItemFields(NitroItemSource<Episode> source, Item item,
             DateTime now) {
@@ -157,6 +161,11 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         }
         if (episode.getReleaseDate() != null) {
             setReleaseDate(item, source);
+        }
+        if (episode.getReleaseYear() != null) {
+            item.setYear(extractReleaseYear(source).getYear());
+        } else if (episode.getReleaseDate() != null) {
+            item.setYear(extractReleaseDate(source).getYear());
         }
         writeAndSetPeople(item, source);
     }

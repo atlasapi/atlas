@@ -27,6 +27,7 @@ import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigInteger;
 import java.util.List;
@@ -133,8 +134,16 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         return source.getProgramme().getReleaseDate();
     }
 
-    protected XMLGregorianCalendar extractReleaseYear(NitroItemSource<Episode> source) {
-        return source.getProgramme().getReleaseYear();
+    @Nullable
+    @Override
+    protected Integer extractReleaseYear(NitroItemSource<Episode> source) {
+        if (source.getProgramme().getReleaseYear() != null) {
+            return source.getProgramme().getReleaseYear().getYear();
+        } else if (source.getProgramme().getReleaseDate() != null) {
+            return source.getProgramme().getReleaseDate().getYear();
+        } else {
+            return null;
+        }
     }
 
     @Override

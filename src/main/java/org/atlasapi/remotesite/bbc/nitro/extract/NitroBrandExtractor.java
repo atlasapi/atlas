@@ -65,4 +65,15 @@ public class NitroBrandExtractor
         return source.getMasterBrand();
     }
 
+    @Nullable
+    @Override
+    protected Integer extractReleaseYear(Brand source) {
+        if (source.getReleaseYear() != null) {
+            return source.getReleaseYear().getYear();
+        } else if (source.getReleaseDate() != null) {
+            return source.getReleaseDate().getYear();
+        } else {
+            return null;
+        }
+    }
 }

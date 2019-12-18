@@ -114,6 +114,8 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
                         pid , content.getCanonicalUri(), masterBrand.getMid());
             }
         }
+        content.setYear(extractReleaseYear(source));
+
         //TODO: genres from v2 API
         extractAdditionalFields(source, content, now);
         return content;
@@ -181,6 +183,8 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
     protected abstract @Nullable Brand.Images.Image extractImage(SOURCE source);
 
     protected abstract @Nullable AvailableVersions extractVersions(SOURCE source);
+
+    protected abstract @Nullable Integer extractReleaseYear(SOURCE source);
 
     /**
      * Concrete implementations can override this method to perform additional

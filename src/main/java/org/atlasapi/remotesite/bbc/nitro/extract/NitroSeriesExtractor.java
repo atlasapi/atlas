@@ -65,6 +65,18 @@ public class NitroSeriesExtractor
         return null;
     }
 
+    @Nullable
+    @Override
+    protected Integer extractReleaseYear(Series source) {
+        if (source.getReleaseYear() != null) {
+            return source.getReleaseYear().getYear();
+        } else if (source.getReleaseDate() != null) {
+            return source.getReleaseDate().getYear();
+        } else {
+            return null;
+        }
+    }
+
     @Override
     protected void extractAdditionalFields(Series source, org.atlasapi.media.entity.Series content,
             DateTime now) {

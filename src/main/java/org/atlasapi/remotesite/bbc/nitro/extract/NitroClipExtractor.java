@@ -69,4 +69,15 @@ public class NitroClipExtractor
         return source.getProgramme().getMasterBrand();
     }
 
+    @Nullable
+    @Override
+    protected Integer extractReleaseYear(NitroItemSource<Clip> source) {
+        if (source.getProgramme().getReleaseYear() != null) {
+            return source.getProgramme().getReleaseYear().getYear();
+        } else if (source.getProgramme().getReleaseDate() != null) {
+            return source.getProgramme().getReleaseDate().getYear();
+        } else {
+            return null;
+        }
+    }
 }

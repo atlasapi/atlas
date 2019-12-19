@@ -171,11 +171,6 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         if (episode.getReleaseDate() != null) {
             setReleaseDate(item, source);
         }
-        if (episode.getReleaseYear() != null) {
-            item.setYear(extractReleaseYear(source).getYear());
-        } else if (episode.getReleaseDate() != null) {
-            item.setYear(extractReleaseDate(source).getYear());
-        }
         writeAndSetPeople(item, source);
     }
 

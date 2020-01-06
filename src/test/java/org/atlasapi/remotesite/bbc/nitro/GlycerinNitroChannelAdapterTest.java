@@ -31,6 +31,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.time.LocalDate;
+
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -264,8 +266,10 @@ public class GlycerinNitroChannelAdapterTest {
     private void setDateRange(Service service) {
         DateRange dateRange = new DateRange();
 
-        dateRange.setEnd(XMLGregorianCalendarImpl.createDate(2020,1,1,1));
-        dateRange.setStart(XMLGregorianCalendarImpl.createDate(2000,1,1,1));
+        LocalDate date = LocalDate.now().plusYears(1);
+
+        dateRange.setEnd(XMLGregorianCalendarImpl.createDate(date.getYear(),date.getMonthValue(),date.getDayOfMonth(),1));
+        dateRange.setStart(XMLGregorianCalendarImpl.createDate(date.minusYears(1).getYear(),1,1,1));
 
         service.setDateRange(dateRange);
     }

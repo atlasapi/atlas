@@ -27,6 +27,10 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+/**
+ *  Equivs on both exact title + exact year match, but not only one or the other.
+ *  Also equivs if IMDb alias present, or through sequence stitching via containers.
+ */
 public class ImdbItemUpdateProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private final String IMDB_NAMESPACE = "imdb:id";

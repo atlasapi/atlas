@@ -1,11 +1,9 @@
-package org.atlasapi.equiv.update.updaters.providers.container;
+package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
-import org.atlasapi.equiv.generators.TitleSearchGenerator;
+import java.util.Set;
+
+import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
-import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
@@ -15,9 +13,7 @@ import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
-import org.atlasapi.equiv.results.scores.ScoreThreshold;
-import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
+import org.atlasapi.equiv.scorers.SequenceContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
@@ -26,15 +22,16 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
+public class ImdbSeriesUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
-    private ImdbPaContainerUpdaterProvider() {
+    private ImdbSeriesUpdaterProvider() {
     }
 
-    public static ImdbPaContainerUpdaterProvider create() {
-        return new ImdbPaContainerUpdaterProvider();
+    public static ImdbSeriesUpdaterProvider create() {
+        return new ImdbSeriesUpdaterProvider();
     }
 
     @Override
@@ -47,32 +44,22 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
-                                        Container.class,
-                                        targetPublishers,
-                                        2, //TitleMatchingContainerScorer uses same scoring name
-                                        true
-                                ),
-                                new ContainerChildEquivalenceGenerator(
+                                new ContainerCandidatesContainerEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers,
+                                        true
                                 )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2),
-                                DescriptionTitleMatchingScorer.createContainerScorer(),
-                                DescriptionMatchingScorer.makeContainerScorer()
+                                new SequenceContainerScorer()
                         )
                 )
                 .withCombiner(
-                        new RequiredScoreFilteringCombiner<>(
-                                new AddingEquivalenceCombiner<>(),
-                                TitleMatchingContainerScorer.NAME,
-                                ScoreThreshold.greaterThanOrEqual(2)
-                        )
+                        new AddingEquivalenceCombiner<>()
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
@@ -89,8 +76,9 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(2.6)
+                        AllOverOrEqThresholdExtractor.create(1)
                 )
                 .build();
     }
+
 }

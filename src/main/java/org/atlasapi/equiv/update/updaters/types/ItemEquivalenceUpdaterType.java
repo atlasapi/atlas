@@ -7,7 +7,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.BbcTxlogsItemUpdaterPro
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.ImdbItemUpdateProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.ImdbItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.ImdbPaItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.MusicItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.NopItemUpdaterProvider;
@@ -92,7 +92,7 @@ public enum ItemEquivalenceUpdaterType {
             BarbXItemUpdaterProvider.create()
     ),
     IMDB_ITEM(
-            ImdbItemUpdateProvider.create()
+            ImdbItemUpdaterProvider.create()
     ),
     IMDB_PA_ITEM(
             ImdbPaItemUpdaterProvider.create()

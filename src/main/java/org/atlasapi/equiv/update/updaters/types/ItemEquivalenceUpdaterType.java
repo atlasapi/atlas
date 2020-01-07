@@ -7,8 +7,8 @@ import org.atlasapi.equiv.update.updaters.providers.item.BbcTxlogsItemUpdaterPro
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.ImdbItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.ImdbPaItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.imdb.ImdbItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.imdb.ImdbPaItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.MusicItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.NopItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RoviItemUpdaterProvider;

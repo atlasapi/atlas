@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.update.updaters.providers.item;
+package org.atlasapi.equiv.update.updaters.providers.item.imdb;
 
 import java.util.Set;
 

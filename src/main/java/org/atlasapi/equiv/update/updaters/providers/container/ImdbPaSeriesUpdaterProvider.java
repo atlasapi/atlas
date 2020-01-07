@@ -82,7 +82,7 @@ public class ImdbPaSeriesUpdaterProvider implements EquivalenceResultUpdaterProv
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3)
+                        AllOverOrEqThresholdExtractor.create(1)
                 )
                 .build();
     }

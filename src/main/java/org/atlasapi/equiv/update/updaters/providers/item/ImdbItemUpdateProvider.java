@@ -3,6 +3,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import java.util.Set;
 
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
+import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -13,6 +14,9 @@ import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.ItemYearScorer;
+import org.atlasapi.equiv.scorers.SequenceItemScorer;
+import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
@@ -59,11 +63,20 @@ public class ImdbItemUpdateProvider implements EquivalenceResultUpdaterProvider<
                                     .withAliasMatchingScore(Score.valueOf(3D))
                                     .withIncludeUnpublishedContent(false)
                                     .withClass(Item.class)
-                                    .build()
+                                    .build(),
+                                new ContainerCandidatesItemEquivalenceGenerator(
+                                        dependencies.getContentResolver(),
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers
+                                )
                         )
                 )
                 .withScorers(
-                        ImmutableSet.of()
+                        ImmutableSet.of(
+                                new SequenceItemScorer(Score.valueOf(3D)),
+                                new TitleMatchingItemScorer(), // Scores 2 on exact match
+                                new ItemYearScorer(Score.ONE, Score.ZERO, Score.nullScore())
+                        )
                 )
                 .withCombiner(
                         new AddingEquivalenceCombiner<>()

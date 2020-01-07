@@ -39,6 +39,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_PA_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_PA_SERIES;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.NOP_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RTE_VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RT_UPCOMING_CONTAINER;
@@ -341,7 +342,7 @@ public class UpdaterConfigurationRegistry {
                 .withNonTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
                                 IMDB_PA_SERIES, ImmutableSet.of(PA),
-                                IMDB_CONTAINER, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH)
+                                IMDB_SERIES, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH)
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER

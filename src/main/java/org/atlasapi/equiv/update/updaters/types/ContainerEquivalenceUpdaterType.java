@@ -7,6 +7,7 @@ import org.atlasapi.equiv.update.updaters.providers.container.FacebookContainerU
 import org.atlasapi.equiv.update.updaters.providers.container.ImdbContainerUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.ImdbPaContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.ImdbPaSeriesUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.ImdbSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.NopContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RtUpcomingContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RteContainerUpdaterProvider;
@@ -70,6 +71,9 @@ public enum ContainerEquivalenceUpdaterType {
     ),
     IMDB_PA_CONTAINER(
             ImdbPaContainerUpdaterProvider.create()
+    ),
+    IMDB_SERIES(
+            ImdbSeriesUpdaterProvider.create()
     ),
     IMDB_PA_SERIES(
             ImdbPaSeriesUpdaterProvider.create()

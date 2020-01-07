@@ -369,7 +369,7 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                IMDB_CONTAINER, ImmutableSet.of(AMAZON_UNBOX, IMDB)
+                                IMDB_SERIES, ImmutableSet.of(AMAZON_UNBOX, IMDB)
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER

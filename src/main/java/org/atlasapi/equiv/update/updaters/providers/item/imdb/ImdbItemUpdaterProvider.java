@@ -2,8 +2,10 @@ package org.atlasapi.equiv.update.updaters.providers.item.imdb;
 
 import java.util.Set;
 
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
+import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -72,13 +74,24 @@ public class ImdbItemUpdaterProvider implements EquivalenceResultUpdaterProvider
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
                                         targetPublishers
+                                ),
+                                new FilmEquivalenceGeneratorAndScorer(
+                                        dependencies.getSearchResolver(),
+                                        targetPublishers,
+                                        DefaultApplication.createWithReads(
+                                                ImmutableList.copyOf(targetPublishers)),
+                                        true,
+                                        0,
+                                        Score.nullScore(),
+                                        Score.nullScore(),
+                                        Score.valueOf(2D),
+                                        Score.nullScore()
                                 )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
                                 new SequenceItemScorer(Score.valueOf(3D)),
-                                new TitleMatchingItemScorer(), // Scores 2 on exact match
                                 new ItemYearScorer(Score.ONE, Score.ZERO, Score.nullScore())
                         )
                 )

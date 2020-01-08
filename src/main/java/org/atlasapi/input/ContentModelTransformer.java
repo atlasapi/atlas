@@ -11,9 +11,11 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Actor;
+import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.CrewMember;
@@ -103,6 +105,7 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
         result.setEventRefs(eventRefs(inputContent.getEventRefs()));
         result.setYear(inputContent.getYear());
         result.setLanguages(transformLanguages(inputContent.getOriginalLanguages()));
+        result.setCertificates(transformCertificates(inputContent.getCertificates()));
         return result;
     }
 
@@ -255,6 +258,12 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
     private Set<String> transformLanguages(Set<Language> languages) {
         return languages.stream()
                 .map(Language::getCode)
+                .collect(MoreCollectors.toImmutableSet());
+    }
+
+    private Set<Certificate> transformCertificates(Set<org.atlasapi.media.entity.simple.Certificate> certificates) {
+        return certificates.stream()
+                .map(input -> new Certificate(input.getClassification(), Countries.fromCode(input.getCode())))
                 .collect(MoreCollectors.toImmutableSet());
     }
 }

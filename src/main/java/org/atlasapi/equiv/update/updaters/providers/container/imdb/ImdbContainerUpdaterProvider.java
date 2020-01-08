@@ -6,6 +6,7 @@ import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
+import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
@@ -81,8 +82,9 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
-                                )
-                                //TODO add a filter that checks that the candidate is the same type
+                                ),
+                                //Amazon series have IMDb brand id as alias; this will prevent equiv
+                                new ContainerHierarchyFilter()
                         ))
                 )
                 .withExtractor(

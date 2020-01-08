@@ -82,6 +82,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 )
+                                //TODO add a filter that checks that the candidate is the same type
                         ))
                 )
                 .withExtractor(

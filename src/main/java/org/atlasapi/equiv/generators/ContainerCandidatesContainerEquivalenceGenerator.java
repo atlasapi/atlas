@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.generators;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -107,28 +108,29 @@ public class ContainerCandidatesContainerEquivalenceGenerator
             for (String containerUri : containerUris) {
                 List<Identified> resolvedContent = contentResolver.findByCanonicalUris(
                         Collections.singleton(containerUri)).getAllResolvedResults();
-                Brand resolvedContainer = Iterables.filter(resolvedContent, Brand.class)
-                        .iterator()
-                        .next();
-                //this is necessary for when we looked at all candidates;if we looked at container's
-                //equivalents only, then we already filtered out by publisher before resolving;
-                if (publishers != null) {
-                    if (!publishers.contains(resolvedContainer.getPublisher())) {
-                        continue;
+                Iterator<Brand> brandIterator = Iterables.filter(resolvedContent, Brand.class) //TODO this will fail => NoSuchElement
+                        .iterator(); //check for hasNext before doing .next()
+                while(brandIterator.hasNext()) {
+                    Brand resolvedContainer = brandIterator.next();
+                    //this is necessary for when we looked at all candidates;if we looked at container's
+                    //equivalents only, then we already filtered out by publisher before resolving;
+                    if (publishers != null) {
+                        if (!publishers.contains(resolvedContainer.getPublisher())) {
+                            continue;
+                        }
                     }
-                }
-                for (Series candidateSeries : seriesOf(resolvedContainer)) {
-                    //if its published, and its not the subject itself, we have a winner.
-                    if (candidateSeries.isActivelyPublished()
-                            && !Objects.equals(candidateSeries.getId(), subject.getId())) {
-
-                        result.addEquivalent(candidateSeries, Score.NULL_SCORE);
-                        desc.appendText(
-                                "Candidate: %s (from parent: %s)",
-                                candidateSeries.getCanonicalUri(),
-                                resolvedContainer.getCanonicalUri()
-                        );
-                        generatorComponent.addComponentResult(candidateSeries.getId(), "");
+                    for (Series candidateSeries : seriesOf(resolvedContainer)) {
+                        //if its published, and its not the subject itself, we have a winner.
+                        if (candidateSeries.isActivelyPublished()
+                                && !Objects.equals(candidateSeries.getId(), subject.getId())) {
+                            result.addEquivalent(candidateSeries, Score.NULL_SCORE);
+                            desc.appendText(
+                                    "Candidate: %s (from parent: %s)",
+                                    candidateSeries.getCanonicalUri(),
+                                    resolvedContainer.getCanonicalUri()
+                            );
+                            generatorComponent.addComponentResult(candidateSeries.getId(), "");
+                        }
                     }
                 }
             }

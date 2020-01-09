@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.update.updaters.providers.item;
+package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
 import java.util.Set;
 
@@ -6,24 +6,26 @@ import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
+import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
-import org.atlasapi.equiv.results.filters.FilmAndEpisodeFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.ContainerYearScorer;
+import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
-import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class ImdbItemUpdateProvider implements EquivalenceResultUpdaterProvider<Item> {
+public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
     private final String IMDB_NAMESPACE = "imdb:id";
     private final String OLD_IMDB_NAMESPACE = "gb:imdb:resourceId";
@@ -33,37 +35,40 @@ public class ImdbItemUpdateProvider implements EquivalenceResultUpdaterProvider<
             ImmutableSet.of(IMDB_NAMESPACE, OLD_IMDB_NAMESPACE, AMAZON_IMDB_NAMESPACE, JUSTWATCH_IMDB_NAMESPACE)
     );
 
-    private ImdbItemUpdateProvider() {
+    private ImdbContainerUpdaterProvider() {
 
     }
 
-    public static ImdbItemUpdateProvider create() {
-        return new ImdbItemUpdateProvider();
+    public static ImdbContainerUpdaterProvider create() {
+        return new ImdbContainerUpdaterProvider();
     }
 
     @Override
-    public EquivalenceResultUpdater<Item> getUpdater(
+    public EquivalenceResultUpdater<Container> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceResultUpdater.<Item>builder()
+        return ContentEquivalenceResultUpdater.<Container>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                AliasResolvingEquivalenceGenerator.<Item>builder()
-                                    .withResolver(dependencies.getContentResolver())
-                                    .withPublishers(targetPublishers)
-                                    .withLookupEntryStore(dependencies.getLookupEntryStore())
-                                    .withNamespacesSet(NAMESPACES_SET)
-                                    .withAliasMatchingScore(Score.valueOf(3D))
-                                    .withIncludeUnpublishedContent(false)
-                                    .withClass(Item.class)
-                                    .build()
+                                AliasResolvingEquivalenceGenerator.<Container>builder()
+                                        .withResolver(dependencies.getContentResolver())
+                                        .withPublishers(targetPublishers)
+                                        .withLookupEntryStore(dependencies.getLookupEntryStore())
+                                        .withNamespacesSet(NAMESPACES_SET)
+                                        .withAliasMatchingScore(Score.valueOf(3D))
+                                        .withIncludeUnpublishedContent(false)
+                                        .withClass(Container.class)
+                                        .build()
                         )
                 )
                 .withScorers(
-                        ImmutableSet.of()
+                        ImmutableSet.of(
+                                new TitleMatchingContainerScorer(2.0),
+                                new ContainerYearScorer(Score.ONE)
+                        )
                 )
                 .withCombiner(
                         new AddingEquivalenceCombiner<>()
@@ -72,13 +77,15 @@ public class ImdbItemUpdateProvider implements EquivalenceResultUpdaterProvider<
                         ConjunctiveFilter.valueOf(ImmutableList.of(
                                 new MinimumScoreFilter<>(2.9),
                                 new MediaTypeFilter<>(),
-                                new FilmAndEpisodeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
-                                )
+                                ),
+                                //Amazon series have IMDb brand ids as alias, causing bad equiv;
+                                //this filter will prevent that from occuring
+                                new ContainerHierarchyFilter()
                         ))
                 )
                 .withExtractor(

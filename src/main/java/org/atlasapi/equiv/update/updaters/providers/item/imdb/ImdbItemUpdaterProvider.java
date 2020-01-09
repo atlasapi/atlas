@@ -1,25 +1,22 @@
-package org.atlasapi.equiv.update.updaters.providers.item;
+package org.atlasapi.equiv.update.updaters.providers.item.imdb;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
-import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
-import org.atlasapi.equiv.results.filters.FilmYearFilter;
+import org.atlasapi.equiv.results.filters.FilmAndEpisodeFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
-import org.atlasapi.equiv.scorers.FilmYearScorer;
+import org.atlasapi.equiv.scorers.ItemYearScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
@@ -29,14 +26,29 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-public class ImdbPaItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
+/**
+ *  Equivs on both exact title + exact year match, but not only one or the other.
+ *  Also equivs if IMDb alias present, or through sequence stitching via containers.
+ */
+public class ImdbItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
-    private ImdbPaItemUpdaterProvider() {}
+    private final String IMDB_NAMESPACE = "imdb:id";
+    private final String OLD_IMDB_NAMESPACE = "gb:imdb:resourceId";
+    private final String AMAZON_IMDB_NAMESPACE = "zz:imdb:id";
+    private final String JUSTWATCH_IMDB_NAMESPACE = "justwatch:imdb:id";
+    private final Set<Set<String>> NAMESPACES_SET = ImmutableSet.of(
+            ImmutableSet.of(IMDB_NAMESPACE, OLD_IMDB_NAMESPACE, AMAZON_IMDB_NAMESPACE, JUSTWATCH_IMDB_NAMESPACE)
+    );
 
-    public static ImdbPaItemUpdaterProvider create() {
-        return new ImdbPaItemUpdaterProvider();
+    private ImdbItemUpdaterProvider() {
+
+    }
+
+    public static ImdbItemUpdaterProvider create() {
+        return new ImdbItemUpdaterProvider();
     }
 
     @Override
@@ -49,18 +61,19 @@ public class ImdbPaItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
+                                AliasResolvingEquivalenceGenerator.<Item>builder()
+                                    .withResolver(dependencies.getContentResolver())
+                                    .withPublishers(targetPublishers)
+                                    .withLookupEntryStore(dependencies.getLookupEntryStore())
+                                    .withNamespacesSet(NAMESPACES_SET)
+                                    .withAliasMatchingScore(Score.valueOf(3D))
+                                    .withIncludeUnpublishedContent(false)
+                                    .withClass(Item.class)
+                                    .build(),
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
                                         targetPublishers
-                                ),
-                                TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
-                                        Item.class,
-                                        targetPublishers,
-                                        2, //TitleMatchingItemScorer uses same scoring name
-                                        true,
-                                        true
                                 ),
                                 new FilmEquivalenceGeneratorAndScorer(
                                         dependencies.getSearchResolver(),
@@ -71,18 +84,15 @@ public class ImdbPaItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         0,
                                         Score.nullScore(),
                                         Score.nullScore(),
-                                        Score.nullScore(),
+                                        Score.valueOf(2D),
                                         Score.nullScore()
                                 )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingItemScorer(),
-                                new SequenceItemScorer(Score.ONE),
-                                new FilmYearScorer(Score.ONE, Score.ZERO, Score.ONE),
-                                DescriptionTitleMatchingScorer.createItemScorer(),
-                                DescriptionMatchingScorer.makeItemScorer()
+                                new SequenceItemScorer(Score.valueOf(3D)),
+                                new ItemYearScorer(Score.ONE, Score.ZERO, Score.nullScore())
                         )
                 )
                 .withCombiner(
@@ -90,16 +100,15 @@ public class ImdbPaItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(0.99),
+                                new MinimumScoreFilter<>(2.9),
                                 new MediaTypeFilter<>(),
-                                new SpecializationFilter<>(),
+                                new FilmAndEpisodeFilter<>(),
+                                new DummyContainerFilter<>(),
+                                new UnpublishedContentFilter<>(),
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
-                                ),
-                                new FilmYearFilter<>(),
-                                new DummyContainerFilter<>(),
-                                new UnpublishedContentFilter<>()
+                                )
                         ))
                 )
                 .withExtractor(

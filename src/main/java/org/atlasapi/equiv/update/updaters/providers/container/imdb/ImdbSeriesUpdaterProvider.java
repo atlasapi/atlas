@@ -1,17 +1,20 @@
-package org.atlasapi.equiv.update.updaters.providers.container;
+package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
 import java.util.Set;
 
-import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
+import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
+import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
+import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
-import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.SequenceContainerScorer;
+import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
@@ -22,22 +25,13 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class ImdbContainerUpdateProvider implements EquivalenceResultUpdaterProvider<Container> {
+public class ImdbSeriesUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
-    private final String IMDB_NAMESPACE = "imdb:id";
-    private final String OLD_IMDB_NAMESPACE = "gb:imdb:resourceId";
-    private final String AMAZON_IMDB_NAMESPACE = "zz:imdb:id";
-    private final String JUSTWATCH_IMDB_NAMESPACE = "justwatch:imdb:id";
-    private final Set<Set<String>> NAMESPACES_SET = ImmutableSet.of(
-            ImmutableSet.of(IMDB_NAMESPACE, OLD_IMDB_NAMESPACE, AMAZON_IMDB_NAMESPACE, JUSTWATCH_IMDB_NAMESPACE)
-    );
-
-    private ImdbContainerUpdateProvider() {
-
+    private ImdbSeriesUpdaterProvider() {
     }
 
-    public static ImdbContainerUpdateProvider create() {
-        return new ImdbContainerUpdateProvider();
+    public static ImdbSeriesUpdaterProvider create() {
+        return new ImdbSeriesUpdaterProvider();
     }
 
     @Override
@@ -50,38 +44,41 @@ public class ImdbContainerUpdateProvider implements EquivalenceResultUpdaterProv
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                AliasResolvingEquivalenceGenerator.<Container>builder()
-                                        .withResolver(dependencies.getContentResolver())
-                                        .withPublishers(targetPublishers)
-                                        .withLookupEntryStore(dependencies.getLookupEntryStore())
-                                        .withNamespacesSet(NAMESPACES_SET)
-                                        .withAliasMatchingScore(Score.valueOf(3D))
-                                        .withIncludeUnpublishedContent(false)
-                                        .withClass(Container.class)
-                                        .build()
+                                new ContainerCandidatesContainerEquivalenceGenerator(
+                                        dependencies.getContentResolver(),
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers,
+                                        true
+                                )
                         )
                 )
                 .withScorers(
-                        ImmutableSet.of()
+                        ImmutableSet.of(
+                                new TitleMatchingContainerScorer(2),
+                                new SequenceContainerScorer()
+                        )
                 )
                 .withCombiner(
                         new AddingEquivalenceCombiner<>()
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(2.9),
+                                new MinimumScoreFilter<>(0.99),
                                 new MediaTypeFilter<>(),
-                                new DummyContainerFilter<>(),
-                                new UnpublishedContentFilter<>(),
+                                new SpecializationFilter<>(),
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
-                                )
+                                ),
+                                new DummyContainerFilter<>(),
+                                new UnpublishedContentFilter<>(),
+                                new ContainerHierarchyFilter()
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3)
+                        AllOverOrEqThresholdExtractor.create(1)
                 )
                 .build();
     }
+
 }

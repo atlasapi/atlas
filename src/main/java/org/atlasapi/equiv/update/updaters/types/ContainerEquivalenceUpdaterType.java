@@ -4,9 +4,10 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProv
 import org.atlasapi.equiv.update.updaters.providers.container.BroadcastItemContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BtVodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.FacebookContainerUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.ImdbContainerUpdateProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.ImdbPaContainerUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.ImdbPaSeriesUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbPaContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbPaSeriesUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.NopContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RtUpcomingContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RteContainerUpdaterProvider;
@@ -66,10 +67,13 @@ public enum ContainerEquivalenceUpdaterType {
             WikipediaContainerUpdateProvider.create()
     ),
     IMDB_CONTAINER(
-            ImdbContainerUpdateProvider.create()
+            ImdbContainerUpdaterProvider.create()
     ),
     IMDB_PA_CONTAINER(
             ImdbPaContainerUpdaterProvider.create()
+    ),
+    IMDB_SERIES(
+            ImdbSeriesUpdaterProvider.create()
     ),
     IMDB_PA_SERIES(
             ImdbPaSeriesUpdaterProvider.create()

@@ -13,6 +13,7 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Priority;
 import org.atlasapi.media.entity.PriorityScoreReasons;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Rating;
 import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.RelatedLink.Builder;
 import org.atlasapi.media.entity.RelatedLink.LinkType;
@@ -74,6 +75,8 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         }
         result.setAwards(transformAwards(inputContent.getAwards()));
         result.setPresentationChannel(inputContent.getPresentationChannel());
+        result.setGenres(inputContent.getGenres());
+        result.setRatings(transformRatings(inputContent.getRatings()));
 
         return result;
     }
@@ -164,6 +167,17 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                     award.setYear(input.getYear());
                     return award;
                 })
+                .collect(MoreCollectors.toImmutableSet());
+    }
+
+    private Set<Rating> transformRatings(Set<org.atlasapi.media.entity.simple.Rating> ratings) {
+        return ratings.stream()
+                .map(input -> new Rating(
+                                input.getType(),
+                                input.getValue(),
+                                getPublisher(input.getPublisherDetails())
+                        )
+                )
                 .collect(MoreCollectors.toImmutableSet());
     }
 }

@@ -108,8 +108,8 @@ public class ContainerCandidatesContainerEquivalenceGenerator
             for (String containerUri : containerUris) {
                 List<Identified> resolvedContent = contentResolver.findByCanonicalUris(
                         Collections.singleton(containerUri)).getAllResolvedResults();
-                Iterator<Brand> brandIterator = Iterables.filter(resolvedContent, Brand.class) //TODO this will fail => NoSuchElement
-                        .iterator(); //check for hasNext before doing .next()
+                Iterator<Brand> brandIterator = Iterables.filter(resolvedContent, Brand.class)
+                        .iterator();
                 while(brandIterator.hasNext()) {
                     Brand resolvedContainer = brandIterator.next();
                     //this is necessary for when we looked at all candidates;if we looked at container's

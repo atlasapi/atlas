@@ -83,7 +83,8 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),
-                                //Amazon series have IMDb brand id as alias; this will prevent equiv
+                                //Amazon series have IMDb brand ids as alias, causing bad equiv;
+                                //this filter will prevent that from occuring
                                 new ContainerHierarchyFilter()
                         ))
                 )

@@ -1,9 +1,8 @@
-package org.atlasapi.equiv.update.updaters.providers.item.imdb;
+package org.atlasapi.equiv.update.updaters.providers.item;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.application.v3.DefaultApplication;
-import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
@@ -31,12 +30,12 @@ import org.atlasapi.media.entity.Publisher;
 
 import java.util.Set;
 
-public class ImdbPaItemSequenceUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
+public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
-    private ImdbPaItemSequenceUpdaterProvider() {}
+    private ItemSearchUpdaterProvider() {}
 
-    public static ImdbPaItemSequenceUpdaterProvider create() {
-        return new ImdbPaItemSequenceUpdaterProvider();
+    public static ItemSearchUpdaterProvider create() {
+        return new ItemSearchUpdaterProvider();
     }
 
     @Override
@@ -49,15 +48,33 @@ public class ImdbPaItemSequenceUpdaterProvider implements EquivalenceResultUpdat
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                new ContainerCandidatesItemEquivalenceGenerator(
-                                        dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore(),
-                                        targetPublishers
+                                TitleSearchGenerator.create(
+                                        dependencies.getSearchResolver(),
+                                        Item.class,
+                                        targetPublishers,
+                                        0,
+                                        true,
+                                        true,
+                                        true
+                                ),
+                                new FilmEquivalenceGeneratorAndScorer(
+                                        dependencies.getSearchResolver(),
+                                        targetPublishers,
+                                        DefaultApplication.createWithReads(
+                                                ImmutableList.copyOf(targetPublishers)),
+                                        true,
+                                        0,
+                                        Score.nullScore(),
+                                        Score.nullScore(),
+                                        Score.nullScore(),
+                                        Score.nullScore()
                                 )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
+                                new TitleMatchingItemScorer(),
+                                new FilmYearScorer(Score.ONE, Score.ZERO, Score.ONE),
                                 new SequenceItemScorer(Score.ONE),
                                 DescriptionTitleMatchingScorer.createItemScorer(),
                                 DescriptionMatchingScorer.makeItemScorer()

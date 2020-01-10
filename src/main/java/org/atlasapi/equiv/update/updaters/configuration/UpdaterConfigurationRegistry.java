@@ -1,16 +1,14 @@
 package org.atlasapi.equiv.update.updaters.configuration;
 
-import java.util.Set;
-
-import org.atlasapi.media.entity.Publisher;
-
-import com.metabroadcast.common.collect.MoreSets;
-import com.metabroadcast.common.stream.MoreCollectors;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.metabroadcast.common.collect.MoreSets;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.media.entity.Publisher;
+
+import java.util.Set;
 
 import static java.lang.String.format;
 import static org.atlasapi.equiv.update.handlers.types.ContainerEquivalenceHandlerType.NOP_CONTAINER_HANDLER;
@@ -56,7 +54,8 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_PA_ITEM_SEQUENCE;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ITEM_SEARCH;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ITEM_SEQUENCE;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
@@ -325,9 +324,9 @@ public class UpdaterConfigurationRegistry {
                 .withSource(IMDB)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                IMDB_PA_ITEM_SEQUENCE, ImmutableSet.of(PA),
-                                //TODO IMDB_PA_ITEM_SEARCH
-                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH)
+                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH),
+                                ITEM_SEQUENCE, ImmutableSet.of(PA, AMAZON_UNBOX, JUSTWATCH),
+                                ITEM_SEARCH, ImmutableSet.of(PA, AMAZON_UNBOX, JUSTWATCH)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -356,7 +355,9 @@ public class UpdaterConfigurationRegistry {
                 .withSource(JUSTWATCH)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, IMDB)
+                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, IMDB),
+                                ITEM_SEQUENCE, ImmutableSet.of(AMAZON_UNBOX, IMDB),
+                                ITEM_SEARCH, ImmutableSet.of(AMAZON_UNBOX, IMDB)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -921,7 +922,9 @@ public class UpdaterConfigurationRegistry {
                         ImmutableMap.of(
                                 AMAZON_AMAZON_ITEM, amazonSource,
                                 AMAZON_ITEM, otherSources,
-                                IMDB_ITEM, ImmutableSet.of(IMDB, JUSTWATCH)
+                                IMDB_ITEM, ImmutableSet.of(IMDB, JUSTWATCH),
+                                ITEM_SEQUENCE, ImmutableSet.of(IMDB, JUSTWATCH),
+                                ITEM_SEARCH, ImmutableSet.of(IMDB, JUSTWATCH)
                         ),
                         STRICT_EPISODE_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

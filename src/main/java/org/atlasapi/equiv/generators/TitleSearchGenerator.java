@@ -17,7 +17,6 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Song;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
@@ -79,8 +78,14 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     }
 
     public static final <T extends Content> TitleSearchGenerator<T> create(
-            SearchResolver searchResolver, Class<? extends T> cls, Set<Publisher> publishers, Score exactMatchScore,
-            Score partialMatchBound, boolean includeSelfPublisher, boolean useContentSpecialization, boolean changeName
+            SearchResolver searchResolver,
+            Class<? extends T> cls,
+            Set<Publisher> publishers,
+            Score exactMatchScore,
+            Score partialMatchBound,
+            boolean includeSelfPublisher,
+            boolean useContentSpecialization,
+            boolean changeName  //if false, this will have the same name as the TitleMatching scorer
     ) {
         return new TitleSearchGenerator<T>(
                 searchResolver,
@@ -92,7 +97,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                 partialMatchBound,
                 includeSelfPublisher,
                 useContentSpecialization,
-                changeName  //if false, this will have the same name as the TitleMatching scorer
+                changeName
         );
     }
     

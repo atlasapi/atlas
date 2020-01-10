@@ -3,6 +3,7 @@ package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 import java.util.Set;
 
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
+import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
@@ -15,6 +16,8 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.ContainerYearScorer;
+import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
+import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
@@ -72,14 +75,18 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         true,
                                         true
                                 ),
-                                //TODO add Container sequence thingy
+                                new ContainerChildEquivalenceGenerator(
+                                        dependencies.getContentResolver(),
+                                        dependencies.getEquivSummaryStore()
+                                )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2.0),
-                                new ContainerYearScorer(Score.ONE)
-                                //TODO add description
+                                new ContainerYearScorer(Score.ONE),
+                                DescriptionTitleMatchingScorer.createContainerScorer(),
+                                DescriptionMatchingScorer.makeContainerScorer()
                         )
                 )
                 .withCombiner(

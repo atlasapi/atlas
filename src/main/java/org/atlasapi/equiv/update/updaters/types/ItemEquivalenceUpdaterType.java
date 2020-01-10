@@ -97,7 +97,7 @@ public enum ItemEquivalenceUpdaterType {
             AliasItemUpdaterProvider.create(
                     ImmutableSet.of(
                             ImmutableSet.of(
-                                    "imdb:id", "zz:imdb:id", "justwatch:imdb:id"
+                                    "imdb:id", "zz:imdb:id", "justwatch:imdb:id", "gb:imdb:resourceId" //TODO: remove this old imdb alias before merge
                             )
                     )
             )

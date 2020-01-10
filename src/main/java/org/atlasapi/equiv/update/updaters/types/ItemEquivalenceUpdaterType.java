@@ -8,7 +8,8 @@ import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvide
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.imdb.ImdbItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.imdb.ImdbPaItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.imdb.ImdbPaItemSearchUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.imdb.ImdbPaItemSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.MusicItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.NopItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RoviItemUpdaterProvider;
@@ -94,8 +95,11 @@ public enum ItemEquivalenceUpdaterType {
     IMDB_ITEM(
             ImdbItemUpdaterProvider.create()
     ),
-    IMDB_PA_ITEM(
-            ImdbPaItemUpdaterProvider.create()
+    IMDB_PA_ITEM_SEQUENCE(
+            ImdbPaItemSequenceUpdaterProvider.create()
+    ),
+    IMDB_PA_ITEM_SEARCH(
+            ImdbPaItemSearchUpdaterProvider.create()
     ),
     ;
 

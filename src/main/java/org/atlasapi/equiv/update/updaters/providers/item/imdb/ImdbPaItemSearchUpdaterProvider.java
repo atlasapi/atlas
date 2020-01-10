@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.item.imdb;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
@@ -29,14 +29,15 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-public class ImdbPaItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
+public class ImdbPaItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
-    private ImdbPaItemUpdaterProvider() {}
+    private ImdbPaItemSearchUpdaterProvider() {}
 
-    public static ImdbPaItemUpdaterProvider create() {
-        return new ImdbPaItemUpdaterProvider();
+    public static ImdbPaItemSearchUpdaterProvider create() {
+        return new ImdbPaItemSearchUpdaterProvider();
     }
 
     @Override
@@ -49,19 +50,17 @@ public class ImdbPaItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                new ContainerCandidatesItemEquivalenceGenerator(
-                                        dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore(),
-                                        targetPublishers
-                                ),
                                 TitleSearchGenerator.create(
                                         dependencies.getSearchResolver(),
                                         Item.class,
                                         targetPublishers,
                                         2, //TitleMatchingItemScorer uses same scoring name
                                         true,
+                                        true,
                                         true
                                 ),
+                                //TODO either change name of this, (see inside it) or split
+                                //TODO sequence-stitching generation+scoring from the title search gen+score
                                 new FilmEquivalenceGeneratorAndScorer(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,
@@ -79,7 +78,6 @@ public class ImdbPaItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
-                                new SequenceItemScorer(Score.ONE),
                                 new FilmYearScorer(Score.ONE, Score.ZERO, Score.ONE),
                                 DescriptionTitleMatchingScorer.createItemScorer(),
                                 DescriptionMatchingScorer.makeItemScorer()

@@ -56,7 +56,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_PA_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_PA_ITEM_SEQUENCE;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
@@ -325,7 +325,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(IMDB)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                IMDB_PA_ITEM, ImmutableSet.of(PA),
+                                IMDB_PA_ITEM_SEQUENCE, ImmutableSet.of(PA),
+                                //TODO IMDB_PA_ITEM_SEARCH
                                 IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH)
                         ),
                         STANDARD_ITEM_HANDLER,
@@ -344,7 +345,7 @@ public class UpdaterConfigurationRegistry {
                                 IMDB_PA_SERIES, ImmutableSet.of(PA),
                                 IMDB_SERIES, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH)
                         ),
-                        STANDARD_CONTAINER_HANDLER,
+                        STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
                 )
                 .build();
@@ -371,7 +372,7 @@ public class UpdaterConfigurationRegistry {
                         ImmutableMap.of(
                                 IMDB_SERIES, ImmutableSet.of(AMAZON_UNBOX, IMDB)
                         ),
-                        STANDARD_CONTAINER_HANDLER,
+                        STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER
                 )
                 .build();

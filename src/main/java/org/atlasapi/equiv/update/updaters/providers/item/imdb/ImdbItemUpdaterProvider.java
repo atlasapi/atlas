@@ -6,6 +6,7 @@ import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
+import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -75,6 +76,16 @@ public class ImdbItemUpdaterProvider implements EquivalenceResultUpdaterProvider
                                         dependencies.getEquivSummaryStore(),
                                         targetPublishers
                                 ),
+                                TitleSearchGenerator.create(
+                                        dependencies.getSearchResolver(),
+                                        Item.class,
+                                        targetPublishers,
+                                        2, //TitleMatchingItemScorer uses same scoring name
+                                        true,
+                                        true,
+                                        true
+                                ),
+                                //TODO maybe add owl search for episodes? and maybe split up
                                 new FilmEquivalenceGeneratorAndScorer(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,

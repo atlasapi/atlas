@@ -1,15 +1,10 @@
 package org.atlasapi.equiv.generators;
 
-import com.google.api.client.util.Lists;
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.stream.MoreCollectors;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
@@ -20,20 +15,31 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.api.client.util.Lists;
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 public class TitleSearchGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
     private final static float TITLE_WEIGHTING = 1.0f;
-    public final static String NAME = "Title";
+    public final static String NAME = "Title";  //turn this into a constructor final variable
     private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
+
+    //TODO perhaps add boolean flag which, if true, changes the name of this generator (so that it
+    //TODO does not override TitleMatchingItemScorer's score.
     
     public static final <T extends Content> TitleSearchGenerator<T> create(
             SearchResolver searchResolver,
@@ -72,6 +78,23 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                 useContentSpecialization
         );
     }
+
+    public static final <T extends Content> TitleSearchGenerator<T> create(
+            SearchResolver searchResolver, Class<? extends T> cls, Set<Publisher> publishers, int exactMatchScore,
+            boolean includeSelfPublisher, boolean useContentSpecialization, boolean changeName
+    ) {
+        return new TitleSearchGenerator<T>(
+                searchResolver,
+                cls,
+                publishers,
+                Functions.<String>identity(),
+                20,
+                exactMatchScore,
+                includeSelfPublisher,
+                useContentSpecialization,
+                changeName
+        );
+    }
     
     private final SearchResolver searchResolver;
     private final Class<? extends T> cls;
@@ -84,6 +107,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final boolean includeSelfPublisher;
     //filter search results to same specialization as the given content
     private final boolean useContentSpecialization;
+    //
+    private final boolean changeName;
     
     public TitleSearchGenerator(
             SearchResolver searchResolver, Class<? extends T> cls,
@@ -91,9 +116,10 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             Function<String,String> titleTransform,
             int searchLimit,
             double exactMatchScore,
-            boolean includeSelfPublisher
+            boolean includeSelfPublisher,
+            boolean changeName
     ) {
-        this(searchResolver, cls, publishers, titleTransform, searchLimit, exactMatchScore, includeSelfPublisher, true);
+        this(searchResolver, cls, publishers, titleTransform, searchLimit, exactMatchScore, includeSelfPublisher, true, false);
     }
 
     public TitleSearchGenerator(
@@ -103,7 +129,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             int searchLimit,
             double exactMatchScore,
             boolean includeSelfPublisher,
-            boolean useContentSpecialization
+            boolean useContentSpecialization,
+            boolean changeName
     ) {
         this.searchResolver = searchResolver;
         this.cls = cls;
@@ -114,6 +141,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         this.titleExpander = new ExpandingTitleTransformer();
         this.includeSelfPublisher = includeSelfPublisher;
         this.useContentSpecialization = useContentSpecialization;
+        this.changeName = changeName;
     }
 
     @Override
@@ -127,7 +155,12 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
 
         if (Strings.isNullOrEmpty(content.getTitle())) {
             desc.appendText("subject has no title");
-            return DefaultScoredCandidates.<T>fromSource(NAME).build();
+            if(!changeName) {
+                return DefaultScoredCandidates.<T>fromSource(NAME).build();
+            }
+            else{
+                return DefaultScoredCandidates.<T>fromSource("Title Search Generator").build();
+            }
         }
         Iterable<? extends T> candidates = searchForCandidates(content, desc);
         return titleScorer.scoreCandidates(content, candidates, desc, generatorComponent);
@@ -219,5 +252,9 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     @Override
     public String toString() {
         return "Title-matching Generator";
+    }
+
+    public boolean isChangeName() {
+        return changeName;
     }
 }

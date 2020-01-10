@@ -52,7 +52,8 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         dependencies.getSearchResolver(),
                                         Item.class,
                                         targetPublishers,
-                                        0,
+                                        Score.nullScore(),
+                                        Score.nullScore(),
                                         true,
                                         true,
                                         true

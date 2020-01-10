@@ -20,7 +20,6 @@ import org.atlasapi.equiv.results.scores.ScoreThreshold;
 import org.atlasapi.equiv.scorers.ContainerYearScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
-import org.atlasapi.equiv.scorers.ItemYearScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
@@ -54,7 +53,10 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                                         dependencies.getSearchResolver(),
                                         Container.class,
                                         targetPublishers,
-                                        2, //TitleMatchingContainerScorer uses same scoring name
+                                        Score.nullScore(),
+                                        Score.nullScore(),
+                                        true,
+                                        true,
                                         true
                                 ),
                                 new ContainerChildEquivalenceGenerator(

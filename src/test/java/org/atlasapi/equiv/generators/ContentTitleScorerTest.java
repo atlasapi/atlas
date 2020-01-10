@@ -1,8 +1,5 @@
 package org.atlasapi.equiv.generators;
 
-import com.google.common.base.Functions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
@@ -11,6 +8,10 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
+
+import com.google.common.base.Functions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,8 +22,14 @@ import static org.junit.Assert.assertTrue;
 
 public class ContentTitleScorerTest {
 
-    private static final double EXACT_MATCH_SCORE = 2;
-    private final ContentTitleScorer<Container> scorer = new ContentTitleScorer<Container>("Title", Functions.<String>identity(), EXACT_MATCH_SCORE);
+    private static final Score EXACT_MATCH_SCORE = Score.valueOf(2.0);
+    private final ContentTitleScorer<Container> scorer =
+            new ContentTitleScorer<>(
+                    "Title",
+                    Functions.identity(),
+                    EXACT_MATCH_SCORE,
+                    Score.ONE
+            );
 
     private final ResultDescription desc = new DefaultDescription();
 
@@ -76,9 +83,9 @@ public class ContentTitleScorerTest {
         return Iterables.getOnlyElement(candidates.candidates().entrySet()).getValue();
     }
 
-    private void score(double expected, ScoredCandidates<Container> candidates) {
+    private void score(Score expected, ScoredCandidates<Container> candidates) {
         Score score = scoredOfOnly(candidates);
-        assertTrue(String.format("expected %s got %s", expected, score), score.equals(expected > 0 ? Score.valueOf(expected) : Score.NULL_SCORE));
+        assertTrue(String.format("expected %s got %s", expected, score), score.equals(expected.asDouble() > 0 ? expected : Score.NULL_SCORE));
     }
 
     private Container brandWithTitle(String title) {

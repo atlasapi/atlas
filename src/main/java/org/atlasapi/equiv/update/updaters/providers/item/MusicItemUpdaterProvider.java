@@ -5,6 +5,7 @@ import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
+import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.CrewMemberScorer;
 import org.atlasapi.equiv.scorers.SongCrewMemberExtractor;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
@@ -40,7 +41,10 @@ public class MusicItemUpdaterProvider implements EquivalenceResultUpdaterProvide
                                 targetPublishers,
                                 new SongTitleTransform(),
                                 100,
-                                2,
+                                Score.valueOf(2.0),
+                                Score.ONE,
+                                false,
+                                true,
                                 false
                         )
                 )

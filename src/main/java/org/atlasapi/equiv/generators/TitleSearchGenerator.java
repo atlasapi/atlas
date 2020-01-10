@@ -10,6 +10,7 @@ import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
+import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
@@ -69,7 +70,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                 publishers,
                 Functions.<String>identity(),
                 20,
-                exactMatchScore,
+                Score.valueOf(exactMatchScore),
+                Score.ONE,
                 includeSelfPublisher,
                 useContentSpecialization,
                 false
@@ -77,8 +79,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     }
 
     public static final <T extends Content> TitleSearchGenerator<T> create(
-            SearchResolver searchResolver, Class<? extends T> cls, Set<Publisher> publishers, int exactMatchScore,
-            boolean includeSelfPublisher, boolean useContentSpecialization, boolean changeName
+            SearchResolver searchResolver, Class<? extends T> cls, Set<Publisher> publishers, Score exactMatchScore,
+            Score partialMatchBound, boolean includeSelfPublisher, boolean useContentSpecialization, boolean changeName
     ) {
         return new TitleSearchGenerator<T>(
                 searchResolver,
@@ -87,6 +89,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                 Functions.<String>identity(),
                 20,
                 exactMatchScore,
+                partialMatchBound,
                 includeSelfPublisher,
                 useContentSpecialization,
                 changeName  //if false, this will have the same name as the TitleMatching scorer
@@ -111,7 +114,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             Iterable<Publisher> publishers,
             Function<String,String> titleTransform,
             int searchLimit,
-            double exactMatchScore,
+            Score exactMatchScore,
+            Score partialMatchBound,
             boolean includeSelfPublisher,
             boolean useContentSpecialization,
             boolean changeName
@@ -124,7 +128,12 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         this.name = changeName ?
                     "Title Search Generator"
                     : "Title";  // same as TitleMatching[...]Scorer
-        this.titleScorer = new ContentTitleScorer<T>(name, titleTransform, exactMatchScore);
+        this.titleScorer = new ContentTitleScorer<>(
+                name,
+                titleTransform,
+                exactMatchScore,
+                partialMatchBound
+        );
         this.titleExpander = new ExpandingTitleTransformer();
         this.includeSelfPublisher = includeSelfPublisher;
         this.useContentSpecialization = useContentSpecialization;

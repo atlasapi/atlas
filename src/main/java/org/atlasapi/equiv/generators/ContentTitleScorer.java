@@ -1,8 +1,5 @@
 package org.atlasapi.equiv.generators;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -11,16 +8,27 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.media.entity.Content;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+
 public final class ContentTitleScorer<T extends Content> {
     
     private final Function<String, String> titleTransform;
     private final String name;
-    private final double exactMatchScore;
+    private final Score exactMatchScore;
+    private final Score partialMatchBound;
 
-    public ContentTitleScorer(String name, Function<String, String> titleTransform, double exactMatchScore) {
+    public ContentTitleScorer(
+            String name,
+            Function<String, String> titleTransform,
+            Score exactMatchScore,
+            Score partialMatchBound
+    ) {
         this.name = name;
         this.titleTransform = titleTransform;
         this.exactMatchScore = exactMatchScore;
+        this.partialMatchBound = partialMatchBound;
     }
 
     public ScoredCandidates<T> scoreCandidates(
@@ -54,13 +62,13 @@ public final class ContentTitleScorer<T extends Content> {
      */
     public Score score(Content subject, Content candidate, ResultDescription desc) {
         if (subject.getTitle() == null || candidate.getTitle() == null) {
-            return Score.NULL_SCORE;
+            return Score.nullScore();
         }
         String subjectTitle = sanitize(subject.getTitle());
         String contentTitle = sanitize(candidate.getTitle());
-        double score = score(subjectTitle, contentTitle);
+        Score score = score(subjectTitle, contentTitle);
         desc.appendText("%s vs. %s (%s): %s", subjectTitle, contentTitle, candidate.getCanonicalUri(), score);
-        return Score.valueOf(score);
+        return score;
     }
     
     private String sanitize(String title) {
@@ -73,7 +81,7 @@ public final class ContentTitleScorer<T extends Content> {
         return (title.startsWith("the ") ? title.substring(4) : title).replace(" ", "");
     }
     
-    private double score(String subjectTitle, String candidateTitle) {
+    private Score score(String subjectTitle, String candidateTitle) {
         if (subjectTitle.length() < candidateTitle.length()) {
             return scoreTitles(subjectTitle, candidateTitle);
         } else {
@@ -81,13 +89,20 @@ public final class ContentTitleScorer<T extends Content> {
         }
     }
 
-    private double scoreTitles(String shorter, String longer) {
+    private Score scoreTitles(String shorter, String longer) {
         int commonPrefix = commonPrefixLength(shorter, longer);
         int difference = longer.length() - commonPrefix;
         if (difference == 0) {
             return exactMatchScore;
         }
-        return 1.0 / (Math.exp(Math.pow(difference, 2)) + 8*difference);
+        if (partialMatchBound.isRealScore()) {
+            return Score.valueOf(
+                    partialMatchBound.asDouble()
+                            / (Math.exp(Math.pow(difference, 2)) + 8 * difference)
+            );
+        } else {
+            return partialMatchBound;
+        }
     }
 
     private int commonPrefixLength(String t1, String t2) {
@@ -96,4 +111,5 @@ public final class ContentTitleScorer<T extends Content> {
         }
         return i;
     }
+
 }

@@ -70,7 +70,8 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         dependencies.getSearchResolver(),
                                         Container.class,
                                         targetPublishers,
-                                        2, //TitleMatchingContainerScorer uses same scoring name
+                                        Score.nullScore(),
+                                        Score.nullScore(),
                                         false,
                                         true,
                                         true

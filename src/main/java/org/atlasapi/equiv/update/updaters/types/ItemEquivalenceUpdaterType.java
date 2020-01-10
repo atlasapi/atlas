@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.update.updaters.types;
 
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbXItemUpdaterProvider;
@@ -7,9 +8,8 @@ import org.atlasapi.equiv.update.updaters.providers.item.BbcTxlogsItemUpdaterPro
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.imdb.ImdbItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.imdb.ImdbPaItemSearchUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.imdb.ImdbPaItemSequenceUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.ItemSearchUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.ItemSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.MusicItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.NopItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RoviItemUpdaterProvider;
@@ -24,6 +24,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProv
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToAmazonItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.imdb.AliasItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -93,13 +94,19 @@ public enum ItemEquivalenceUpdaterType {
             BarbXItemUpdaterProvider.create()
     ),
     IMDB_ITEM(
-            ImdbItemUpdaterProvider.create()
+            AliasItemUpdaterProvider.create(
+                    ImmutableSet.of(
+                            ImmutableSet.of(
+                                    "imdb:id", "zz:imdb:id", "justwatch:imdb:id"
+                            )
+                    )
+            )
     ),
-    IMDB_PA_ITEM_SEQUENCE(
-            ImdbPaItemSequenceUpdaterProvider.create()
+    ITEM_SEQUENCE(
+            ItemSequenceUpdaterProvider.create()
     ),
-    IMDB_PA_ITEM_SEARCH(
-            ImdbPaItemSearchUpdaterProvider.create()
+    ITEM_SEARCH(
+            ItemSearchUpdaterProvider.create()
     ),
     ;
 

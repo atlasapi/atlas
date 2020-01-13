@@ -24,7 +24,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProv
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToAmazonItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.imdb.AliasItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.AliasItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;

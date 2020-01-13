@@ -68,7 +68,7 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2),
-                                new ContainerYearScorer(Score.ONE),
+                                new ContainerYearScorer(Score.ONE, Score.negativeOne(), Score.nullScore()),
                                 DescriptionTitleMatchingScorer.createContainerScorer(),
                                 DescriptionMatchingScorer.makeContainerScorer()
                         )

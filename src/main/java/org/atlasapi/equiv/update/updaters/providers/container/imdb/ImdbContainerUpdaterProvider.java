@@ -84,7 +84,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2.0),
-                                new ContainerYearScorer(Score.ONE),
+                                new ContainerYearScorer(Score.ONE, Score.negativeOne(), Score.nullScore()),
                                 DescriptionTitleMatchingScorer.createContainerScorer(),
                                 DescriptionMatchingScorer.makeContainerScorer()
                         )

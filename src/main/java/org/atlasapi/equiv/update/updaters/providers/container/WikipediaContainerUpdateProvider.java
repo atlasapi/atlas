@@ -54,7 +54,7 @@ public class WikipediaContainerUpdateProvider implements EquivalenceResultUpdate
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2.0),
-                                new ContainerYearScorer(Score.ONE)
+                                new ContainerYearScorer(Score.ONE, Score.ZERO, Score.nullScore())
                         )
                 )
                 .withCombiner(

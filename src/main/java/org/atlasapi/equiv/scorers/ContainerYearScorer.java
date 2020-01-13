@@ -17,9 +17,13 @@ public class ContainerYearScorer implements EquivalenceScorer<Container> {
     private static final String NAME = "Container-Year";
 
     private final Score matchScore;
+    private final Score mismatchScore;
+    private final Score nullYearScore;
 
-    public ContainerYearScorer(Score matchScore) {
+    public ContainerYearScorer(Score matchScore, Score mismatchScore, Score nullYearScore) {
         this.matchScore = checkNotNull(matchScore);
+        this.mismatchScore = checkNotNull(mismatchScore);
+        this.nullYearScore = checkNotNull(nullYearScore);
     }
 
     @Override
@@ -50,9 +54,9 @@ public class ContainerYearScorer implements EquivalenceScorer<Container> {
 
     private Score score(Container subject, Container candidate) {
         if (subject.getYear() == null || candidate.getYear() == null) {
-            return Score.nullScore();
+            return nullYearScore;
         }
-        return subject.getYear().equals(candidate.getYear()) ? matchScore : Score.ZERO;
+        return subject.getYear().equals(candidate.getYear()) ? matchScore : mismatchScore;
     }
 
     @Override

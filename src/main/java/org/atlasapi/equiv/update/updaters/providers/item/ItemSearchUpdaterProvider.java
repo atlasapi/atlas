@@ -17,7 +17,6 @@ import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.ItemYearScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
@@ -77,7 +76,6 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                                 new TitleMatchingItemScorer(),
                                 new ItemYearScorer(Score.ONE, Score.negativeOne(), Score.nullScore()),
                                 new SequenceItemScorer(Score.ONE),
-                                DescriptionTitleMatchingScorer.createItemScorer(),
                                 DescriptionMatchingScorer.makeItemScorer()
                         )
                 )

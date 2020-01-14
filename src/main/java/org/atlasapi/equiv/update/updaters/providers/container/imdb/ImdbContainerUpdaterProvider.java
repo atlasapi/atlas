@@ -87,7 +87,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2.0),
                                 new SoleCandidateTitleMatchContainerScorer(
-                                        Score.valueOf(2.0),
+                                        Score.ONE,
                                         Score.nullScore(),
                                         dependencies.getSearchResolver()
                                 ),

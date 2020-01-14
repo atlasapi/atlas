@@ -85,7 +85,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             Score partialMatchBound,
             boolean includeSelfPublisher,
             boolean useContentSpecialization,
-            boolean changeName  //if false, this will have the same name as the TitleMatching scorer
+            boolean changeComponentName  //if false, this will have the same name as the TitleMatching scorer
     ) {
         return new TitleSearchGenerator<T>(
                 searchResolver,
@@ -97,7 +97,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                 partialMatchBound,
                 includeSelfPublisher,
                 useContentSpecialization,
-                changeName
+                changeComponentName
         );
     }
     
@@ -123,14 +123,14 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             Score partialMatchBound,
             boolean includeSelfPublisher,
             boolean useContentSpecialization,
-            boolean changeName
+            boolean changeComponentName
     ) {
         this.searchResolver = searchResolver;
         this.cls = cls;
         this.searchLimit = searchLimit;
         this.searchPublishers = ImmutableSet.copyOf(publishers);
         this.titleTransform = titleTransform;
-        this.name = changeName ?
+        this.name = changeComponentName ?
                     "Title Search Generator"
                     : "Title";  // same as TitleMatching[...]Scorer
         this.titleScorer = new ContentTitleScorer<>(

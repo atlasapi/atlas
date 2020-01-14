@@ -70,8 +70,17 @@ public final class ContentTitleScorer<T extends Content> {
         desc.appendText("%s vs. %s (%s): %s", subjectTitle, contentTitle, candidate.getCanonicalUri(), score);
         return score;
     }
+
+    public Score calculateScore(Content subject, Content candidate) {
+        if (subject.getTitle() == null || candidate.getTitle() == null) {
+            return Score.nullScore();
+        }
+        String subjectTitle = sanitize(subject.getTitle());
+        String contentTitle = sanitize(candidate.getTitle());
+        return score(subjectTitle, contentTitle);
+    }
     
-    private String sanitize(String title) {
+    public String sanitize(String title) {
         return removeCommonPrefixes(titleTransform.apply(title)
             .replaceAll(" & ", " and ")
             .replaceAll("[^\\d\\w\\s]", "").toLowerCase());
@@ -110,6 +119,10 @@ public final class ContentTitleScorer<T extends Content> {
         for (; i < Math.min(t1.length(), t2.length()) && t1.charAt(i) == t2.charAt(i); i++) {
         }
         return i;
+    }
+
+    public Score getExactMatchScore(){
+        return exactMatchScore;
     }
 
 }

@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
@@ -20,6 +20,7 @@ import org.atlasapi.equiv.results.scores.ScoreThreshold;
 import org.atlasapi.equiv.scorers.ContainerYearScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
+import org.atlasapi.equiv.scorers.SoleCandidateTitleMatchContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
@@ -28,7 +29,8 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
@@ -68,7 +70,16 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2),
-                                new ContainerYearScorer(Score.ONE, Score.negativeOne(), Score.nullScore()),
+                                new SoleCandidateTitleMatchContainerScorer(
+                                        Score.valueOf(2.0),
+                                        Score.nullScore(),
+                                        dependencies.getSearchResolver()
+                                ),
+                                new ContainerYearScorer(
+                                        Score.ONE,
+                                        Score.negativeOne(),
+                                        Score.nullScore()
+                                ),
                                 DescriptionTitleMatchingScorer.createContainerScorer(),
                                 DescriptionMatchingScorer.makeContainerScorer()
                         )

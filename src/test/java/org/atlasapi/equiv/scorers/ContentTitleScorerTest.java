@@ -1,5 +1,6 @@
-package org.atlasapi.equiv.generators;
+package org.atlasapi.equiv.scorers;
 
+import org.atlasapi.equiv.generators.ContentTitleScorer;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;

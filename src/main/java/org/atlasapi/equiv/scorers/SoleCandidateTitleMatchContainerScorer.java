@@ -111,10 +111,6 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
                     scoredPublishers.add(candidate.getPublisher());
                 }
             }
-            else {
-                //score null the candidates of publishers we know have multiple candidates
-                scoredPublishers.add(candidate.getPublisher());
-            }
             equivalents.addEquivalent(candidate, equivScore);
             if (candidate.getId() != null) {
                 scorerComponent.addComponentResult(

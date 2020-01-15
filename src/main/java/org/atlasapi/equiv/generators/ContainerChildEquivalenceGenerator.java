@@ -26,7 +26,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 
 public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<Container> {
     
-    public static final String NAME = "Item";
+    public static final String NAME = "Container Child";
 
     private static final Function<ContentRef,String> TO_PARENT = new Function<ContentRef, String>() {
         @Override

@@ -1,6 +1,5 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -128,7 +127,7 @@ public class AliasResolvingEquivalenceGenerator<T extends Content> implements Eq
             ResolvedContent resolved = resolver.findByCanonicalUris(lookupUris);
             for (T identified : Iterables.filter(resolved.getAllResolvedResults(), cls)) {
                 if (identified.isActivelyPublished()) {
-                    candidates.addEquivalent(identified, aliasMatchingScore);
+                    candidates.updateEquivalent(identified, aliasMatchingScore);
                     desc.appendText("Resolved %s", identified.getCanonicalUri());
                     generatorComponent.addComponentResult(identified.getId(), aliasMatchingScore.toString());
                 }

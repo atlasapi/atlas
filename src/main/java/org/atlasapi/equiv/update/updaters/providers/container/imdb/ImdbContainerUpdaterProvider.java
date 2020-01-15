@@ -1,8 +1,10 @@
 package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
+import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
+import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -14,6 +16,8 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.ContainerYearScorer;
+import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
+import org.atlasapi.equiv.scorers.SoleCandidateTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
@@ -22,8 +26,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
@@ -61,13 +64,38 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         .withAliasMatchingScore(Score.valueOf(3D))
                                         .withIncludeUnpublishedContent(false)
                                         .withClass(Container.class)
-                                        .build()
+                                        .build(),
+                                TitleSearchGenerator.create(
+                                        dependencies.getSearchResolver(),
+                                        Container.class,
+                                        targetPublishers,
+                                        Score.nullScore(),
+                                        Score.nullScore(),
+                                        true,
+                                        true,
+                                        true
+                                ),
+                                new ContainerChildEquivalenceGenerator(
+                                        dependencies.getContentResolver(),
+                                        dependencies.getEquivSummaryStore()
+                                )
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2.0),
-                                new ContainerYearScorer(Score.ONE)
+                                new SoleCandidateTitleMatchingScorer<>(
+                                        dependencies.getSearchResolver(),
+                                        Score.ONE,
+                                        Score.nullScore(),
+                                        Container.class
+                                ),
+                                new ContainerYearScorer(
+                                        Score.ONE,
+                                        Score.negativeOne(),
+                                        Score.nullScore()
+                                ),
+                                DescriptionMatchingScorer.makeContainerScorer()
                         )
                 )
                 .withCombiner(
@@ -75,7 +103,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
-                                new MinimumScoreFilter<>(2.9),
+                                new MinimumScoreFilter<>(2.5),
                                 new MediaTypeFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),
@@ -89,7 +117,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                         ))
                 )
                 .withExtractor(
-                        AllOverOrEqThresholdExtractor.create(3)
+                        AllOverOrEqThresholdExtractor.create(2.6)
                 )
                 .build();
     }

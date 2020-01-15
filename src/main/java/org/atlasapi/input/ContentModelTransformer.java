@@ -241,10 +241,12 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
     private CrewMember transformPerson(Person person, Publisher publisher) {
         CrewMember member;
         checkNotNull(person.getUri(), "person requires uri");
-        if ("actor".equals(person.getType())) {
+
+        Role role = Role.fromPossibleKey(person.getRole()).valueOrNull();
+        if (Role.ACTOR.equals(role) || "actor".equals(person.getType())) {
             member = new Actor().withCharacter(person.getCharacter());
         } else {
-            member = new CrewMember().withRole(Role.fromPossibleKey(person.getRole()).valueOrNull());
+            member = new CrewMember().withRole(role);
         }
         member.withPublisher(publisher);
         member.withName(person.getName());

@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
@@ -19,6 +19,7 @@ import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.ItemYearScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
+import org.atlasapi.equiv.scorers.SoleCandidateTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
@@ -27,7 +28,8 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
@@ -74,6 +76,12 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
+                                new SoleCandidateTitleMatchingScorer<>(
+                                        Score.ONE,
+                                        Score.nullScore(),
+                                        dependencies.getSearchResolver(),
+                                        Item.class
+                                ),
                                 new ItemYearScorer(Score.ONE, Score.negativeOne(), Score.nullScore()),
                                 new SequenceItemScorer(Score.ONE),
                                 DescriptionMatchingScorer.makeItemScorer()

@@ -25,7 +25,6 @@ import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.Functions;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import static java.util.stream.StreamSupport.stream;
@@ -78,7 +77,7 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
                     potentialExtraCandidates.get(0).getCanonicalUri()
             );
             //score all candidates null
-            for (Container candidate : ImmutableSet.copyOf(candidates)) {
+            for (Container candidate : candidates) {
                 if (candidate.getId() != null) {
                     scorerComponent.addComponentResult(
                             candidate.getId(),
@@ -93,7 +92,7 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
 
         Set<Publisher> scoredPublishers = Sets.newHashSet();
 
-        for (Container candidate : ImmutableSet.copyOf(candidates)) {
+        for (Container candidate : candidates) {
             equivScore = Score.nullScore();
             //slight efficiency increase
             if (scoredPublishers.contains(candidate.getPublisher())){
@@ -103,7 +102,6 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
                         candidate.getPublisher().title()
                 );
             }
-            //TODO: score if multiple publishers but IFF 1 of them has exact title match
             else if (isSoleCandidate(candidate, candidates)) {
                 equivScore = titleScorer.calculateScore(subject, candidate);
                 desc.appendText("%s scored %s on title match", candidate.getCanonicalUri(), equivScore);
@@ -158,12 +156,11 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
                 .collect(MoreCollectors.toImmutableList());
     }
 
-    //checks if any of the other candidates is from same publisher & has exact same title;
-    //if not, then we want to score it (ie. return true)
+    //checks if any of the other candidates is from same publisher & has exact same title
     private boolean isSoleCandidate(Container candidate, Set<? extends Container> candidates) {
         //it is ok if we only find one match, but bad if we find multiple
         boolean alreadyFoundMatch = false;
-        for (Container anotherCandidate : ImmutableSet.copyOf(candidates)) {
+        for (Container anotherCandidate : candidates) {
             if (anotherCandidate.getPublisher().equals(candidate.getPublisher())
                     && titleScorer.calculateScore(candidate, anotherCandidate)
                     .equals(titleScorer.getExactMatchScore())) {

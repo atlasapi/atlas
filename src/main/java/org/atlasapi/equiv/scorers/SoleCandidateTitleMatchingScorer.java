@@ -81,7 +81,7 @@ public class SoleCandidateTitleMatchingScorer<T extends Content> implements Equi
         scorerComponent.setComponentName("Sole Candidate Title Matching Container Scorer");
         DefaultScoredCandidates.Builder<T> equivalents = DefaultScoredCandidates.fromSource(NAME);
 
-        List<T> potentialExtraCandidates = noContentWithSameTitleAndPublisher(subject);
+        List<T> potentialExtraCandidates = findContentWithSameTitleAndPublisher(subject);
 
         if(!potentialExtraCandidates.isEmpty()){
             desc.appendText(
@@ -144,7 +144,7 @@ public class SoleCandidateTitleMatchingScorer<T extends Content> implements Equi
         }
     }
 
-    private List<T> noContentWithSameTitleAndPublisher(T subject) {
+    private List<T> findContentWithSameTitleAndPublisher(T subject) {
         Publisher subjectPublisher = subject.getPublisher();
 
         Iterable<T> results = search(subject, subjectPublisher);

@@ -19,12 +19,7 @@ public class TitleMatchingContainerScorer implements EquivalenceScorer<Container
     private final ContentTitleScorer<Container> scorer;
 
     public TitleMatchingContainerScorer(double exactTitleMatchScore) {
-        this.scorer = new ContentTitleScorer<>(
-                NAME,
-                Functions.<String>identity(),
-                Score.valueOf(exactTitleMatchScore),
-                Score.ONE
-        );
+        this(Score.valueOf(exactTitleMatchScore), Score.ONE);
     }
 
     public TitleMatchingContainerScorer(Score exactTitleMatchScore, Score partialTitleMatchBound) {

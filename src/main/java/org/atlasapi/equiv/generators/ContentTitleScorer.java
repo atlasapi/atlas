@@ -80,7 +80,7 @@ public final class ContentTitleScorer<T extends Content> {
         return score(subjectTitle, contentTitle);
     }
     
-    public String sanitize(String title) {
+    private String sanitize(String title) {
         return removeCommonPrefixes(titleTransform.apply(title)
             .replaceAll(" & ", " and ")
             .replaceAll("[^\\d\\w\\s]", "").toLowerCase());

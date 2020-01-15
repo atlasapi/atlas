@@ -77,9 +77,9 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
                                 new SoleCandidateTitleMatchingScorer<>(
+                                        dependencies.getSearchResolver(),
                                         Score.ONE,
                                         Score.nullScore(),
-                                        dependencies.getSearchResolver(),
                                         Item.class
                                 ),
                                 new ItemYearScorer(Score.ONE, Score.negativeOne(), Score.nullScore()),

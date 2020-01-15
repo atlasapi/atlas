@@ -31,7 +31,11 @@ public class SoleCandidateTitleMatchingScorerTest {
 
     private final SearchResolver resolver = mock(SearchResolver.class);
     private final SoleCandidateTitleMatchingScorer scorer =
-            new SoleCandidateTitleMatchingScorer<>(Score.valueOf(2.0), Score.nullScore(), resolver, Container.class);
+            new SoleCandidateTitleMatchingScorer<>(
+                    resolver,
+                    Score.valueOf(2.0),
+                    Score.nullScore(),
+                    Container.class);
 
     private AtomicInteger counter;
 
@@ -39,8 +43,6 @@ public class SoleCandidateTitleMatchingScorerTest {
     public void setUp(){
 
         counter = new AtomicInteger();
-        Iterable<Container> candidates = null;
-        when(resolver.search(Matchers.any(SearchQuery.class), Matchers.any(Application.class))).thenReturn(null);
     }
 
     @Test
@@ -186,11 +188,6 @@ public class SoleCandidateTitleMatchingScorerTest {
         assertThat(results.candidates().get(diffTitleSamePub), is(Score.nullScore()));
     }
 
-    private void score(double expected, ScoredCandidates<Container> scores) {
-        Score value = Iterables.getOnlyElement(scores.candidates().entrySet()).getValue();
-        assertTrue(String.format("expected %s got %s", expected, value), value.equals(expected > 0 ? Score.valueOf(expected) : Score.NULL_SCORE));
-    }
-
     private Container containerWithTitle(String title, Publisher publisher) {
         long id = counter.incrementAndGet();
         Container container = new Container(
@@ -200,7 +197,7 @@ public class SoleCandidateTitleMatchingScorerTest {
         );
         container.setId(id);
         container.setTitle(title);
-        container.setYear(2013);
+        container.setYear(2020);
         return container;
     }
 

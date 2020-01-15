@@ -1,11 +1,11 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Functions;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContentTitleScorer;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -20,12 +20,11 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.base.Functions;
-import com.google.common.collect.Sets;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.stream.StreamSupport.stream;
 
@@ -41,6 +40,9 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
 
     private final ContentTitleScorer<Container> titleScorer;
     private final SearchResolver searchResolver;
+    private final Score exactTitleMatchScore;
+
+    private final Score mismatchScore = Score.nullScore();
 
     public SoleCandidateTitleMatchContainerScorer(
             Score exactTitleMatchScore,
@@ -49,11 +51,12 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
     ) {
         this.titleScorer = new ContentTitleScorer<>(
                 NAME,
-                Functions.<String>identity(),
+                Functions.identity(),
                 exactTitleMatchScore,
                 partialTitleMatchBound
         );
         this.searchResolver = searchResolver;
+        this.exactTitleMatchScore = exactTitleMatchScore;
     }
 
     @Override
@@ -66,7 +69,6 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Sole Candidate Title Matching Container Scorer");
         DefaultScoredCandidates.Builder<Container> equivalents = DefaultScoredCandidates.fromSource(NAME);
-        Score equivScore = Score.nullScore();
 
         List<Container> potentialExtraCandidates = noContentWithSameTitleAndPublisher(subject);
 
@@ -81,46 +83,53 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
                 if (candidate.getId() != null) {
                     scorerComponent.addComponentResult(
                             candidate.getId(),
-                            String.valueOf(equivScore)
+                            String.valueOf(mismatchScore)
                     );
                 }
-                equivalents.addEquivalent(candidate, equivScore);
+                equivalents.addEquivalent(candidate, mismatchScore);
             }
             equivToTelescopeResult.addScorerResult(scorerComponent);
             return equivalents.build();
         }
 
-        Set<Publisher> scoredPublishers = Sets.newHashSet();
+        SetMultimap<Publisher, Container> sameTitleCandidates = HashMultimap.create();
 
         for (Container candidate : candidates) {
-            equivScore = Score.nullScore();
-            //slight efficiency increase
-            if (scoredPublishers.contains(candidate.getPublisher())){
-                desc.appendText(
-                        "%s not scored, repeat publisher (%s)",
-                        candidate.getCanonicalUri(),
-                        candidate.getPublisher().title()
-                );
+            if (titleScorer.calculateScore(subject, candidate).equals(titleScorer.getExactMatchScore())) {
+                sameTitleCandidates.put(candidate.getPublisher(), candidate);
+            } else {
+                addScore(candidate, Score.nullScore(), equivalents, scorerComponent);
             }
-            else if (isSoleCandidate(candidate, candidates)) {
-                equivScore = titleScorer.calculateScore(subject, candidate);
-                desc.appendText("%s scored %s on title match", candidate.getCanonicalUri(), equivScore);
-                if(equivScore.equals(titleScorer.getExactMatchScore())) {
-                    scoredPublishers.add(candidate.getPublisher());
+        }
+
+        for (Publisher publisher : sameTitleCandidates.keySet()) {
+            Set<Container> publisherCandidates = sameTitleCandidates.get(publisher);
+            if (publisherCandidates.size() == 1) {
+                addScore(publisherCandidates.iterator().next(), exactTitleMatchScore, equivalents, scorerComponent);
+            } else {
+                for (Container publisherCandidate : publisherCandidates) {
+                    addScore(publisherCandidate, mismatchScore, equivalents, scorerComponent);
                 }
-            }
-            equivalents.addEquivalent(candidate, equivScore);
-            if (candidate.getId() != null) {
-                scorerComponent.addComponentResult(
-                        candidate.getId(),
-                        String.valueOf(equivScore.asDouble())
-                );
             }
         }
 
         equivToTelescopeResult.addScorerResult(scorerComponent);
-
         return equivalents.build();
+    }
+
+    private void addScore(
+            Container candidate,
+            Score score,
+            DefaultScoredCandidates.Builder<Container> equivalents,
+            EquivToTelescopeComponent scorerComponent
+    ) {
+        equivalents.addEquivalent(candidate, score);
+        if (candidate.getId() != null) {
+            scorerComponent.addComponentResult(
+                    candidate.getId(),
+                    String.valueOf(score.asDouble())
+            );
+        }
     }
 
     private List<Container> noContentWithSameTitleAndPublisher(Container subject) {
@@ -154,23 +163,6 @@ public class SoleCandidateTitleMatchContainerScorer implements EquivalenceScorer
                 .filter(Container.class::isInstance)
                 .map(Container.class::cast)
                 .collect(MoreCollectors.toImmutableList());
-    }
-
-    //checks if any of the other candidates is from same publisher & has exact same title
-    private boolean isSoleCandidate(Container candidate, Set<? extends Container> candidates) {
-        //it is ok if we only find one match, but bad if we find multiple
-        boolean alreadyFoundMatch = false;
-        for (Container anotherCandidate : candidates) {
-            if (anotherCandidate.getPublisher().equals(candidate.getPublisher())
-                    && titleScorer.calculateScore(candidate, anotherCandidate)
-                    .equals(titleScorer.getExactMatchScore())) {
-                if (alreadyFoundMatch) {
-                    return false;
-                }
-                alreadyFoundMatch = true;
-            }
-        }
-        return true;
     }
 
     @Override

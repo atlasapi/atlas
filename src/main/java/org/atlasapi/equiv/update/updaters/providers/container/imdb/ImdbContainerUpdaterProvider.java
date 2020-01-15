@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
@@ -17,7 +17,7 @@ import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.ContainerYearScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.SoleCandidateTitleMatchContainerScorer;
+import org.atlasapi.equiv.scorers.SoleCandidateTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
@@ -26,8 +26,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
@@ -85,10 +84,11 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2.0),
-                                new SoleCandidateTitleMatchContainerScorer(
+                                new SoleCandidateTitleMatchingScorer<>(
                                         Score.ONE,
                                         Score.nullScore(),
-                                        dependencies.getSearchResolver()
+                                        dependencies.getSearchResolver(),
+                                        Container.class
                                 ),
                                 new ContainerYearScorer(
                                         Score.ONE,

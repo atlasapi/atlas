@@ -1,9 +1,9 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
@@ -13,15 +13,13 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.Matchers.is;
@@ -29,11 +27,11 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SoleCandidateTitleMatchContainerScorerTest {
+public class SoleCandidateTitleMatchingScorerTest {
 
     private final SearchResolver resolver = mock(SearchResolver.class);
-    private final SoleCandidateTitleMatchContainerScorer scorer =
-            new SoleCandidateTitleMatchContainerScorer(Score.valueOf(2.0), Score.nullScore(), resolver);
+    private final SoleCandidateTitleMatchingScorer scorer =
+            new SoleCandidateTitleMatchingScorer<>(Score.valueOf(2.0), Score.nullScore(), resolver, Container.class);
 
     private AtomicInteger counter;
 

@@ -25,6 +25,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvi
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToAmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.AliasItemUpdaterProvider;
+import org.atlasapi.equiv.utils.imdb.ImdbEquivUtils;
 import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -96,9 +97,7 @@ public enum ItemEquivalenceUpdaterType {
     IMDB_ITEM(
             AliasItemUpdaterProvider.create(
                     ImmutableSet.of(
-                            ImmutableSet.of(
-                                    "imdb:id", "zz:imdb:id", "justwatch:imdb:id"
-                            )
+                            ImdbEquivUtils.IMDB_ALIAS_NAMESPACES
                     )
             )
     ),

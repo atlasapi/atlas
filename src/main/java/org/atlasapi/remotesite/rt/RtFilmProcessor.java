@@ -280,9 +280,9 @@ public class RtFilmProcessor {
     }
 
     private String extractImdbId(String imdbRef) {
-        Pattern imdbIdPattern = Pattern.compile("([a-z]{2}[0-9]{7,})");
+        Pattern imdbIdPattern = Pattern.compile("(tt[0-9]{7,})");
         Matcher imdbIdMatcher = imdbIdPattern.matcher(imdbRef);
-        if(imdbIdMatcher.matches()){
+        if(imdbIdMatcher.find()){
             return imdbIdMatcher.group(1);
         }
         return "";

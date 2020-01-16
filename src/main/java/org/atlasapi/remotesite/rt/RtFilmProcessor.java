@@ -5,9 +5,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.atlasapi.media.entity.Actor;
 import org.atlasapi.media.entity.Alias;
@@ -41,7 +44,6 @@ import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.text.MoreStrings;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -60,7 +62,8 @@ import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 public class RtFilmProcessor {
     
     private static final String RT_FILM_URI_BASE = "http://radiotimes.com/films/";
-    private static final String RT_FILM_ALIAS = "rt:filmid";
+    private static final String RT_FILM_ALIAS_NAMESPACE = "rt:filmid";
+    private static final String IMDB_ID_NAMESPACE = "imdb:id";
     private static final String RT_RATING_SCHEME = "5STAR";
     
     private final ContentResolver contentResolver;
@@ -81,8 +84,10 @@ public class RtFilmProcessor {
         this.log = log;
     }
     
-    public void process(Element filmElement,
-            OwlTelescopeReporter telescopeReporter) {
+    public void process(
+            Element filmElement,
+            OwlTelescopeReporter telescopeReporter
+    ) {
         String id = filmElement.getFirstChildElement("film_reference_no").getValue();
         
         Film film;
@@ -96,12 +101,18 @@ public class RtFilmProcessor {
             film = new Film(rtFilmUriFor(id), rtCurieFor(id), Publisher.RADIO_TIMES);
         }
 
+        Set<Alias> aliases = new HashSet<>();
+        aliases.add(new Alias(RT_FILM_ALIAS_NAMESPACE, id));
+
         Element imdbElem = filmElement.getFirstChildElement("imdb_ref");
         if (imdbElem != null) {
-            // TODO new alias
-            film.addAliasUrl(normalize(imdbElem.getValue()));
+            String imdbId = extractImdbId(imdbElem.getValue());
+            if(!imdbId.isEmpty()) {
+                aliases.add(new Alias(IMDB_ID_NAMESPACE, imdbId));
+            }
         }
-        film.setAliases(ImmutableSet.of(new Alias(RT_FILM_ALIAS, id)));
+
+        film.setAliases(aliases);
 
         film.setSpecialization(Specialization.FILM);
         film.setTitle(filmElement.getFirstChildElement("title").getValue());
@@ -265,10 +276,14 @@ public class RtFilmProcessor {
     public boolean hasValue(Element subtitlesElement) {
         return subtitlesElement != null && !Strings.isNullOrEmpty(subtitlesElement.getValue());
     }
-    
-    private String normalize(String imdbRef) {
-        String httpRef = imdbRef.replace("www.", "http://");
-        return CharMatcher.is('/').trimTrailingFrom(httpRef);
+
+    private String extractImdbId(String imdbRef) {
+        Pattern imdbIdPattern = Pattern.compile("([a-z]{2}[0-9]{7,})");
+        Matcher imdbIdMatcher = imdbIdPattern.matcher(imdbRef);
+        if(imdbIdMatcher.matches()){
+            return imdbIdMatcher.group(1);
+        }
+        return "";
     }
 
     private List<CrewMember> getOtherPublisherPeople(Film film) {

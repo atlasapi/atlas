@@ -61,6 +61,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.RT_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.RT_UPCOMING_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.RT_VIA_IMDB_ID;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STANDARD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STRICT_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_ITEM;
@@ -466,7 +467,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(RADIO_TIMES)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                RT_ITEM, ImmutableSet.of(PREVIEW_NETWORKS, AMAZON_UNBOX)
+                                RT_ITEM, ImmutableSet.of(PREVIEW_NETWORKS, AMAZON_UNBOX),
+                                IMDB_ITEM, ImmutableSet.of(IMDB)    //equiv via IMDb id
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

@@ -20,7 +20,7 @@ public class EquivalenceUpdaterProviderDependencies {
 
     private final ScheduleResolver scheduleResolver;
     private final SearchResolver owlSearchResolver;
-    private final DeerSearchResolver deerSearchResolver;
+    private final SearchResolver deerSearchResolver;
     private final ContentResolver contentResolver;
     private final ChannelResolver channelResolver;
     private final EquivalenceSummaryStore equivSummaryStore;
@@ -36,7 +36,7 @@ public class EquivalenceUpdaterProviderDependencies {
     private EquivalenceUpdaterProviderDependencies(
             ScheduleResolver scheduleResolver,
             SearchResolver owlSearchResolver,
-            DeerSearchResolver deerSearchResolver,
+            SearchResolver deerSearchResolver,
             ContentResolver contentResolver,
             ChannelResolver channelResolver,
             EquivalenceSummaryStore equivSummaryStore,
@@ -75,7 +75,7 @@ public class EquivalenceUpdaterProviderDependencies {
         return owlSearchResolver;
     }
 
-    public DeerSearchResolver getDeerSearchResolver() {
+    public SearchResolver getDeerSearchResolver() {
         return deerSearchResolver;
     }
 
@@ -131,7 +131,7 @@ public class EquivalenceUpdaterProviderDependencies {
 
     public interface DeerSearchResolverStep {
 
-        ContentResolverStep withDeerSearchResolver(DeerSearchResolver deerSearchResolver);
+        ContentResolverStep withDeerSearchResolver(SearchResolver deerSearchResolver);
     }
 
     public interface ContentResolverStep {
@@ -201,7 +201,7 @@ public class EquivalenceUpdaterProviderDependencies {
 
         private ScheduleResolver scheduleResolver;
         private SearchResolver owlSearchResolver;
-        private DeerSearchResolver deerSearchResolver;
+        private SearchResolver deerSearchResolver;
         private ContentResolver contentResolver;
         private ChannelResolver channelResolver;
         private EquivalenceSummaryStore equivSummaryStore;
@@ -229,8 +229,7 @@ public class EquivalenceUpdaterProviderDependencies {
         }
 
         @Override
-        public ContentResolverStep withDeerSearchResolver(
-                DeerSearchResolver deerSearchResolver) {
+        public ContentResolverStep withDeerSearchResolver(SearchResolver deerSearchResolver) {
             this.deerSearchResolver = deerSearchResolver;
             return this;
         }

@@ -70,7 +70,7 @@ public class EquivModule {
 
     @Autowired private ScheduleResolver scheduleResolver;
     @Autowired @Qualifier("EquivalenceSearchResolver") private SearchResolver owlSearchResolver;
-    @Autowired @Qualifier("DeerSearchResolver") private DeerSearchResolver deerSearchResolver;
+    @Autowired @Qualifier("DeerSearchResolver") private SearchResolver deerSearchResolver;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ChannelResolver channelResolver;
     @Autowired private EquivalenceSummaryStore equivSummaryStore;

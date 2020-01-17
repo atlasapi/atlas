@@ -62,7 +62,7 @@ public class RoviItemUpdaterProvider implements EquivalenceResultUpdaterProvider
                                         dependencies.getEquivSummaryStore()
                                 ),
                                 new FilmEquivalenceGeneratorAndScorer(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(
                                                 Lists.newArrayList(targetPublishers)

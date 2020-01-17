@@ -53,7 +53,7 @@ public class VodItemUpdaterProvider implements EquivalenceResultUpdaterProvider<
                                         dependencies.getEquivSummaryStore()
                                 ),
                                 new FilmEquivalenceGeneratorAndScorer(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)

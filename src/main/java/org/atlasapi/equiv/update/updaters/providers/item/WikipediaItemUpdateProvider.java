@@ -47,14 +47,14 @@ public class WikipediaItemUpdateProvider implements EquivalenceResultUpdaterProv
                 .withGenerators(
                         ImmutableSet.of(
                                 new FilmEquivalenceGeneratorAndScorer(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)
                                         ),
                                         true),
                                 TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Item.class,
                                         targetPublishers,
                                         0,

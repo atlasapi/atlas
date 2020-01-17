@@ -62,7 +62,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         targetPublishers
                                 ),
                                 new FilmEquivalenceGeneratorAndScorer(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)),

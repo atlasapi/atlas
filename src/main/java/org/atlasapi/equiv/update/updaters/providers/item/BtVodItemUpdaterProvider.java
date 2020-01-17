@@ -54,7 +54,7 @@ public class BtVodItemUpdaterProvider implements EquivalenceResultUpdaterProvide
                                         dependencies.getEquivSummaryStore()
                                 ),
                                 new FilmEquivalenceGeneratorAndScorer(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)

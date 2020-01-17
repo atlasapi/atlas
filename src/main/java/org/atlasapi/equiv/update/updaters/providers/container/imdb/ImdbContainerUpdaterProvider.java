@@ -66,7 +66,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         .withClass(Container.class)
                                         .build(),
                                 TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Container.class,
                                         targetPublishers,
                                         Score.nullScore(),
@@ -85,7 +85,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2.0),
                                 new SoleCandidateTitleMatchingScorer<>(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Score.ONE,
                                         Score.nullScore(),
                                         Container.class

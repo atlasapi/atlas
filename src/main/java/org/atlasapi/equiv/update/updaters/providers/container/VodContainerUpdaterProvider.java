@@ -49,7 +49,7 @@ public class VodContainerUpdaterProvider implements EquivalenceResultUpdaterProv
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
                         TitleSearchGenerator.create(
-                                dependencies.getSearchResolver(),
+                                dependencies.getOwlSearchResolver(),
                                 Container.class,
                                 targetPublishers,
                                 2

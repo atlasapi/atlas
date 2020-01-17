@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.generators.barb;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -187,61 +188,72 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             if (candidateScheduleChannel.items().isEmpty()) {
                 continue;
             }
-            desc.startStage("Candidate schedule found for " + candidateScheduleChannel.channel().getUri());
-
-            Item[] candidateItemArray = candidateScheduleChannel.items().toArray(new Item[0]);
-            int candidateItemIndex = findClosestCandidateInSchedule(
-                    candidateItemArray,
-                    subject,
-                    subjectBroadcast,
-                    nopDesc
-            );
-            if (candidateItemIndex < 0) {
-                desc.appendText("Could not find any suitable candidate in the schedule");
-                desc.finishStage();
-                continue;
-            }
-
-            Optional<Item> foundCandidate = checkBlocksAndDetermineCandidate(
-                    subjectItemArray,
-                    subjectItemIndex,
-                    candidateItemArray,
-                    candidateItemIndex,
-                    nopDesc
-            );
-            if (!foundCandidate.isPresent()) {
-                desc.appendText("Could not determine candidate from schedule");
-                desc.finishStage();
-                continue;
-            }
-
-            Item candidate = foundCandidate.get();
-            if(candidate.isActivelyPublished()) {
-                Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, nopDesc);
-                desc.appendText(
-                        "Found candidate %s with broadcast [%s - %s]",
-                        candidate.getCanonicalUri(),
-                        candidateBroadcast.getTransmissionTime(),
-                        candidateBroadcast.getTransmissionEndTime()
+            ListMultimap<Publisher, Item> publisherItems = filterScheduleByPublisher(candidateScheduleChannel);
+            for (Publisher publisher : publisherItems.keySet()) {
+                desc.startStage(
+                        "Candidate schedule found for " + publisher.key()
+                                + " for " + candidateScheduleChannel.channel().getUri()
                 );
-                if (candidateBroadcast.isActivelyPublished() && broadcastFilter.test(candidateBroadcast)) {
-                    //we want the maximum score for this scorer to be scoreOnMatch, so we update the
-                    //score of a candidate instead of adding it up via the usual .addEquivalent()
-                    scores.updateEquivalent(candidate, scoreOnMatch);
 
-                    if (candidate.getId() != null) {
-                        generatorComponent.addComponentResult(
-                                candidate.getId(),
-                                scoreOnMatch.toString()
-                        );
-                    }
-                } else {
-                    desc.appendText("Candidate broadcast did not pass the broadcast filter");
+                Item[] candidateItemArray = publisherItems.get(publisher).toArray(new Item[0]);
+                int candidateItemIndex = findClosestCandidateInSchedule(
+                        candidateItemArray,
+                        subject,
+                        subjectBroadcast,
+                        nopDesc
+                );
+                if (candidateItemIndex < 0) {
+                    desc.appendText("Could not find any suitable candidate in the schedule");
+                    desc.finishStage();
+                    continue;
                 }
+
+                Optional<Item> foundCandidate = checkBlocksAndDetermineCandidate(
+                        subjectItemArray,
+                        subjectItemIndex,
+                        candidateItemArray,
+                        candidateItemIndex,
+                        nopDesc
+                );
+                if (!foundCandidate.isPresent()) {
+                    desc.appendText("Could not determine candidate from schedule");
+                    desc.finishStage();
+                    continue;
+                }
+
+                Item candidate = foundCandidate.get();
+                if (candidate.isActivelyPublished()) {
+                    Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, nopDesc);
+                    desc.appendText(
+                            "Found candidate %s with broadcast [%s - %s]",
+                            candidate.getCanonicalUri(),
+                            candidateBroadcast.getTransmissionTime(),
+                            candidateBroadcast.getTransmissionEndTime()
+                    );
+                    if (candidateBroadcast.isActivelyPublished() && broadcastFilter.test(candidateBroadcast)) {
+                        //we want the maximum score for this scorer to be scoreOnMatch, so we update the
+                        //score of a candidate instead of adding it up via the usual .addEquivalent()
+                        scores.updateEquivalent(candidate, scoreOnMatch);
+
+                        if (candidate.getId() != null) {
+                            generatorComponent.addComponentResult(
+                                    candidate.getId(),
+                                    scoreOnMatch.toString()
+                            );
+                        }
+                    } else {
+                        desc.appendText("Candidate broadcast did not pass the broadcast filter");
+                    }
+                }
+                desc.finishStage();
             }
-            desc.finishStage();
         }
         desc.finishStage();
+    }
+
+    private ListMultimap<Publisher, Item> filterScheduleByPublisher(ScheduleChannel candidateScheduleChannel) {
+        return candidateScheduleChannel.items().stream() // N.B. we need to retain the order
+                .collect(MoreCollectors.toImmutableListMultiMap(Item::getPublisher, item -> item));
     }
 
     private Schedule scheduleAround(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {
@@ -392,10 +404,10 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         int subjectPreviousBlockEnd = subjectItemPosition - 1;
         while (subjectPreviousBlockEnd >= 0
                 && similarEpisodes(
-                        subject,
-                        subjectItemArray[subjectPreviousBlockEnd],
-                        desc
-                )
+                subject,
+                subjectItemArray[subjectPreviousBlockEnd],
+                desc
+        )
         ) {
             subjectPreviousBlockEnd--;
         }
@@ -403,10 +415,10 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         int candidatePreviousBlockEnd = candidateItemPosition - 1;
         while (candidatePreviousBlockEnd >= 0
                 && similarEpisodes(
-                        possibleCandidate,
-                        candidateItemArray[candidatePreviousBlockEnd],
-                        desc
-                )
+                possibleCandidate,
+                candidateItemArray[candidatePreviousBlockEnd],
+                desc
+        )
         ) {
             candidatePreviousBlockEnd--;
         }
@@ -418,10 +430,10 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         int subjectNextBlockStart = subjectItemPosition + 1;
         while (subjectNextBlockStart < subjectItemArray.length
                 && similarEpisodes(
-                        subject,
-                        subjectItemArray[subjectNextBlockStart],
-                        desc
-                )
+                subject,
+                subjectItemArray[subjectNextBlockStart],
+                desc
+        )
         ) {
             subjectNextBlockStart++;
         }
@@ -429,16 +441,16 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         int candidateNextBlockStart = candidateItemPosition + 1;
         while (candidateNextBlockStart < candidateItemArray.length
                 && similarEpisodes(
-                        possibleCandidate,
-                        candidateItemArray[candidateNextBlockStart],
-                        desc
-                )
+                possibleCandidate,
+                candidateItemArray[candidateNextBlockStart],
+                desc
+        )
         ) {
             candidateNextBlockStart++;
         }
 
         if (subjectNextBlockStart >= subjectItemArray.length
-            || candidateNextBlockStart >= candidateItemArray.length) {
+                || candidateNextBlockStart >= candidateItemArray.length) {
             return Optional.empty();
         }
 

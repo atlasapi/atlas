@@ -38,7 +38,7 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQua
 import static org.atlasapi.equiv.utils.barb.BarbEquivUtils.TXLOG_PUBLISHERS;
 
 /**
- * This call was created as part of the BBC work to fill in missing PIDs in their CCIDSTxLogs
+ * This class was created as part of the BBC work to fill in missing PIDs in their CCIDSTxLogs
  * More details can be found in JIRA ENG-339
  */
 public class BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {

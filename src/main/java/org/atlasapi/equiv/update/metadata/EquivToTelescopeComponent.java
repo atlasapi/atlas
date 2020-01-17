@@ -1,13 +1,15 @@
 package org.atlasapi.equiv.update.metadata;
 
+import com.google.common.base.Strings;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.HashMap;
 
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-
-import com.google.common.base.Strings;
-
 public class EquivToTelescopeComponent {
+
+    private static final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private String componentName;
     private HashMap<String, String> componentResults;
@@ -24,14 +26,15 @@ public class EquivToTelescopeComponent {
         this.componentName = componentName;
     }
 
-    public void addComponentResult(long longId, String score) {
-        String id = new SubstitutionTableNumberCodec().lowerCaseOnly().encode(
-                BigInteger.valueOf(longId)
-        );
+    public void addComponentResult(@Nullable Long longId, String score) {
+        if (longId == null) {
+            return;
+        }
+        String id = codec.encode(BigInteger.valueOf(longId));
         componentResults.put(id, score);
     }
 
-    public void addComponentResult(String id, String score) {
+    public void addComponentResult(@Nullable String id, String score) {
         if (Strings.isNullOrEmpty(id)) {
             return;
         }

@@ -49,6 +49,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_X_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BBC_REGIONAL_TXLOGS_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BBC_TO_TXLOGS_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
@@ -1169,7 +1170,8 @@ public class UpdaterConfigurationRegistry {
                                         BARB_TRANSMISSIONS,
                                         BARB_MASTER
                                 ),
-                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO)
+                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO),
+                                BBC_REGIONAL_TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -1196,7 +1198,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(LAYER3_TXLOGS)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO)
+                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO),
+                                BBC_REGIONAL_TXLOGS_ITEM, ImmutableSet.of(LAYER3_TXLOGS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

@@ -77,6 +77,16 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         true,
                                         true
                                 ),
+                                TitleSearchGenerator.create(
+                                        dependencies.getDeerSearchResolver(),
+                                        Container.class,
+                                        targetPublishers,
+                                        Score.ZERO,
+                                        Score.ZERO,
+                                        true,
+                                        true,
+                                        true
+                                ),
                                 new ContainerChildEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore()

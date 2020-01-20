@@ -133,8 +133,7 @@ public class YouViewUpdater extends ScheduledTask {
                     progress = progress.reduce(processor.process(
                             channel,
                             publisher,
-                            filteredElements.build(),
-                            interval
+                            filteredElements.build()
                     ));
                     reportStatus(progress.toString());
                 }
@@ -200,8 +199,7 @@ public class YouViewUpdater extends ScheduledTask {
                     progress = progress.reduce(processor.process(
                             channel,
                             publisher,
-                            elements.build(),
-                            interval
+                            elements.build()
                     ));
                     reportStatus(progress.toString());
                 }

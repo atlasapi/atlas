@@ -1,11 +1,12 @@
 package org.atlasapi.remotesite.youview;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Lists;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import nu.xom.Element;
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
@@ -35,11 +36,10 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
     
     @Override
     public UpdateProgress process(Channel channel, Publisher targetPublisher,
-                                  List<Element> elements, Interval schedulePeriod) {
+                                  List<Element> elements) {
         
-        List<ItemRefAndBroadcast> broadcasts = Lists.newArrayList();
         Builder<String, String> acceptableBroadcastIds = ImmutableMap.builder();
-        
+
         UpdateProgress progress = UpdateProgress.START;
         for (Element element : elements) {
             try {
@@ -48,41 +48,37 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
                         targetPublisher,
                         element
                 );
-                broadcasts.add(itemAndBroadcast);
+
+                Broadcast broadcast = itemAndBroadcast.getBroadcast();
+
+                Interval broadcastInterval = new Interval(broadcast.getTransmissionTime(), broadcast.getTransmissionEndTime());
+
                 acceptableBroadcastIds.put(
-                        itemAndBroadcast.getBroadcast().getSourceId(),
+                        broadcast.getSourceId(),
                         itemAndBroadcast.getItemUri()
                 );
+
+                if (trimmer != null) {
+                    trimmer.trimBroadcasts(
+                            targetPublisher,
+                            broadcastInterval,
+                            channel,
+                            acceptableBroadcastIds.build()
+                    );
+                }
+
+                try {
+                    scheduleWriter.replaceScheduleBlock(targetPublisher, channel, ImmutableList.of(itemAndBroadcast));
+                } catch (IllegalArgumentException e) {
+                    log.error(String.format("Failed to update schedule for channel %s (%s) on %s: %s",
+                            channel.getTitle(), getYouViewId(channel),
+                            broadcastInterval.getStart().toString(), e.getMessage()), e);
+                }
+
                 progress = progress.reduce(UpdateProgress.SUCCESS);
             } catch (Exception e) {
                 log.error(String.format("Failed to process element: %s", element.toXML()), e);
                 progress = progress.reduce(UpdateProgress.FAILURE);
-            }
-        }
-
-        if (trimmer != null) {
-            trimmer.trimBroadcasts(
-                    targetPublisher,
-                    schedulePeriod,
-                    channel,
-                    acceptableBroadcastIds.build()
-            );
-        }
-
-        if (broadcasts.isEmpty()) {
-            if (log.isInfoEnabled()) {
-                log.info("No broadcasts for channel {} ({}) on {}",
-                        channel.getTitle(),
-                        getYouViewId(channel),
-                        schedulePeriod.getStart());
-            }
-        } else {
-            try {
-                scheduleWriter.replaceScheduleBlock(targetPublisher, channel, broadcasts);
-            } catch (IllegalArgumentException e) {
-                log.error(String.format("Failed to update schedule for channel %s (%s) on %s: %s", 
-                        channel.getTitle(), getYouViewId(channel), 
-                        schedulePeriod.getStart().toString(), e.getMessage()), e);
             }
         }
         

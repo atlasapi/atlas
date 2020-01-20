@@ -9,5 +9,5 @@ import org.joda.time.Interval;
 import java.util.List;
 
 public interface YouViewChannelProcessor {
-    UpdateProgress process(Channel channel, Publisher targetPublisher, List<Element> elements, Interval schedulePeriod);
+    UpdateProgress process(Channel channel, Publisher targetPublisher, List<Element> elements);
 }

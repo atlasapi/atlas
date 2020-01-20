@@ -1,11 +1,15 @@
 package org.atlasapi.remotesite;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Equivalence;
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Encoding;
@@ -18,18 +22,12 @@ import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
-
-import com.google.common.base.Equivalence;
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.joda.time.Duration;
+
+import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -158,6 +156,8 @@ public class ContentMerger {
         current.setMediaType(extracted.getMediaType());
         current.setSpecialization(extracted.getSpecialization());
         current.setPriority(extracted.getPriority());
+        current.addCustomFields(extracted.getCustomFields());
+
         topicsMergeStrategy.mergeTopics(current, extracted);
         versionMergeStrategy.mergeVersions(current, extracted);
 

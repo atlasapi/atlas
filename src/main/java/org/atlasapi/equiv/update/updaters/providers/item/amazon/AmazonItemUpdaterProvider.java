@@ -59,7 +59,8 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
-                                        targetPublishers
+                                        targetPublishers,
+                                        true
                                 ),
                                 new FilmEquivalenceGeneratorAndScorer(
                                         dependencies.getOwlSearchResolver(),

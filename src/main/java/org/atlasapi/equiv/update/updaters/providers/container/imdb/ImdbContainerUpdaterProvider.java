@@ -28,22 +28,24 @@ import org.atlasapi.media.entity.Publisher;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import com.metabroadcast.common.stream.MoreCollectors;
+
 public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
-    private final String IMDB_NAMESPACE = "imdb:id";
-    private final String OLD_IMDB_NAMESPACE = "gb:imdb:resourceId";
-    private final String AMAZON_IMDB_NAMESPACE = "zz:imdb:id";
-    private final String JUSTWATCH_IMDB_NAMESPACE = "justwatch:imdb:id";
-    private final Set<Set<String>> NAMESPACES_SET = ImmutableSet.of(
-            ImmutableSet.of(IMDB_NAMESPACE, OLD_IMDB_NAMESPACE, AMAZON_IMDB_NAMESPACE, JUSTWATCH_IMDB_NAMESPACE)
-    );
+    private final Set<Set<String>> namespacesSet;
 
-    private ImdbContainerUpdaterProvider() {
-
+    private ImdbContainerUpdaterProvider(@Nullable Set<Set<String>> namespacesSet) {
+        this.namespacesSet = namespacesSet == null
+                             ? ImmutableSet.of()
+                             : namespacesSet.stream()
+                                     .map(ImmutableSet::copyOf)
+                                     .collect(MoreCollectors.toImmutableSet());
     }
 
-    public static ImdbContainerUpdaterProvider create() {
-        return new ImdbContainerUpdaterProvider();
+    public static ImdbContainerUpdaterProvider create(@Nullable Set<Set<String>> namespacesSet) {
+        return new ImdbContainerUpdaterProvider(namespacesSet);
     }
 
     @Override
@@ -60,7 +62,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         .withResolver(dependencies.getContentResolver())
                                         .withPublishers(targetPublishers)
                                         .withLookupEntryStore(dependencies.getLookupEntryStore())
-                                        .withNamespacesSet(NAMESPACES_SET)
+                                        .withNamespacesSet(namespacesSet)
                                         .withAliasMatchingScore(Score.valueOf(3D))
                                         .withIncludeUnpublishedContent(false)
                                         .withClass(Container.class)

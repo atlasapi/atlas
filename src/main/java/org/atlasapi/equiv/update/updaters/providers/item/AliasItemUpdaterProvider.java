@@ -24,10 +24,6 @@ import org.atlasapi.media.entity.Publisher;
 import javax.annotation.Nullable;
 import java.util.Set;
 
-/**
- *  Equivs on both exact title + exact year match, but not only one or the other.
- *  Also equivs if IMDb alias present, or through sequence stitching via containers.
- */
 public class AliasItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private final Set<Set<String>> namespacesSet;

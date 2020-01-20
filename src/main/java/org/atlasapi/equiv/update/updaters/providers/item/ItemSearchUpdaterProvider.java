@@ -31,6 +31,11 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+/**
+ *  Equivs on both exact title IFF candidate is the only one with exact title match from its publisher,
+ *  AND the subject is the only one with that exact title from that publisher.
+ *  Otherwise, it requires exact year match.
+ */
 public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private ItemSearchUpdaterProvider() {}

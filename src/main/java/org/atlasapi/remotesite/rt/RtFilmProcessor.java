@@ -107,8 +107,6 @@ public class RtFilmProcessor {
         Element imdbElem = filmElement.getFirstChildElement("imdb_ref");
         if (imdbElem != null) {
             String imdbId = extractImdbId(imdbElem.getValue());
-            //TODO remove this log
-            log.record(warnEntry().withSource(getClass()).withDescription("Ingest RT film %s with IMDb id %s", rtFilmUriFor(id), imdbId));
             if(!imdbId.isEmpty()) {
                 aliases.add(new Alias(IMDB_ID_NAMESPACE, imdbId));
             }

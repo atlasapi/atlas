@@ -120,14 +120,15 @@ public class YouViewUpdater extends ScheduledTask {
                     for (int i = 0 ; i < entries.size(); i++) {
                         Element element = entries.get(i);
                         String hash = element.getAttribute("hash", element.getNamespaceURI("yv")).getValue();
+                        String keyedHash = serviceId + ":" + hash;
                         String youviewId = element.getFirstChildElement("id", element.getNamespaceURI(ATOM_PREFIX)).getValue();
-                        if (!seenHashes.containsKey(hash)) {
-                            log.info("Found new or changed element with id: {}", youviewId);
+                        if (!seenHashes.containsKey(keyedHash)) {
+                            log.info("Found new or changed element on {} with id: {}", serviceId, youviewId);
                             filteredElements.add(element);
                         } else {
-                            log.info("Element with id: {} unchanged", youviewId);
+                            log.info("Unchanged element on {} with id: {}", serviceId, youviewId);
                         }
-                        seenHashes.put(hash, LocalDateTime.now());
+                        seenHashes.put(keyedHash, LocalDateTime.now());
                     }
 
                     progress = progress.reduce(processor.process(

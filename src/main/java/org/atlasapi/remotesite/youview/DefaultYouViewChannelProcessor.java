@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import com.metabroadcast.common.scheduling.UpdateProgress;
-import nu.xom.Elements;
+import nu.xom.Element;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
@@ -34,19 +34,19 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
     }
     
     @Override
-    public UpdateProgress process(Channel channel, Publisher targetPublisher, 
-            Elements elements, Interval schedulePeriod) {
+    public UpdateProgress process(Channel channel, Publisher targetPublisher,
+                                  List<Element> elements, Interval schedulePeriod) {
         
         List<ItemRefAndBroadcast> broadcasts = Lists.newArrayList();
         Builder<String, String> acceptableBroadcastIds = ImmutableMap.builder();
         
         UpdateProgress progress = UpdateProgress.START;
-        for (int i = 0; i < elements.size(); i++) {
+        for (Element element : elements) {
             try {
                 ItemRefAndBroadcast itemAndBroadcast = processor.process(
                         channel,
                         targetPublisher,
-                        elements.get(i)
+                        element
                 );
                 broadcasts.add(itemAndBroadcast);
                 acceptableBroadcastIds.put(
@@ -55,7 +55,7 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
                 );
                 progress = progress.reduce(UpdateProgress.SUCCESS);
             } catch (Exception e) {
-                log.error(String.format("Failed to process element: %s", elements.get(i).toXML()), e);
+                log.error(String.format("Failed to process element: %s", element.toXML()), e);
                 progress = progress.reduce(UpdateProgress.FAILURE);
             }
         }

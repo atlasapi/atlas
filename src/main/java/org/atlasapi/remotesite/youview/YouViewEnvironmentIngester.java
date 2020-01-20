@@ -66,9 +66,11 @@ public class YouViewEnvironmentIngester {
     }
     
     public void startBackgroundTasks() {
+        //TODO: don't accidentally leave things like this
         String publishers = publishers();
-        scheduler.schedule(youViewTodayUpdater().withName("YouView [" + publishers + "] Today Updater"), EVERY_12_HOURS);
-        scheduler.schedule(youViewFornightUpdater().withName("YouView [" + publishers + "] Updater ±7 Days"), EVERY_12_HOURS);
+//        scheduler.schedule(youViewTodayUpdater().withName("YouView [" + publishers + "] Today Updater"), EVERY_12_HOURS);
+//        scheduler.schedule(youViewFornightUpdater().withName("YouView [" + publishers + "] Updater ±7 Days"), EVERY_12_HOURS);
+        scheduler.schedule(youViewPollingUpdater(4).withName("YouView [" + publishers + "] +4Hour Polling Updater"), RepetitionRules.every(Duration.standardSeconds(1)));
     }
 
     private YouViewFortnightUpdater youViewFornightUpdater() {
@@ -79,6 +81,11 @@ public class YouViewEnvironmentIngester {
     private YouViewTodayUpdater youViewTodayUpdater() {
         return new YouViewTodayUpdater(youViewChannelResolver, youViewScheduleFetcher, 
                 youViewChannelProcessor, ingestConfiguration);
+    }
+
+    private YouViewPollingUpdater youViewPollingUpdater(int hours) {
+        return new YouViewPollingUpdater(youViewChannelResolver, youViewScheduleFetcher,
+                youViewChannelProcessor, ingestConfiguration, hours);
     }
     
     private String publishers() {

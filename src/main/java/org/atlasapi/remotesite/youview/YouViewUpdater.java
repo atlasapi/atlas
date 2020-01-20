@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.youview;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -14,10 +15,13 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -34,23 +38,116 @@ public class YouViewUpdater extends ScheduledTask {
     private final YouViewChannelResolver channelResolver;
     private final YouViewChannelProcessor processor;
     private final YouViewIngestConfiguration ingestConfiguration;
+    private final boolean polling;
+    private final int hours;
+
+    public YouViewUpdater(YouViewChannelResolver channelResolver,
+                          YouViewScheduleFetcher fetcher, YouViewChannelProcessor processor,
+                          YouViewIngestConfiguration ingestConfiguration,
+                          int minusDays, int plusDays) {
+        this(channelResolver, fetcher, processor, ingestConfiguration, minusDays, plusDays, false, 0);
+
+    }
     
     public YouViewUpdater(YouViewChannelResolver channelResolver, 
             YouViewScheduleFetcher fetcher, YouViewChannelProcessor processor,
             YouViewIngestConfiguration ingestConfiguration,
-            int minusDays, int plusDays) {
+            int minusDays, int plusDays, boolean polling, int hours) {
         this.channelResolver = checkNotNull(channelResolver);
         this.fetcher = checkNotNull(fetcher);
         this.processor = checkNotNull(processor);
         this.ingestConfiguration = checkNotNull(ingestConfiguration);
         this.minusDays = minusDays;
         this.plusDays = plusDays;
-        
+        this.polling = polling;
+        this.hours = hours;
+    }
+
+    @Override
+    protected void runTask() {
+        if (!polling) {
+            runRegularTask();
+        } else {
+            runPollingTask();
+        }
+    }
+
+    // TODO report status effectively
+    private void runPollingTask() {
+        Multimap<ServiceId, Channel> youViewChannels = channelResolver.getAllServiceIdsToChannels();
+
+        UpdateProgress progress = UpdateProgress.START;
+
+        Map<String, LocalDateTime> seenHashes = new HashMap<>(1000);
+
+        try {
+
+            while (this.shouldContinue()) {
+                LocalDateTime now = LocalDateTime.now(DateTimeZone.UTC);
+                LocalDateTime to = now.plusHours(hours);
+                Interval interval = new Interval(now.toDateTime(DateTimeZone.UTC), to.toDateTime(DateTimeZone.UTC));
+
+                for (Entry<ServiceId, Channel> entry : youViewChannels.entries()) {
+                    ServiceId serviceId = entry.getKey();
+                    Channel channel = entry.getValue();
+                    DateTime startDate = interval.getStart();
+                    DateTime endDate = interval.getEnd();
+                    Document xml = fetcher.getSchedule(startDate, endDate, serviceId.getId());
+                    Element root = xml.getRootElement();
+                    Elements entries = root.getChildElements(ENTRY_KEY, root.getNamespaceURI(ATOM_PREFIX));
+
+                    if (entries.size() == 0 && log.isWarnEnabled()) {
+                        log.warn("Schedule for {}?starttime={}&endtime={}&service={} is empty for {} ({})",
+                                fetcher.getBaseUrl(),
+                                startDate.toString(DATE_TIME_FORMAT),
+                                endDate.toString(DATE_TIME_FORMAT),
+                                serviceId,
+                                channel,
+                                channel.getTitle());
+                    }
+
+                    Publisher publisher = publisherFor(serviceId);
+                    if (publisher == null) {
+                        log.warn("Could not find publisher the channel {} ({}) should be written as (from: {})",
+                                channel, channel.getTitle(), serviceId);
+                        progress = progress.reduce(UpdateProgress.FAILURE);
+                        continue;
+                    }
+
+
+                    ImmutableList.Builder<Element> filteredElements = ImmutableList.builder();
+
+                    for (int i = 0 ; i < entries.size(); i++) {
+                        Element element = entries.get(i);
+                        String hash = element.getAttribute("hash", element.getNamespaceURI("yv")).getValue();
+                        if (!seenHashes.containsKey(hash)) {
+                            log.info("Found new or changed element with id: {}", element.getFirstChildElement("id", element.getNamespaceURI(ATOM_PREFIX)));
+                            filteredElements.add(element);
+                        }
+                        seenHashes.put(hash, LocalDateTime.now());
+                    }
+
+                    progress = progress.reduce(processor.process(
+                            channel,
+                            publisher,
+                            filteredElements.build(),
+                            interval
+                    ));
+                    reportStatus(progress.toString());
+                }
+
+
+                Thread.sleep(50000); //TODO: lower this - don't spam too much for now whilst testing
+                seenHashes.entrySet().removeIf(entry -> entry.getValue().plusHours(4).isBefore(now));
+            }
+        } catch (Exception e) {
+            log.error("Error whilst running the polling youview updater", e);
+            Throwables.propagate(e);
+        }
     }
     
     // TODO report status effectively
-    @Override
-    protected void runTask() {
+    private void runRegularTask() {
         try {
             LocalDate today = LocalDate.now(DateTimeZone.UTC);
             LocalDate start = today.minusDays(minusDays);
@@ -90,10 +187,17 @@ public class YouViewUpdater extends ScheduledTask {
                         progress = progress.reduce(UpdateProgress.FAILURE);
                         continue;
                     }
+
+                    ImmutableList.Builder<Element> elements = ImmutableList.builder();
+
+                    for (int i = 0; i < entries.size(); i++) {
+                        elements.add(entries.get(i));
+                    }
+
                     progress = progress.reduce(processor.process(
                             channel,
                             publisher,
-                            entries,
+                            elements.build(),
                             interval
                     ));
                     reportStatus(progress.toString());

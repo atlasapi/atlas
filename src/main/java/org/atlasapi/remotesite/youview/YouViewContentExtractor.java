@@ -1,11 +1,13 @@
 package org.atlasapi.remotesite.youview;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableMap;
+import com.metabroadcast.common.collect.ImmutableOptionalMap;
+import com.metabroadcast.common.collect.OptionalMap;
+import com.metabroadcast.common.intl.Countries;
+import nu.xom.Attribute;
+import nu.xom.Element;
+import nu.xom.Elements;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
@@ -18,22 +20,17 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.AttributeNotFoundException;
 import org.atlasapi.remotesite.netflix.ElementNotFoundException;
-
-import com.metabroadcast.common.collect.ImmutableOptionalMap;
-import com.metabroadcast.common.collect.OptionalMap;
-import com.metabroadcast.common.intl.Countries;
-
-import com.google.common.collect.ImmutableMap;
-import nu.xom.Attribute;
-import nu.xom.Element;
-import nu.xom.Elements;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -104,6 +101,12 @@ public class YouViewContentExtractor {
         }
         
         item.addVersion(getVersion(channel, source));
+
+        Element lastUpdated = source.getFirstChildElement("updated", source.getNamespaceURI(ATOM_PREFIX));
+        if (lastUpdated != null) {
+            item.addCustomField("yv:lastUpdated", lastUpdated.getValue());
+        }
+
         return item;
     }
     

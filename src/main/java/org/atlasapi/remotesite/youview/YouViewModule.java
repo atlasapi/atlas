@@ -1,7 +1,10 @@
 package org.atlasapi.remotesite.youview;
 
-import javax.annotation.PostConstruct;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -19,11 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
+import javax.annotation.PostConstruct;
 
 @Configuration
 @Import( YouViewCoreModule.class )
@@ -59,7 +58,7 @@ public class YouViewModule {
     
     @Bean
     public YouViewEnvironmentIngester youViewStageIngester() {
-        return new YouViewEnvironmentIngester(youViewStageUri, 
+        return new YouViewEnvironmentIngester(youViewStageUri,
                 Duration.standardSeconds(timeout), scheduler, 
                 channelResolver, contentResolver, contentWriter, 
                 scheduleWriter, scheduleResolver, youviewChannelResolver,
@@ -68,9 +67,10 @@ public class YouViewModule {
     
     @PostConstruct
     public void scheduleTasks() {
-        youViewProductionIngester().startBackgroundTasks();
+        //TODO: don't accidentally leave things like this
+//        youViewProductionIngester().startBackgroundTasks();
         youViewStageIngester().startBackgroundTasks();
-        scheduler.schedule(youViewEquivalenceBreakerTask(), YOUVIEW_EQUIVALENCE_BREAKER_TASK_REPETITION);
+//        scheduler.schedule(youViewEquivalenceBreakerTask(), YOUVIEW_EQUIVALENCE_BREAKER_TASK_REPETITION);
     }
     
     private YouViewIngestConfiguration productionConfiguration() {

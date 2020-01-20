@@ -467,7 +467,7 @@ public class UpdaterConfigurationRegistry {
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
                                 RT_ITEM, ImmutableSet.of(PREVIEW_NETWORKS, AMAZON_UNBOX),
-                                IMDB_ITEM, ImmutableSet.of(IMDB)    //equiv via IMDb id
+                                IMDB_ITEM, ImmutableSet.of(IMDB, JUSTWATCH)    //equiv via IMDb id
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

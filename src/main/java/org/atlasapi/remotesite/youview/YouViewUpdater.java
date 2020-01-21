@@ -155,7 +155,8 @@ public class YouViewUpdater extends ScheduledTask {
                     reportStatus(progress.toString());
 
                     //TODO: this is just for testing to avoid spamming YV
-//                    if(count++ >= 20) {
+                    count++;
+//                    if(count >= 20) {
 //                        break;
 //                    }
                 }

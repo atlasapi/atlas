@@ -95,12 +95,13 @@ public class YouViewUpdater extends ScheduledTask {
 
             while (this.shouldContinue()) {
                 log.info("Polling for YV schedule changes");
-
                 Instant startTime = Instant.now();
+
                 LocalDateTime now = LocalDateTime.now(DateTimeZone.UTC);
                 LocalDateTime to = now.plusHours(hours);
                 Interval interval = new Interval(now.toDateTime(DateTimeZone.UTC), to.toDateTime(DateTimeZone.UTC));
 
+                seenHashes.entrySet().removeIf(entry -> entry.getValue().plusHours(4).isBefore(now));
                 int count = 0;
                 int changedElements = 0;
                 int unchangedElements = 0;
@@ -174,7 +175,6 @@ public class YouViewUpdater extends ScheduledTask {
                 log.info("{} unchanged elements across {} channels", unchangedElements, count);
 
                 Thread.sleep(60000); //TODO: lower this - don't spam too much for now whilst testing
-                seenHashes.entrySet().removeIf(entry -> entry.getValue().plusHours(4).isBefore(now));
             }
         } catch (Exception e) {
             log.error("Error whilst running the polling youview updater", e);

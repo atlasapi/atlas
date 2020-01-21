@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.youview;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -24,9 +25,13 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.remotesite.youview.YouViewContentExtractor.DURATION_KEY;
@@ -91,9 +96,13 @@ public class YouViewUpdater extends ScheduledTask {
 
         Map<String, LocalDateTime> seenHashes = new HashMap<>(1000);
 
+
         try {
 
             while (this.shouldContinue()) {
+
+                List<Stopwatch> getScheduleStopwatches = new ArrayList<>();
+
                 log.info("Polling for YV schedule changes");
                 Instant startTime = Instant.now();
 
@@ -111,7 +120,12 @@ public class YouViewUpdater extends ScheduledTask {
                     Channel channel = entry.getValue();
                     DateTime startDate = interval.getStart();
                     DateTime endDate = interval.getEnd();
+
+                    Stopwatch getScheduleStopwatch = Stopwatch.createStarted();
                     Document xml = fetcher.getSchedule(startDate, endDate, serviceId.getId());
+                    getScheduleStopwatch.stop();
+                    getScheduleStopwatches.add(getScheduleStopwatch);
+
                     Element root = xml.getRootElement();
                     Elements entries = root.getChildElements(ENTRY_KEY, root.getNamespaceURI(ATOM_PREFIX));
 
@@ -153,11 +167,14 @@ public class YouViewUpdater extends ScheduledTask {
                         seenHashes.put(keyedHash, LocalDateTime.now());
                     }
 
-                    progress = progress.reduce(processor.process(
+                    Map.Entry<UpdateProgress, Set<String>> result = processor.process(
                             channel,
                             publisher,
                             filteredElements.build()
-                    ));
+                    );
+
+                    progress = progress.reduce(result.getKey());
+
                     reportStatus(progress.toString());
 
                     //TODO: this is just for testing to avoid spamming YV
@@ -173,6 +190,14 @@ public class YouViewUpdater extends ScheduledTask {
                 log.info("Polling finished after {} millis", runtime.toMillis());
                 log.info("{} changed elements across {} channels", changedElements, count);
                 log.info("{} unchanged elements across {} channels", unchangedElements, count);
+
+                long getScheduleAverageTime = getScheduleStopwatches.stream()
+                        .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
+                        .mapToLong(Long::longValue)
+                        .sum()
+                        / getScheduleStopwatches.size();
+
+                log.info("Average getSchedule time {} over {} calls", getScheduleAverageTime, getScheduleStopwatches.size());
 
                 Thread.sleep(60000); //TODO: lower this - don't spam too much for now whilst testing
             }
@@ -241,11 +266,14 @@ public class YouViewUpdater extends ScheduledTask {
                         elements.add(entries.get(i));
                     }
 
-                    progress = progress.reduce(processor.process(
+
+                    Map.Entry<UpdateProgress, Set<String>> result = processor.process(
                             channel,
                             publisher,
                             elements.build()
-                    ));
+                    );
+
+                    progress = progress.reduce(result.getKey());
                     reportStatus(progress.toString());
                 }
                 start = end;

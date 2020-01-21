@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.youview;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -15,7 +16,13 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -35,19 +42,31 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
     }
     
     @Override
-    public UpdateProgress process(Channel channel, Publisher targetPublisher,
-                                  List<Element> elements) {
+    public Map.Entry<UpdateProgress, Set<String>> process(Channel channel, Publisher targetPublisher,
+                                      List<Element> elements) {
         
         Builder<String, String> acceptableBroadcastIds = ImmutableMap.builder();
+
+        Set<String> contentUris = new HashSet<>();
+
+        List<Stopwatch> processElementStopwatches = new ArrayList<>();
+        List<Stopwatch> trimBroadcastStopwatches = new ArrayList<>();
+        List<Stopwatch> replaceScheduleBlockStopwatches = new ArrayList<>();
 
         UpdateProgress progress = UpdateProgress.START;
         for (Element element : elements) {
             try {
+
+                Stopwatch processElementStopwatch = Stopwatch.createStarted();
                 ItemRefAndBroadcast itemAndBroadcast = processor.process(
                         channel,
                         targetPublisher,
                         element
                 );
+                processElementStopwatch.stop();
+                processElementStopwatches.add(processElementStopwatch);
+
+                contentUris.add(itemAndBroadcast.getItemUri());
 
                 Broadcast broadcast = itemAndBroadcast.getBroadcast();
 
@@ -58,6 +77,8 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
                         itemAndBroadcast.getItemUri()
                 );
 
+
+                Stopwatch trimBroadcastStopwatch = Stopwatch.createStarted();
                 if (trimmer != null) {
                     trimmer.trimBroadcasts(
                             targetPublisher,
@@ -66,9 +87,14 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
                             acceptableBroadcastIds.build()
                     );
                 }
+                trimBroadcastStopwatch.stop();
+                trimBroadcastStopwatches.add(trimBroadcastStopwatch);
 
                 try {
+                    Stopwatch replaceScheduleBlockStopwatch = Stopwatch.createStarted();
                     scheduleWriter.replaceScheduleBlock(targetPublisher, channel, ImmutableList.of(itemAndBroadcast));
+                    replaceScheduleBlockStopwatch.stop();
+                    replaceScheduleBlockStopwatches.add(replaceScheduleBlockStopwatch);
                 } catch (IllegalArgumentException e) {
                     log.error(String.format("Failed to update schedule for channel %s (%s) on %s: %s",
                             channel.getTitle(), getYouViewId(channel),
@@ -81,8 +107,33 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
                 progress = progress.reduce(UpdateProgress.FAILURE);
             }
         }
+
+        long processElementAverageTime = processElementStopwatches.stream()
+                .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
+                .mapToLong(Long::longValue)
+                .sum()
+                / processElementStopwatches.size();
+
+        log.info("Average processElement time {} over {} calls", processElementAverageTime, processElementStopwatches.size());
+
+        long trimBroadcastAverageTime = trimBroadcastStopwatches.stream()
+                .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
+                .mapToLong(Long::longValue)
+                .sum()
+                / trimBroadcastStopwatches.size();
+
+        log.info("Average trimBroadcast time {} over {} calls", trimBroadcastAverageTime, trimBroadcastStopwatches.size());
+
+        long replaceScheduleBlockAverageTime = replaceScheduleBlockStopwatches.stream()
+                .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
+                .mapToLong(Long::longValue)
+                .sum()
+                / replaceScheduleBlockStopwatches.size();
+
+        log.info("Average replaceScheduleBlock time {} over {} calls", replaceScheduleBlockAverageTime, replaceScheduleBlockStopwatches.size());
+
         
-        return progress;
+        return new HashMap.SimpleImmutableEntry<>(progress, contentUris);
     }
 
     private String getYouViewId(Channel channel) {

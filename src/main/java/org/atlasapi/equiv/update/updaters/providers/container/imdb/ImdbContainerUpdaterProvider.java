@@ -1,7 +1,9 @@
 package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
@@ -26,11 +28,10 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
@@ -90,7 +91,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                 new ContainerChildEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
-                                        true
+                                        targetPublishers
                                 )
                         )
                 )

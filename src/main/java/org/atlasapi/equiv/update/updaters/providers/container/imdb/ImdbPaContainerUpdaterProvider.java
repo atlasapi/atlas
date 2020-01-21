@@ -63,7 +63,7 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                                 new ContainerChildEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
-                                        true
+                                        targetPublishers
                                 )
                         )
                 )

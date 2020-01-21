@@ -1,13 +1,10 @@
 package org.atlasapi.equiv.generators;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicates;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multiset;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.collect.OptionalMap;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.equiv.EquivalenceSummary;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
@@ -21,8 +18,20 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.collect.OptionalMap;
+
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicates;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multiset;
 
 public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<Container> {
     
@@ -37,25 +46,23 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
     
     private final EquivalenceSummaryStore summaryStore;
     private final ContentResolver resolver;
-    private final boolean strongCandidatesOnly;
+    private final Set<Publisher> publishers;
 
     public ContainerChildEquivalenceGenerator(
             ContentResolver resolver,
             EquivalenceSummaryStore summaryStore
     ) {
-        this.resolver = resolver;
-        this.summaryStore = summaryStore;
-        this.strongCandidatesOnly = false;
+        this(resolver, summaryStore, null);
     }
-    
+
     public ContainerChildEquivalenceGenerator(
             ContentResolver resolver,
             EquivalenceSummaryStore summaryStore,
-            boolean strongCandidatesOnly
+            @Nullable Set<Publisher> publishers
     ) {
         this.resolver = resolver;
         this.summaryStore = summaryStore;
-        this.strongCandidatesOnly = strongCandidatesOnly;
+        this.publishers = (publishers == null) ? null : ImmutableSet.copyOf(publishers);
     }
     
     @Override
@@ -73,9 +80,20 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
         );
         Multiset<String> parents = HashMultiset.create();
         for (EquivalenceSummary summary : Optional.presentInstances(childSummaries.values())) {
-            Iterables.addAll(parents, Iterables.filter(Iterables.transform(
-                    summary.getEquivalents().values(), TO_PARENT
-            ), Predicates.notNull()));
+            if (publishers == null) {
+                Iterables.addAll(parents, Iterables.filter(Iterables.transform(
+                        summary.getEquivalents().values(), TO_PARENT
+                ), Predicates.notNull()));
+            } else {
+                Iterables.addAll(parents, Iterables.filter(summary.getEquivalents()
+                        .values()
+                        .stream()
+                        .filter(input -> publishers == null
+                                || publishers.contains(input.getPublisher()))
+                        .map(TO_PARENT::apply)
+                        .collect(Collectors.toList()
+                ), Predicates.notNull()));
+            }
         }
         return scoreContainers(
                 parents,
@@ -87,7 +105,7 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
     }
 
     private ScoredCandidates<Container> scoreContainers(
-            Multiset<String> parents,
+            Multiset<String> parents,   // parents of the children that are equiv'd to subject's children
             int children,
             ResultDescription desc,
             EquivToTelescopeResult equivToTelescopeResult,

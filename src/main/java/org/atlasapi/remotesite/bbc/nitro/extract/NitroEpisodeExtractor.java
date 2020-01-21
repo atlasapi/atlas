@@ -156,7 +156,7 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         if (hasMoreThanOneSeriesAncestor(episode)) {
             item.setTitle(compileTitleForSeriesSeriesEpisode(episode));
         }
-        if (episode.getEpisodeOf() != null) {
+        if (episode.getEpisodeOf() != null && !isBrandEpisode(episode)) {
             org.atlasapi.media.entity.Episode episodeContent = (org.atlasapi.media.entity.Episode) item;
             BigInteger position = episode.getEpisodeOf().getPosition();
             if (position != null) {

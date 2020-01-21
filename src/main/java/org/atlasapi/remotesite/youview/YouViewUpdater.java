@@ -87,6 +87,8 @@ public class YouViewUpdater extends ScheduledTask {
                 LocalDateTime to = now.plusHours(hours);
                 Interval interval = new Interval(now.toDateTime(DateTimeZone.UTC), to.toDateTime(DateTimeZone.UTC));
 
+                int count = 0;
+
                 for (Entry<ServiceId, Channel> entry : youViewChannels.entries()) {
                     ServiceId serviceId = entry.getKey();
                     Channel channel = entry.getValue();
@@ -137,6 +139,11 @@ public class YouViewUpdater extends ScheduledTask {
                             filteredElements.build()
                     ));
                     reportStatus(progress.toString());
+
+                    //TODO: this is just for testing to avoid spamming YV
+                    if(count++ >= 20) {
+                        break;
+                    }
                 }
 
 

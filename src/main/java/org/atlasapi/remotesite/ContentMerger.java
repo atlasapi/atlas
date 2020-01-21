@@ -5,6 +5,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -156,7 +157,17 @@ public class ContentMerger {
         current.setMediaType(extracted.getMediaType());
         current.setSpecialization(extracted.getSpecialization());
         current.setPriority(extracted.getPriority());
-        current.addCustomFields(extracted.getCustomFields());
+
+        for (Map.Entry<String, String> customField : extracted.getCustomFields().entrySet()) {
+            //TODO: this is temporary hackery
+            if (customField.getKey().equals("yv:lastUpdated")) {
+                String existingYvLastUpdated = current.getCustomField("yv:lastUpdated");
+                if (!Strings.isNullOrEmpty(existingYvLastUpdated) && existingYvLastUpdated.compareTo(customField.getValue()) > 0) {
+                    continue;
+                }
+            }
+            current.addCustomField(customField.getKey(), customField.getValue());
+        }
 
         topicsMergeStrategy.mergeTopics(current, extracted);
         versionMergeStrategy.mergeVersions(current, extracted);

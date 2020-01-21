@@ -99,6 +99,7 @@ public class YouViewUpdater extends ScheduledTask {
                 Interval interval = new Interval(now.toDateTime(DateTimeZone.UTC), to.toDateTime(DateTimeZone.UTC));
 
                 int count = 0;
+                int changedElements = 0;
                 int unchangedElements = 0;
 
                 for (Entry<ServiceId, Channel> entry : youViewChannels.entries()) {
@@ -141,6 +142,7 @@ public class YouViewUpdater extends ScheduledTask {
                         if (!seenHashes.containsKey(keyedHash)) {
                             log.info("Found new or changed element on {} with id: {}", serviceId, youviewId);
                             filteredElements.add(element);
+                            changedElements++;
                         } else {
                             unchangedElements++;
                         }
@@ -160,6 +162,7 @@ public class YouViewUpdater extends ScheduledTask {
 //                        break;
 //                    }
                 }
+                log.info("{} changed elements across {} channels", changedElements, count);
                 log.info("{} unchanged elements across {} channels", unchangedElements, count);
 
                 Thread.sleep(60000); //TODO: lower this - don't spam too much for now whilst testing

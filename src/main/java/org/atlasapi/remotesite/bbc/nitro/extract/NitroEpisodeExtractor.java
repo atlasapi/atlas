@@ -21,6 +21,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.ReleaseDate;
+import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
@@ -156,7 +157,9 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         if (hasMoreThanOneSeriesAncestor(episode)) {
             item.setTitle(compileTitleForSeriesSeriesEpisode(episode));
         }
-        if (episode.getEpisodeOf() != null && !isBrandEpisode(episode)) {
+        if (episode.getEpisodeOf() != null
+            && (!isBrandEpisode(episode) || item.getSpecialization().equals(Specialization.RADIO)))
+        {
             org.atlasapi.media.entity.Episode episodeContent = (org.atlasapi.media.entity.Episode) item;
             BigInteger position = episode.getEpisodeOf().getPosition();
             if (position != null) {

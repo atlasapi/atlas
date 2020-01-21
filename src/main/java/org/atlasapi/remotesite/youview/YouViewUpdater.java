@@ -1,10 +1,12 @@
 package org.atlasapi.remotesite.youview;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
+import nu.xom.Attribute;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
@@ -25,6 +27,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.remotesite.youview.YouViewContentExtractor.DURATION_KEY;
+import static org.atlasapi.remotesite.youview.YouViewContentExtractor.MEDIA_CONTENT_KEY;
+import static org.atlasapi.remotesite.youview.YouViewContentExtractor.MEDIA_PREFIX;
+import static org.atlasapi.remotesite.youview.YouViewContentExtractor.SCHEDULE_SLOT_KEY;
+import static org.atlasapi.remotesite.youview.YouViewContentExtractor.YV_PREFIX;
 
 public class YouViewUpdater extends ScheduledTask {
 
@@ -40,6 +47,8 @@ public class YouViewUpdater extends ScheduledTask {
     private final YouViewIngestConfiguration ingestConfiguration;
     private final boolean polling;
     private final int hours;
+
+    private static final Joiner joiner = Joiner.on("<->");
 
     public YouViewUpdater(YouViewChannelResolver channelResolver,
                           YouViewScheduleFetcher fetcher, YouViewChannelProcessor processor,
@@ -125,7 +134,9 @@ public class YouViewUpdater extends ScheduledTask {
                     for (int i = 0 ; i < entries.size(); i++) {
                         Element element = entries.get(i);
                         String hash = element.getAttribute("hash", element.getNamespaceURI("yv")).getValue();
-                        String keyedHash = channel.getUri() + ":" + hash;
+                        String txStart = getTransmissionTime(element);
+                        String duration = getBroadcastDuration(element);
+                        String keyedHash = joiner.join(channel.getUri(), txStart, duration, hash);
                         String youviewId = element.getFirstChildElement("id", element.getNamespaceURI(ATOM_PREFIX)).getValue();
                         if (!seenHashes.containsKey(keyedHash)) {
                             log.info("Found new or changed element on {} with id: {}", serviceId, youviewId);
@@ -157,6 +168,17 @@ public class YouViewUpdater extends ScheduledTask {
             log.error("Error whilst running the polling youview updater", e);
             Throwables.propagate(e);
         }
+    }
+
+    private String getTransmissionTime(Element source) {
+        Element transmissionTime = source.getFirstChildElement(SCHEDULE_SLOT_KEY, source.getNamespaceURI(YV_PREFIX));
+        return transmissionTime.getValue();
+    }
+
+    private String getBroadcastDuration(Element source) {
+        Element mediaContent = source.getFirstChildElement(MEDIA_CONTENT_KEY, source.getNamespaceURI(MEDIA_PREFIX));
+        Attribute duration = mediaContent.getAttribute(DURATION_KEY);
+        return duration.getValue();
     }
     
     // TODO report status effectively

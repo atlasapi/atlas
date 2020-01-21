@@ -38,26 +38,26 @@ public class YouViewContentExtractor {
 
     private static final Pattern NEW_PREFIX = Pattern.compile("^New: ");
     
-    private static final String ATOM_PREFIX = "atom";
-    private static final String YV_PREFIX = "yv";
-    private static final String MEDIA_PREFIX = "media";
-    private static final String ID_KEY = "id";
-    private static final String TITLE_KEY = "title";
-    private static final String PROGRAMME_ID_KEY = "programmeId";
-    private static final String IDENTIFIER_KEY = "identifier";
-    private static final String PROGRAMME_CRID_KEY = "programmeCRID";
-    private static final String SERIES_CRID_KEY = "seriesCRID";
-    private static final String PCRID_PREFIX = "pcrid:";
-    private static final String SCRID_PREFIX = "scrid:";
-    private static final String SERVICE_ID_KEY = "serviceId";
-    private static final String EVENT_LOCATOR_KEY = "eventLocator";
-    private static final String MEDIA_CONTENT_KEY = "content";
-    private static final String DURATION_KEY = "duration";
-    private static final String YOUVIEW_PREFIX = "youview:";
-    private static final String SCHEDULE_SLOT_KEY = "scheduleSlot";
-    private static final String AVAILABLE_KEY = "available";
-    private static final String START_KEY = "start";
-    private static final String END_KEY = "end";
+    public static final String ATOM_PREFIX = "atom";
+    public static final String YV_PREFIX = "yv";
+    public static final String MEDIA_PREFIX = "media";
+    public static final String ID_KEY = "id";
+    public static final String TITLE_KEY = "title";
+    public static final String PROGRAMME_ID_KEY = "programmeId";
+    public static final String IDENTIFIER_KEY = "identifier";
+    public static final String PROGRAMME_CRID_KEY = "programmeCRID";
+    public static final String SERIES_CRID_KEY = "seriesCRID";
+    public static final String PCRID_PREFIX = "pcrid:";
+    public static final String SCRID_PREFIX = "scrid:";
+    public static final String SERVICE_ID_KEY = "serviceId";
+    public static final String EVENT_LOCATOR_KEY = "eventLocator";
+    public static final String MEDIA_CONTENT_KEY = "content";
+    public static final String DURATION_KEY = "duration";
+    public static final String YOUVIEW_PREFIX = "youview:";
+    public static final String SCHEDULE_SLOT_KEY = "scheduleSlot";
+    public static final String AVAILABLE_KEY = "available";
+    public static final String START_KEY = "start";
+    public static final String END_KEY = "end";
 
     private static final OptionalMap<Publisher, Platform> BROADCASTER_TO_PLATFORM =
             ImmutableOptionalMap.fromMap(ImmutableMap.of(

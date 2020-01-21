@@ -144,13 +144,13 @@ public class YouViewUpdater extends ScheduledTask {
                     reportStatus(progress.toString());
 
                     //TODO: this is just for testing to avoid spamming YV
-                    if(count++ >= 20) {
-                        break;
-                    }
+//                    if(count++ >= 20) {
+//                        break;
+//                    }
                 }
-                log.info("{} unchanged elements", unchangedElements);
+                log.info("{} unchanged elements across {} channels", unchangedElements, count);
 
-                Thread.sleep(50000); //TODO: lower this - don't spam too much for now whilst testing
+                Thread.sleep(60000); //TODO: lower this - don't spam too much for now whilst testing
                 seenHashes.entrySet().removeIf(entry -> entry.getValue().plusHours(4).isBefore(now));
             }
         } catch (Exception e) {

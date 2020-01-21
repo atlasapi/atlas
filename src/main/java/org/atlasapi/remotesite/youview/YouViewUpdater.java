@@ -83,11 +83,14 @@ public class YouViewUpdater extends ScheduledTask {
         try {
 
             while (this.shouldContinue()) {
+                log.info("Polling for YV schedule changes");
+
                 LocalDateTime now = LocalDateTime.now(DateTimeZone.UTC);
                 LocalDateTime to = now.plusHours(hours);
                 Interval interval = new Interval(now.toDateTime(DateTimeZone.UTC), to.toDateTime(DateTimeZone.UTC));
 
                 int count = 0;
+                int unchangedElements = 0;
 
                 for (Entry<ServiceId, Channel> entry : youViewChannels.entries()) {
                     ServiceId serviceId = entry.getKey();
@@ -128,7 +131,7 @@ public class YouViewUpdater extends ScheduledTask {
                             log.info("Found new or changed element on {} with id: {}", serviceId, youviewId);
                             filteredElements.add(element);
                         } else {
-                            log.info("Unchanged element on {} with id: {}", serviceId, youviewId);
+                            unchangedElements++;
                         }
                         seenHashes.put(keyedHash, LocalDateTime.now());
                     }
@@ -145,7 +148,7 @@ public class YouViewUpdater extends ScheduledTask {
                         break;
                     }
                 }
-
+                log.info("{} unchanged elements", unchangedElements);
 
                 Thread.sleep(50000); //TODO: lower this - don't spam too much for now whilst testing
                 seenHashes.entrySet().removeIf(entry -> entry.getValue().plusHours(4).isBefore(now));

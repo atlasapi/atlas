@@ -37,13 +37,25 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
     
     private final EquivalenceSummaryStore summaryStore;
     private final ContentResolver resolver;
-    
+    private final boolean strongCandidatesOnly;
+
     public ContainerChildEquivalenceGenerator(
             ContentResolver resolver,
             EquivalenceSummaryStore summaryStore
     ) {
         this.resolver = resolver;
         this.summaryStore = summaryStore;
+        this.strongCandidatesOnly = false;
+    }
+    
+    public ContainerChildEquivalenceGenerator(
+            ContentResolver resolver,
+            EquivalenceSummaryStore summaryStore,
+            boolean strongCandidatesOnly
+    ) {
+        this.resolver = resolver;
+        this.summaryStore = summaryStore;
+        this.strongCandidatesOnly = strongCandidatesOnly;
     }
     
     @Override
@@ -86,9 +98,9 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
         ResolvedContent containers = resolver.findByCanonicalUris(parents.elementSet());
         
         for (Multiset.Entry<String> parent : parents.entrySet()) {
-            Maybe<Identified> possibledContainer = containers.get(parent.getElement());
-            if (possibledContainer.hasValue()) {
-                Identified identified = possibledContainer.requireValue();
+            Maybe<Identified> possibleContainer = containers.get(parent.getElement());
+            if (possibleContainer.hasValue()) {
+                Identified identified = possibleContainer.requireValue();
                 if (identified instanceof Container) {
                     Container container = (Container) identified;
                     if (container.isActivelyPublished()) {

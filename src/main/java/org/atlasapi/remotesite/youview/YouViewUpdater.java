@@ -125,7 +125,7 @@ public class YouViewUpdater extends ScheduledTask {
                     for (int i = 0 ; i < entries.size(); i++) {
                         Element element = entries.get(i);
                         String hash = element.getAttribute("hash", element.getNamespaceURI("yv")).getValue();
-                        String keyedHash = serviceId + ":" + hash;
+                        String keyedHash = channel.getUri() + ":" + hash;
                         String youviewId = element.getFirstChildElement("id", element.getNamespaceURI(ATOM_PREFIX)).getValue();
                         if (!seenHashes.containsKey(keyedHash)) {
                             log.info("Found new or changed element on {} with id: {}", serviceId, youviewId);

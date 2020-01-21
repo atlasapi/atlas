@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -94,6 +96,7 @@ public class YouViewUpdater extends ScheduledTask {
             while (this.shouldContinue()) {
                 log.info("Polling for YV schedule changes");
 
+                Instant startTime = Instant.now();
                 LocalDateTime now = LocalDateTime.now(DateTimeZone.UTC);
                 LocalDateTime to = now.plusHours(hours);
                 Interval interval = new Interval(now.toDateTime(DateTimeZone.UTC), to.toDateTime(DateTimeZone.UTC));
@@ -162,6 +165,11 @@ public class YouViewUpdater extends ScheduledTask {
 //                        break;
 //                    }
                 }
+                Instant finishTime = Instant.now();
+
+                Duration runtime = Duration.between(startTime, finishTime);
+
+                log.info("Polling finished after {} millis", runtime.toMillis());
                 log.info("{} changed elements across {} channels", changedElements, count);
                 log.info("{} unchanged elements across {} channels", unchangedElements, count);
 

@@ -108,29 +108,32 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
             }
         }
 
-        long processElementAverageTime = processElementStopwatches.stream()
-                .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
-                .mapToLong(Long::longValue)
-                .sum()
-                / processElementStopwatches.size();
+        if (elements.size() > 0) {
 
-        log.info("Average processElement time {} over {} calls", processElementAverageTime, processElementStopwatches.size());
+            long processElementAverageTime = processElementStopwatches.stream()
+                    .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
+                    .mapToLong(Long::longValue)
+                    .sum()
+                    / processElementStopwatches.size();
 
-        long trimBroadcastAverageTime = trimBroadcastStopwatches.stream()
-                .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
-                .mapToLong(Long::longValue)
-                .sum()
-                / trimBroadcastStopwatches.size();
+            log.info("Average processElement time {} over {} calls", processElementAverageTime, processElementStopwatches.size());
 
-        log.info("Average trimBroadcast time {} over {} calls", trimBroadcastAverageTime, trimBroadcastStopwatches.size());
+            long trimBroadcastAverageTime = trimBroadcastStopwatches.stream()
+                    .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
+                    .mapToLong(Long::longValue)
+                    .sum()
+                    / trimBroadcastStopwatches.size();
 
-        long replaceScheduleBlockAverageTime = replaceScheduleBlockStopwatches.stream()
-                .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
-                .mapToLong(Long::longValue)
-                .sum()
-                / replaceScheduleBlockStopwatches.size();
+            log.info("Average trimBroadcast time {} over {} calls", trimBroadcastAverageTime, trimBroadcastStopwatches.size());
 
-        log.info("Average replaceScheduleBlock time {} over {} calls", replaceScheduleBlockAverageTime, replaceScheduleBlockStopwatches.size());
+            long replaceScheduleBlockAverageTime = replaceScheduleBlockStopwatches.stream()
+                    .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
+                    .mapToLong(Long::longValue)
+                    .sum()
+                    / replaceScheduleBlockStopwatches.size();
+
+            log.info("Average replaceScheduleBlock time {} over {} calls", replaceScheduleBlockAverageTime, replaceScheduleBlockStopwatches.size());
+        }
 
         
         return new HashMap.SimpleImmutableEntry<>(progress, contentUris);

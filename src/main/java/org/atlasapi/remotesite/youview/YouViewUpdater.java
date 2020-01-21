@@ -191,13 +191,15 @@ public class YouViewUpdater extends ScheduledTask {
                 log.info("{} changed elements across {} channels", changedElements, count);
                 log.info("{} unchanged elements across {} channels", unchangedElements, count);
 
-                long getScheduleAverageTime = getScheduleStopwatches.stream()
-                        .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
-                        .mapToLong(Long::longValue)
-                        .sum()
-                        / getScheduleStopwatches.size();
+                if (changedElements > 0) {
+                    long getScheduleAverageTime = getScheduleStopwatches.stream()
+                            .map(stopwatch -> stopwatch.elapsed(TimeUnit.MILLISECONDS))
+                            .mapToLong(Long::longValue)
+                            .sum()
+                            / getScheduleStopwatches.size();
 
-                log.info("Average getSchedule time {} over {} calls", getScheduleAverageTime, getScheduleStopwatches.size());
+                    log.info("Average getSchedule time {} over {} calls", getScheduleAverageTime, getScheduleStopwatches.size());
+                }
 
                 Thread.sleep(60000); //TODO: lower this - don't spam too much for now whilst testing
             }

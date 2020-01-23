@@ -61,17 +61,8 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
     private static final Channel BBC_ONE_LONDON =
             checkNotNull(BBC_ONE_CHANNELS.get("http://www.bbc.co.uk/services/bbcone/london"));
 
-    private static final Channel BBC_ONE_SOUTH =
-            checkNotNull(BBC_ONE_CHANNELS.get("http://www.bbc.co.uk/services/bbcone/south"));
-
-    private static final Channel BBC_ONE_WALES =
-            checkNotNull(BBC_ONE_CHANNELS.get("http://www.bbc.co.uk/services/bbcone/wales"));
-
     private static final Channel BBC_TWO_SOUTH =
             checkNotNull(BBC_TWO_CHANNELS.get("http://channels.barb.co.uk/channels/1085"));
-
-    private static final Channel BBC_TWO_WALES =
-            checkNotNull(BBC_TWO_CHANNELS.get("http://www.bbc.co.uk/services/bbctwo/wales"));
 
     private static Channel createChannel(String uri) {
         return Channel.builder()
@@ -206,7 +197,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
         DateTime end = time("2020-01-10T16:01:19Z");
         String title = "title";
 
-        final Item item1 = episodeWithBroadcasts(
+        final Item subject = episodeWithBroadcasts(
                 "subjectItem",
                 title,
                 LAYER3_TXLOGS,
@@ -223,11 +214,11 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
                 .collect(MoreCollectors.toImmutableList());
 
 
-        setupScheduleResolving(start, end, bbc1Candidates(BBC_ONE_LONDON), LAYER3_TXLOGS, equivItems);
+        setupScheduleResolving(start, end, bbc1Candidates(getChannelOfFirstBroadcast(subject)), LAYER3_TXLOGS, equivItems);
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
-                item1,
+                subject,
                 new DefaultDescription(),
                 EquivToTelescopeResult.create("id", "publisher")
         );
@@ -239,6 +230,159 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
             assertTrue(equivItems.contains(entry.getKey()));
             assertThat(SCORE_ON_MATCH, is(entry.getValue()));
         }
+    }
+
+
+    @Test
+    public void testBbc2RegionalChannelsAreFound() {
+        DateTime start = time("2020-01-10T15:05:23Z");
+        DateTime end = time("2020-01-10T16:01:19Z");
+        String title = "title";
+
+        final Item subjectItem = episodeWithBroadcasts(
+                "subjectItem",
+                title,
+                LAYER3_TXLOGS,
+                new Broadcast(BBC_TWO_SOUTH.getUri(), start, end)
+        );
+
+        List<Item> equivItems = BBC_TWO_CHANNELS.keySet().stream()
+                .map(channelUri -> episodeWithBroadcasts(
+                        "equivItem-" + channelUri,
+                        title,
+                        LAYER3_TXLOGS,
+                        new Broadcast(channelUri, start, end)
+                ))
+                .collect(MoreCollectors.toImmutableList());
+
+
+        setupScheduleResolving(start, end, bbc2Candidates(getChannelOfFirstBroadcast(subjectItem)), LAYER3_TXLOGS, equivItems);
+
+
+        ScoredCandidates<Item> equivalents = generator.generate(
+                subjectItem,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        Map<Item, Score> scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(equivItems.size()));
+        for (Map.Entry<Item, Score> entry : scoreMap.entrySet()) {
+            assertTrue(equivItems.contains(entry.getKey()));
+            assertThat(SCORE_ON_MATCH, is(entry.getValue()));
+        }
+    }
+
+    @Test
+    public void testDifferentTitlesAreIgnored() {
+        DateTime start = time("2020-01-10T15:05:23Z");
+        DateTime end = time("2020-01-10T16:01:19Z");
+        String title = "title";
+
+        final Item subject = episodeWithBroadcasts(
+                "subjectItem",
+                title,
+                LAYER3_TXLOGS,
+                new Broadcast(BBC_ONE_LONDON.getUri(), start, end)
+        );
+
+        List<Item> equivItems = BBC_ONE_CHANNELS.keySet().stream()
+                .map(channelUri -> episodeWithBroadcasts(
+                        "equivItem-" + channelUri,
+                        "different" + title,
+                        LAYER3_TXLOGS,
+                        new Broadcast(channelUri, start, end)
+                ))
+                .collect(MoreCollectors.toImmutableList());
+
+
+        setupScheduleResolving(start, end, bbc1Candidates(getChannelOfFirstBroadcast(subject)), LAYER3_TXLOGS, equivItems);
+
+
+        ScoredCandidates<Item> equivalents = generator.generate(
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        Map<Item, Score> scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(0));
+    }
+
+    @Test
+    public void testDifferentTxStartTimesAreIgnored() {
+        DateTime start = time("2020-01-10T15:05:23Z");
+        DateTime end = time("2020-01-10T16:01:19Z");
+        String title = "title";
+
+        final Item subject = episodeWithBroadcasts(
+                "subjectItem",
+                title,
+                LAYER3_TXLOGS,
+                new Broadcast(BBC_ONE_LONDON.getUri(), start, end)
+        );
+
+        List<Item> equivItems = BBC_ONE_CHANNELS.keySet().stream()
+                .map(channelUri -> episodeWithBroadcasts(
+                        "equivItem-" + channelUri,
+                        title,
+                        LAYER3_TXLOGS,
+                        new Broadcast(channelUri, start.plusSeconds(1), end)
+                ))
+                .collect(MoreCollectors.toImmutableList());
+
+
+        setupScheduleResolving(start, end, bbc1Candidates(getChannelOfFirstBroadcast(subject)), LAYER3_TXLOGS, equivItems);
+
+
+        ScoredCandidates<Item> equivalents = generator.generate(
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        Map<Item, Score> scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(0));
+    }
+
+    @Test
+    public void testDifferentTxEndTimesAreIgnored() {
+        DateTime start = time("2020-01-10T15:05:23Z");
+        DateTime end = time("2020-01-10T16:01:19Z");
+        String title = "title";
+
+        final Item subject = episodeWithBroadcasts(
+                "subjectItem",
+                title,
+                LAYER3_TXLOGS,
+                new Broadcast(BBC_ONE_LONDON.getUri(), start, end)
+        );
+
+        List<Item> equivItems = BBC_ONE_CHANNELS.keySet().stream()
+                .map(channelUri -> episodeWithBroadcasts(
+                        "equivItem-" + channelUri,
+                        title,
+                        LAYER3_TXLOGS,
+                        new Broadcast(channelUri, start, end.minusSeconds(1))
+                ))
+                .collect(MoreCollectors.toImmutableList());
+
+
+        setupScheduleResolving(start, end, bbc1Candidates(getChannelOfFirstBroadcast(subject)), LAYER3_TXLOGS, equivItems);
+
+
+        ScoredCandidates<Item> equivalents = generator.generate(
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        Map<Item, Score> scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(0));
     }
 
 

@@ -129,6 +129,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
         for (ScheduleChannel channel : schedule.scheduleChannels()) {
             for (Item scheduleItem : channel.items()) {
                 if (scheduleItem.isActivelyPublished()
+                        && !subject.getCanonicalUri().equals(scheduleItem.getCanonicalUri())
                         && isSameTxlogEntry(subject, scheduleItem, subjectBroadcast)
                 ) {
                     scores.updateEquivalent(scheduleItem, scoreOnMatch);

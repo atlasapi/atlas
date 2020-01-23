@@ -17,18 +17,30 @@ public final class ContentTitleScorer<T extends Content> {
     private final Function<String, String> titleTransform;
     private final String name;
     private final Score exactMatchScore;
-    private final Score partialMatchBound;
+    private final Score partialMatchUpperBound;
+    private final boolean disableScalingOnPartialMatch; //basically makes partial scoring more lenient
 
     public ContentTitleScorer(
             String name,
             Function<String, String> titleTransform,
             Score exactMatchScore,
-            Score partialMatchBound
+            Score partialMatchUpperBound
+    ) {
+        this(name, titleTransform, exactMatchScore, partialMatchUpperBound, false);
+    }
+
+    public ContentTitleScorer(
+            String name,
+            Function<String, String> titleTransform,
+            Score exactMatchScore,
+            Score partialMatchUpperBound,
+            boolean disableScalingOnPartialMatch
     ) {
         this.name = name;
         this.titleTransform = titleTransform;
         this.exactMatchScore = exactMatchScore;
-        this.partialMatchBound = partialMatchBound;
+        this.partialMatchUpperBound = partialMatchUpperBound;
+        this.disableScalingOnPartialMatch = disableScalingOnPartialMatch;
     }
 
     public ScoredCandidates<T> scoreCandidates(
@@ -104,13 +116,13 @@ public final class ContentTitleScorer<T extends Content> {
         if (difference == 0) {
             return exactMatchScore;
         }
-        if (partialMatchBound.isRealScore()) {
+        if (partialMatchUpperBound.isRealScore() && !disableScalingOnPartialMatch) {
             return Score.valueOf(
-                    partialMatchBound.asDouble()
+                    partialMatchUpperBound.asDouble()
                             / (Math.exp(Math.pow(difference, 2)) + 8 * difference)
             );
         } else {
-            return partialMatchBound;
+            return partialMatchUpperBound;
         }
     }
 

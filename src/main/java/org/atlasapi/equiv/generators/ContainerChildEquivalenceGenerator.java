@@ -24,6 +24,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 
+//TODO threshold? If % of children above score, then score full?
 public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<Container> {
     
     public static final String NAME = "Container Child";

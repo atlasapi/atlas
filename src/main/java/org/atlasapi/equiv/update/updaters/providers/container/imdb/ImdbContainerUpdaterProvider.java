@@ -1,7 +1,9 @@
 package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
@@ -26,11 +28,10 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
@@ -95,7 +96,11 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingContainerScorer(2.0),
+                                new TitleMatchingContainerScorer(
+                                        Score.valueOf(2D),
+                                        Score.ONE,
+                                        true
+                                ),
                                 new SoleCandidateTitleMatchingScorer<>(
                                         dependencies.getOwlSearchResolver(),
                                         Score.ONE,
@@ -108,6 +113,8 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         Score.nullScore()
                                 ),
                                 DescriptionMatchingScorer.makeContainerScorer()
+                                //TODO JankyThresholdScoreScorer.of(ContainerChildEquivalenceGenerator)
+                                // or maybe grab the ScoredCandidates?
                         )
                 )
                 .withCombiner(

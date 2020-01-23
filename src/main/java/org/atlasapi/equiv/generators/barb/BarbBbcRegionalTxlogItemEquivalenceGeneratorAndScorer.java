@@ -157,7 +157,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
         );
         return subject.getTitle().equals(candidate.getTitle())
                 && subjectBroadcast.getTransmissionTime().equals(candidateBroadcast.getTransmissionTime())
-                && subjectBroadcast.getTransmissionEndTime().equals(candidateBroadcast.getActualTransmissionEndTime());
+                && subjectBroadcast.getTransmissionEndTime().equals(candidateBroadcast.getTransmissionEndTime());
     }
 
     private Schedule scheduleAround(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {

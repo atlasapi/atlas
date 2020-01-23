@@ -90,7 +90,8 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                 ),
                                 new ContainerChildEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers
                                 )
                         )
                 )

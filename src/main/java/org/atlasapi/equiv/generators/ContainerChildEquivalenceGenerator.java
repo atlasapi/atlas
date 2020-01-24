@@ -88,8 +88,7 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
                 Iterables.addAll(parents, Iterables.filter(summary.getEquivalents()
                         .values()
                         .stream()
-                        .filter(input -> publishers == null
-                                || publishers.contains(input.getPublisher()))
+                        .filter(input -> publishers.contains(input.getPublisher()))
                         .map(TO_PARENT::apply)
                         .collect(Collectors.toList()
                 ), Predicates.notNull()));

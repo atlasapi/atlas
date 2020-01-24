@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.scorers;
 
+import java.util.Set;
+
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
@@ -7,8 +9,6 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
-
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -50,10 +50,23 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Item Year Scorer");
         DefaultScoredCandidates.Builder<Item> scoredCandidates = DefaultScoredCandidates.fromSource(NAME);
+        desc.appendText(
+                "Subject %s (%s) has release year %s",
+                subject.getTitle(),
+                subject.getCanonicalUri(),
+                subject.getYear() != null ? subject.getYear() : "null"
+        );
 
         for (Item candidate : candidates) {
             Score score = score(subject, candidate);
 
+            desc.appendText(
+                    "%s (%s) from year %s scored: %s",
+                    candidate.getTitle(),
+                    candidate.getCanonicalUri(),
+                    candidate.getYear() != null ? subject.getYear() : "null",
+                    score
+            );
             scoredCandidates.addEquivalent(candidate, score);
             scorerComponent.addComponentResult(
                     candidate.getId(),

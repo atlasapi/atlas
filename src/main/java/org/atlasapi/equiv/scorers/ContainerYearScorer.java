@@ -36,6 +36,12 @@ public class ContainerYearScorer implements EquivalenceScorer<Container> {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Container Year Scorer");
         DefaultScoredCandidates.Builder<Container> scoredCandidates = DefaultScoredCandidates.fromSource(NAME);
+        desc.appendText(
+                "Subject %s (%s) has release year %s",
+                subject.getTitle(),
+                subject.getCanonicalUri(),
+                subject.getYear() != null ? subject.getYear() : "null"
+        );
 
         for (Container candidate : candidates) {
             Score score = score(subject, candidate);

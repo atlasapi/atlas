@@ -18,7 +18,7 @@ public final class ContentTitleScorer<T extends Content> {
     private final String name;
     private final Score exactMatchScore;
     private final Score partialMatchUpperBound;
-    private final boolean disableScalingOnPartialMatch; //basically makes partial scoring more lenient
+    private final boolean scaleOnPartialMatch; //if true, then add harsh penalty for partial match
 
     public ContentTitleScorer(
             String name,
@@ -34,13 +34,13 @@ public final class ContentTitleScorer<T extends Content> {
             Function<String, String> titleTransform,
             Score exactMatchScore,
             Score partialMatchUpperBound,
-            boolean disableScalingOnPartialMatch
+            boolean scaleOnPartialMatch
     ) {
         this.name = name;
         this.titleTransform = titleTransform;
         this.exactMatchScore = exactMatchScore;
         this.partialMatchUpperBound = partialMatchUpperBound;
-        this.disableScalingOnPartialMatch = disableScalingOnPartialMatch;
+        this.scaleOnPartialMatch = scaleOnPartialMatch;
     }
 
     public ScoredCandidates<T> scoreCandidates(
@@ -116,7 +116,7 @@ public final class ContentTitleScorer<T extends Content> {
         if (difference == 0) {
             return exactMatchScore;
         }
-        if (partialMatchUpperBound.isRealScore() && !disableScalingOnPartialMatch) {
+        if (partialMatchUpperBound.isRealScore() && scaleOnPartialMatch) {
             return Score.valueOf(
                     partialMatchUpperBound.asDouble()
                             / (Math.exp(Math.pow(difference, 2)) + 8 * difference)

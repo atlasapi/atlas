@@ -100,7 +100,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                 new TitleMatchingContainerScorer(
                                         Score.valueOf(2D),
                                         Score.ONE,
-                                        true
+                                        false
                                 ),
                                 new SoleCandidateTitleMatchingScorer<>(
                                         dependencies.getOwlSearchResolver(),

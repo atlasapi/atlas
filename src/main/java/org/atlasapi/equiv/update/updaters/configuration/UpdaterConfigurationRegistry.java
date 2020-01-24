@@ -325,7 +325,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(IMDB)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH),
+                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH, RADIO_TIMES),
                                 ITEM_SEQUENCE, ImmutableSet.of(PA, AMAZON_UNBOX, JUSTWATCH),
                                 ITEM_SEARCH, ImmutableSet.of(PA, AMAZON_UNBOX, JUSTWATCH)
                         ),
@@ -356,7 +356,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(JUSTWATCH)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, IMDB),
+                                IMDB_ITEM, ImmutableSet.of(AMAZON_UNBOX, IMDB, RADIO_TIMES),
                                 ITEM_SEQUENCE, ImmutableSet.of(AMAZON_UNBOX, IMDB),
                                 ITEM_SEARCH, ImmutableSet.of(AMAZON_UNBOX, IMDB)
                         ),
@@ -467,7 +467,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(RADIO_TIMES)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                RT_ITEM, ImmutableSet.of(PREVIEW_NETWORKS, AMAZON_UNBOX)
+                                RT_ITEM, ImmutableSet.of(PREVIEW_NETWORKS, AMAZON_UNBOX),
+                                IMDB_ITEM, ImmutableSet.of(IMDB, JUSTWATCH)    //equiv via IMDb id
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER
@@ -943,7 +944,7 @@ public class UpdaterConfigurationRegistry {
                         ImmutableMap.of(
                                 AMAZON_AMAZON_SERIES, amazonSource,
                                 AMAZON_SERIES, otherSources,
-                                IMDB_CONTAINER, ImmutableSet.of(IMDB, JUSTWATCH)
+                                IMDB_SERIES, ImmutableSet.of(IMDB, JUSTWATCH)
                         ),
                         STANDARD_SERIES_HANDLER,
                         STANDARD_SERIES_MESSENGER

@@ -18,6 +18,7 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
+import org.atlasapi.query.content.search.DeerSearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
 import com.metabroadcast.applications.client.model.internal.Application;
@@ -130,9 +131,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         this.searchLimit = searchLimit;
         this.searchPublishers = ImmutableSet.copyOf(publishers);
         this.titleTransform = titleTransform;
-        this.name = changeComponentName ?
-                    "Title Search Generator"
-                    : "Title";  // same as TitleMatching[...]Scorer
+        this.name = getName(changeComponentName);
         this.titleScorer = new ContentTitleScorer<>(
                 name,
                 titleTransform,
@@ -144,6 +143,16 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         this.useContentSpecialization = useContentSpecialization;
     }
 
+    private String getName(boolean changeComponentName) {
+        if (searchResolver instanceof DeerSearchResolver) {
+            return "Deer Search";
+        } else if (changeComponentName) {
+            return "Title Search";
+        } else {
+            return "Title"; // same as TitleMatching[...]Scorer;
+        }
+    }
+
     @Override
     public ScoredCandidates<T> generate(
             T content,
@@ -151,7 +160,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             EquivToTelescopeResult equivToTelescopeResult
     ) {
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
-        generatorComponent.setComponentName("Title Search Generator");
+        generatorComponent.setComponentName(name);
 
         if (Strings.isNullOrEmpty(content.getTitle())) {
             desc.appendText("subject has no title");
@@ -246,6 +255,6 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     
     @Override
     public String toString() {
-        return "Title-matching Generator";
+        return name;
     }
 }

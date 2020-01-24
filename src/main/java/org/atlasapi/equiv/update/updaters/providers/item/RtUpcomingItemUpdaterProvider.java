@@ -47,7 +47,7 @@ public class RtUpcomingItemUpdaterProvider implements EquivalenceResultUpdaterPr
                 .withGenerators(
                         ImmutableSet.<EquivalenceGenerator<Item>>of(
                                 TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Item.class,
                                         targetPublishers,
                                         2.0

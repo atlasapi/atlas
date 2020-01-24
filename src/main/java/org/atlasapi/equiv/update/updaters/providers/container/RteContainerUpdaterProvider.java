@@ -48,7 +48,7 @@ public class RteContainerUpdaterProvider implements EquivalenceResultUpdaterProv
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
                         TitleSearchGenerator.create(
-                                dependencies.getSearchResolver(),
+                                dependencies.getOwlSearchResolver(),
                                 Container.class,
                                 targetPublishers,
                                 2

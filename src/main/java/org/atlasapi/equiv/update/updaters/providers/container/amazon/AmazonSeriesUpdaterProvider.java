@@ -52,7 +52,8 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProv
                                 new ContainerCandidatesContainerEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
-                                        targetPublishers
+                                        targetPublishers,
+                                        true
                                 )
                         )
                 )

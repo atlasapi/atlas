@@ -4,10 +4,6 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProv
 import org.atlasapi.equiv.update.updaters.providers.container.BroadcastItemContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BtVodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.FacebookContainerUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbContainerUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbPaContainerUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbPaSeriesUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.NopContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RtUpcomingContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RteContainerUpdaterProvider;
@@ -19,7 +15,14 @@ import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonConta
 import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.amazon.AmazonToAmazonSeriesUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbPaContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbPaSeriesUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbSeriesUpdaterProvider;
+import org.atlasapi.equiv.utils.imdb.ImdbEquivUtils;
 import org.atlasapi.media.entity.Container;
+
+import com.google.common.collect.ImmutableSet;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -67,7 +70,10 @@ public enum ContainerEquivalenceUpdaterType {
             WikipediaContainerUpdateProvider.create()
     ),
     IMDB_CONTAINER(
-            ImdbContainerUpdaterProvider.create()
+            ImdbContainerUpdaterProvider.create(
+                    ImmutableSet.of(
+                            ImdbEquivUtils.IMDB_ALIAS_NAMESPACES
+                    ))
     ),
     IMDB_PA_CONTAINER(
             ImdbPaContainerUpdaterProvider.create()

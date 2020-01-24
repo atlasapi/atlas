@@ -48,7 +48,7 @@ public class BtVodContainerUpdaterProvider implements EquivalenceResultUpdaterPr
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
                         TitleSearchGenerator.create(
-                                dependencies.getSearchResolver(),
+                                dependencies.getOwlSearchResolver(),
                                 Container.class,
                                 targetPublishers,
                                 2

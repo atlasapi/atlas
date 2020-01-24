@@ -46,6 +46,7 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.atlasapi.query.content.search.DeerSearchResolver;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -68,7 +69,8 @@ public class EquivModule {
     @Value("${equiv.excludedIds}") private String excludedIds;
 
     @Autowired private ScheduleResolver scheduleResolver;
-    @Autowired @Qualifier("EquivalenceSearchResolver") private SearchResolver searchResolver;
+    @Autowired @Qualifier("EquivalenceSearchResolver") private SearchResolver owlSearchResolver;
+    @Autowired @Qualifier("DeerSearchResolver") private SearchResolver deerSearchResolver;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ChannelResolver channelResolver;
     @Autowired private EquivalenceSummaryStore equivSummaryStore;
@@ -84,7 +86,8 @@ public class EquivModule {
         EquivalenceUpdaterProviderDependencies dependencies = EquivalenceUpdaterProviderDependencies
                 .builder()
                 .withScheduleResolver(scheduleResolver)
-                .withSearchResolver(searchResolver)
+                .withOwlSearchResolver(owlSearchResolver)
+                .withDeerSearchResolver(deerSearchResolver)
                 .withContentResolver(contentResolver)
                 .withChannelResolver(channelResolver)
                 .withEquivSummaryStore(equivSummaryStore)

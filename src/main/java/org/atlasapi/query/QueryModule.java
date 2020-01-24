@@ -149,7 +149,7 @@ public class QueryModule {
 	// allows for multiple equivs from the same publisher. This is written so that amazon content
 	// can be merged on output.
 	//
-	// THE MAIN OWL CONTENT ENDPOINT HAS PIGGY BAGGED on this executor as well, when the respective
+	// THE MAIN OWL CONTENT ENDPOINT HAS PIGGY BACKED on this executor as well, when the respective
 	// annotation is set.
 	@Bean
     @Qualifier("YouviewQueryExecutor")

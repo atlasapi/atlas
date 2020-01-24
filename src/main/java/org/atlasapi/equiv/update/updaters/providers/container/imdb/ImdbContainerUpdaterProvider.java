@@ -1,7 +1,9 @@
 package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
@@ -26,24 +28,25 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
-    private final String IMDB_NAMESPACE = "imdb:id";
-    private final String OLD_IMDB_NAMESPACE = "gb:imdb:resourceId";
-    private final String AMAZON_IMDB_NAMESPACE = "zz:imdb:id";
-    private final String JUSTWATCH_IMDB_NAMESPACE = "justwatch:imdb:id";
-    private final Set<Set<String>> NAMESPACES_SET = ImmutableSet.of(
-            ImmutableSet.of(IMDB_NAMESPACE, OLD_IMDB_NAMESPACE, AMAZON_IMDB_NAMESPACE, JUSTWATCH_IMDB_NAMESPACE)
-    );
+    private final Set<Set<String>> namespacesSet;
 
-    private ImdbContainerUpdaterProvider() {
-
+    private ImdbContainerUpdaterProvider(@Nullable Set<Set<String>> namespacesSet) {
+        this.namespacesSet = namespacesSet == null
+                             ? ImmutableSet.of()
+                             : namespacesSet.stream()
+                                     .map(ImmutableSet::copyOf)
+                                     .collect(MoreCollectors.toImmutableSet());
     }
 
-    public static ImdbContainerUpdaterProvider create() {
-        return new ImdbContainerUpdaterProvider();
+    public static ImdbContainerUpdaterProvider create(@Nullable Set<Set<String>> namespacesSet) {
+        return new ImdbContainerUpdaterProvider(namespacesSet);
     }
 
     @Override
@@ -60,13 +63,13 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         .withResolver(dependencies.getContentResolver())
                                         .withPublishers(targetPublishers)
                                         .withLookupEntryStore(dependencies.getLookupEntryStore())
-                                        .withNamespacesSet(NAMESPACES_SET)
+                                        .withNamespacesSet(namespacesSet)
                                         .withAliasMatchingScore(Score.valueOf(3D))
                                         .withIncludeUnpublishedContent(false)
                                         .withClass(Container.class)
                                         .build(),
                                 TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Container.class,
                                         targetPublishers,
                                         Score.nullScore(),
@@ -75,9 +78,20 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         true,
                                         true
                                 ),
+                                TitleSearchGenerator.create(
+                                        dependencies.getDeerSearchResolver(),
+                                        Container.class,
+                                        targetPublishers,
+                                        Score.ZERO,
+                                        Score.ZERO,
+                                        true,
+                                        true,
+                                        true
+                                ),
                                 new ContainerChildEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers
                                 )
                         )
                 )
@@ -85,7 +99,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2.0),
                                 new SoleCandidateTitleMatchingScorer<>(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Score.ONE,
                                         Score.nullScore(),
                                         Container.class

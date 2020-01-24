@@ -11,6 +11,7 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.atlasapi.query.content.search.DeerSearchResolver;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -18,7 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class EquivalenceUpdaterProviderDependencies {
 
     private final ScheduleResolver scheduleResolver;
-    private final SearchResolver searchResolver;
+    private final SearchResolver owlSearchResolver;
+    private final SearchResolver deerSearchResolver;
     private final ContentResolver contentResolver;
     private final ChannelResolver channelResolver;
     private final EquivalenceSummaryStore equivSummaryStore;
@@ -33,7 +35,8 @@ public class EquivalenceUpdaterProviderDependencies {
 
     private EquivalenceUpdaterProviderDependencies(
             ScheduleResolver scheduleResolver,
-            SearchResolver searchResolver,
+            SearchResolver owlSearchResolver,
+            SearchResolver deerSearchResolver,
             ContentResolver contentResolver,
             ChannelResolver channelResolver,
             EquivalenceSummaryStore equivSummaryStore,
@@ -46,7 +49,8 @@ public class EquivalenceUpdaterProviderDependencies {
             AmazonTitleIndexStore amazonTitleIndexStore
     ) {
         this.scheduleResolver = checkNotNull(scheduleResolver);
-        this.searchResolver = checkNotNull(searchResolver);
+        this.owlSearchResolver = checkNotNull(owlSearchResolver);
+        this.deerSearchResolver = checkNotNull(deerSearchResolver);
         this.contentResolver = checkNotNull(contentResolver);
         this.channelResolver = checkNotNull(channelResolver);
         this.equivSummaryStore = checkNotNull(equivSummaryStore);
@@ -67,8 +71,12 @@ public class EquivalenceUpdaterProviderDependencies {
         return scheduleResolver;
     }
 
-    public SearchResolver getSearchResolver() {
-        return searchResolver;
+    public SearchResolver getOwlSearchResolver() {
+        return owlSearchResolver;
+    }
+
+    public SearchResolver getDeerSearchResolver() {
+        return deerSearchResolver;
     }
 
     public ContentResolver getContentResolver() {
@@ -113,12 +121,17 @@ public class EquivalenceUpdaterProviderDependencies {
 
     public interface ScheduleResolverStep {
 
-        SearchResolverStep withScheduleResolver(ScheduleResolver scheduleResolver);
+        OwlSearchResolverStep withScheduleResolver(ScheduleResolver scheduleResolver);
     }
 
-    public interface SearchResolverStep {
+    public interface OwlSearchResolverStep {
 
-        ContentResolverStep withSearchResolver(SearchResolver searchResolver);
+        DeerSearchResolverStep withOwlSearchResolver(SearchResolver owlSearchResolver);
+    }
+
+    public interface DeerSearchResolverStep {
+
+        ContentResolverStep withDeerSearchResolver(SearchResolver deerSearchResolver);
     }
 
     public interface ContentResolverStep {
@@ -180,14 +193,15 @@ public class EquivalenceUpdaterProviderDependencies {
     }
 
     public static class Builder
-            implements ScheduleResolverStep, SearchResolverStep, ContentResolverStep,
+            implements ScheduleResolverStep, OwlSearchResolverStep, DeerSearchResolverStep, ContentResolverStep,
             ChannelResolverStep, EquivSummaryStoreStep, LookupWriterStep, LookupEntryStoreStep,
             EquivalenceResultStoreStep, MessageSenderStep, ExcludedUrisStep, ExcludedIdsStep,
             AmazonTitleIndexStoreStep,
             BuildStep {
 
         private ScheduleResolver scheduleResolver;
-        private SearchResolver searchResolver;
+        private SearchResolver owlSearchResolver;
+        private SearchResolver deerSearchResolver;
         private ContentResolver contentResolver;
         private ChannelResolver channelResolver;
         private EquivalenceSummaryStore equivSummaryStore;
@@ -203,14 +217,20 @@ public class EquivalenceUpdaterProviderDependencies {
         }
 
         @Override
-        public SearchResolverStep withScheduleResolver(ScheduleResolver scheduleResolver) {
+        public OwlSearchResolverStep withScheduleResolver(ScheduleResolver scheduleResolver) {
             this.scheduleResolver = scheduleResolver;
             return this;
         }
 
         @Override
-        public ContentResolverStep withSearchResolver(SearchResolver searchResolver) {
-            this.searchResolver = searchResolver;
+        public DeerSearchResolverStep withOwlSearchResolver(SearchResolver owlSearchResolver) {
+            this.owlSearchResolver = owlSearchResolver;
+            return this;
+        }
+
+        @Override
+        public ContentResolverStep withDeerSearchResolver(SearchResolver deerSearchResolver) {
+            this.deerSearchResolver = deerSearchResolver;
             return this;
         }
 
@@ -280,7 +300,8 @@ public class EquivalenceUpdaterProviderDependencies {
         public EquivalenceUpdaterProviderDependencies build() {
             return new EquivalenceUpdaterProviderDependencies(
                     this.scheduleResolver,
-                    this.searchResolver,
+                    this.owlSearchResolver,
+                    this.deerSearchResolver,
                     this.contentResolver,
                     this.channelResolver,
                     this.equivSummaryStore,

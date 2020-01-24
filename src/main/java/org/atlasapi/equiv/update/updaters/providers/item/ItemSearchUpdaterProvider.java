@@ -31,6 +31,11 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+/**
+ *  Equivs on both exact title IFF candidate is the only one with exact title match from its publisher,
+ *  AND the subject is the only one with that exact title from that publisher.
+ *  Otherwise, it requires exact year match.
+ */
 public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
     private ItemSearchUpdaterProvider() {}
@@ -50,7 +55,7 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                 .withGenerators(
                         ImmutableSet.of(
                                 TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Item.class,
                                         targetPublishers,
                                         Score.nullScore(),
@@ -59,8 +64,18 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         true,
                                         true
                                 ),
+                                TitleSearchGenerator.create(
+                                        dependencies.getDeerSearchResolver(),
+                                        Item.class,
+                                        targetPublishers,
+                                        Score.ZERO,
+                                        Score.ZERO,
+                                        true,
+                                        true,
+                                        true
+                                ),
                                 new FilmEquivalenceGeneratorAndScorer(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         targetPublishers,
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)),
@@ -77,7 +92,7 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
                                 new SoleCandidateTitleMatchingScorer<>(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Score.ONE,
                                         Score.nullScore(),
                                         Item.class

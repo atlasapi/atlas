@@ -51,7 +51,7 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                 .withGenerators(
                         ImmutableSet.of(
                                 TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Container.class,
                                         targetPublishers,
                                         Score.nullScore(),
@@ -62,7 +62,8 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                                 ),
                                 new ContainerChildEquivalenceGenerator(
                                         dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
+                                        dependencies.getEquivSummaryStore(),
+                                        targetPublishers
                                 )
                         )
                 )
@@ -70,7 +71,7 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                         ImmutableSet.of(
                                 new TitleMatchingContainerScorer(2),
                                 new SoleCandidateTitleMatchingScorer<>(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Score.ONE,
                                         Score.nullScore(),
                                         Container.class

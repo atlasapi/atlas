@@ -217,6 +217,29 @@
                             <excludes>META-INF/*.RSA,META-INF/*.DSA,META-INF/*.SF</excludes>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>unpack-atlas-api</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.atlasapi</groupId>
+                                    <version>${deer.version}</version>
+                                    <artifactId>atlas-api</artifactId>
+                                    <classifier>classes</classifier>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/atlas-api</outputDirectory>
+                                    <includes>org/atlasapi/*.class,org/atlasapi/util/jetty/*.class,**/*.properties</includes>
+                                    <excludes>**/AtlasMain.class,**/AtlasApiModule.class</excludes>
+                                </artifactItem>
+                            </artifactItems>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -419,6 +442,16 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>4.10.4</version>
+        </dependency>
+        <dependency>
             <groupId>org.atlasapi</groupId>
             <artifactId>atlas-model</artifactId>
             <version>${atlas.version}</version>
@@ -451,6 +484,12 @@
                     <artifactId>org.apache.servicemix.bundles.commons-csv</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.atlasapi</groupId>
+            <version>${deer.version}</version>
+            <artifactId>atlas-api</artifactId>
+            <classifier>classes</classifier>
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.status</groupId>
@@ -776,15 +815,21 @@
             <artifactId>fluent-hc</artifactId>
             <version>4.5.3</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
 
     </dependencies>
     <properties>
         <atlas.version>${project.version}</atlas.version>
+        <deer.version>7.0.698-SNAPSHOT</deer.version>
         <common.version>1.0-SNAPSHOT</common.version>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <jetty.version>9.4.1.v20170120</jetty.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>
+        <spring.version>4.2.1.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <sonar.jacoco.itReportPath>${project.basedir}/target/jacoco-it.exec

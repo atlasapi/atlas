@@ -52,7 +52,7 @@ public class AmazonContainerUpdaterProvider implements EquivalenceResultUpdaterP
                       //to remove them, whereas the Publisher filter used elsewhere does that).
                         ImmutableSet.of(
                                 TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
+                                        dependencies.getOwlSearchResolver(),
                                         Container.class,
                                         targetPublishers,
                                         2,

@@ -45,7 +45,8 @@ public class ItemSequenceUpdaterProvider implements EquivalenceResultUpdaterProv
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
-                                        targetPublishers
+                                        targetPublishers,
+                                        true
                                 )
                         )
                 )

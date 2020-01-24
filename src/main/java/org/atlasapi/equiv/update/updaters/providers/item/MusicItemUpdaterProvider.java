@@ -36,7 +36,7 @@ public class MusicItemUpdaterProvider implements EquivalenceResultUpdaterProvide
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
                         new TitleSearchGenerator<>(
-                                dependencies.getSearchResolver(),
+                                dependencies.getOwlSearchResolver(),
                                 Song.class,
                                 targetPublishers,
                                 new SongTitleTransform(),

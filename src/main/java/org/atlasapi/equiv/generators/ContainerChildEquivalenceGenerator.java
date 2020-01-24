@@ -80,14 +80,19 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
         );
         Multiset<String> parents = HashMultiset.create();
         for (EquivalenceSummary summary : Optional.presentInstances(childSummaries.values())) {
-            Iterables.addAll(parents, Iterables.filter(summary.getEquivalents()
-                    .values()
-                    .stream()
-                    .filter(input -> publishers == null
-                            || publishers.contains(input.getPublisher()))
-                    .map(TO_PARENT::apply)
-                    .collect(Collectors.toList()
-                    ), Predicates.notNull()));
+            Iterables.addAll(
+                    parents,
+                    Iterables.filter(
+                            summary.getEquivalents()
+                                    .values()
+                                    .stream()
+                                    .filter(input -> publishers == null
+                                            || publishers.contains(input.getPublisher()))
+                                    .map(TO_PARENT::apply)
+                                    .collect(Collectors.toList()),
+                            Predicates.notNull()
+                    )
+            );
         }
         return scoreContainers(
                 parents,

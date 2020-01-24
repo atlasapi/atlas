@@ -26,6 +26,10 @@ public class FilmYearScorer extends ItemYearScorer {
         super(matchScore, mismatchScore, nullYearScore);
     }
 
+    public FilmYearScorer(Score matchScore, Score mismatchScore, Score nullYearScore, boolean treatNullYearsAsMatch) {
+        super(matchScore, mismatchScore, nullYearScore, treatNullYearsAsMatch);
+    }
+
     @Override
     public ScoredCandidates<Item> score(
             Item subject,

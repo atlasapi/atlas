@@ -75,7 +75,7 @@ public class AmazonToAmazonItemUpdaterProvider implements EquivalenceResultUpdat
                                 //DescriptionMatchingScorer.makeScorer(), TODO sometimes broken ATM
                                 new SequenceItemScorer(Score.ONE),
                                 //matches original behaviour of FilmEquivalenceGeneratorAndScorer scoring, has a 0 year difference tolerance
-                                new FilmYearScorer(Score.ONE, Score.ZERO, Score.ONE)
+                                new FilmYearScorer(Score.ONE, Score.ZERO, Score.ONE, true)
                         )
                 )
                 .withCombiner(

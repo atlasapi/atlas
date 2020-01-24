@@ -26,7 +26,7 @@ public final class ContentTitleScorer<T extends Content> {
             Score exactMatchScore,
             Score partialMatchUpperBound
     ) {
-        this(name, titleTransform, exactMatchScore, partialMatchUpperBound, false);
+        this(name, titleTransform, exactMatchScore, partialMatchUpperBound, true);
     }
 
     public ContentTitleScorer(

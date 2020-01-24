@@ -114,8 +114,6 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         Score.nullScore()
                                 ),
                                 DescriptionMatchingScorer.makeContainerScorer()
-                                //TODO JankyThresholdScoreScorer.of(ContainerChildEquivalenceGenerator)
-                                // or maybe grab the ScoredCandidates?
                         )
                 )
                 .withCombiner(

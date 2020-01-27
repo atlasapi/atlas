@@ -62,6 +62,7 @@ public class ContainerYearScorer implements EquivalenceScorer<Container> {
         if (subject.getYear() == null || candidate.getYear() == null) {
             return nullYearScore;
         }
+
         return subject.getYear().equals(candidate.getYear()) ? matchScore : mismatchScore;
     }
 

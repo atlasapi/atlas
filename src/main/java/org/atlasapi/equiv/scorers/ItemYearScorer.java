@@ -96,6 +96,7 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
         if (subject.getYear() == null || candidate.getYear() == null) {
             return nullYearScore;
         }
+
         return subject.getYear().equals(candidate.getYear()) ? matchScore : mismatchScore;
     }
 

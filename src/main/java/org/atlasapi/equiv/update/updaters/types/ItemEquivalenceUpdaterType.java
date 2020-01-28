@@ -1,6 +1,5 @@
 package org.atlasapi.equiv.update.updaters.types;
 
-import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.AliasItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
@@ -29,6 +28,8 @@ import org.atlasapi.equiv.update.updaters.providers.item.barb.TxlogsItemUpdaterP
 import org.atlasapi.equiv.utils.imdb.ImdbEquivUtils;
 import org.atlasapi.media.entity.Item;
 
+import com.google.common.collect.ImmutableSet;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public enum ItemEquivalenceUpdaterType {
@@ -51,7 +52,13 @@ public enum ItemEquivalenceUpdaterType {
             RoviItemUpdaterProvider.create()
     ),
     RT_ITEM(
-            RtItemUpdaterProvider.create()
+            RtItemUpdaterProvider.create(
+                    ImmutableSet.of(
+                            ImmutableSet.of(
+                                    "rt:filmid"
+                            )
+                    )
+            )
     ),
     YOUVIEW_ITEM(
             YouviewItemUpdaterProvider.create()

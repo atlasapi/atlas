@@ -165,8 +165,9 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
                         generatorComponent.addComponentResult(scheduleItem.getId(), scoreOnMatch.toString());
                     } else {
                         desc.appendText(
-                                "Discarded candidate %s with broadcast [%s - %s]",
+                                "Discarded %s (%s) with broadcast [%s - %s]",
                                 scheduleItem.getCanonicalUri(),
+                                scheduleItem.getTitle(),
                                 candidateBroadcast.getTransmissionTime(),
                                 candidateBroadcast.getTransmissionEndTime()
                         );

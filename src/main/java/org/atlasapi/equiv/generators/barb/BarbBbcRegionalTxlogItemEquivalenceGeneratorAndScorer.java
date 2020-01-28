@@ -24,6 +24,7 @@ import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -33,6 +34,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.BBC1_TXLOG_CHANNEL_URIS;
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.BBC2_TXLOG_CHANNEL_URIS;
+import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.around;
 
 /**
  * Equiv BBC Txlog entries accross regions if start time, end time and title are all exactly the same.
@@ -49,6 +51,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
     private final Set<Publisher> publishers;
     private final ChannelResolver channelResolver;
     private final Predicate<? super Broadcast> broadcastFilter;
+    private final Duration flexibility;
     private final Score scoreOnMatch;
 
     private BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer(Builder builder) {
@@ -57,6 +60,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
         this.publishers = ImmutableSet.copyOf(builder.publishers);
         checkArgument(ALL_PUBLISHERS.containsAll(this.publishers));
         this.broadcastFilter = builder.broadcastFilter == null ? broadcast -> true : builder.broadcastFilter;
+        this.flexibility = checkNotNull(builder.flexibility);
         this.scoreOnMatch = checkNotNull(builder.scoreOnMatch);
     }
 
@@ -155,13 +159,12 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
                 Iterables.getOnlyElement(candidate.getVersions()).getBroadcasts()
         );
         return subject.getTitle().equals(candidate.getTitle())
-                && subjectBroadcast.getTransmissionTime().equals(candidateBroadcast.getTransmissionTime())
-                && subjectBroadcast.getTransmissionEndTime().equals(candidateBroadcast.getTransmissionEndTime());
+                && around(subjectBroadcast, candidateBroadcast, flexibility);
     }
 
     private Schedule scheduleAround(Broadcast broadcast, Set<String> channelUris, Set<Publisher> publishers) {
-        DateTime start = broadcast.getTransmissionTime();
-        DateTime end = broadcast.getTransmissionEndTime();
+        DateTime start = broadcast.getTransmissionTime().minus(flexibility);
+        DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
 
         Set<Channel> channels = channelUris.parallelStream()
                 .map(channelResolver::fromUri)
@@ -186,6 +189,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
         private Set<Publisher> publishers;
         private ChannelResolver channelResolver;
         private Predicate<? super Broadcast> broadcastFilter;
+        private Duration flexibility;
         private Score scoreOnMatch;
 
         private Builder() {
@@ -208,6 +212,11 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
 
         public Builder withBroadcastFilter(@Nullable Predicate<? super Broadcast> broadcastFilter) {
             this.broadcastFilter = broadcastFilter;
+            return this;
+        }
+
+        public Builder withBroadcastFlexibility(Duration flexibility) {
+            this.flexibility = flexibility;
             return this;
         }
 

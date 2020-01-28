@@ -22,6 +22,7 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,6 +77,8 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
 
     private static final Score SCORE_ON_MATCH = Score.ONE;
 
+    private static final Duration flexibility = Duration.standardSeconds(30);
+
     private final ScheduleResolver scheduleResolver = mock(ScheduleResolver.class);
     private BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer generator;
 
@@ -92,6 +95,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
                 .withChannelResolver(channelResolver)
                 .withScheduleResolver(scheduleResolver)
                 .withPublishers(ImmutableSet.of(LAYER3_TXLOGS))
+                .withBroadcastFlexibility(flexibility)
                 .withScoreOnMatch(SCORE_ON_MATCH)
                 .build();
     }
@@ -99,6 +103,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
     private void setupScheduleResolving(
             String start,
             String end,
+            Duration flexibility,
             Collection<Channel> queriedChannels,
             Publisher publisher,
             List<Item> items
@@ -106,6 +111,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
         setupScheduleResolving(
                 time(start),
                 time(end),
+                flexibility,
                 queriedChannels,
                 publisher,
                 items
@@ -115,14 +121,15 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
     private void setupScheduleResolving(
             DateTime start,
             DateTime end,
+            Duration flexibility,
             Collection<Channel> queriedChannels,
             Publisher publisher,
             List<Item> items
     ) {
         when(
                 scheduleResolver.unmergedSchedule(
-                        start,
-                        end,
+                        start.minus(flexibility),
+                        end.plus(flexibility),
                         queriedChannels, ImmutableSet.of(publisher))
         ).thenReturn(
                 Schedule.fromChannelMap(
@@ -214,7 +221,14 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
                 .collect(MoreCollectors.toImmutableList());
 
 
-        setupScheduleResolving(start, end, bbc1Candidates(getChannelOfFirstBroadcast(subject)), LAYER3_TXLOGS, equivItems);
+        setupScheduleResolving(
+                start,
+                end,
+                flexibility,
+                bbc1Candidates(getChannelOfFirstBroadcast(subject)),
+                LAYER3_TXLOGS,
+                equivItems
+        );
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
@@ -256,7 +270,14 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
                 .collect(MoreCollectors.toImmutableList());
 
 
-        setupScheduleResolving(start, end, bbc2Candidates(getChannelOfFirstBroadcast(subjectItem)), LAYER3_TXLOGS, equivItems);
+        setupScheduleResolving(
+                start,
+                end,
+                flexibility,
+                bbc2Candidates(getChannelOfFirstBroadcast(subjectItem)),
+                LAYER3_TXLOGS,
+                equivItems
+        );
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
@@ -297,7 +318,14 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
                 .collect(MoreCollectors.toImmutableList());
 
 
-        setupScheduleResolving(start, end, bbc1Candidates(getChannelOfFirstBroadcast(subject)), LAYER3_TXLOGS, equivItems);
+        setupScheduleResolving(
+                start,
+                end,
+                flexibility,
+                bbc1Candidates(getChannelOfFirstBroadcast(subject)),
+                LAYER3_TXLOGS,
+                equivItems
+        );
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
@@ -309,6 +337,54 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
         Map<Item, Score> scoreMap = equivalents.candidates();
 
         assertThat(scoreMap.size(), is(0));
+    }
+
+    @Test
+    public void testSimilarTxStartAndEndTimesAreFound() {
+        DateTime start = time("2020-01-10T15:05:23Z");
+        DateTime end = time("2020-01-10T16:01:19Z");
+        String title = "title";
+
+        final Item subject = episodeWithBroadcasts(
+                "subjectItem",
+                title,
+                LAYER3_TXLOGS,
+                new Broadcast(BBC_ONE_LONDON.getUri(), start, end)
+        );
+
+        List<Item> equivItems = BBC_ONE_CHANNELS.keySet().stream()
+                .map(channelUri -> episodeWithBroadcasts(
+                        "equivItem-" + channelUri,
+                        title,
+                        LAYER3_TXLOGS,
+                        new Broadcast(channelUri, start.plus(flexibility).minusSeconds(1), end.plus(flexibility).minusSeconds(1))
+                ))
+                .collect(MoreCollectors.toImmutableList());
+
+
+        setupScheduleResolving(
+                start,
+                end,
+                flexibility,
+                bbc1Candidates(getChannelOfFirstBroadcast(subject)),
+                LAYER3_TXLOGS,
+                equivItems
+        );
+
+
+        ScoredCandidates<Item> equivalents = generator.generate(
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        Map<Item, Score> scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(equivItems.size()));
+        for (Map.Entry<Item, Score> entry : scoreMap.entrySet()) {
+            assertTrue(equivItems.contains(entry.getKey()));
+            assertThat(SCORE_ON_MATCH, is(entry.getValue()));
+        }
     }
 
     @Test
@@ -329,12 +405,19 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
                         "equivItem-" + channelUri,
                         title,
                         LAYER3_TXLOGS,
-                        new Broadcast(channelUri, start.plusSeconds(1), end)
+                        new Broadcast(channelUri, start.plus(flexibility).plusSeconds(1), end)
                 ))
                 .collect(MoreCollectors.toImmutableList());
 
 
-        setupScheduleResolving(start, end, bbc1Candidates(getChannelOfFirstBroadcast(subject)), LAYER3_TXLOGS, equivItems);
+        setupScheduleResolving(
+                start,
+                end,
+                flexibility,
+                bbc1Candidates(getChannelOfFirstBroadcast(subject)),
+                LAYER3_TXLOGS,
+                equivItems
+        );
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
@@ -346,6 +429,36 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
         Map<Item, Score> scoreMap = equivalents.candidates();
 
         assertThat(scoreMap.size(), is(0));
+
+        equivItems = BBC_ONE_CHANNELS.keySet().stream()
+                .map(channelUri -> episodeWithBroadcasts(
+                        "equivItem-" + channelUri,
+                        title,
+                        LAYER3_TXLOGS,
+                        new Broadcast(channelUri, start.minus(flexibility).minusSeconds(1), end)
+                ))
+                .collect(MoreCollectors.toImmutableList());
+
+
+        setupScheduleResolving(
+                start,
+                end,
+                flexibility,
+                bbc1Candidates(getChannelOfFirstBroadcast(subject)),
+                LAYER3_TXLOGS,
+                equivItems
+        );
+
+        equivalents = generator.generate(
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(0));
+
     }
 
     @Test
@@ -366,12 +479,19 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
                         "equivItem-" + channelUri,
                         title,
                         LAYER3_TXLOGS,
-                        new Broadcast(channelUri, start, end.minusSeconds(1))
+                        new Broadcast(channelUri, start, end.minus(flexibility).minusSeconds(1))
                 ))
                 .collect(MoreCollectors.toImmutableList());
 
 
-        setupScheduleResolving(start, end, bbc1Candidates(getChannelOfFirstBroadcast(subject)), LAYER3_TXLOGS, equivItems);
+        setupScheduleResolving(
+                start,
+                end,
+                flexibility,
+                bbc1Candidates(getChannelOfFirstBroadcast(subject)),
+                LAYER3_TXLOGS,
+                equivItems
+        );
 
 
         ScoredCandidates<Item> equivalents = generator.generate(
@@ -381,6 +501,36 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
         );
 
         Map<Item, Score> scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(0));
+
+        equivItems = BBC_ONE_CHANNELS.keySet().stream()
+                .map(channelUri -> episodeWithBroadcasts(
+                        "equivItem-" + channelUri,
+                        title,
+                        LAYER3_TXLOGS,
+                        new Broadcast(channelUri, start, end.plus(flexibility).plusSeconds(1))
+                ))
+                .collect(MoreCollectors.toImmutableList());
+
+
+        setupScheduleResolving(
+                start,
+                end,
+                flexibility,
+                bbc1Candidates(getChannelOfFirstBroadcast(subject)),
+                LAYER3_TXLOGS,
+                equivItems
+        );
+
+
+        equivalents = generator.generate(
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        scoreMap = equivalents.candidates();
 
         assertThat(scoreMap.size(), is(0));
     }

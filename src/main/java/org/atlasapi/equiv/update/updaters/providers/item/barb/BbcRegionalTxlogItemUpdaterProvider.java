@@ -20,6 +20,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProv
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.joda.time.Duration;
 
 import java.util.Set;
 
@@ -47,6 +48,7 @@ public class BbcRegionalTxlogItemUpdaterProvider implements EquivalenceResultUpd
                                         .withScheduleResolver(dependencies.getScheduleResolver())
                                         .withChannelResolver(dependencies.getChannelResolver())
                                         .withPublishers(targetPublishers)
+                                        .withBroadcastFlexibility(Duration.standardSeconds(30))
                                         .withScoreOnMatch(Score.valueOf(3.0))
                                         .build()
                         )

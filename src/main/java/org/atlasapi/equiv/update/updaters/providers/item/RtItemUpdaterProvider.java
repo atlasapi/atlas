@@ -1,11 +1,16 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.RadioTimesFilmEquivalenceGenerator;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
+import org.atlasapi.equiv.results.extractors.ContinueUntilOneWorksExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
@@ -16,6 +21,7 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
+import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
@@ -23,15 +29,25 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import java.util.Set;
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 public class RtItemUpdaterProvider implements EquivalenceResultUpdaterProvider<Item> {
 
-    private RtItemUpdaterProvider() {
+    private final Set<Set<String>> namespacesSet;
+
+    private RtItemUpdaterProvider(@Nullable Set<Set<String>> namespacesSet) {
+        this.namespacesSet = namespacesSet == null
+                             ? ImmutableSet.of()
+                             : namespacesSet.stream()
+                                     .map(ImmutableSet::copyOf)
+                                     .collect(MoreCollectors.toImmutableSet());
     }
 
-    public static RtItemUpdaterProvider create() {
-        return new RtItemUpdaterProvider();
+    public static RtItemUpdaterProvider create(@Nullable Set<Set<String>> namespacesSet) {
+        return new RtItemUpdaterProvider(namespacesSet);
     }
 
     @Override
@@ -53,8 +69,22 @@ public class RtItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                                         DefaultApplication.createWithReads(
                                                 ImmutableList.copyOf(targetPublishers)
                                         ),
-                                        false
-                                )
+                                        false,
+                                        1,
+                                        Score.ONE,
+                                        Score.negativeOne(),
+                                        Score.valueOf(3D),
+                                        Score.ZERO
+                                ),
+                                AliasResolvingEquivalenceGenerator.<Item>builder()
+                                        .withResolver(dependencies.getContentResolver())
+                                        .withPublishers(targetPublishers)
+                                        .withLookupEntryStore(dependencies.getLookupEntryStore())
+                                        .withNamespacesSet(namespacesSet)
+                                        .withAliasMatchingScore(Score.ONE)
+                                        .withIncludeUnpublishedContent(false)
+                                        .withClass(Item.class)
+                                        .build()
                         )
                 )
                 .withScorers(
@@ -79,7 +109,13 @@ public class RtItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                         ))
                 )
                 .withExtractor(
-                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
+                        //prioritise equiv'ing to old PA ID over new PA ID
+                        //(
+                        ContinueUntilOneWorksExtractor.create(ImmutableList.of(
+                                AllOverOrEqThresholdExtractor.create(2.9),
+                                AllOverOrEqThresholdExtractor.create(0.9)
+                                )
+                        )
                 )
                 .build();
     }

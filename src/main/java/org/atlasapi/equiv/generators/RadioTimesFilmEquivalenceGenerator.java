@@ -24,11 +24,13 @@ public class RadioTimesFilmEquivalenceGenerator implements EquivalenceGenerator<
 
     private final Pattern rtFilmUriPattern = Pattern.compile("http://radiotimes.com/films/(\\d+)");
     private final String paFilmUriPrefix = "http://pressassociation.com/films/";
+    private final Score scoreOnMatch;
     
     private final ContentResolver resolver;
 
-    public RadioTimesFilmEquivalenceGenerator(ContentResolver resolver) {
+    public RadioTimesFilmEquivalenceGenerator(ContentResolver resolver, Score score) {
         this.resolver = resolver;
+        this.scoreOnMatch = score;
     }
     
     @Override
@@ -62,12 +64,12 @@ public class RadioTimesFilmEquivalenceGenerator implements EquivalenceGenerator<
 
             if (resolvedContent.hasValue()
                     && filmIsActivelyPublished(resolvedContent.requireValue())) {
-                results.addEquivalent((Film)resolvedContent.requireValue(), Score.ONE);
+                results.addEquivalent((Film)resolvedContent.requireValue(), scoreOnMatch);
 
                 if (((Film) resolvedContent.requireValue()).getId() != null) {
                     generatorComponent.addComponentResult(
                             resolvedContent.requireValue().getId(),
-                            "1.0"
+                            scoreOnMatch.toString()
                     );
                 }
             }

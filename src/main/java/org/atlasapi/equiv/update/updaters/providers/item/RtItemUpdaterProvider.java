@@ -61,7 +61,8 @@ public class RtItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                 .withGenerators(
                         ImmutableSet.of(
                                 new RadioTimesFilmEquivalenceGenerator(
-                                        dependencies.getContentResolver()
+                                        dependencies.getContentResolver(),
+                                        Score.valueOf(3D)
                                 ),
                                 new FilmEquivalenceGeneratorAndScorer(
                                         dependencies.getOwlSearchResolver(),
@@ -110,7 +111,6 @@ public class RtItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                 )
                 .withExtractor(
                         //prioritise equiv'ing to old PA ID over new PA ID
-                        //(
                         ContinueUntilOneWorksExtractor.create(ImmutableList.of(
                                 AllOverOrEqThresholdExtractor.create(2.9),
                                 AllOverOrEqThresholdExtractor.create(0.9)

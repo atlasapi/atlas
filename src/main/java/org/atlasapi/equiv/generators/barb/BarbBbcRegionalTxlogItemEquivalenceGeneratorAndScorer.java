@@ -141,14 +141,12 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
 
     @Nullable
     private Set<String> expandRegionalChannelUris(String channelUri) {
-        Set<String> expandedUris = null;
         if (BBC1_TXLOG_CHANNEL_URIS.contains(channelUri)) {
-            expandedUris = BBC1_TXLOG_CHANNEL_URIS;
+            return Sets.difference(BBC1_TXLOG_CHANNEL_URIS, ImmutableSet.of(channelUri));
+        } else if (BBC2_TXLOG_CHANNEL_URIS.contains(channelUri)) {
+            return Sets.difference(BBC2_TXLOG_CHANNEL_URIS, ImmutableSet.of(channelUri));
         }
-        if (BBC2_TXLOG_CHANNEL_URIS.contains(channelUri)) {
-            expandedUris = BBC2_TXLOG_CHANNEL_URIS;
-        }
-        return expandedUris == null ? null : Sets.difference(expandedUris, ImmutableSet.of(channelUri));
+        return null;
     }
 
     private boolean isSameTxlogEntry(Item subject, Item candidate, Broadcast subjectBroadcast) {

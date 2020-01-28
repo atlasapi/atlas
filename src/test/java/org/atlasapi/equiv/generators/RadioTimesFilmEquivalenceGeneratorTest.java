@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.equiv.results.description.DefaultDescription;
+import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Film;
@@ -36,7 +37,7 @@ public class RadioTimesFilmEquivalenceGeneratorTest {
         ResolvedContent resolvedContent = new ResolvedContent(ImmutableMap.of("http://pressassociation.com/films/1", Maybe.just(film)));
         when(contentResolver.findByUris(ImmutableSet.of("http://pressassociation.com/films/1"))).thenReturn(resolvedContent);
         when(contentResolver.findByUris(ImmutableSet.of("http://pressassociation.com/films/2"))).thenReturn(ResolvedContent.builder().build());
-        this.rtFilmEquivalenceGenerator = new RadioTimesFilmEquivalenceGenerator(contentResolver);
+        this.rtFilmEquivalenceGenerator = new RadioTimesFilmEquivalenceGenerator(contentResolver, Score.valueOf(3D));
     }
 
     @Test

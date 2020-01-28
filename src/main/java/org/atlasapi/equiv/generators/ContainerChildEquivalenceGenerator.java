@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.generators;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +28,6 @@ import com.metabroadcast.common.collect.OptionalMap;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicates;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -82,16 +82,14 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
         for (EquivalenceSummary summary : Optional.presentInstances(childSummaries.values())) {
             Iterables.addAll(
                     parents,
-                    Iterables.filter(
-                            summary.getEquivalents()
-                                    .values()
-                                    .stream()
-                                    .filter(input -> publishers == null
-                                            || publishers.contains(input.getPublisher()))
-                                    .map(TO_PARENT::apply)
-                                    .collect(Collectors.toList()),
-                            Predicates.notNull()
-                    )
+                    summary.getEquivalents()
+                            .values()
+                            .stream()
+                            .filter(input -> publishers == null
+                                    || publishers.contains(input.getPublisher()))
+                            .map(TO_PARENT::apply)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList())
             );
         }
         return scoreContainers(

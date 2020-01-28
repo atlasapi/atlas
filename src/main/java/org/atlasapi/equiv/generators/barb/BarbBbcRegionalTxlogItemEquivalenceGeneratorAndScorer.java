@@ -2,6 +2,7 @@ package org.atlasapi.equiv.generators.barb;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -95,6 +96,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
                             scores,
                             broadcast,
                             publishers,
+                            desc,
                             generatorComponent
                     );
                 }
@@ -121,6 +123,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
             DefaultScoredCandidates.Builder<Item> scores,
             Broadcast subjectBroadcast,
             Set<Publisher> publishers,
+            ResultDescription desc,
             EquivToTelescopeComponent generatorComponent
     ) {
         Set<String> channelUris = expandRegionalChannelUris(subjectBroadcast.getBroadcastOn());
@@ -128,19 +131,51 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
             return;
         }
 
+        desc.startStage(
+                "Finding matches for broadcast: " + String.format(
+                        "%s [%s - %s]",
+                        subjectBroadcast.getBroadcastOn(),
+                        subjectBroadcast.getTransmissionTime(),
+                        subjectBroadcast.getTransmissionEndTime())
+        );
+
         Schedule schedule = scheduleAround(subjectBroadcast, channelUris, publishers);
 
         for (ScheduleChannel channel : schedule.scheduleChannels()) {
-            for (Item scheduleItem : channel.items()) {
-                if (scheduleItem.isActivelyPublished()
-                        && !subject.getCanonicalUri().equals(scheduleItem.getCanonicalUri())
-                        && isSameTxlogEntry(subject, scheduleItem, subjectBroadcast)
-                ) {
-                    scores.updateEquivalent(scheduleItem, scoreOnMatch);
-                    generatorComponent.addComponentResult(scheduleItem.getId(), scoreOnMatch.toString());
+            ListMultimap<Publisher, Item> publisherItems = filterScheduleByPublisher(channel);
+
+            for (Publisher publisher : publisherItems.keySet()) {
+                desc.startStage(
+                        "Candidate schedule found for " + publisher.key()
+                                + " for " + channel.channel().getUri()
+                );
+                for (Item scheduleItem : channel.items()) {
+                    Broadcast candidateBroadcast = getOnlyBroadcast(scheduleItem);
+                    if (scheduleItem.isActivelyPublished()
+                            && !subject.getCanonicalUri().equals(scheduleItem.getCanonicalUri())
+                            && isSameTxlogEntry(subject, scheduleItem, subjectBroadcast, candidateBroadcast)
+                    ) {
+                        desc.appendText(
+                                "Found candidate %s with broadcast [%s - %s]",
+                                scheduleItem.getCanonicalUri(),
+                                candidateBroadcast.getTransmissionTime(),
+                                candidateBroadcast.getTransmissionEndTime()
+                        );
+                        scores.updateEquivalent(scheduleItem, scoreOnMatch);
+                        generatorComponent.addComponentResult(scheduleItem.getId(), scoreOnMatch.toString());
+                    } else {
+                        desc.appendText(
+                                "Discarded candidate %s with broadcast [%s - %s]",
+                                scheduleItem.getCanonicalUri(),
+                                candidateBroadcast.getTransmissionTime(),
+                                candidateBroadcast.getTransmissionEndTime()
+                        );
+                    }
                 }
+                desc.finishStage();
             }
         }
+        desc.finishStage();
     }
 
     @Nullable
@@ -153,11 +188,19 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
         return null;
     }
 
-    private boolean isSameTxlogEntry(Item subject, Item candidate, Broadcast subjectBroadcast) {
+    private ListMultimap<Publisher, Item> filterScheduleByPublisher(ScheduleChannel candidateScheduleChannel) {
+        return candidateScheduleChannel.items().stream() // N.B. we need to retain the order
+                .collect(MoreCollectors.toImmutableListMultiMap(Item::getPublisher, item -> item));
+    }
+
+    private Broadcast getOnlyBroadcast(Item item) {
         //Schedule resolver sticks the schedule slot broadcast as the only broadcast on the first version
-        Broadcast candidateBroadcast = Iterables.getOnlyElement(
-                Iterables.getOnlyElement(candidate.getVersions()).getBroadcasts()
+        return Iterables.getOnlyElement(
+                Iterables.getOnlyElement(item.getVersions()).getBroadcasts()
         );
+    }
+
+    private boolean isSameTxlogEntry(Item subject, Item candidate, Broadcast subjectBroadcast, Broadcast candidateBroadcast) {
         return subject.getTitle().equals(candidate.getTitle())
                 && around(subjectBroadcast, candidateBroadcast, flexibility);
     }

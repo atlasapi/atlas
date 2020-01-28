@@ -44,6 +44,40 @@ public class BarbGeneratorUtils {
                     )
                     .build();
 
+    public static final Set<String> BBC1_TXLOG_CHANNEL_URIS = ImmutableSet.of(
+            "http://www.bbc.co.uk/services/bbcone/east",
+            "http://www.bbc.co.uk/services/bbcone/east_midlands",
+            "http://www.bbc.co.uk/services/bbcone/east_yorkshire",
+            "http://www.bbc.co.uk/services/bbcone/london",
+            "http://www.bbc.co.uk/services/bbcone/ni",
+            "http://www.bbc.co.uk/services/bbcone/north_east",
+            "http://www.bbc.co.uk/services/bbcone/north_west",
+            "http://www.bbc.co.uk/services/bbcone/scotland",
+            "http://www.bbc.co.uk/services/bbcone/south",
+            "http://www.bbc.co.uk/services/bbcone/south_east",
+            "http://www.bbc.co.uk/services/bbcone/south_west",
+            "http://www.bbc.co.uk/services/bbcone/wales",
+            "http://www.bbc.co.uk/services/bbcone/west",
+            "http://www.bbc.co.uk/services/bbcone/west_midlands"
+    );
+
+    public static final Set<String> BBC2_TXLOG_CHANNEL_URIS = ImmutableSet.of(
+            "http://channels.barb.co.uk/channels/1081",
+            "http://channels.barb.co.uk/channels/1082",
+            "http://channels.barb.co.uk/channels/1083",
+            "http://channels.barb.co.uk/channels/1084",
+            "http://channels.barb.co.uk/channels/1085",
+            "http://channels.barb.co.uk/channels/1086",
+            "http://channels.barb.co.uk/channels/1087",
+            "http://channels.barb.co.uk/channels/1088",
+            "http://channels.barb.co.uk/channels/1093",
+            "http://channels.barb.co.uk/channels/1094",
+            "http://channels.barb.co.uk/channels/1095",
+            "http://www.bbc.co.uk/services/bbctwo/ni",
+            "http://www.bbc.co.uk/services/bbctwo/scotland",
+            "http://www.bbc.co.uk/services/bbctwo/wales"
+    );
+
     public static Set<String> expandChannelUris(String channelUri) {
         ImmutableSet.Builder<String> channelUris = ImmutableSet.builder();
         channelUris.add(channelUri);

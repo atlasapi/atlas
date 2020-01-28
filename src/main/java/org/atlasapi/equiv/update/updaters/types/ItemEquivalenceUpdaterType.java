@@ -2,9 +2,7 @@ package org.atlasapi.equiv.update.updaters.types;
 
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.BarbItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.BarbXItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.BbcTxlogsItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.AliasItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
@@ -17,14 +15,17 @@ import org.atlasapi.equiv.update.updaters.providers.item.RtItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RtUpcomingItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.StandardItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.StrictStandardUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.TxlogsItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToAmazonItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.AliasItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbXItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.BbcRegionalTxlogItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.BbcTxlogsItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.TxlogsItemUpdaterProvider;
 import org.atlasapi.equiv.utils.imdb.ImdbEquivUtils;
 import org.atlasapi.media.entity.Item;
 
@@ -81,6 +82,9 @@ public enum ItemEquivalenceUpdaterType {
     ),
     TXLOGS_ITEM(
             TxlogsItemUpdaterProvider.create()
+    ),
+    BBC_REGIONAL_TXLOGS_ITEM(
+            BbcRegionalTxlogItemUpdaterProvider.create()
     ),
     BBC_TO_TXLOGS_ITEM(
             BbcTxlogsItemUpdaterProvider.create(false)

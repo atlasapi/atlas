@@ -18,19 +18,19 @@ public class EquivToTelescopeResultTest {
     public void jsonOutput() {
         EquivToTelescopeComponent generator = EquivToTelescopeComponent.create();
         generator.addComponentResult("id", "5.0");
-        generator.addComponentResult(23848, "0.0");
+        generator.addComponentResult(23848L, "0.0");
         equivToTelescopeResult.addGeneratorResult(generator);
 
         EquivToTelescopeComponent scorer1 = EquivToTelescopeComponent.create();
         scorer1.addComponentResult("scorer1id", "2");
-        scorer1.addComponentResult(28238, "3");
+        scorer1.addComponentResult(28238L, "3");
         scorer1.addComponentResult("scorer1id2", "22");
-        scorer1.addComponentResult(282382, "32");
+        scorer1.addComponentResult(282382L, "32");
         equivToTelescopeResult.addScorerResult(scorer1);
 
         EquivToTelescopeComponent scorer2 = EquivToTelescopeComponent.create();
         scorer2.addComponentResult("scorer2id", "4");
-        scorer2.addComponentResult(23232, "4");
+        scorer2.addComponentResult(23232L, "4");
         equivToTelescopeResult.addScorerResult(scorer2);
 
 

@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.update.updaters.providers.item;
+package org.atlasapi.equiv.update.updaters.providers.item.barb;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

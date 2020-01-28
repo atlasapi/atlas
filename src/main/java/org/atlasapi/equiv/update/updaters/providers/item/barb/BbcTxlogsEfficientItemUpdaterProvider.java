@@ -1,13 +1,10 @@
-package org.atlasapi.equiv.update.updaters.providers.item;
+package org.atlasapi.equiv.update.updaters.providers.item.barb;
 
 import com.google.common.collect.ImmutableList;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.FirstMatchingPredicateContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbAliasItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBbcActualTransmissionItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbBbcBroadcastItemUpdaterProvider;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 

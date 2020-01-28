@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.scorers;
 
+import java.util.Set;
+
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
@@ -7,8 +9,6 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Item;
-
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -27,17 +27,27 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
     protected final Score matchScore;
     protected final Score mismatchScore;
     protected final Score nullYearScore;
+    // "hack" for Amazon<->Amazon to equiv when both films have null year, but not if only one null
+    protected final boolean treatNullYearsAsMatch;
 
     public ItemYearScorer(Score matchScore) {
-        this.matchScore = checkNotNull(matchScore);
-        this.mismatchScore = DEFAULT_MISMATCH_SCORE;
-        this.nullYearScore = DEFAULT_NULL_YEAR_SCORE;
+        this(matchScore, DEFAULT_MISMATCH_SCORE, DEFAULT_NULL_YEAR_SCORE, false);
     }
 
     public ItemYearScorer(Score matchScore, Score mismatchScore, Score nullYearScore) {
+        this(matchScore, mismatchScore, nullYearScore, false);
+    }
+
+    public ItemYearScorer(
+            Score matchScore,
+            Score mismatchScore,
+            Score nullYearScore,
+            boolean treatNullYearsAsMatch
+    ) {
         this.matchScore = checkNotNull(matchScore);
         this.mismatchScore = checkNotNull(mismatchScore);
         this.nullYearScore = checkNotNull(nullYearScore);
+        this.treatNullYearsAsMatch = treatNullYearsAsMatch;
     }
 
     @Override
@@ -50,10 +60,23 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Item Year Scorer");
         DefaultScoredCandidates.Builder<Item> scoredCandidates = DefaultScoredCandidates.fromSource(NAME);
+        desc.appendText(
+                "Subject %s (%s) has release year %s",
+                subject.getTitle(),
+                subject.getCanonicalUri(),
+                subject.getYear() != null ? subject.getYear() : "null"
+        );
 
         for (Item candidate : candidates) {
             Score score = score(subject, candidate);
 
+            desc.appendText(
+                    "%s (%s) from year %s scored: %s",
+                    candidate.getTitle(),
+                    candidate.getCanonicalUri(),
+                    candidate.getYear() != null ? subject.getYear() : "null",
+                    score
+            );
             scoredCandidates.addEquivalent(candidate, score);
             scorerComponent.addComponentResult(
                     candidate.getId(),
@@ -67,9 +90,13 @@ public class ItemYearScorer implements EquivalenceScorer<Item> {
     }
 
     protected Score score(Item subject, Item candidate) {
+        if (subject.getYear() == null && candidate.getYear() == null) {
+            return treatNullYearsAsMatch ? matchScore : nullYearScore;
+        }
         if (subject.getYear() == null || candidate.getYear() == null) {
             return nullYearScore;
         }
+
         return subject.getYear().equals(candidate.getYear()) ? matchScore : mismatchScore;
     }
 

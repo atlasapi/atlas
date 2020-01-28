@@ -97,7 +97,11 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                new TitleMatchingContainerScorer(2.0),
+                                new TitleMatchingContainerScorer(
+                                        Score.valueOf(2D),
+                                        Score.ONE,
+                                        false
+                                ),
                                 new SoleCandidateTitleMatchingScorer<>(
                                         dependencies.getOwlSearchResolver(),
                                         Score.ONE,

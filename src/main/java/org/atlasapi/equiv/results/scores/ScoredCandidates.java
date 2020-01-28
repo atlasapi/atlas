@@ -11,7 +11,7 @@ public interface ScoredCandidates<T> {
     String source();
 
     Map<T, Score> candidates();
-    
+
     List<ScoredCandidate<T>> orderedCandidates(Comparator<? super T> tieBreak);
     
     public static final Function<ScoredCandidates<?>, String> TO_SOURCE = new Function<ScoredCandidates<?>, String>() {

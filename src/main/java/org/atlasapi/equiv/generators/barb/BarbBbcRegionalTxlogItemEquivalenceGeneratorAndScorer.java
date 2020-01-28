@@ -150,14 +150,17 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
                                 + " for " + channel.channel().getUri()
                 );
                 for (Item scheduleItem : channel.items()) {
-                    Broadcast candidateBroadcast = getOnlyBroadcast(scheduleItem);
-                    if (scheduleItem.isActivelyPublished()
-                            && !subject.getCanonicalUri().equals(scheduleItem.getCanonicalUri())
-                            && isSameTxlogEntry(subject, scheduleItem, subjectBroadcast, candidateBroadcast)
+                    if (!scheduleItem.isActivelyPublished()
+                            || subject.getCanonicalUri().equals(scheduleItem.getCanonicalUri())
                     ) {
+                        continue;
+                    }
+                    Broadcast candidateBroadcast = getOnlyBroadcast(scheduleItem);
+                    if (isSameTxlogEntry(subject, scheduleItem, subjectBroadcast, candidateBroadcast)) {
                         desc.appendText(
-                                "Found candidate %s with broadcast [%s - %s]",
+                                "Found candidate %s (%s) with broadcast [%s - %s]",
                                 scheduleItem.getCanonicalUri(),
+                                scheduleItem.getTitle(),
                                 candidateBroadcast.getTransmissionTime(),
                                 candidateBroadcast.getTransmissionEndTime()
                         );

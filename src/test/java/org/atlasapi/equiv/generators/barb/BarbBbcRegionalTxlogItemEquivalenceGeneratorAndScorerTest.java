@@ -77,7 +77,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorerTest {
 
     private static final Score SCORE_ON_MATCH = Score.ONE;
 
-    private static final Duration flexibility = Duration.standardSeconds(30);
+    private static final Duration flexibility = Duration.standardSeconds(10);
 
     private final ScheduleResolver scheduleResolver = mock(ScheduleResolver.class);
     private BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer generator;

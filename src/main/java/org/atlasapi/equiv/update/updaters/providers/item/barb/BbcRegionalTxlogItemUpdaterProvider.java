@@ -48,7 +48,7 @@ public class BbcRegionalTxlogItemUpdaterProvider implements EquivalenceResultUpd
                                         .withScheduleResolver(dependencies.getScheduleResolver())
                                         .withChannelResolver(dependencies.getChannelResolver())
                                         .withPublishers(targetPublishers)
-                                        .withBroadcastFlexibility(Duration.standardSeconds(30))
+                                        .withBroadcastFlexibility(Duration.standardSeconds(1))
                                         .withScoreOnMatch(Score.valueOf(3.0))
                                         .build()
                         )

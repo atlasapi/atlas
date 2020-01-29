@@ -72,7 +72,7 @@ public class RtItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                                         ),
                                         false,
                                         1,
-                                        Score.ONE,
+                                        Score.valueOf(3D),
                                         Score.negativeOne(),
                                         Score.valueOf(3D),
                                         Score.ZERO

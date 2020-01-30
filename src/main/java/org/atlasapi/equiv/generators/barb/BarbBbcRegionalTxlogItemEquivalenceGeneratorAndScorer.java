@@ -43,7 +43,7 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.around
  */
 public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
 
-    private static final Set<Publisher> ALL_PUBLISHERS = ImmutableSet.of(
+    private static final Set<Publisher> ALLOWED_PUBLISHERS = ImmutableSet.of(
             Publisher.LAYER3_TXLOGS,
             Publisher.BARB_TRANSMISSIONS
     );
@@ -59,7 +59,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
         this.scheduleResolver = checkNotNull(builder.scheduleResolver);
         this.channelResolver = checkNotNull(builder.channelResolver);
         this.publishers = ImmutableSet.copyOf(builder.publishers);
-        checkArgument(ALL_PUBLISHERS.containsAll(this.publishers));
+        checkArgument(ALLOWED_PUBLISHERS.containsAll(this.publishers));
         this.broadcastFilter = builder.broadcastFilter == null ? broadcast -> true : builder.broadcastFilter;
         this.flexibility = checkNotNull(builder.flexibility);
         this.scoreOnMatch = checkNotNull(builder.scoreOnMatch);
@@ -75,7 +75,7 @@ public class BarbBbcRegionalTxlogItemEquivalenceGeneratorAndScorer implements Eq
             ResultDescription desc,
             EquivToTelescopeResult equivToTelescopeResult
     ) {
-        checkArgument(ALL_PUBLISHERS.contains(subject.getPublisher()));
+        checkArgument(ALLOWED_PUBLISHERS.contains(subject.getPublisher()));
 
         DefaultScoredCandidates.Builder<Item> scores =
                 DefaultScoredCandidates.fromSource("BARB-BBC Regional Txlog Generator");

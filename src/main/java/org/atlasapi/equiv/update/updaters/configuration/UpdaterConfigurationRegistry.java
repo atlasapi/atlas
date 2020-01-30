@@ -1171,8 +1171,7 @@ public class UpdaterConfigurationRegistry {
                                         BARB_TRANSMISSIONS,
                                         BARB_MASTER
                                 ),
-                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO),
-                                BBC_REGIONAL_TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
+                                TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

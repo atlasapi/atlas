@@ -18,7 +18,6 @@ import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoreThreshold;
 import org.atlasapi.equiv.scorers.ContainerYearScorer;
-import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.SoleCandidateTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
@@ -80,8 +79,7 @@ public class ImdbPaContainerUpdaterProvider implements EquivalenceResultUpdaterP
                                         Score.ONE,
                                         Score.negativeOne(),
                                         Score.nullScore()
-                                ),
-                                DescriptionMatchingScorer.makeContainerScorer()
+                                )
                         )
                 )
                 .withCombiner(

@@ -20,6 +20,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/** DO NOT USE THIS SCORER UNTIL IT IS REWORKED AND THIS COMMENT IS REMOVED
+ *
+ *  This scorer is highly questionable. It removes common words (good), picks up only the
+ *  capitalised words in each of the two descriptions (questionable), and checks the % matching words
+ *  against a set threshold. This means if there are only 2 capitalised words (e.g. Sherlock Holmes)
+ *  in both descriptions, they will match.
+ */
+@Deprecated
 public class DescriptionMatchingScorer<T extends Described> implements EquivalenceScorer<T> {
 
     public static final String NAME = "Description Matching";

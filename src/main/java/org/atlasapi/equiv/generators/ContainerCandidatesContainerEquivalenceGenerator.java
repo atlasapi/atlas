@@ -103,7 +103,7 @@ public class ContainerCandidatesContainerEquivalenceGenerator
         }
 
         if (limitToSameSeriesNumber) {
-            desc.appendText("(filtered by existing and same Series number");
+            desc.appendText("(filtered by same non_null Series number)");
 
             if (series.getSeriesNumber() == null) {
                 desc.appendText("Series number is null, so this generator quit.");

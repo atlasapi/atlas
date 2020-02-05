@@ -90,7 +90,7 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
 
         Episode epSubject = null;
         if (limitToSameSeriesAndEpisodeNumber) {
-            desc.appendText("(filtered by existing and same Episode and Series number");
+            desc.appendText("(filtered by same non_null Episode and Series number)");
             if (subject instanceof Episode) {
                 epSubject = (Episode) subject;
                 if (epSubject.getSeriesNumber() == null || epSubject.getEpisodeNumber() == null) {

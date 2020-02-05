@@ -52,8 +52,8 @@ public class ImdbPaSeriesUpdaterProvider implements EquivalenceResultUpdaterProv
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
                                         targetPublishers,
-                                        true
-                                )
+                                        true,
+                                        true)
                         )
                 )
                 .withScorers(

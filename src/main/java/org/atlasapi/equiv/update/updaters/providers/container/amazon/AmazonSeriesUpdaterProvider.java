@@ -53,8 +53,8 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceResultUpdaterProv
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
                                         targetPublishers,
-                                        true
-                                )
+                                        true,
+                                        true)
                         )
                 )
                 .withScorers(

@@ -48,8 +48,8 @@ public class ImdbSeriesUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
                                         targetPublishers,
-                                        true
-                                )
+                                        true,
+                                        true)
                         )
                 )
                 .withScorers(

@@ -59,6 +59,7 @@ public class AmazonToAmazonItemUpdaterProvider implements EquivalenceResultUpdat
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
                                         targetPublishers,
+                                        true,
                                         true
                                 ),
                                 new AmazonTitleGenerator<>(

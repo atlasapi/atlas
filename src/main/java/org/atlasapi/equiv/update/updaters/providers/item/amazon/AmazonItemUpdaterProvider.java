@@ -60,6 +60,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
                                         targetPublishers,
+                                        true,
                                         true
                                 ),
                                 new FilmEquivalenceGeneratorAndScorer(

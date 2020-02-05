@@ -19,6 +19,7 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
@@ -45,24 +46,27 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
     private final EquivalenceSummaryStore equivSummaryStore;
     private final Set<Publisher> publishers;
     private final boolean strongCandidatesOnly;
+    private final boolean limitToSameSeriesAndEpisodeNumber;
 
     public ContainerCandidatesItemEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore
     ) {
-        this(contentResolver, equivSummaryStore, null, false);
+        this(contentResolver, equivSummaryStore, null, false, false);
     }
 
     public ContainerCandidatesItemEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore,
             @Nullable Collection<Publisher> publishers,
-            boolean strongCandidatesOnly
+            boolean strongCandidatesOnly,
+            boolean limitToSameSeriesAndEpisodeNumber
     ) {
         this.contentResolver = contentResolver;
         this.equivSummaryStore = equivSummaryStore;
         this.publishers = (publishers == null) ? null : ImmutableSet.copyOf(publishers);
         this.strongCandidatesOnly = strongCandidatesOnly;
+        this.limitToSameSeriesAndEpisodeNumber = limitToSameSeriesAndEpisodeNumber;
     }
 
     public ContainerCandidatesItemEquivalenceGenerator(
@@ -70,7 +74,7 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
             EquivalenceSummaryStore equivSummaryStore,
             @Nullable Set<Publisher> publishers
     ){
-        this(contentResolver,equivSummaryStore, publishers, false);
+        this(contentResolver,equivSummaryStore, publishers, false, false);
     }
 
     @Override
@@ -84,7 +88,79 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("Container Candidates Item Equivalence Generator");
 
-        ParentRef parent = subject.getContainer();
+        Episode epSubject = null;
+        if (limitToSameSeriesAndEpisodeNumber) {
+            desc.appendText("(filtered by existing and same Episode and Series number");
+            if (subject instanceof Episode) {
+                epSubject = (Episode) subject;
+                if (epSubject.getSeriesNumber() == null || epSubject.getEpisodeNumber() == null) {
+                    desc.appendText("Series or Episode number is null, so this generator quit.");
+                    return result.build();
+                }
+            } else {
+                desc.appendText("Subject is not an episode, so this generator quit.");
+                return result.build();
+            }
+        }
+
+
+        for (String containerUri : getContainerUris(subject.getContainer())) {
+            List<Identified> resolvedContent = contentResolver.findByCanonicalUris(
+                    Collections.singleton(containerUri)).getAllResolvedResults();
+            Container resolvedContainer = Iterables.filter(resolvedContent, Container.class)
+                    .iterator()
+                    .next();
+            //this is necessary for when we looked at all candidates;if we looked at container's
+            //equivalents only, then we already filtered out by publisher before resolving;
+            if (publishers != null){
+                if (!publishers.contains(resolvedContainer.getPublisher())) {
+                    continue;
+                }
+            }
+            for (Item child : itemsOf(resolvedContainer)) {
+                //if its published, and its not the subject itself, we have a winner!
+                if (child.isActivelyPublished() && !Objects.equals(
+                        child.getId(),
+                        subject.getId())) {
+
+                    if (limitToSameSeriesAndEpisodeNumber) {
+                        if( child instanceof Episode){
+                            Episode epChild = (Episode) child;
+                            if (epSubject.getEpisodeNumber().equals(epChild.getEpisodeNumber())
+                                && epSubject.getSeriesNumber().equals(epChild.getSeriesNumber())) {
+
+                                addResult(desc, result, generatorComponent, resolvedContainer, child);
+                            }
+                        }
+                    } else {
+                        addResult(desc, result, generatorComponent, resolvedContainer, child);
+                    }
+                }
+            }
+
+        }
+
+        equivToTelescopeResult.addGeneratorResult(generatorComponent);
+
+        return result.build();
+    }
+
+    private void addResult(
+            ResultDescription desc, Builder<Item> result,
+            EquivToTelescopeComponent generatorComponent,
+            Container resolvedContainer,
+            Item child) {
+
+        result.addEquivalent(child, Score.NULL_SCORE);
+        desc.appendText(
+                "Candidate: %s (from parent: %s)",
+                child.getCanonicalUri(),
+                resolvedContainer.getCanonicalUri()
+        );
+        generatorComponent.addComponentResult(child.getId(), "");
+    }
+
+    private ImmutableList<String> getContainerUris(@Nullable ParentRef parent) {
         if (parent != null) {
             String parentUri = parent.getUri();
             OptionalMap<String, EquivalenceSummary> containerSummary = parentSummary(parentUri);
@@ -92,44 +168,13 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
 
             if (optional.isPresent()) {
                 EquivalenceSummary summary = optional.get();
-                ImmutableList<String> containerUris = fetchContainerUris(summary, strongCandidatesOnly, publishers);
-                for (String containerUri : containerUris) {
-                    List<Identified> resolvedContent = contentResolver.findByCanonicalUris(
-                            Collections.singleton(containerUri)).getAllResolvedResults();
-                    Container resolvedContainer = Iterables.filter(resolvedContent, Container.class)
-                            .iterator()
-                            .next();
-                    //this is necessary for when we looked at all candidates;if we looked at container's
-                    //equivalents only, then we already filtered out by publisher before resolving;
-                    if (publishers != null){
-                        if (!publishers.contains(resolvedContainer.getPublisher())){
-                            continue;
-                        }
-                    }
-                    for (Item child : itemsOf(resolvedContainer)) {
-                        //if its published, and its not the subject itself, we have a winner!
-                        if (child.isActivelyPublished() &&
-                                !Objects.equals(child.getId(), subject.getId())) {
-
-                            result.addEquivalent(child, Score.NULL_SCORE);
-                            desc.appendText(
-                                    "Candidate: %s (from parent: %s)",
-                                    child.getCanonicalUri(),
-                                    resolvedContainer.getCanonicalUri()
-                            );
-                            generatorComponent.addComponentResult(
-                                    child.getId(),
-                                    ""
-                            );
-                        }
-                    }
-                }
+                return fetchContainerUris(
+                        summary,
+                        strongCandidatesOnly,
+                        publishers);
             }
         }
-
-        equivToTelescopeResult.addGeneratorResult(generatorComponent);
-
-        return result.build();
+        return ImmutableList.of();
     }
 
 

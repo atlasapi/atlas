@@ -46,6 +46,7 @@ public class ItemSequenceUpdaterProvider implements EquivalenceResultUpdaterProv
                                         dependencies.getContentResolver(),
                                         dependencies.getEquivSummaryStore(),
                                         targetPublishers,
+                                        true,
                                         true
                                 )
                         )

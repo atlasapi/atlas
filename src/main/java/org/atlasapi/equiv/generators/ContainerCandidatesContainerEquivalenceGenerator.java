@@ -49,12 +49,13 @@ public class ContainerCandidatesContainerEquivalenceGenerator
     private final EquivalenceSummaryStore equivSummaryStore;
     private final Set<Publisher> publishers;
     private final boolean strongCandidatesOnly;
+    private boolean limitToSameSeriesNumber;
 
     public ContainerCandidatesContainerEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore
     ){
-        this(contentResolver,equivSummaryStore, null, false);
+        this(contentResolver,equivSummaryStore, null, false, false);
     }
 
     public ContainerCandidatesContainerEquivalenceGenerator(
@@ -62,19 +63,20 @@ public class ContainerCandidatesContainerEquivalenceGenerator
             EquivalenceSummaryStore equivSummaryStore,
             @Nullable Set<Publisher> publishers
     ){
-        this(contentResolver,equivSummaryStore, publishers, false);
+        this(contentResolver,equivSummaryStore, publishers, false, false);
     }
 
     public ContainerCandidatesContainerEquivalenceGenerator(
             ContentResolver contentResolver,
             EquivalenceSummaryStore equivSummaryStore,
             @Nullable Set<Publisher> publishers,
-            boolean strongCandidatesOnly
-    ) {
+            boolean strongCandidatesOnly,
+            boolean limitToSameSeriesNumber) {
         this.contentResolver = contentResolver;
         this.equivSummaryStore = equivSummaryStore;
         this.publishers = (publishers == null) ? null : ImmutableSet.copyOf(publishers);
         this.strongCandidatesOnly = strongCandidatesOnly;
+        this.limitToSameSeriesNumber = limitToSameSeriesNumber;
     }
 
     @Override
@@ -88,56 +90,92 @@ public class ContainerCandidatesContainerEquivalenceGenerator
         generatorComponent.setComponentName("Container Candidates Container Equivalence Generator");
 
         if (!(subject instanceof Series)) {
+            desc.appendText("Subject is not Series, so this generator quit.");
             equivToTelescopeResult.addGeneratorResult(generatorComponent);
             return result.build();
         }
 
         Series series = (Series) subject;
         if(series.getParent() == null){
+            desc.appendText("Subject has no Parent, so this generator quit.");
             equivToTelescopeResult.addGeneratorResult(generatorComponent);
             return result.build();
         }
 
-        ParentRef parent = series.getParent();
-        String parentUri = parent.getUri();
-        OptionalMap<String, EquivalenceSummary> containerSummary = topLevelSummary(parentUri);
-        Optional<EquivalenceSummary> optional = containerSummary.get(parentUri);
-        if (optional.isPresent()) {
-            EquivalenceSummary summary = optional.get();
-            ImmutableList<String> containerUris = fetchContainerUris(summary, strongCandidatesOnly, publishers);
-            for (String containerUri : containerUris) {
-                List<Identified> resolvedContent = contentResolver.findByCanonicalUris(
-                        Collections.singleton(containerUri)).getAllResolvedResults();
-                Iterator<Brand> brandIterator = Iterables.filter(resolvedContent, Brand.class)
-                        .iterator();
-                while(brandIterator.hasNext()) {
-                    Brand resolvedContainer = brandIterator.next();
-                    //this is necessary for when we looked at all candidates;if we looked at container's
-                    //equivalents only, then we already filtered out by publisher before resolving;
-                    if (publishers != null) {
-                        if (!publishers.contains(resolvedContainer.getPublisher())) {
-                            continue;
-                        }
+        if (limitToSameSeriesNumber) {
+            desc.appendText("(filtered by existing and same Series number");
+
+            if (series.getSeriesNumber() == null) {
+                desc.appendText("Series number is null, so this generator quit.");
+                return result.build();
+            }
+        }
+
+
+        for (String containerUri : getContainerUris(series.getParent())) {
+            List<Identified> resolvedContent = contentResolver.findByCanonicalUris(
+                    Collections.singleton(containerUri)).getAllResolvedResults();
+            Iterator<Brand> brandIterator = Iterables.filter(resolvedContent, Brand.class)
+                    .iterator();
+            while (brandIterator.hasNext()) {
+                Brand resolvedContainer = brandIterator.next();
+                //this is necessary for when we looked at all candidates;if we looked at container's
+                //equivalents only, then we already filtered out by publisher before resolving;
+                if (publishers != null) {
+                    if (!publishers.contains(resolvedContainer.getPublisher())) {
+                        continue;
                     }
-                    for (Series candidateSeries : seriesOf(resolvedContainer)) {
-                        //if its published, and its not the subject itself, we have a winner.
-                        if (candidateSeries.isActivelyPublished()
-                                && !Objects.equals(candidateSeries.getId(), subject.getId())) {
-                            result.addEquivalent(candidateSeries, Score.NULL_SCORE);
-                            desc.appendText(
-                                    "Candidate: %s (from parent: %s)",
-                                    candidateSeries.getCanonicalUri(),
-                                    resolvedContainer.getCanonicalUri()
-                            );
-                            generatorComponent.addComponentResult(candidateSeries.getId(), "");
+                }
+                for (Series candidateSeries : seriesOf(resolvedContainer)) {
+                    //if its published, and its not the subject itself, we have a winner.
+                    if (candidateSeries.isActivelyPublished()
+                        && !Objects.equals(candidateSeries.getId(), subject.getId())) {
+
+                        if (!limitToSameSeriesNumber
+                            || (limitToSameSeriesNumber && series.getSeriesNumber()
+                                .equals(candidateSeries.getSeriesNumber())) ){
+                            addResult(
+                                    desc,
+                                    result,
+                                    generatorComponent,
+                                    resolvedContainer,
+                                    candidateSeries);
                         }
                     }
                 }
             }
         }
+
         equivToTelescopeResult.addGeneratorResult(generatorComponent);
 
         return result.build();
+    }
+
+    private void addResult(ResultDescription desc,
+            Builder<Container> result,
+            EquivToTelescopeComponent generatorComponent, Brand resolvedContainer,
+            Series candidateSeries) {
+        result.addEquivalent(candidateSeries, Score.NULL_SCORE);
+        desc.appendText(
+                "Candidate: %s (from parent: %s)",
+                candidateSeries.getCanonicalUri(),
+                resolvedContainer.getCanonicalUri()
+        );
+        generatorComponent.addComponentResult(candidateSeries.getId(), "");
+    }
+
+    private ImmutableList<String> getContainerUris(ParentRef parent) {
+        String parentUri = parent.getUri();
+        OptionalMap<String, EquivalenceSummary> containerSummary = topLevelSummary(parentUri);
+        Optional<EquivalenceSummary> optional = containerSummary.get(parentUri);
+        if (optional.isPresent()) {
+            EquivalenceSummary summary = optional.get();
+            return fetchContainerUris(
+                    summary,
+                    strongCandidatesOnly,
+                    publishers);
+        }
+        return ImmutableList.of();
     }
 
     private Iterable<Series> seriesOf(Brand container){

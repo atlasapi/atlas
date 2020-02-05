@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.generators;
 
+import javax.annotation.Nonnull;
+
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -91,8 +93,9 @@ public final class ContentTitleScorer<T extends Content> {
         String contentTitle = sanitize(candidate.getTitle());
         return score(subjectTitle, contentTitle);
     }
-    
-    private String sanitize(String title) {
+
+    @Nonnull
+    private String sanitize(@Nonnull String title) {
         return removeCommonPrefixes(titleTransform.apply(title)
             .replaceAll(" & ", " and ")
             .replaceAll("[^\\d\\w\\s]", "").toLowerCase());

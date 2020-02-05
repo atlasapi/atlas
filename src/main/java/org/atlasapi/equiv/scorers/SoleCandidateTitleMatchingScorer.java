@@ -29,6 +29,7 @@ import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.Functions;
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
@@ -80,10 +81,14 @@ public class SoleCandidateTitleMatchingScorer<T extends Content> implements Equi
         EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
         scorerComponent.setComponentName("Sole Candidate Title Matching Container Scorer");
         DefaultScoredCandidates.Builder<T> equivalents = DefaultScoredCandidates.fromSource(NAME);
+        if (Strings.isNullOrEmpty(subject.getTitle())) {
+            desc.appendText("There was no title, so this Scorer quit.");
+            return equivalents.build();
+        }
 
         List<T> potentialExtraCandidates = findContentWithSameTitleAndPublisher(subject);
 
-        if(!potentialExtraCandidates.isEmpty()){
+        if (!potentialExtraCandidates.isEmpty()){
             desc.appendText(
                     "Scored no candidates, as at least one content exists with same title "
                             + "& publisher as the subject (%s)",
@@ -163,7 +168,7 @@ public class SoleCandidateTitleMatchingScorer<T extends Content> implements Equi
     //search for candidates with exact title match & same publisher as subject
     private Iterable<T> search(T subject, Publisher subjectPublisher) {
         SearchQuery.Builder titleQuery =
-                SearchQuery.builder(subject.getTitle())
+                SearchQuery.builder(subject.getTitle()) //if title is null, this will throw.
                         .withSelection(new Selection(0, 5))
                         .withTitleWeighting(1.0f)
                         .withPublishers(Collections.singleton(subjectPublisher))

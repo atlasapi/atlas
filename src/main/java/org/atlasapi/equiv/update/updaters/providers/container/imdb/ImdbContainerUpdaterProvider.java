@@ -1,9 +1,8 @@
 package org.atlasapi.equiv.update.updaters.providers.container.imdb;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
@@ -28,10 +27,8 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.util.Set;
 
 public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterProvider<Container> {
 
@@ -103,7 +100,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         false
                                 ),
                                 new SoleCandidateTitleMatchingScorer<>(
-                                        dependencies.getOwlSearchResolver(),
+                                        dependencies.getDeerSearchResolver(),
                                         Score.ONE,
                                         Score.nullScore(),
                                         Container.class

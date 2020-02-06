@@ -1,11 +1,12 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.base.Functions;
+import com.google.common.base.Strings;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContentTitleScorer;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -24,14 +25,11 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.base.Functions;
-import com.google.common.base.Strings;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.StreamSupport.stream;
@@ -90,7 +88,7 @@ public class SoleCandidateTitleMatchingScorer<T extends Content> implements Equi
 
         if (!potentialExtraCandidates.isEmpty()){
             desc.appendText(
-                    "Scored no candidates, as at least one content exists with same title "
+                    "Scored no candidates as at least one piece of content exists with same title "
                             + "& publisher as the subject (%s)",
                     potentialExtraCandidates.get(0).getCanonicalUri()
             );

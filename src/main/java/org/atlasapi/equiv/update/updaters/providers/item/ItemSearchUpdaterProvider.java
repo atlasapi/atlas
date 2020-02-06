@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.update.updaters.providers.item;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.FilmEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
@@ -28,8 +28,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 /**
  *  Equivs on both exact title IFF candidate is the only one with exact title match from its publisher,
@@ -92,7 +91,7 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
                                 new SoleCandidateTitleMatchingScorer<>(
-                                        dependencies.getOwlSearchResolver(),
+                                        dependencies.getDeerSearchResolver(),
                                         Score.ONE,
                                         Score.nullScore(),
                                         Item.class

@@ -51,7 +51,6 @@ public class ItemMerger {
                     broadcastMerger
             );
         }
-        existing.setYear(update.getYear());
         existing.setParentRef(update.getContainer());
 
         if (existing instanceof Song && update instanceof Song) {

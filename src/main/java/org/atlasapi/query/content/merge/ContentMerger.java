@@ -190,6 +190,8 @@ public class ContentMerger {
         existing.setPresentationChannel(update.getPresentationChannel());
         existing.setYear(update.getYear());
         existing.setGenres(update.getGenres());
+        existing.setRatings(update.getRatings());
+        existing.setCertificates(update.getCertificates());
 
         //currently not set to use merge logic since these have been added later
         existing.setLanguages(update.getLanguages());

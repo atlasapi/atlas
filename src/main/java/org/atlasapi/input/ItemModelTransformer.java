@@ -139,7 +139,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         checkAndSetConsistentDurationFromLocations(inputItem, version);
         if(inputItem.getDuration() != null){
             //this will overwrite the duration set from locations
-            version.setDuration(Duration.millis(inputItem.getDuration()));
+            version.setDuration(Duration.standardSeconds(inputItem.getDuration()));
         }
 
         item.setVersions(ImmutableSet.of(version));

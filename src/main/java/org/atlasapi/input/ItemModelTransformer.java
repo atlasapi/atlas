@@ -136,14 +136,23 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
 
         item.setYear(inputItem.getYear());
         item.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
-        checkAndSetConsistentDuration(inputItem, version);
+
+        if (inputItem.getDuration() != null) {
+            version.setDuration(Duration.standardSeconds(inputItem.getDuration()));
+        } else {
+            checkAndSetConsistentDurationFromLocations(inputItem, version);
+        }
 
         item.setVersions(ImmutableSet.of(version));
 
         return item;
     }
 
-    private void checkAndSetConsistentDuration(org.atlasapi.media.entity.simple.Item item, Version version) {
+    private void checkAndSetConsistentDurationFromLocations(
+            org.atlasapi.media.entity.simple.Item item,
+            Version version
+    ) {
+
         Set<Integer> durations = Sets.newHashSet();
         for (org.atlasapi.media.entity.simple.Location location : item.getLocations()) {
             Integer duration = location.getDuration();

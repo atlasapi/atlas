@@ -9,6 +9,7 @@ import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.media.entity.LocalizedTitle;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Priority;
 import org.atlasapi.media.entity.PriorityScoreReasons;
@@ -48,6 +49,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         Publisher publisher = getPublisher(inputContent.getPublisher());
         result.setPublisher(publisher);
         result.setTitle(inputContent.getTitle());
+        result.setLocalizedTitles(transformTitles(inputContent.getTitles()));
         result.setDescription(inputContent.getDescription());
         result.setShortDescription(inputContent.getShortDescription());
         result.setMediumDescription(inputContent.getMediumDescription());
@@ -79,6 +81,18 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         result.setRatings(transformRatings(inputContent.getRatings()));
 
         return result;
+    }
+
+    private Set<LocalizedTitle> transformTitles(
+            Set<org.atlasapi.media.entity.simple.LocalizedTitle> simpleLocalizedTitles
+    ) {
+        return simpleLocalizedTitles.stream()
+                .map(input -> {
+                    LocalizedTitle localizedTitle = new LocalizedTitle();
+                    localizedTitle.setTitle(input.getTitle());
+                    return localizedTitle;
+                })
+                .collect(MoreCollectors.toImmutableSet());
     }
 
     private Iterable<org.atlasapi.media.entity.Image> transformImages(Set<Image> images) {

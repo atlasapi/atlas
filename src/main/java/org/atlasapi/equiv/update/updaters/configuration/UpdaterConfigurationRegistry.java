@@ -106,6 +106,8 @@ import static org.atlasapi.media.entity.Publisher.ROVI_EN_US;
 import static org.atlasapi.media.entity.Publisher.RTE;
 import static org.atlasapi.media.entity.Publisher.TALK_TALK;
 import static org.atlasapi.media.entity.Publisher.UKTV;
+import static org.atlasapi.media.entity.Publisher.VIACOM_18_DATA_SUBMISSION;
+import static org.atlasapi.media.entity.Publisher.VIMN_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
@@ -173,7 +175,9 @@ public class UpdaterConfigurationRegistry {
                 makeJustWatchConfiguration(),
                 makeC5DataSubmissionConfiguration(),
                 makeBarbCensusConfiguration(),
-                makeBarbNleConfiguration()
+                makeBarbNleConfiguration(),
+                makeViacom18DataSubmissionConfiguration(),
+                makeVimnDataSubmissionConfiguration()
         );
 
         configurations.add(
@@ -1378,6 +1382,60 @@ public class UpdaterConfigurationRegistry {
                         ),
                         STANDARD_SERIES_HANDLER,
                         STANDARD_SERIES_MESSENGER
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeViacom18DataSubmissionConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(VIACOM_18_DATA_SUBMISSION)
+                .withItemEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_ITEM, ImmutableSet.of()
+                        ),
+                        NOP_ITEM_HANDLER,
+                        NOP_ITEM_MESSENGER
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeVimnDataSubmissionConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(VIMN_DATA_SUBMISSION)
+                .withItemEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_ITEM, ImmutableSet.of()
+                        ),
+                        NOP_ITEM_HANDLER,
+                        NOP_ITEM_MESSENGER
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
                 )
                 .build();
     }

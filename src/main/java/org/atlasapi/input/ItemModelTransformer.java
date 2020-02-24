@@ -138,7 +138,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         item.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
 
         if (inputItem.getDuration() != null) {
-            version.setDuration(Duration.standardSeconds(inputItem.getDuration()));
+            version.setDuration(Duration.millis(inputItem.getDuration()));
         } else {
             checkAndSetConsistentDurationFromLocations(inputItem, version);
         }

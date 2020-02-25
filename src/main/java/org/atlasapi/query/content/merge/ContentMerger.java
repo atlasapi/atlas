@@ -196,6 +196,8 @@ public class ContentMerger {
         //currently not set to use merge logic since these have been added later
         existing.setLanguages(update.getLanguages());
         existing.setCountriesOfOrigin(update.getCountriesOfOrigin());
+        existing.setLocalizedTitles(update.getLocalizedTitles());
+        existing.setLocalizedDescriptions(update.getLocalizedDescriptions());
 
         if(merge) {
             existing.addCustomFields(update.getCustomFields());

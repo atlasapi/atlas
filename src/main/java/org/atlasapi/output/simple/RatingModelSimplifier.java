@@ -21,6 +21,7 @@ public class RatingModelSimplifier implements ModelSimplifier<org.atlasapi.media
         rating.setType(model.getType());
         rating.setValue(model.getValue());
         rating.setPublisherDetails(publisherSimplifier.simplify(model.getPublisher()));
+        rating.setNumberOfVotes(model.getNumberOfVotes());
         return rating;
     }
 

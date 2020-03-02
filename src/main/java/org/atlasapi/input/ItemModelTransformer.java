@@ -84,9 +84,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
     private Item createSong(org.atlasapi.media.entity.simple.Item inputItem) {
         Song song = new Song();
         song.setIsrc(inputItem.getIsrc());
-        if (inputItem.getDuration() != null) {
-            song.setDuration(Duration.standardSeconds(inputItem.getDuration()));
-        }
         return song;
     }
 
@@ -138,6 +135,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         item.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
 
         if (inputItem.getDuration() != null) {
+            item.setDuration(Duration.millis(inputItem.getDuration()));
             version.setDuration(Duration.millis(inputItem.getDuration()));
         } else {
             checkAndSetConsistentDurationFromLocations(inputItem, version);

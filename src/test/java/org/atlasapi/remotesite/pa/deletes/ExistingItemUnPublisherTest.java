@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.pa.deletes;
 
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
@@ -7,10 +8,9 @@ import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.lookup.entry.EquivRefs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-
-import com.google.common.collect.ImmutableList;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +20,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static org.atlasapi.persistence.lookup.entry.EquivRefs.EquivDirection.OUTGOING;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -127,8 +128,8 @@ public class ExistingItemUnPublisherTest {
                         .build(),
                 ImmutableList.of(
                         LookupEntry.lookupEntryFrom(item)
-                                .copyWithDirectEquivalents(ImmutableList.of(
-                                        LookupRef.from(equivItem)
+                                .copyWithDirectEquivalents(EquivRefs.of(
+                                        LookupRef.from(equivItem), OUTGOING
                                 ))
                 )
         );

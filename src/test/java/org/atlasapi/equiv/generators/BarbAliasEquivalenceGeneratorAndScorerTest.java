@@ -23,6 +23,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.lookup.entry.EquivRefs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import org.joda.time.DateTime;
@@ -132,9 +133,11 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 new LookupRef("Uri for alias test", 23L, Publisher.BARB_TRANSMISSIONS, ContentCategory.CHILD_ITEM),
                 ImmutableSet.of("Uri for alias test"),
                 aliasesForaliasIdentified1,
+                EquivRefs.of(),
+                EquivRefs.of(),
+                EquivRefs.of(),
                 ImmutableSet.of(),
-                ImmutableSet.of(),
-                ImmutableSet.of(),
+                DateTime.now(),
                 DateTime.now(),
                 DateTime.now(),
                 true
@@ -376,9 +379,11 @@ public class BarbAliasEquivalenceGeneratorAndScorerTest {
                 ),
                 ImmutableSet.of(),
                 content.getAliases(),
+                EquivRefs.of(),
+                EquivRefs.of(),
+                EquivRefs.of(),
                 ImmutableSet.of(),
-                ImmutableSet.of(),
-                ImmutableSet.of(),
+                DateTime.now(),
                 DateTime.now(),
                 DateTime.now(),
                 true

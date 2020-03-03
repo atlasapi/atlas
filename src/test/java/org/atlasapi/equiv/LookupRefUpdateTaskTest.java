@@ -1,19 +1,5 @@
 package org.atlasapi.equiv;
 
-import static org.junit.Assert.*;
-
-import java.util.Set;
-
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.LookupRef;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentCategory;
-import org.atlasapi.persistence.lookup.entry.LookupEntry;
-import org.atlasapi.persistence.lookup.mongo.LookupEntryTranslator;
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -21,6 +7,20 @@ import com.metabroadcast.common.persistence.MongoTestHelper;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.mongodb.DBCollection;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentCategory;
+import org.atlasapi.persistence.lookup.entry.EquivRefs;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
+import org.atlasapi.persistence.lookup.mongo.LookupEntryTranslator;
+import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.atlasapi.persistence.lookup.entry.EquivRefs.EquivDirection.BIDIRECTIONAL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 public class LookupRefUpdateTaskTest {
@@ -59,17 +59,19 @@ public class LookupRefUpdateTaskTest {
     }
     
     @Test
-    public void testEquialentEntryUpdate() {
+    public void testEquivalentEntryUpdate() {
         LookupEntry entry1 = entry(2L, "uri1", Publisher.BBC, ContentCategory.CHILD_ITEM);
         LookupEntry entry2 = entry(3L, "uri2", Publisher.PA, ContentCategory.CHILD_ITEM);
         
-        Set<LookupRef> ref1NoId = entry1.equivalents();
-        entry1 = entry1.copyWithDirectEquivalents(entry2.equivalents())
-                .copyWithExplicitEquivalents(entry2.equivalents())
+        LookupRef ref1NoId = Iterables.getOnlyElement(entry1.equivalents());
+        LookupRef ref2NoId = Iterables.getOnlyElement(entry2.equivalents());
+
+        entry1 = entry1.copyWithDirectEquivalents(EquivRefs.of(ref2NoId, BIDIRECTIONAL))
+                .copyWithExplicitEquivalents(EquivRefs.of(ref2NoId, BIDIRECTIONAL))
                 .copyWithEquivalents(entry2.equivalents());
-        entry2 = entry2.copyWithDirectEquivalents(ref1NoId)
-                .copyWithExplicitEquivalents(ref1NoId)
-                .copyWithEquivalents(ref1NoId);
+        entry2 = entry2.copyWithDirectEquivalents(EquivRefs.of(ref1NoId, BIDIRECTIONAL))
+                .copyWithExplicitEquivalents(EquivRefs.of(ref1NoId, BIDIRECTIONAL))
+                .copyWithEquivalents(entry1.equivalents());
 
         lookupCollection.save(translator.toDbo(entry1));
         lookupCollection.save(translator.toDbo(entry2));
@@ -95,10 +97,28 @@ public class LookupRefUpdateTaskTest {
 
     private LookupEntry entry(Long id, String uri, Publisher source, ContentCategory cat) {
         LookupRef self = new LookupRef(uri, id, source, cat);
+
+        LookupRef ref = new LookupRef(uri, null, source, cat);
         
-        ImmutableSet<LookupRef> refs = ImmutableSet.of(new LookupRef(uri, null, source, cat));
+        ImmutableSet<LookupRef> refs = ImmutableSet.of(ref);
+
+        EquivRefs equivRefs = EquivRefs.of(ref, BIDIRECTIONAL);
         
-        LookupEntry entry = new LookupEntry(uri, id, self, ImmutableSet.of("alias"), ImmutableSet.of(new Alias("namespace","value")), refs, refs, refs, new DateTime(DateTimeZones.UTC), new DateTime(DateTimeZones.UTC), true);
+        LookupEntry entry = new LookupEntry(
+                uri,
+                id,
+                self,
+                ImmutableSet.of("alias"),
+                ImmutableSet.of(new Alias("namespace","value")),
+                equivRefs,
+                equivRefs,
+                EquivRefs.of(),
+                refs,
+                new DateTime(DateTimeZones.UTC),
+                new DateTime(DateTimeZones.UTC),
+                new DateTime(DateTimeZones.UTC),
+                true
+        );
         return entry;
     }
 

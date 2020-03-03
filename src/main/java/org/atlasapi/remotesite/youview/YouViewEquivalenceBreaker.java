@@ -1,9 +1,10 @@
 package org.atlasapi.remotesite.youview;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Set;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Identified;
@@ -14,15 +15,16 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
+import org.atlasapi.persistence.lookup.entry.EquivRefs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import java.util.Map;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 /**
@@ -105,16 +107,24 @@ public class YouViewEquivalenceBreaker {
     }
 
     private LookupEntry createOrphanedLookupEntry(LookupEntry entry) {
-        return entry.copyWithDirectEquivalents(ImmutableSet.<LookupRef>of())
-                    .copyWithEquivalents(ImmutableSet.<LookupRef>of())
-                    .copyWithExplicitEquivalents(ImmutableSet.<LookupRef>of());
+        return entry.copyWithDirectEquivalents(EquivRefs.of())
+                    .copyWithEquivalents(ImmutableSet.of())
+                    .copyWithExplicitEquivalents(EquivRefs.of());
     }
 
     private LookupEntry createFilteredLookupEntry(LookupEntry entry, Predicate<LookupRef> shouldRetainLookupRef) {
-        return entry.copyWithDirectEquivalents(Iterables.filter(entry.directEquivalents(), shouldRetainLookupRef))
-                    .copyWithEquivalents(Iterables.filter(entry.equivalents(), shouldRetainLookupRef))
-                    .copyWithExplicitEquivalents(Iterables.filter(entry.explicitEquivalents(), shouldRetainLookupRef));
+        return entry.copyWithDirectEquivalents(filterEquivRefs(entry.getDirectEquivalents(), shouldRetainLookupRef))
+                    .copyWithEquivalents(ImmutableSet.copyOf(Iterables.filter(entry.equivalents(), shouldRetainLookupRef)))
+                    .copyWithExplicitEquivalents(filterEquivRefs(entry.getExplicitEquivalents(), shouldRetainLookupRef));
         
+    }
+
+    private EquivRefs filterEquivRefs(EquivRefs equivRefs, Predicate<LookupRef> filter) {
+        return EquivRefs.of(
+                equivRefs.getEquivRefs().entrySet().stream()
+                    .filter(entry -> filter.apply(entry.getKey()))
+                    .collect(MoreCollectors.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
+        );
     }
 
     private Predicate<LookupRef> createShouldRetainLookupRefPredicate(final Set<String> toOrphan) {

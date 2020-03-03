@@ -1,13 +1,9 @@
 package org.atlasapi.remotesite.youview;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Item;
@@ -20,6 +16,7 @@ import org.atlasapi.media.entity.testing.ComplexItemTestDataBuilder;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
+import org.atlasapi.persistence.lookup.entry.EquivRefs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.joda.time.DateTime;
@@ -32,9 +29,14 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import java.util.Map;
+import java.util.Set;
+
+import static org.atlasapi.persistence.lookup.entry.EquivRefs.EquivDirection.OUTGOING;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 @RunWith( MockitoJUnitRunner.class )
@@ -94,17 +96,22 @@ public class YouViewEquivalenceBreakerTest {
         
         LookupEntry lookupEntryForItemToNotOrphan = 
                 LookupEntry.lookupEntryFrom(itemToNotOrphan)
-                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemInSchedule)))
+                    .copyWithDirectEquivalents(EquivRefs.of(LookupRef.from(itemInSchedule), OUTGOING))
                     .copyWithEquivalents(equivalentSet);
-        
-        LookupEntry lookupEntryForItemInSchedule = 
+
+        LookupEntry lookupEntryForItemInSchedule =
                 LookupEntry.lookupEntryFrom(itemInSchedule)
-                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemToNotOrphan), LookupRef.from(itemToOrphan)))
-                    .copyWithEquivalents(equivalentSet);
+                        .copyWithDirectEquivalents(
+                                EquivRefs.of(
+                                        ImmutableMap.of(LookupRef.from(itemToNotOrphan), OUTGOING,
+                                                LookupRef.from(itemToOrphan), OUTGOING)
+                                )
+                        )
+                        .copyWithEquivalents(equivalentSet);
         
         LookupEntry lookupEntryForItemToOrphan = 
                 LookupEntry.lookupEntryFrom(itemToOrphan)
-                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemInSchedule)))
+                    .copyWithDirectEquivalents(EquivRefs.of(LookupRef.from(itemInSchedule), OUTGOING))
                     .copyWithEquivalents(equivalentSet);
         
         ScheduleChannel scheduleChannel = new ScheduleChannel(DUMMY_CHANNEL, ImmutableSet.of(itemInSchedule));
@@ -129,13 +136,13 @@ public class YouViewEquivalenceBreakerTest {
         
         LookupEntry expectedLookupEntryForItemToNotOrphanAfterDetaching = 
                 LookupEntry.lookupEntryFrom(itemToNotOrphan)
-                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemInSchedule)))
+                    .copyWithDirectEquivalents(EquivRefs.of(LookupRef.from(itemInSchedule), OUTGOING))
                     .copyWithEquivalents(ImmutableSet.of(LookupRef.from(itemInSchedule)));
         
         LookupEntry expectedLookupEntryForItemInScheduleAfterDetaching = 
                 LookupEntry.lookupEntryFrom(itemInSchedule)
                     .copyWithEquivalents(ImmutableSet.of(LookupRef.from(itemToNotOrphan)))
-                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemToNotOrphan)));
+                    .copyWithDirectEquivalents(EquivRefs.of(LookupRef.from(itemToNotOrphan), OUTGOING));
         
         LookupEntry expectedLookupEntryForOrphanAfterDetaching = 
                 LookupEntry.lookupEntryFrom(itemToOrphan);

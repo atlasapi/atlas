@@ -1,6 +1,7 @@
 package org.atlasapi.equiv;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.entity.Alias;
@@ -11,6 +12,7 @@ import org.atlasapi.media.entity.testing.ComplexItemTestDataBuilder;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.LookupWriter;
+import org.atlasapi.persistence.lookup.entry.EquivRefs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.joda.time.DateTime;
@@ -19,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static org.atlasapi.persistence.lookup.entry.EquivRefs.EquivDirection.OUTGOING;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.argThat;
@@ -56,12 +59,23 @@ public class EquivalenceBreakerTest {
                                                 .withUri(ITEM_TO_KEEP_URI)
                                                 .build();
     
-    private final LookupEntry EXAMPLE_ITEM_LOOKUP = new LookupEntry(REMOVE_FROM_URI, 1L,  
-            LookupRef.from(EXAMPLE_ITEM), ImmutableSet.<String>of(), ImmutableSet.<Alias>of(), 
-            ImmutableSet.of(LookupRef.from(DIRECT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
-            ImmutableSet.<LookupRef>of(LookupRef.from(EXPLICIT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
+    private final LookupEntry EXAMPLE_ITEM_LOOKUP = new LookupEntry(REMOVE_FROM_URI, 1L,
+            LookupRef.from(EXAMPLE_ITEM), ImmutableSet.<String>of(), ImmutableSet.<Alias>of(),
+            EquivRefs.of(
+                    ImmutableMap.of(
+                            LookupRef.from(DIRECT_EQUIV_TO_REMOVE), OUTGOING,
+                            LookupRef.from(ITEM_TO_KEEP), OUTGOING
+                    )
+            ),
+            EquivRefs.of(
+                    ImmutableMap.of(
+                            LookupRef.from(EXPLICIT_EQUIV_TO_REMOVE), OUTGOING,
+                            LookupRef.from(ITEM_TO_KEEP), OUTGOING
+                    )
+            ),
+            EquivRefs.of(),
             ImmutableSet.of(LookupRef.from(DIRECT_EQUIV_TO_REMOVE), LookupRef.from(EXPLICIT_EQUIV_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)),
-            new DateTime(), new DateTime(), true);
+            new DateTime(), new DateTime(), new DateTime(), true);
 
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final LookupWriter lookupWriter = mock(LookupWriter.class);

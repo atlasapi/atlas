@@ -161,8 +161,8 @@ public class YouViewEquivalenceBreakerTest {
         for (LookupEntry expectedLookupSave : expectedLookupEntrySaves) {
             LookupEntry saved = savedEntries.get(expectedLookupSave.uri());
             assertEquals("Problem with " + saved.uri(), expectedLookupSave.aliases(), saved.aliases());
-            assertEquals("Problem with " + saved.uri(), expectedLookupSave.getDirectEquivalents().getLookupRefs(), saved.getDirectEquivalents().getLookupRefs());
-            assertEquals("Problem with " + saved.uri(), expectedLookupSave.getExplicitEquivalents().getLookupRefs(), saved.getExplicitEquivalents().getLookupRefs());
+            assertEquals("Problem with " + saved.uri(), expectedLookupSave.directEquivalents().getLookupRefs(), saved.directEquivalents().getLookupRefs());
+            assertEquals("Problem with " + saved.uri(), expectedLookupSave.explicitEquivalents().getLookupRefs(), saved.explicitEquivalents().getLookupRefs());
             assertEquals("Problem with " + saved.uri(), expectedLookupSave.equivalents(), saved.equivalents());
         }
         

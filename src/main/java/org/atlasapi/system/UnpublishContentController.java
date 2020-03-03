@@ -158,12 +158,12 @@ public class UnpublishContentController {
      */
     private void removeEquivSetOfItem(Described described, LookupEntry lookupEntry){
 
-        ImmutableSet<String> allDirectEquivs = lookupEntry.getDirectEquivalents().getOutgoing()
+        ImmutableSet<String> allDirectEquivs = lookupEntry.directEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
 
-        ImmutableSet<String> allExplicitEquivs = lookupEntry.getExplicitEquivalents().getOutgoing()
+        ImmutableSet<String> allExplicitEquivs = lookupEntry.explicitEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());

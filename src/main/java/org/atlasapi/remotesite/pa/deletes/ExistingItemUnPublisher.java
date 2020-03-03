@@ -113,7 +113,7 @@ public class ExistingItemUnPublisher {
 
     private void removeEntryFromEquivSet(LookupEntry lookupEntry){
         String lookupEntryUri = lookupEntry.uri();
-        lookupEntry.getDirectEquivalents().getOutgoing()
+        lookupEntry.directEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .filter(lookupRefUri -> !lookupRefUri.equals(lookupEntryUri))

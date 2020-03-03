@@ -97,8 +97,8 @@ public class YouViewEquivalenceBreaker {
     private void orphanFromEquivalentSet(LookupEntry lookupEntry, Set<String> toOrphan) {
         Predicate<LookupRef> shouldRetainLookupRef = createShouldRetainLookupRefPredicate(toOrphan);
         for (LookupRef equivalentLookupRef : Sets.union(
-                Sets.union(lookupEntry.equivalents(), lookupEntry.getDirectEquivalents().getLookupRefs()),
-                lookupEntry.getExplicitEquivalents().getLookupRefs()
+                Sets.union(lookupEntry.equivalents(), lookupEntry.directEquivalents().getLookupRefs()),
+                lookupEntry.explicitEquivalents().getLookupRefs()
         )) {
             LookupEntry entry = Iterables.getOnlyElement(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(equivalentLookupRef.uri())));
             if (toOrphan.contains(entry.uri())) {
@@ -116,9 +116,9 @@ public class YouViewEquivalenceBreaker {
     }
 
     private LookupEntry createFilteredLookupEntry(LookupEntry entry, Predicate<LookupRef> shouldRetainLookupRef) {
-        return entry.copyWithDirectEquivalents(filterEquivRefs(entry.getDirectEquivalents(), shouldRetainLookupRef))
+        return entry.copyWithDirectEquivalents(filterEquivRefs(entry.directEquivalents(), shouldRetainLookupRef))
                     .copyWithEquivalents(ImmutableSet.copyOf(Iterables.filter(entry.equivalents(), shouldRetainLookupRef)))
-                    .copyWithExplicitEquivalents(filterEquivRefs(entry.getExplicitEquivalents(), shouldRetainLookupRef));
+                    .copyWithExplicitEquivalents(filterEquivRefs(entry.explicitEquivalents(), shouldRetainLookupRef));
         
     }
 

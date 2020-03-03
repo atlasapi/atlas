@@ -138,8 +138,8 @@ public class ContentWriteControllerTest {
         when(response.getOutputStream()).thenReturn(outputStream);
 
         when(lookupEntry.uri()).thenReturn(uri);
-        when(lookupEntry.getDirectEquivalents()).thenReturn(EquivRefs.of());
-        when(lookupEntry.getExplicitEquivalents()).thenReturn(EquivRefs.of());
+        when(lookupEntry.directEquivalents()).thenReturn(EquivRefs.of());
+        when(lookupEntry.explicitEquivalents()).thenReturn(EquivRefs.of());
         ImmutableList<LookupEntry> entryList = ImmutableList.of(lookupEntry);
         when(lookupEntryStore.entriesForIds(anyList()))
                 .thenReturn(entryList);

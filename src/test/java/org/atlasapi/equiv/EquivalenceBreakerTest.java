@@ -119,7 +119,7 @@ public class EquivalenceBreakerTest {
 
     @Test
     public void testRemovesMultipleItemsFromEquivalentSet() {
-        ImmutableSet<String> directEquivUris = EXAMPLE_ITEM_LOOKUP.getDirectEquivalents().getLookupRefs()
+        ImmutableSet<String> directEquivUris = EXAMPLE_ITEM_LOOKUP.directEquivalents().getLookupRefs()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
@@ -131,7 +131,7 @@ public class EquivalenceBreakerTest {
 
     @Test
     public void testRemovesExplicitEquivsFromEquivalentSet() {
-        ImmutableSet<String> explicitEquivUris = EXAMPLE_ITEM_LOOKUP.getExplicitEquivalents().getLookupRefs()
+        ImmutableSet<String> explicitEquivUris = EXAMPLE_ITEM_LOOKUP.explicitEquivalents().getLookupRefs()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
@@ -143,11 +143,11 @@ public class EquivalenceBreakerTest {
 
     @Test
     public void testRemovesAllEquivsFromEquivalentSet() {
-        ImmutableSet<String> directEquivUris = EXAMPLE_ITEM_LOOKUP.getDirectEquivalents().getLookupRefs()
+        ImmutableSet<String> directEquivUris = EXAMPLE_ITEM_LOOKUP.directEquivalents().getLookupRefs()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
-        ImmutableSet<String> explicitEquivUris = EXAMPLE_ITEM_LOOKUP.getExplicitEquivalents().getLookupRefs()
+        ImmutableSet<String> explicitEquivUris = EXAMPLE_ITEM_LOOKUP.explicitEquivalents().getLookupRefs()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());

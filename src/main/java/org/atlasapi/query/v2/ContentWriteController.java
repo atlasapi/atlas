@@ -750,12 +750,12 @@ public class ContentWriteController {
      */
     private void removeItemFromEquivSet(Described described, LookupEntry lookupEntry){
 
-        ImmutableSet<String> directEquivsToRemove = lookupEntry.getDirectEquivalents().getOutgoing()
+        ImmutableSet<String> directEquivsToRemove = lookupEntry.directEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
 
-        ImmutableSet<String> explicitEquivsToRemove = lookupEntry.getExplicitEquivalents().getOutgoing()
+        ImmutableSet<String> explicitEquivsToRemove = lookupEntry.explicitEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());

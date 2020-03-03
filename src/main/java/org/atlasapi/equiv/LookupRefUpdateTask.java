@@ -117,7 +117,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
         if (allRefsHaveIds(entry)) {
             return;
         }
-        if (entry.equivalents().size() == 1 && entry.getDirectEquivalents().getLookupRefs().size() == 1 && entry.getExplicitEquivalents().getLookupRefs().size() == 1) {
+        if (entry.equivalents().size() == 1 && entry.directEquivalents().getLookupRefs().size() == 1 && entry.explicitEquivalents().getLookupRefs().size() == 1) {
             updateSolo(entry);
         } else {
             updateEntryWithEquivalents(entry);
@@ -127,9 +127,9 @@ public class LookupRefUpdateTask extends ScheduledTask {
     private boolean allRefsHaveIds(LookupEntry entry) {
         Iterable<LookupRef> refs = Iterables.concat(
                 entry.equivalents(),
-                entry.getDirectEquivalents().getLookupRefs(),
-                entry.getExplicitEquivalents().getLookupRefs(),
-                entry.getBlacklistedEquivalents().getLookupRefs()
+                entry.directEquivalents().getLookupRefs(),
+                entry.explicitEquivalents().getLookupRefs(),
+                entry.blacklistedEquivalents().getLookupRefs()
         );
         return Iterables.all(Iterables.transform(refs, LookupRef.TO_ID), notNull);
     }
@@ -148,9 +148,9 @@ public class LookupRefUpdateTask extends ScheduledTask {
     }
 
     private LookupEntry updateRefs(LookupEntry e, ImmutableMap<String, LookupEntry> entryIndex) {
-        EquivRefs direct = updateIds(e.getDirectEquivalents(), entryIndex);
-        EquivRefs explicit = updateIds(e.getExplicitEquivalents(), entryIndex);
-        EquivRefs blacklisted = updateIds(e.getBlacklistedEquivalents(), entryIndex);
+        EquivRefs direct = updateIds(e.directEquivalents(), entryIndex);
+        EquivRefs explicit = updateIds(e.explicitEquivalents(), entryIndex);
+        EquivRefs blacklisted = updateIds(e.blacklistedEquivalents(), entryIndex);
         Set<LookupRef> equivs = updateIds(e.equivalents(), entryIndex);
         return new LookupEntry(
                 e.uri(),
@@ -208,7 +208,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
                     e.aliases(),
                     equivRefs,
                     equivRefs,
-                    e.getBlacklistedEquivalents(),
+                    e.blacklistedEquivalents(),
                     refs,
                     e.created(),
                     e.updated(),

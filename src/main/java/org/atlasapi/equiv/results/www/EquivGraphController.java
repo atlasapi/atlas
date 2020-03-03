@@ -129,9 +129,9 @@ public class EquivGraphController {
                 .put("id", String.valueOf(equiv.id()))
                 .put("uri", equiv.uri())
                 .put("source", equiv.lookupRef().publisher().key())
-                .putStrings("direct", nonReflexiveIds(equiv, equiv.getDirectEquivalents().getLookupRefs()))
-                .putStrings("explicit", nonReflexiveIds(equiv, equiv.getExplicitEquivalents().getLookupRefs()))
-                .putStrings("blacklisted", nonReflexiveIds(equiv, equiv.getBlacklistedEquivalents().getLookupRefs()));
+                .putStrings("direct", nonReflexiveIds(equiv, equiv.directEquivalents().getLookupRefs()))
+                .putStrings("explicit", nonReflexiveIds(equiv, equiv.explicitEquivalents().getLookupRefs()))
+                .putStrings("blacklisted", nonReflexiveIds(equiv, equiv.blacklistedEquivalents().getLookupRefs()));
     }
 
     private Collection<String> nonReflexiveIds(

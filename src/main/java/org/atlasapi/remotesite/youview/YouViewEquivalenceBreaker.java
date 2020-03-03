@@ -96,7 +96,10 @@ public class YouViewEquivalenceBreaker {
 
     private void orphanFromEquivalentSet(LookupEntry lookupEntry, Set<String> toOrphan) {
         Predicate<LookupRef> shouldRetainLookupRef = createShouldRetainLookupRefPredicate(toOrphan);
-        for (LookupRef equivalentLookupRef : Sets.union(Sets.union(lookupEntry.equivalents(), lookupEntry.directEquivalents()), lookupEntry.explicitEquivalents())) {
+        for (LookupRef equivalentLookupRef : Sets.union(
+                Sets.union(lookupEntry.equivalents(), lookupEntry.getDirectEquivalents().getLookupRefs()),
+                lookupEntry.getExplicitEquivalents().getLookupRefs()
+        )) {
             LookupEntry entry = Iterables.getOnlyElement(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(equivalentLookupRef.uri())));
             if (toOrphan.contains(entry.uri())) {
                 lookupEntryStore.store(createOrphanedLookupEntry(entry));

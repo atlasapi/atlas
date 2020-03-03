@@ -92,7 +92,7 @@ public class LookupRefUpdateTaskTest {
     }
 
     private Iterable<LookupRef> refs(LookupEntry updatedEntry1) {
-        return Iterables.concat(updatedEntry1.equivalents(), updatedEntry1.directEquivalents(), updatedEntry1.explicitEquivalents());
+        return Iterables.concat(updatedEntry1.equivalents(), updatedEntry1.getDirectEquivalents().getLookupRefs(), updatedEntry1.getExplicitEquivalents().getLookupRefs());
     }
 
     private LookupEntry entry(Long id, String uri, Publisher source, ContentCategory cat) {

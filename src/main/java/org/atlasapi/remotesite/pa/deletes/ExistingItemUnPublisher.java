@@ -1,8 +1,8 @@
 package org.atlasapi.remotesite.pa.deletes;
 
-import java.util.Optional;
-import java.util.stream.StreamSupport;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
@@ -13,10 +13,8 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -115,7 +113,7 @@ public class ExistingItemUnPublisher {
 
     private void removeEntryFromEquivSet(LookupEntry lookupEntry){
         String lookupEntryUri = lookupEntry.uri();
-        lookupEntry.directEquivalents()
+        lookupEntry.getDirectEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .filter(lookupRefUri -> !lookupRefUri.equals(lookupEntryUri))

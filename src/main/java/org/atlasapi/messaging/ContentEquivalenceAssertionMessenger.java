@@ -1,28 +1,26 @@
 package org.atlasapi.messaging;
 
-import java.math.BigInteger;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.StreamSupport;
-
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.LookupRef;
-import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
-import org.atlasapi.persistence.lookup.entry.LookupEntry;
-import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Longs;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.Timestamp;
 import com.metabroadcast.common.time.Timestamper;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.primitives.Longs;
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.math.BigInteger;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -137,8 +135,7 @@ public class ContentEquivalenceAssertionMessenger {
             // partition.
             Optional<Long> graphId = ImmutableSet.<LookupRef>builder()
                     .addAll(lookupEntry.equivalents())
-                    .addAll(lookupEntry.explicitEquivalents())
-                    .addAll(lookupEntry.directEquivalents())
+                    .addAll(lookupEntry.getNeighbours())
                     .build()
                     .stream()
                     .map(LookupRef::id)

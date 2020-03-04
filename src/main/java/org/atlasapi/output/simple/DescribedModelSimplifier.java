@@ -238,7 +238,11 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     private static final Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription> TO_SIMPLE_LOCALISED_DESCRIPTION = complex -> {
         LocalizedDescription simple = new LocalizedDescription();
 
-        simple.setLanguage(complex.getLanguageTag());
+        //ignore NPE because it's triggered by complex possibly being null, which it likely won't
+        if(complex.getLocale() != null) {
+            simple.setLanguage(complex.getLocale().getLanguage());
+            simple.setRegion(complex.getLocale().getCountry());
+        }
         simple.setDescription(complex.getDescription());
         simple.setLongDescription(complex.getLongDescription());
         simple.setMediumDescription(complex.getMediumDescription());
@@ -250,7 +254,11 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     private static final Function<org.atlasapi.media.entity.LocalizedTitle, LocalizedTitle> TO_SIMPLE_LOCALIZED_TITLE = complex -> {
         LocalizedTitle simple = new LocalizedTitle();
 
-        simple.setLanguage(complex.getLanguageTag());
+        //ignore NPE because it's triggered by complex possibly being null, which it likely won't
+        if(complex.getLocale() != null) {
+            simple.setLanguage(complex.getLocale().getLanguage());
+            simple.setRegion(complex.getLocale().getCountry());
+        }
         simple.setTitle(complex.getTitle());
 
         return simple;

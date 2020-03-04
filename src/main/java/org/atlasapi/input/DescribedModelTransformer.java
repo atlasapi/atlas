@@ -7,6 +7,7 @@ import java.util.Set;
 import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.media.entity.LocalizedDescription;
 import org.atlasapi.media.entity.LocalizedTitle;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Priority;
@@ -26,6 +27,7 @@ import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.Clock;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -51,6 +53,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         Publisher publisher = getPublisher(inputContent.getPublisher());
         result.setPublisher(publisher);
         result.setTitle(inputContent.getTitle());
+        result.setLocalizedDescriptions(transformDescriptions(inputContent.getDescriptions()));
         result.setLocalizedTitles(transformTitles(inputContent.getTitles()));
         result.setDescription(inputContent.getDescription());
         result.setShortDescription(inputContent.getShortDescription());
@@ -85,6 +88,25 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         return result;
     }
 
+    private Set<LocalizedDescription> transformDescriptions(
+            Set<org.atlasapi.media.entity.simple.LocalizedDescription> simpleLocalizedDescriptions
+    ) {
+        return simpleLocalizedDescriptions.stream()
+                .map(input -> {
+                    LocalizedDescription localizedDescription = new LocalizedDescription();
+                    localizedDescription.setDescription(input.getDescription());
+                    localizedDescription.setShortDescription(input.getDescription());
+                    localizedDescription.setMediumDescription(input.getMediumDescription());
+                    localizedDescription.setLongDescription(input.getLongDescription());
+                    localizedDescription.setLocale(
+                            Strings.nullToEmpty(input.getLanguage()),
+                            Strings.nullToEmpty(input.getRegion())
+                    );
+                    return localizedDescription;
+                })
+                .collect(MoreCollectors.toImmutableSet());
+    }
+
     private Set<LocalizedTitle> transformTitles(
             Set<org.atlasapi.media.entity.simple.LocalizedTitle> simpleLocalizedTitles
     ) {
@@ -92,6 +114,10 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                 .map(input -> {
                     LocalizedTitle localizedTitle = new LocalizedTitle();
                     localizedTitle.setTitle(input.getTitle());
+                    localizedTitle.setLocale(
+                            Strings.nullToEmpty(input.getLanguage()),
+                            Strings.nullToEmpty(input.getRegion())
+                    );
                     return localizedTitle;
                 })
                 .collect(MoreCollectors.toImmutableSet());

@@ -182,7 +182,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
 
     private EquivRefs updateIds(EquivRefs refs, ImmutableMap<String, LookupEntry> entryIndex) {
         ImmutableMap.Builder<LookupRef, EquivRefs.EquivDirection> updated = ImmutableMap.builder();
-        for (Map.Entry<LookupRef, EquivRefs.EquivDirection> entry : refs.getEquivRefs().entrySet()) {
+        for (Map.Entry<LookupRef, EquivRefs.EquivDirection> entry : refs.getEquivRefsAsMap().entrySet()) {
             LookupRef ref = entry.getKey();
             if (ref.id() == null) {
                 ref = new LookupRef(ref.uri(), entryIndex.get(ref.uri()).id(), ref.publisher(), ref.category());

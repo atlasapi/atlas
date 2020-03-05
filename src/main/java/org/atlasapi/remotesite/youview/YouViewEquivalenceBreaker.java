@@ -125,7 +125,7 @@ public class YouViewEquivalenceBreaker {
 
     private EquivRefs filterEquivRefs(EquivRefs equivRefs, Predicate<LookupRef> filter) {
         return equivRefs.copyAndReplaceOutgoing(
-                equivRefs.getEquivRefs().keySet().stream()
+                equivRefs.getEquivRefsAsMap().keySet().stream()
                     .filter(filter::apply)
                     .collect(MoreCollectors.toImmutableSet())
         );

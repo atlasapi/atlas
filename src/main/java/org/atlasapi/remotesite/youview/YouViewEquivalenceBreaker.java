@@ -21,7 +21,6 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -109,12 +108,14 @@ public class YouViewEquivalenceBreaker {
         }
     }
 
+    // This may not work very well any more due to asymmetric equivalence changes
     private LookupEntry createOrphanedLookupEntry(LookupEntry entry) {
-        return entry.copyWithDirectEquivalents(EquivRefs.of())
+        return entry.copyWithDirectEquivalents(entry.directEquivalents().copyAndReplaceOutgoing(ImmutableSet.of()))
                     .copyWithEquivalents(ImmutableSet.of())
-                    .copyWithExplicitEquivalents(EquivRefs.of());
+                    .copyWithExplicitEquivalents(entry.explicitEquivalents().copyAndReplaceOutgoing(ImmutableSet.of()));
     }
 
+    // This may not work very well any more due to asymmetric equivalence changes
     private LookupEntry createFilteredLookupEntry(LookupEntry entry, Predicate<LookupRef> shouldRetainLookupRef) {
         return entry.copyWithDirectEquivalents(filterEquivRefs(entry.directEquivalents(), shouldRetainLookupRef))
                     .copyWithEquivalents(ImmutableSet.copyOf(Iterables.filter(entry.equivalents(), shouldRetainLookupRef)))
@@ -123,10 +124,10 @@ public class YouViewEquivalenceBreaker {
     }
 
     private EquivRefs filterEquivRefs(EquivRefs equivRefs, Predicate<LookupRef> filter) {
-        return EquivRefs.of(
-                equivRefs.getEquivRefs().entrySet().stream()
-                    .filter(entry -> filter.apply(entry.getKey()))
-                    .collect(MoreCollectors.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue))
+        return equivRefs.copyAndReplaceOutgoing(
+                equivRefs.getEquivRefs().keySet().stream()
+                    .filter(filter::apply)
+                    .collect(MoreCollectors.toImmutableSet())
         );
     }
 

@@ -133,18 +133,22 @@ public class EquivGraphController {
                 .putStrings("incoming_direct", nonReflexiveIds(equiv, equiv.directEquivalents().getIncoming()))
                 .putStrings("outgoing_explicit", nonReflexiveIds(equiv, equiv.explicitEquivalents().getOutgoing()))
                 .putStrings("incoming_explicit", nonReflexiveIds(equiv, equiv.explicitEquivalents().getIncoming()))
-                .putStrings("outgoing_blacklisted", nonReflexiveIds(equiv, equiv.blacklistedEquivalents().getOutgoing()))
-                .putStrings("incoming_blacklisted", nonReflexiveIds(equiv, equiv.blacklistedEquivalents().getIncoming()));
+                .putStrings("outgoing_blacklisted", ids(equiv.blacklistedEquivalents().getOutgoing()))
+                .putStrings("incoming_blacklisted", ids(equiv.blacklistedEquivalents().getIncoming()));
     }
 
     private Collection<String> nonReflexiveIds(
             LookupEntry equiv,
-            Set<LookupRef> directEquivalents
+            Set<LookupRef> refs
     ) {
         return Collections2.filter(
-                Collections2.transform(directEquivalents, LookupRef.TO_URI),
+                Collections2.transform(refs, LookupRef.TO_URI),
                 Predicates.not(Predicates.equalTo(equiv.uri()))
         );
+    }
+
+    private Collection<String> ids(Set<LookupRef> refs) {
+        return Collections2.transform(refs, LookupRef.TO_URI);
     }
 
 }

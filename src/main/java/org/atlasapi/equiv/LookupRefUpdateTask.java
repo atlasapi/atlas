@@ -117,7 +117,11 @@ public class LookupRefUpdateTask extends ScheduledTask {
         if (allRefsHaveIds(entry)) {
             return;
         }
-        if (entry.equivalents().size() == 1 && entry.directEquivalents().getLookupRefs().size() == 1 && entry.explicitEquivalents().getLookupRefs().size() == 1) {
+        if (entry.equivalents().size() == 1
+                && entry.directEquivalents().getLookupRefs().size() == 1
+                && entry.explicitEquivalents().getLookupRefs().size() == 1
+                && entry.blacklistedEquivalents().getLookupRefs().size() == 0
+        ) {
             updateSolo(entry);
         } else {
             updateEntryWithEquivalents(entry);
@@ -148,10 +152,10 @@ public class LookupRefUpdateTask extends ScheduledTask {
     }
 
     private LookupEntry updateRefs(LookupEntry e, ImmutableMap<String, LookupEntry> entryIndex) {
-        EquivRefs direct = updateIds(e.directEquivalents(), entryIndex);
-        EquivRefs explicit = updateIds(e.explicitEquivalents(), entryIndex);
-        EquivRefs blacklisted = updateIds(e.blacklistedEquivalents(), entryIndex);
-        Set<LookupRef> equivs = updateIds(e.equivalents(), entryIndex);
+        EquivRefs direct = fillInMissingIds(e.directEquivalents(), entryIndex);
+        EquivRefs explicit = fillInMissingIds(e.explicitEquivalents(), entryIndex);
+        EquivRefs blacklisted = fillInMissingIds(e.blacklistedEquivalents(), entryIndex);
+        Set<LookupRef> equivs = fillInMissingIds(e.equivalents(), entryIndex);
         return new LookupEntry(
                 e.uri(),
                 e.id(),
@@ -169,7 +173,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
         );
     }
 
-    private Set<LookupRef> updateIds(Set<LookupRef> refs, ImmutableMap<String, LookupEntry> entryIndex) {
+    private Set<LookupRef> fillInMissingIds(Set<LookupRef> refs, ImmutableMap<String, LookupEntry> entryIndex) {
         Set<LookupRef> updated = Sets.newHashSet();
         for (LookupRef ref : refs) {
             if (ref.id() == null) {
@@ -180,7 +184,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
         return updated;
     }
 
-    private EquivRefs updateIds(EquivRefs refs, ImmutableMap<String, LookupEntry> entryIndex) {
+    private EquivRefs fillInMissingIds(EquivRefs refs, ImmutableMap<String, LookupEntry> entryIndex) {
         ImmutableMap.Builder<LookupRef, EquivRefs.EquivDirection> updated = ImmutableMap.builder();
         for (Map.Entry<LookupRef, EquivRefs.EquivDirection> entry : refs.getEquivRefsAsMap().entrySet()) {
             LookupRef ref = entry.getKey();
@@ -208,7 +212,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
                     e.aliases(),
                     equivRefs,
                     equivRefs,
-                    e.blacklistedEquivalents(),
+                    EquivRefs.of(),
                     refs,
                     e.created(),
                     e.updated(),

@@ -238,7 +238,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     private static final Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription> TO_SIMPLE_LOCALISED_DESCRIPTION = complex -> {
         LocalizedDescription simple = new LocalizedDescription();
 
-        //ignore NPE because it's triggered by complex possibly being null, which it likely won't
+        //ignore NPE warning because it's triggered by complex possibly being null, which it likely won't
         if(complex.getLocale() != null) {
             simple.setLanguage(complex.getLocale().getLanguage());
             simple.setRegion(complex.getLocale().getCountry());

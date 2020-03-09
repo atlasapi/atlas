@@ -37,7 +37,7 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
 import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
-import static org.atlasapi.persistence.lookup.entry.EquivRefs.EquivDirection.BIDIRECTIONAL;
+import static org.atlasapi.persistence.lookup.entry.EquivRefs.Direction.BIDIRECTIONAL;
 
 public class LookupRefUpdateTask extends ScheduledTask {
 
@@ -168,7 +168,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
                 equivs,
                 e.created(),
                 e.updated(),
-                e.equivUpdated(),
+                e.transitivesUpdated(),
                 e.activelyPublished()
         );
     }
@@ -185,8 +185,8 @@ public class LookupRefUpdateTask extends ScheduledTask {
     }
 
     private EquivRefs fillInMissingIds(EquivRefs refs, ImmutableMap<String, LookupEntry> entryIndex) {
-        ImmutableMap.Builder<LookupRef, EquivRefs.EquivDirection> updated = ImmutableMap.builder();
-        for (Map.Entry<LookupRef, EquivRefs.EquivDirection> entry : refs.getEquivRefsAsMap().entrySet()) {
+        ImmutableMap.Builder<LookupRef, EquivRefs.Direction> updated = ImmutableMap.builder();
+        for (Map.Entry<LookupRef, EquivRefs.Direction> entry : refs.getEquivRefsAsMap().entrySet()) {
             LookupRef ref = entry.getKey();
             if (ref.id() == null) {
                 ref = new LookupRef(ref.uri(), entryIndex.get(ref.uri()).id(), ref.publisher(), ref.category());
@@ -216,7 +216,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
                     refs,
                     e.created(),
                     e.updated(),
-                    e.equivUpdated(),
+                    e.transitivesUpdated(),
                     e.activelyPublished()
             )
         ));

@@ -746,7 +746,7 @@ public class ContentWriteController {
     }
 
     /**
-     * This will take an item, and remove all direct equivalences from it
+     * This will take an item, and remove all direct and explicit equivalences from it
      */
     private void removeItemFromEquivSet(Described described, LookupEntry lookupEntry){
 

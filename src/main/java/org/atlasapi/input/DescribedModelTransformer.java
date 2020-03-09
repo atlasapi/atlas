@@ -98,10 +98,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                     localizedDescription.setShortDescription(input.getDescription());
                     localizedDescription.setMediumDescription(input.getMediumDescription());
                     localizedDescription.setLongDescription(input.getLongDescription());
-                    localizedDescription.setLocale(
-                            Strings.nullToEmpty(input.getLanguage()),
-                            Strings.nullToEmpty(input.getRegion())
-                    );
+                    localizedDescription.setLocale(input.getLanguage(), input.getRegion());
                     return localizedDescription;
                 })
                 .collect(MoreCollectors.toImmutableSet());
@@ -114,10 +111,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                 .map(input -> {
                     LocalizedTitle localizedTitle = new LocalizedTitle();
                     localizedTitle.setTitle(input.getTitle());
-                    localizedTitle.setLocale(
-                            Strings.nullToEmpty(input.getLanguage()),
-                            Strings.nullToEmpty(input.getRegion())
-                    );
+                    localizedTitle.setLocale(input.getLanguage(), input.getRegion());
                     return localizedTitle;
                 })
                 .collect(MoreCollectors.toImmutableSet());

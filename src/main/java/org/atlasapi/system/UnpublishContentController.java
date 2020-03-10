@@ -1,10 +1,9 @@
 package org.atlasapi.system;
 
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Described;
@@ -15,16 +14,14 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -161,12 +158,12 @@ public class UnpublishContentController {
      */
     private void removeEquivSetOfItem(Described described, LookupEntry lookupEntry){
 
-        ImmutableSet<String> allDirectEquivs = lookupEntry.directEquivalents()
+        ImmutableSet<String> allDirectEquivs = lookupEntry.directEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
 
-        ImmutableSet<String> allExplicitEquivs = lookupEntry.explicitEquivalents()
+        ImmutableSet<String> allExplicitEquivs = lookupEntry.explicitEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());

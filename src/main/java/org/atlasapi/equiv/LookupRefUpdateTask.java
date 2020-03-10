@@ -1,20 +1,5 @@
 package org.atlasapi.equiv;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
-import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
-
-import java.util.List;
-import java.util.Set;
-
-import org.atlasapi.media.entity.LookupRef;
-import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
-import org.atlasapi.persistence.lookup.entry.LookupEntry;
-import org.atlasapi.persistence.lookup.mongo.LookupEntryTranslator;
-import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
@@ -36,6 +21,23 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.ReadPreference;
+import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
+import org.atlasapi.persistence.lookup.entry.EquivRefs;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
+import org.atlasapi.persistence.lookup.mongo.LookupEntryTranslator;
+import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
+import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
+import static org.atlasapi.persistence.lookup.entry.EquivRefs.Direction.BIDIRECTIONAL;
 
 public class LookupRefUpdateTask extends ScheduledTask {
 
@@ -115,7 +117,11 @@ public class LookupRefUpdateTask extends ScheduledTask {
         if (allRefsHaveIds(entry)) {
             return;
         }
-        if (entry.equivalents().size() == 1) {
+        if (entry.equivalents().size() == 1
+                && entry.directEquivalents().getLookupRefs().size() == 1
+                && entry.explicitEquivalents().getLookupRefs().size() == 1
+                && entry.blacklistedEquivalents().getLookupRefs().size() == 0
+        ) {
             updateSolo(entry);
         } else {
             updateEntryWithEquivalents(entry);
@@ -123,7 +129,12 @@ public class LookupRefUpdateTask extends ScheduledTask {
     }
 
     private boolean allRefsHaveIds(LookupEntry entry) {
-        Iterable<LookupRef> refs = Iterables.concat(entry.equivalents(), entry.directEquivalents(), entry.explicitEquivalents());
+        Iterable<LookupRef> refs = Iterables.concat(
+                entry.equivalents(),
+                entry.directEquivalents().getLookupRefs(),
+                entry.explicitEquivalents().getLookupRefs(),
+                entry.blacklistedEquivalents().getLookupRefs()
+        );
         return Iterables.all(Iterables.transform(refs, LookupRef.TO_ID), notNull);
     }
 
@@ -140,16 +151,29 @@ public class LookupRefUpdateTask extends ScheduledTask {
         Iterables.addAll(seen, Iterables.transform(equivalentEntries, Functions.compose(LookupRef.TO_ID, LookupEntry.TO_SELF)));
     }
 
-    private LookupEntry updateRefs(LookupEntry e,
-            ImmutableMap<String, LookupEntry> entryIndex) {
-        Set<LookupRef> direct = updateIds(e.directEquivalents(), entryIndex);
-        Set<LookupRef> explicit = updateIds(e.explicitEquivalents(), entryIndex);
-        Set<LookupRef> equivs = updateIds(e.equivalents(), entryIndex);
-        return new LookupEntry(e.uri(),e.id(),e.lookupRef(),e.aliasUrls(),e.aliases(),direct,explicit,equivs,e.created(),e.updated(),e.activelyPublished());
+    private LookupEntry updateRefs(LookupEntry e, ImmutableMap<String, LookupEntry> entryIndex) {
+        EquivRefs direct = fillInMissingIds(e.directEquivalents(), entryIndex);
+        EquivRefs explicit = fillInMissingIds(e.explicitEquivalents(), entryIndex);
+        EquivRefs blacklisted = fillInMissingIds(e.blacklistedEquivalents(), entryIndex);
+        Set<LookupRef> equivs = fillInMissingIds(e.equivalents(), entryIndex);
+        return new LookupEntry(
+                e.uri(),
+                e.id(),
+                e.lookupRef(),
+                e.aliasUrls(),
+                e.aliases(),
+                direct,
+                explicit,
+                blacklisted,
+                equivs,
+                e.created(),
+                e.updated(),
+                e.transitivesUpdated(),
+                e.activelyPublished()
+        );
     }
 
-    private Set<LookupRef> updateIds(Set<LookupRef> refs,
-            ImmutableMap<String, LookupEntry> entryIndex) {
+    private Set<LookupRef> fillInMissingIds(Set<LookupRef> refs, ImmutableMap<String, LookupEntry> entryIndex) {
         Set<LookupRef> updated = Sets.newHashSet();
         for (LookupRef ref : refs) {
             if (ref.id() == null) {
@@ -160,14 +184,41 @@ public class LookupRefUpdateTask extends ScheduledTask {
         return updated;
     }
 
+    private EquivRefs fillInMissingIds(EquivRefs refs, ImmutableMap<String, LookupEntry> entryIndex) {
+        ImmutableMap.Builder<LookupRef, EquivRefs.Direction> updated = ImmutableMap.builder();
+        for (Map.Entry<LookupRef, EquivRefs.Direction> entry : refs.getEquivRefsAsMap().entrySet()) {
+            LookupRef ref = entry.getKey();
+            if (ref.id() == null) {
+                ref = new LookupRef(ref.uri(), entryIndex.get(ref.uri()).id(), ref.publisher(), ref.category());
+            }
+            updated.put(ref, entry.getValue());
+        }
+        return EquivRefs.of(updated.build());
+    }
+
     private void updateSolo(LookupEntry e) {
         LookupRef ref = e.lookupRef();
         if (ref.id() == null) {
             ref = new LookupRef(e.uri(), e.id(), e.lookupRef().publisher(), e.lookupRef().category());
         }
         ImmutableSet<LookupRef> refs = ImmutableSet.of(ref);
+        EquivRefs equivRefs = EquivRefs.of(ref, BIDIRECTIONAL);
         lookupCollection.save(entryTranslator.toDbo(
-            new LookupEntry(e.uri(), e.id(), ref, e.aliasUrls(), e.aliases(), refs, refs, refs, e.created(), e.updated(), e.activelyPublished())
+            new LookupEntry(
+                    e.uri(),
+                    e.id(),
+                    ref,
+                    e.aliasUrls(),
+                    e.aliases(),
+                    equivRefs,
+                    equivRefs,
+                    EquivRefs.of(),
+                    refs,
+                    e.created(),
+                    e.updated(),
+                    e.transitivesUpdated(),
+                    e.activelyPublished()
+            )
         ));
     }
 

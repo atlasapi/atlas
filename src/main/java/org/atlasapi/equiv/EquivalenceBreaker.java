@@ -106,7 +106,7 @@ public class EquivalenceBreaker {
         LookupEntry lookupEntry = 
                 Iterables.getOnlyElement(entryStore.entriesForCanonicalUris(ImmutableSet.of(sourceUri)));
 
-        if (!lookupEntry.directEquivalents()
+        if (!lookupEntry.directEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef.TO_URI::apply)
                 .collect(Collectors.toList())
@@ -115,7 +115,7 @@ public class EquivalenceBreaker {
                             + directEquivUriToRemove + " not found");
         }
         
-        Iterable<LookupRef> filteredRefs = lookupEntry.directEquivalents()
+        Iterable<LookupRef> filteredRefs = lookupEntry.directEquivalents().getOutgoing()
                 .stream()
                 .filter(input -> !input.uri().equals(directEquivUriToRemove))
                 .collect(Collectors.toList());
@@ -163,10 +163,10 @@ public class EquivalenceBreaker {
         Set<LookupRef> existingEquivs;
         LookupWriter writer;
         if (explicit) {
-            existingEquivs = sourceLE.explicitEquivalents();
+            existingEquivs = sourceLE.explicitEquivalents().getOutgoing();
             writer = explicitLookupWriter;
         } else {
-            existingEquivs = sourceLE.directEquivalents();
+            existingEquivs = sourceLE.directEquivalents().getOutgoing();
             writer = directLookupWriter;
         }
 

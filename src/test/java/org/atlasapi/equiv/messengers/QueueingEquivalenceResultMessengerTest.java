@@ -75,7 +75,7 @@ public class QueueingEquivalenceResultMessengerTest {
         when(lookupEntryStore.entriesForIds(ImmutableSet.of(subject.getId())))
                 .thenReturn(ImmutableList.of(
                         LookupEntry.lookupEntryFrom(graphItemWithLowestId)
-                                .copyWithEquivalents(ImmutableList.of(
+                                .copyWithEquivalents(ImmutableSet.of(
                                         LookupRef.from(subject)
                                 ))
                 ));

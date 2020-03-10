@@ -1,18 +1,14 @@
 package org.atlasapi.query.v2;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.util.Iterator;
-import java.util.Optional;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
-
+import com.amazonaws.util.IOUtils;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.applications.client.model.internal.ApplicationConfiguration;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.queue.MessageSender;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.media.entity.Content;
@@ -26,21 +22,13 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.lookup.entry.EquivRefs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.queue.MessageSender;
-
-import com.amazonaws.util.IOUtils;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,10 +36,23 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.DelegatingServletInputStream;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.Optional;
+
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
@@ -62,11 +63,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertThat;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -142,6 +138,8 @@ public class ContentWriteControllerTest {
         when(response.getOutputStream()).thenReturn(outputStream);
 
         when(lookupEntry.uri()).thenReturn(uri);
+        when(lookupEntry.directEquivalents()).thenReturn(EquivRefs.of());
+        when(lookupEntry.explicitEquivalents()).thenReturn(EquivRefs.of());
         ImmutableList<LookupEntry> entryList = ImmutableList.of(lookupEntry);
         when(lookupEntryStore.entriesForIds(anyList()))
                 .thenReturn(entryList);

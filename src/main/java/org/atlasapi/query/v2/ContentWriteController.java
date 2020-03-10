@@ -746,16 +746,16 @@ public class ContentWriteController {
     }
 
     /**
-     * This will take an item, and remove all direct equivalences from it
+     * This will take an item, and remove all direct and explicit equivalences from it
      */
     private void removeItemFromEquivSet(Described described, LookupEntry lookupEntry){
 
-        ImmutableSet<String> directEquivsToRemove = lookupEntry.directEquivalents()
+        ImmutableSet<String> directEquivsToRemove = lookupEntry.directEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());
 
-        ImmutableSet<String> explicitEquivsToRemove = lookupEntry.explicitEquivalents()
+        ImmutableSet<String> explicitEquivsToRemove = lookupEntry.explicitEquivalents().getOutgoing()
                 .stream()
                 .map(LookupRef::uri)
                 .collect(MoreCollectors.toImmutableSet());

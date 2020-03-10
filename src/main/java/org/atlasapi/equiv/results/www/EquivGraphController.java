@@ -1,29 +1,27 @@
 package org.atlasapi.equiv.results.www;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.atlasapi.media.entity.LookupRef;
-import org.atlasapi.persistence.lookup.entry.LookupEntry;
-import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.model.SimpleModel;
-import com.metabroadcast.common.model.SimpleModelList;
-
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.model.SimpleModel;
+import com.metabroadcast.common.model.SimpleModelList;
+import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -123,8 +121,7 @@ public class EquivGraphController {
     }
 
     private int edgeCount(LookupEntry equiv) {
-        return nonReflexiveIds(equiv, equiv.directEquivalents()).size()
-                + nonReflexiveIds(equiv, equiv.explicitEquivalents()).size();
+        return nonReflexiveIds(equiv, equiv.getNeighbours()).size();
     }
 
     private SimpleModel modelNode(LookupEntry equiv) {
@@ -132,18 +129,26 @@ public class EquivGraphController {
                 .put("id", String.valueOf(equiv.id()))
                 .put("uri", equiv.uri())
                 .put("source", equiv.lookupRef().publisher().key())
-                .putStrings("direct", nonReflexiveIds(equiv, equiv.directEquivalents()))
-                .putStrings("explicit", nonReflexiveIds(equiv, equiv.explicitEquivalents()));
+                .putStrings("outgoing_direct", nonReflexiveIds(equiv, equiv.directEquivalents().getOutgoing()))
+                .putStrings("incoming_direct", nonReflexiveIds(equiv, equiv.directEquivalents().getIncoming()))
+                .putStrings("outgoing_explicit", nonReflexiveIds(equiv, equiv.explicitEquivalents().getOutgoing()))
+                .putStrings("incoming_explicit", nonReflexiveIds(equiv, equiv.explicitEquivalents().getIncoming()))
+                .putStrings("outgoing_blacklisted", ids(equiv.blacklistedEquivalents().getOutgoing()))
+                .putStrings("incoming_blacklisted", ids(equiv.blacklistedEquivalents().getIncoming()));
     }
 
     private Collection<String> nonReflexiveIds(
             LookupEntry equiv,
-            Set<LookupRef> directEquivalents
+            Set<LookupRef> refs
     ) {
         return Collections2.filter(
-                Collections2.transform(directEquivalents, LookupRef.TO_URI),
+                Collections2.transform(refs, LookupRef.TO_URI),
                 Predicates.not(Predicates.equalTo(equiv.uri()))
         );
+    }
+
+    private Collection<String> ids(Set<LookupRef> refs) {
+        return Collections2.transform(refs, LookupRef.TO_URI);
     }
 
 }

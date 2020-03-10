@@ -1,10 +1,13 @@
 package org.atlasapi.query.content;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.applications.client.model.internal.ApplicationConfiguration;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.stream.MoreCollectors;
+import junit.framework.TestCase;
 import org.atlasapi.content.criteria.AtomicQuery;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.content.criteria.MatchesNothing;
@@ -16,17 +19,8 @@ import org.atlasapi.persistence.content.DefaultEquivalentContentResolver;
 import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.InMemoryLookupEntryStore;
+import org.atlasapi.persistence.lookup.entry.EquivRefs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.applications.client.model.internal.ApplicationConfiguration;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import junit.framework.TestCase;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
@@ -34,6 +28,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+import static org.atlasapi.persistence.lookup.entry.EquivRefs.Direction.OUTGOING;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -113,7 +113,7 @@ public class LookupResolvingQueryExecutorTest extends TestCase {
         ImmutableSet<LookupRef> refs = ImmutableSet.copyOf(Iterables.transform(ImmutableList.copyOf(items), LookupRef.FROM_DESCRIBED));
         for (Item item : items) {
             lookupStore.store(LookupEntry.lookupEntryFrom(item)
-                    .copyWithDirectEquivalents(refs)
+                    .copyWithDirectEquivalents(EquivRefs.of(refs, OUTGOING))
                     .copyWithEquivalents(refs));
         }
     }
@@ -224,11 +224,11 @@ public class LookupResolvingQueryExecutorTest extends TestCase {
         LookupEntry equivEntry = LookupEntry.lookupEntryFrom(equivItem);
 
         lookupStore.store(queryEntry
-                .copyWithDirectEquivalents(ImmutableSet.of(equivEntry.lookupRef()))
+                .copyWithDirectEquivalents(EquivRefs.of(equivEntry.lookupRef(), OUTGOING))
                 .copyWithEquivalents(ImmutableSet.of(equivEntry.lookupRef())));
         lookupStore.store(equivEntry
-                .copyWithDirectEquivalents(ImmutableSet.of(queryEntry.lookupRef()))
-                .copyWithDirectEquivalents(ImmutableSet.of(queryEntry.lookupRef())));
+                .copyWithDirectEquivalents(EquivRefs.of(queryEntry.lookupRef(), OUTGOING))
+                .copyWithDirectEquivalents(EquivRefs.of(queryEntry.lookupRef(), OUTGOING)));
 
         context.checking(new Expectations(){{
             one(mongoContentResolver).findByLookupRefs(with(hasItems(LookupRef.from(equivItem))));

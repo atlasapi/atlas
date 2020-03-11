@@ -52,8 +52,8 @@ import javax.annotation.PreDestroy;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
+import static org.atlasapi.persistence.MongoModule.OWL_DATABASED_MONGO;
 
 @SuppressWarnings("PublicConstructor")
 @Configuration

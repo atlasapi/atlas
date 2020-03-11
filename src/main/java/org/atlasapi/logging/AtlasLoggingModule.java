@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
+import static org.atlasapi.persistence.MongoModule.OWL_DATABASED_MONGO;
 
 @Configuration
 public class AtlasLoggingModule {

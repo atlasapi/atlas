@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.annotation.PostConstruct;
 import java.text.ParseException;
 
-import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
+import static org.atlasapi.persistence.MongoModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.remotesite.HttpClients.webserviceClient;
 
 @Configuration

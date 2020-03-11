@@ -77,7 +77,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
@@ -130,6 +129,7 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
+import static org.atlasapi.persistence.MongoModule.OWL_DATABASED_MONGO;
 
 @Configuration
 @Import({ EquivModule.class, KafkaMessagingModule.class, YouViewCoreModule.class })

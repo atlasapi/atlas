@@ -163,10 +163,10 @@ import tva.metadata._2010.TVAMainType;
 
 import javax.xml.bind.JAXBElement;
 
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NO_EQUIVALENCE_WRITING_CONTENT_WRITER;
-import static org.atlasapi.persistence.MongoModule.OWL_DATABASED_MONGO;
 
 @Configuration
 @Import({ WatermarkModule.class, QueryExecutorModule.class })

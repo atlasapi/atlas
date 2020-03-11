@@ -23,7 +23,6 @@ import org.atlasapi.logging.HealthModule;
 import org.atlasapi.persistence.CassandraPersistenceModule;
 import org.atlasapi.persistence.ManualScheduleRebuildModule;
 import org.atlasapi.persistence.MongoContentPersistenceModule;
-import org.atlasapi.persistence.MongoModule;
 import org.atlasapi.query.QueryExecutorModule;
 import org.atlasapi.query.QueryModule;
 import org.atlasapi.query.QueryWebModule;
@@ -54,7 +53,6 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
     private void configure(Builder<Class<?>> builder) {
         builder.add(
             AtlasModule.class,
-            MongoModule.class,
             AtlasLoggingModule.class,
             AtlasWebModule.class,
             SearchModule.class,

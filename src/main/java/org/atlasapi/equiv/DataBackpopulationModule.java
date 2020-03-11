@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
 
-import static org.atlasapi.persistence.MongoModule.OWL_DATABASED_MONGO;
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 
 @Configuration
 public class DataBackpopulationModule {

@@ -47,8 +47,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
-import static org.atlasapi.persistence.MongoModule.OWL_DATABASED_MONGO;
 
 @Configuration
 @Import(EquivModule.class)

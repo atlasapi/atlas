@@ -85,8 +85,8 @@ import static com.metabroadcast.common.scheduling.RepetitionRules.NEVER;
 import static com.metabroadcast.common.scheduling.RepetitionRules.daily;
 import static com.metabroadcast.common.scheduling.RepetitionRules.every;
 import static com.metabroadcast.common.scheduling.RepetitionRules.weekly;
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
-import static org.atlasapi.persistence.MongoModule.OWL_DATABASED_MONGO;
 
 @SuppressWarnings("PublicConstructor")
 @Configuration

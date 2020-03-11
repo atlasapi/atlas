@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Import;
 
 import javax.annotation.PostConstruct;
 
-import static org.atlasapi.persistence.MongoModule.OWL_DATABASED_MONGO;
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 
 @Configuration
 @Import({ MongoContentPersistenceModule.class })

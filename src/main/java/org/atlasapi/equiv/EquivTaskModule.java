@@ -77,6 +77,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
@@ -229,7 +230,7 @@ public class EquivTaskModule {
     @Autowired private SimpleScheduler taskScheduler;
     @Autowired private ContentResolver contentResolver;
     @Autowired private LastUpdatedContentFinder contentFinder;
-    @Autowired private DatabasedMongo db;
+    @Autowired @Qualifier(OWL_DATABASED_MONGO) private DatabasedMongo db;
     @Autowired private LookupEntryStore lookupStore;
     @Autowired private ScheduleResolver scheduleResolver;
     @Autowired private ChannelResolver channelResolver;

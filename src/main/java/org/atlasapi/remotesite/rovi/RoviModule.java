@@ -1,7 +1,8 @@
 package org.atlasapi.remotesite.rovi;
 
-import javax.annotation.PostConstruct;
-
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -17,20 +18,21 @@ import org.atlasapi.remotesite.rovi.parsers.RoviProgramLineParser;
 import org.atlasapi.remotesite.rovi.parsers.RoviSeasonHistoryLineParser;
 import org.atlasapi.remotesite.rovi.populators.ScheduleLineBroadcastExtractor;
 import org.atlasapi.remotesite.rovi.processing.AuxiliaryCacheSupplier;
-import org.atlasapi.remotesite.rovi.processing.restartable.DefaultIngestStatusStore;
-import org.atlasapi.remotesite.rovi.processing.restartable.IngestStatusStore;
 import org.atlasapi.remotesite.rovi.processing.ItemBroadcastUpdater;
 import org.atlasapi.remotesite.rovi.processing.RoviDeltaIngestProcessor;
 import org.atlasapi.remotesite.rovi.processing.RoviFullIngestProcessor;
 import org.atlasapi.remotesite.rovi.processing.ScheduleFileProcessor;
+import org.atlasapi.remotesite.rovi.processing.restartable.DefaultIngestStatusStore;
+import org.atlasapi.remotesite.rovi.processing.restartable.IngestStatusStore;
 import org.atlasapi.remotesite.rovi.tasks.RoviIngestTask;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
+import javax.annotation.PostConstruct;
+
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 
 @Configuration
 public class RoviModule {
@@ -42,7 +44,7 @@ public class RoviModule {
     private @Autowired ContentWriter contentWriter;
     private @Autowired ContentResolver contentResolver;
     private @Autowired ChannelResolver channelResolver;
-    private @Autowired DatabasedMongo mongo;
+    private @Autowired @Qualifier(OWL_DATABASED_MONGO) DatabasedMongo mongo;
     
     @Bean
     public MapBasedKeyedFileIndexer<String, RoviProgramDescriptionLine> descriptionsIndexer() {

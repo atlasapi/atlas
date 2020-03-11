@@ -1,11 +1,11 @@
 package org.atlasapi.remotesite.metabroadcast;
 
-import static org.atlasapi.remotesite.HttpClients.webserviceClient;
-
-import java.text.ParseException;
-
-import javax.annotation.PostConstruct;
-
+import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
+import com.google.common.net.HostSpecifier;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
@@ -15,7 +15,6 @@ import org.jets3t.service.S3Service;
 import org.jets3t.service.S3ServiceException;
 import org.jets3t.service.impl.rest.httpclient.RestS3Service;
 import org.jets3t.service.security.AWSCredentials;
-import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,12 +22,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
-import com.google.common.net.HostSpecifier;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
+import javax.annotation.PostConstruct;
+import java.text.ParseException;
+
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
+import static org.atlasapi.remotesite.HttpClients.webserviceClient;
 
 @Configuration
 public class MetaBroadcastModule {
@@ -40,7 +38,7 @@ public class MetaBroadcastModule {
     private @Value("${magpie.s3.bucket}") String s3Bucket;
     private @Value("${magpie.s3.folder}") String s3folder;
     
-    private @Autowired DatabasedMongo mongo;
+    private @Autowired @Qualifier(OWL_DATABASED_MONGO) DatabasedMongo mongo;
     private @Autowired ContentResolver contentResolver;
     private @Autowired ContentWriter contentWriter;
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;

@@ -10,17 +10,20 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 
 @Configuration
 public class DataBackpopulationModule {
 
     private @Autowired ContentLister lister;
     private @Autowired ContentResolver resolver;
-    private @Autowired DatabasedMongo mongo;
+    private @Autowired @Qualifier(OWL_DATABASED_MONGO) DatabasedMongo mongo;
     private @Autowired ScheduleTaskProgressStore progressStore;
     private @Autowired SimpleScheduler scheduler;
 

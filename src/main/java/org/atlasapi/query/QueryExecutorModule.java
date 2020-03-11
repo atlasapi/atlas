@@ -1,11 +1,16 @@
 package org.atlasapi.query;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.ServiceManager;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageConsumerFactory;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.queue.MessageSenderFactory;
+import com.metabroadcast.common.queue.kafka.KafkaConsumer;
+import com.metabroadcast.common.time.SystemClock;
 import org.atlasapi.input.BrandModelTransformer;
 import org.atlasapi.input.ClipModelTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
@@ -35,19 +40,6 @@ import org.atlasapi.query.worker.ContentWriteMessageSerialiser;
 import org.atlasapi.query.worker.ContentWriteWorker;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
-
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.MessageConsumerFactory;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.queue.MessageSenderFactory;
-import com.metabroadcast.common.queue.kafka.KafkaConsumer;
-import com.metabroadcast.common.time.SystemClock;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.ServiceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,6 +47,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @SuppressWarnings("PublicConstructor")
@@ -72,7 +70,7 @@ public class QueryExecutorModule {
     @Autowired private SegmentWriter segmentWriter;
     @Autowired private MessageConsumerFactory<KafkaConsumer> consumerFactory;
     @Autowired private MessageSenderFactory senderFactory;
-    @Autowired private DatabasedMongo db;
+    @Autowired @Qualifier(OWL_DATABASED_MONGO) private DatabasedMongo db;
 
     @Value("${messaging.system}") private String messagingSystem;
     @Value("${messaging.destination.write.content}") private String contentWriteTopic;

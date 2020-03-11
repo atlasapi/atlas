@@ -1,9 +1,13 @@
 package org.atlasapi.remotesite.knowledgemotion;
 
-import java.io.File;
-
-import javax.annotation.PostConstruct;
-
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.metabroadcast.common.ingest.IngestService;
+import com.metabroadcast.common.ingest.s3.process.FileProcessor;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -21,14 +25,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.metabroadcast.common.ingest.IngestService;
-import com.metabroadcast.common.ingest.s3.process.FileProcessor;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
+import javax.annotation.PostConstruct;
+import java.io.File;
+
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 
 @Configuration
 public class KnowledgeMotionModule {
@@ -40,7 +40,7 @@ public class KnowledgeMotionModule {
     private @Autowired ContentResolver contentResolver;
     private @Autowired ContentWriter contentWriter;
     private @Autowired ContentLister contentLister;
-    private @Autowired DatabasedMongo mongo;
+    private @Autowired @Qualifier(OWL_DATABASED_MONGO) DatabasedMongo mongo;
 
     @Value("${km.contentdeals.aws.accessKey}")
     private String awsAccessKey;

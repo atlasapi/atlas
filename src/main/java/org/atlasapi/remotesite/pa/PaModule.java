@@ -1,12 +1,14 @@
 package org.atlasapi.remotesite.pa;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.annotation.PostConstruct;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.security.UsernameAndPassword;
+import com.metabroadcast.common.time.DayOfWeek;
+import com.mongodb.DBCollection;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.equiv.PaAliasBackPopulatorTask;
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
@@ -64,17 +66,6 @@ import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 import org.atlasapi.remotesite.rt.RtFilmModule;
 import org.atlasapi.s3.DefaultS3Client;
 import org.atlasapi.s3.S3Client;
-
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.security.UsernameAndPassword;
-import com.metabroadcast.common.time.DayOfWeek;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.mongodb.DBCollection;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,10 +75,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import javax.annotation.PostConstruct;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import static com.metabroadcast.common.scheduling.RepetitionRules.NEVER;
 import static com.metabroadcast.common.scheduling.RepetitionRules.daily;
 import static com.metabroadcast.common.scheduling.RepetitionRules.every;
 import static com.metabroadcast.common.scheduling.RepetitionRules.weekly;
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
 
 @SuppressWarnings("PublicConstructor")
@@ -125,7 +123,7 @@ public class PaModule {
     private @Autowired ScheduleWriter scheduleWriter;
     private @Autowired ChannelResolver channelResolver;
     private @Autowired ChannelWriter channelWriter;
-    private @Autowired DatabasedMongo mongo;
+    private @Autowired @Qualifier(OWL_DATABASED_MONGO) DatabasedMongo mongo;
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;
     private @Autowired ContentLister contentLister;
     private @Autowired LookupEntryStore lookupEntryStore;

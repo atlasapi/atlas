@@ -1,7 +1,9 @@
 package org.atlasapi.remotesite.metabroadcast.similar;
 
-import javax.annotation.PostConstruct;
-
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.MongoContentPersistenceModule;
@@ -13,15 +15,15 @@ import org.atlasapi.persistence.output.MongoAvailableItemsResolver;
 import org.atlasapi.persistence.output.MongoUpcomingItemsResolver;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
+import javax.annotation.PostConstruct;
+
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 
 @Configuration
 @Import({ MongoContentPersistenceModule.class })
@@ -34,7 +36,7 @@ public class SimilarContentModule {
     @Autowired ContentResolver contentResolver;
     @Autowired SimpleScheduler scheduler;
     @Autowired LookupEntryStore lookupStore;
-    @Autowired DatabasedMongo mongo;
+    @Autowired @Qualifier(OWL_DATABASED_MONGO) DatabasedMongo mongo;
     
     @Value("${updaters.similarcontent.enabled}") 
     Boolean tasksEnabled;

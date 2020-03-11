@@ -163,9 +163,10 @@ import tva.metadata._2010.TVAMainType;
 
 import javax.xml.bind.JAXBElement;
 
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
+import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NO_EQUIVALENCE_WRITING_CONTENT_WRITER;
-import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
 
 @Configuration
 @Import({ WatermarkModule.class, QueryExecutorModule.class })
@@ -175,7 +176,7 @@ public class QueryWebModule {
     @Value("${ids.expose}") private String exposeIds;
     @Value("${events.whitelist.ids}") private String eventsWhitelist;
 
-    @Autowired private DatabasedMongo mongo;
+    @Autowired @Qualifier(OWL_DATABASED_MONGO) private DatabasedMongo mongo;
     @Autowired private ContentGroupWriter contentGroupWriter;
     @Autowired private ContentGroupResolver contentGroupResolver;
     @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private EquivalenceContentWriter contentWriter;

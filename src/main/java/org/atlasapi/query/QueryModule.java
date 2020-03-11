@@ -14,6 +14,9 @@ permissions and limitations under the License. */
 
 package org.atlasapi.query;
 
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.mongodb.ReadPreference;
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.YouViewOutputContentMerger;
 import org.atlasapi.equiv.query.MergeOnOutputQueryExecutor;
@@ -36,11 +39,6 @@ import org.atlasapi.query.content.FilterScheduleOnlyQueryExecutor;
 import org.atlasapi.query.content.LookupResolvingQueryExecutor;
 import org.atlasapi.query.content.UriFetchingQueryExecutor;
 import org.atlasapi.query.uri.canonical.CanonicalisingFetcher;
-
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-
-import com.google.common.collect.ImmutableSet;
-import com.mongodb.ReadPreference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +47,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 
 @Configuration
@@ -57,7 +56,7 @@ public class QueryModule {
 
 	private @Autowired @Qualifier("remoteSiteContentResolver") CanonicalisingFetcher localOrRemoteFetcher;
 
-	private @Autowired DatabasedMongo mongo;
+	private @Autowired @Qualifier(OWL_DATABASED_MONGO) DatabasedMongo mongo;
 	private @Autowired ReadPreference readPreference;
     private @Autowired CassandraContentStore cassandra;
     private @Autowired @Qualifier("contentUpdater") EquivalenceUpdater<Content> equivUpdater;

@@ -1,10 +1,10 @@
 package org.atlasapi.remotesite.metabroadcast.picks;
 
-import java.util.concurrent.Executors;
-
-import javax.annotation.PostConstruct;
-
 import com.codahale.metrics.MetricRegistry;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
 import org.atlasapi.AtlasMain;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -15,17 +15,17 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDayProcessingTask;
 import org.atlasapi.remotesite.bbc.nitro.DayRangeChannelDaySupplier;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
+import javax.annotation.PostConstruct;
+import java.util.concurrent.Executors;
+
+import static org.atlasapi.AtlasModule.OWL_DATABASED_MONGO;
 
 @Configuration
 public class PicksModule {
@@ -49,7 +49,7 @@ public class PicksModule {
     private ContentResolver contentResolver;
     @Autowired
     private ContentGroupWriter contentGroupWriter;
-    @Autowired
+    @Autowired @Qualifier(OWL_DATABASED_MONGO)
     private DatabasedMongo mongo;
     @Autowired
     private SimpleScheduler scheduler;

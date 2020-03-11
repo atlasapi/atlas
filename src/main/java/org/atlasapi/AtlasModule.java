@@ -30,6 +30,7 @@ import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 import org.atlasapi.system.JettyHealthProbe;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -39,6 +40,9 @@ import java.util.stream.StreamSupport;
 
 @Configuration
 public class AtlasModule {
+
+    // There is a hardcoded qualifier string for this used in MongoContentPersistenceModule in atlas-persistence
+    public static final String OWL_DATABASED_MONGO = "OwlDatabasedMongo";
     
 	private final String mongoHost = Configurer.get("mongo.host").get();
 	private final String dbName = Configurer.get("mongo.dbName").get();
@@ -49,7 +53,9 @@ public class AtlasModule {
 	private final Parameter processingWriteConcern = Configurer.get("processing.mongo.writeConcern");
 	private final MongoSecondaryReadPreferenceBuilder secondaryReadPreferenceBuilder = new MongoSecondaryReadPreferenceBuilder();
 
-	public @Bean DatabasedMongo databasedMongo() {
+
+	@Bean @Qualifier(OWL_DATABASED_MONGO)
+	public DatabasedMongo databasedMongo() {
 	    return new DatabasedMongo(mongo(), dbName);
 	}
 

@@ -186,11 +186,16 @@ public class ContentMerger {
         existing.setAwards(
                 merge
                 ? merge(existing.getAwards(), update.getAwards())
-                : update.getAwards());
+                : update.getAwards()
+        );
         existing.setPresentationChannel(update.getPresentationChannel());
         existing.setYear(update.getYear());
         existing.setGenres(update.getGenres());
-        existing.setRatings(update.getRatings());
+        existing.setRatings(
+                merge
+                ? merge(existing.getRatings(), update.getRatings())
+                : update.getRatings()
+        );
         existing.setCertificates(update.getCertificates());
 
         //currently not set to use merge logic since these have been added later

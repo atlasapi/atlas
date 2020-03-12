@@ -74,7 +74,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setPublisher(toPublisherDetails(content.getPublisher()));
 
             simpleDescription.setTitle(content.getTitle());
-            simpleDescription.setTitles(simplifyLocalizedTitles(content));
+            simpleDescription.setLocalizedTitles(simplifyLocalizedTitles(content));
             simpleDescription.setDescription(applyWatermark(content, content.getDescription()));
             simpleDescription.setThumbnail(content.getThumbnail());
             simpleDescription.setImage(content.getImage());

@@ -1,14 +1,13 @@
 package org.atlasapi.input;
 
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.time.Clock;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.media.entity.LocalizedDescription;
 import org.atlasapi.media.entity.LocalizedTitle;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Priority;
@@ -23,11 +22,16 @@ import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.Image;
 import org.atlasapi.media.entity.simple.PublisherDetails;
-import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.time.Clock;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import org.joda.time.DateTime;
 
 public abstract class DescribedModelTransformer<F extends Description,T extends Described> extends IdentifiedModelTransformer<F, T> {
 
@@ -49,7 +53,8 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         Publisher publisher = getPublisher(inputContent.getPublisher());
         result.setPublisher(publisher);
         result.setTitle(inputContent.getTitle());
-        result.setLocalizedTitles(transformTitles(inputContent.getTitles()));
+        result.setLocalizedDescriptions(transformDescriptions(inputContent.getDescriptions()));
+        result.setLocalizedTitles(transformTitles(inputContent.getLocalizedTitles()));
         result.setDescription(inputContent.getDescription());
         result.setShortDescription(inputContent.getShortDescription());
         result.setMediumDescription(inputContent.getMediumDescription());
@@ -83,6 +88,22 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         return result;
     }
 
+    private Set<LocalizedDescription> transformDescriptions(
+            Set<org.atlasapi.media.entity.simple.LocalizedDescription> simpleLocalizedDescriptions
+    ) {
+        return simpleLocalizedDescriptions.stream()
+                .map(input -> {
+                    LocalizedDescription localizedDescription = new LocalizedDescription();
+                    localizedDescription.setDescription(input.getDescription());
+                    localizedDescription.setShortDescription(input.getDescription());
+                    localizedDescription.setMediumDescription(input.getMediumDescription());
+                    localizedDescription.setLongDescription(input.getLongDescription());
+                    localizedDescription.setLocale(input.getLanguage(), input.getRegion());
+                    return localizedDescription;
+                })
+                .collect(MoreCollectors.toImmutableSet());
+    }
+
     private Set<LocalizedTitle> transformTitles(
             Set<org.atlasapi.media.entity.simple.LocalizedTitle> simpleLocalizedTitles
     ) {
@@ -90,6 +111,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                 .map(input -> {
                     LocalizedTitle localizedTitle = new LocalizedTitle();
                     localizedTitle.setTitle(input.getTitle());
+                    localizedTitle.setLocale(input.getLanguage(), input.getRegion());
                     return localizedTitle;
                 })
                 .collect(MoreCollectors.toImmutableSet());
@@ -189,7 +211,8 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                 .map(input -> new Rating(
                                 input.getType(),
                                 input.getValue(),
-                                getPublisher(input.getPublisherDetails())
+                                getPublisher(input.getPublisherDetails()),
+                                input.getNumberOfVotes()
                         )
                 )
                 .collect(MoreCollectors.toImmutableSet());

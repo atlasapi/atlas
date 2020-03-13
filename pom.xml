@@ -233,7 +233,7 @@
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/atlas-api</outputDirectory>
                                     <includes>org/atlasapi/*.class,org/atlasapi/util/jetty/*.class,**/*.properties</includes>
-                                    <excludes>**/AtlasMain.class,**/AtlasApiModule.class</excludes>
+                                    <excludes>**/AtlasMain.class,**/AtlasApiModule.class,**/AtlasPersistenceModule.class</excludes>
                                 </artifactItem>
                             </artifactItems>
                             <overWriteReleases>false</overWriteReleases>

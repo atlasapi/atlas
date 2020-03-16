@@ -217,29 +217,6 @@
                             <excludes>META-INF/*.RSA,META-INF/*.DSA,META-INF/*.SF</excludes>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>unpack-atlas-api</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.atlasapi</groupId>
-                                    <version>${deer.version}</version>
-                                    <artifactId>atlas-api</artifactId>
-                                    <classifier>classes</classifier>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/atlas-api</outputDirectory>
-                                    <includes>org/atlasapi/*.class,org/atlasapi/util/jetty/*.class,**/*.properties</includes>
-                                    <excludes>**/AtlasMain.class,**/AtlasApiModule.class</excludes>
-                                </artifactItem>
-                            </artifactItems>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -486,10 +463,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.atlasapi</groupId>
-            <version>${deer.version}</version>
-            <artifactId>atlas-api</artifactId>
-            <classifier>classes</classifier>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>1.7.2</version>
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.status</groupId>

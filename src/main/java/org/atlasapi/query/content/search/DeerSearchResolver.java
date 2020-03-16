@@ -1,27 +1,26 @@
 package org.atlasapi.query.content.search;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import org.atlasapi.content.ContentTitleSearcher;
-import org.atlasapi.entity.Id;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.stream.MoreStreams;
+import org.atlasapi.deer.elasticsearch.ContentTitleSearcher;
+import org.atlasapi.deer.elasticsearch.SearchResults;
+import org.atlasapi.deer.elasticsearch.content.Id;
+import org.atlasapi.deer.elasticsearch.content.Specialization;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-import org.atlasapi.search.SearchResults;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.stream.MoreStreams;
-
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -49,8 +48,8 @@ public class DeerSearchResolver implements SearchResolver {
             org.atlasapi.search.model.SearchQuery owlQuery,
             Application application
     ) {
-        org.atlasapi.search.SearchQuery.Builder deerSearchQuery =
-                new org.atlasapi.search.SearchQuery.Builder(owlQuery.getTerm());
+        org.atlasapi.deer.elasticsearch.SearchQuery.Builder deerSearchQuery =
+                new org.atlasapi.deer.elasticsearch.SearchQuery.Builder(owlQuery.getTerm());
 
         if (owlQuery.getSelection() != null) {
             deerSearchQuery.withSelection(owlQuery.getSelection());
@@ -84,7 +83,7 @@ public class DeerSearchResolver implements SearchResolver {
         return search(deerSearchQuery.build());
     }
 
-    public List<Identified> search(org.atlasapi.search.SearchQuery query) {
+    public List<Identified> search(org.atlasapi.deer.elasticsearch.SearchQuery query) {
         try {
             SearchResults results = searcher.search(query).get(timeout, TimeUnit.MILLISECONDS);
             return resolveIds(results.getIds());
@@ -107,12 +106,12 @@ public class DeerSearchResolver implements SearchResolver {
         return resolved.getAllResolvedResults();
     }
 
-    private Set<org.atlasapi.content.Specialization> getDeerSpecializations(
+    private Set<Specialization> getDeerSpecializations(
             Set<org.atlasapi.media.entity.Specialization> owlSpecializations) {
 
         return owlSpecializations.stream()
                 .map(org.atlasapi.media.entity.Specialization::toString)
-                .map(org.atlasapi.content.Specialization::fromKey)
+                .map(Specialization::fromKey)
                 .filter(Maybe::hasValue)
                 .map(Maybe::requireValue)
                 .collect(Collectors.toSet());

@@ -67,7 +67,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         .withBroadcastFlexibility(Duration.standardMinutes(10))
                                         .withShortBroadcastFlexibility(Duration.standardMinutes(10))
                                         .withShortBroadcastMaxDuration(Duration.standardMinutes(10))
-                                        .withScoreOnMatch(Score.ONE)
+                                        .withScoreOnMatch(Score.valueOf(2.0))
                                         .withTitleMatchingScorer(
                                                 BarbTitleMatchingItemScorer.builder()
                                                         .withContentResolver(dependencies.getContentResolver())
@@ -84,7 +84,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         targetPublishers,
                                         Duration.standardHours(1),
                                         null,
-                                        Score.ONE
+                                        Score.valueOf(2.0)
                                 )
                         )
                 )
@@ -93,8 +93,8 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                 //The BarbAliasEquivalenceGeneratorAndScorer also adds a score
                                 BarbTitleMatchingItemScorer.builder()
                                         .withContentResolver(dependencies.getContentResolver())
-                                        .withScoreOnPerfectMatch(Score.valueOf(3.0))
-                                        .withScoreOnPartialMatch(Score.valueOf(2.0))
+                                        .withScoreOnPerfectMatch(Score.valueOf(4.0))
+                                        .withScoreOnPartialMatch(Score.valueOf(3.0))
                                         .withScoreOnMismatch(Score.ZERO)
                                         .withContainerCacheDuration(60)
                                         .build(),
@@ -125,8 +125,8 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                 // even if one exists with a bcid. ENG-447
                 .withExtractor(
                         isSubjectTxlog
-                        ? new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 3D))
-                        : AllOverOrEqThresholdExtractor.create(3)
+                        ? new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 5D))
+                        : AllOverOrEqThresholdExtractor.create(5)
                 )
                 .build();
     }

@@ -9,6 +9,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -60,8 +61,9 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     );
     private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(unrated\\)", "\\(rated\\)");
     private static final Pattern TRAILING_YEAR_PATTERN = Pattern.compile("^(.*)\\(\\d{4}\\)$");
+    private static final Pattern GENERIC_TITLE_PATTERN = Pattern.compile("^([Ss]eries)|([Ee]pisode) \\d+$");
 
-    private static final Joiner TITLE_JOINER = Joiner.on(' ').skipNulls();
+    private static final Joiner TITLE_SPACE_JOINER = Joiner.on(' ').skipNulls();
 
     private static final Pattern TRAILING_APOSTROPHE_PATTERN = Pattern.compile("\\w' ");
     private static final Score DEFAULT_SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
@@ -227,6 +229,13 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     public Score score(Item subject, Item suggestion, ResultDescription desc) {
+        desc.startStage(
+                String.format(
+                        "Scoring suggestion: %s (%s)",
+                        suggestion.getTitle(),
+                        suggestion.getCanonicalUri()
+                )
+        );
         Score equivScore = scoreContent(
                 new ContentTitleMatchingFields(subject),
                 new ContentTitleMatchingFields(suggestion),
@@ -241,6 +250,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 equivScore = parentScore.get();
             }
         }
+        desc.finishStage();
         return equivScore;
     }
 
@@ -289,19 +299,39 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         nonTxlogAndParentFields.add(nonTxlogParent.get());
         nonTxlogSeries.ifPresent(nonTxlogAndParentFields::add);
 
-        Score bestScore = null;
-
-        // Iterate through all possible combinations and permutations of the 3 non-txlog titles and compare the
-        // concatenation to the txlog title
-
         Set<Set<ContentTitleMatchingFields>> nonTxlogFieldsPowerSet = Sets.powerSet(nonTxlogAndParentFields);
 
+        desc.startStage("Scoring permutations for " + nonTxlogItem.getCanonicalUri());
+        Optional<Score> bestScore = scorePermutations(nonTxlogFieldsPowerSet, nonTxlogItemFields, txlogItemFields, desc);
+        desc.finishStage();
+
+        return bestScore;
+    }
+
+    /**
+     * Iterates through all possible combinations and permutations of the 3 non-txlog titles and compares the
+     * concatenation to the txlog title.
+     */
+    private Optional<Score> scorePermutations(
+            Set<Set<ContentTitleMatchingFields>> nonTxlogFieldsPowerSet,
+            ContentTitleMatchingFields nonTxlogItemFields,
+            ContentTitleMatchingFields txlogItemFields,
+            ResultDescription desc
+    ) {
+        Score bestScore = null;
         for (Set<ContentTitleMatchingFields> nonTxlogFieldsSubset : nonTxlogFieldsPowerSet) {
             if (nonTxlogFieldsSubset.isEmpty()) {
                 continue;
             }
             if (nonTxlogFieldsSubset.size() == 1) {
-                if (nonTxlogFieldsSubset.contains(nonTxlogItemFields)) { //this was checked earlier for efficiency
+                ContentTitleMatchingFields onlyElement = Iterables.getOnlyElement(nonTxlogFieldsSubset);
+                if (onlyElement == nonTxlogItemFields) { //this was checked earlier for efficiency
+                    continue;
+                }
+                // Ignore cases where one of the permutations is just "Series X" or "Episode X" just in case these
+                // could cause some false positives.
+                Matcher genericTitlePatternMatcher = GENERIC_TITLE_PATTERN.matcher(onlyElement.getTitle());
+                if (genericTitlePatternMatcher.matches()) {
                     continue;
                 }
             }
@@ -309,7 +339,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     Collections2.permutations(nonTxlogFieldsSubset);
 
             for (List<ContentTitleMatchingFields> nonTxlogFieldsPermutation : nonTxlogFieldsPermutations) {
-                String concatenatedTitle = TITLE_JOINER.join(
+                String concatenatedTitle = TITLE_SPACE_JOINER.join(
                         nonTxlogFieldsPermutation.stream()
                                 .map(ContentTitleMatchingFields::getTitle)
                                 .collect(MoreCollectors.toImmutableList())
@@ -327,7 +357,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 }
             }
         }
-
         return Optional.ofNullable(bestScore);
     }
 
@@ -339,16 +368,10 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         Score score = Score.nullScore();
         if (!Strings.isNullOrEmpty(subject.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
-                desc.appendText("No Title (%s) scored %s", suggestion.getCanonicalUri(), score);
+                desc.appendText("No Title so scored %s", score);
             } else {
                 score = scoreContent(subject, suggestion);
-                desc.appendText("%s (%s) against %s (%s) scored %s",
-                        suggestion.getTitle(),
-                        suggestion.getCanonicalUri(),
-                        subject.getTitle(),
-                        subject.getCanonicalUri(),
-                        score
-                );
+                desc.appendText("%s: %s", score, suggestion.getTitle());
             }
         }
         return score;

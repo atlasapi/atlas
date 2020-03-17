@@ -64,7 +64,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final Pattern TRAILING_YEAR_PATTERN = Pattern.compile("^(.*)\\(\\d{4}\\)$");
     private static final Pattern GENERIC_TITLE_PATTERN = Pattern.compile("^(([Ss]eries)|([Ee]pisode)) \\d+$");
 
-    private static final Joiner TITLE_SPACE_JOINER = Joiner.on(' ').skipNulls();
+    private static final Joiner TITLE_PERMUTATION_JOINER = Joiner.on('-').skipNulls();
 
     private static final Pattern TRAILING_APOSTROPHE_PATTERN = Pattern.compile("\\w' ");
     private static final Score DEFAULT_SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
@@ -340,7 +340,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     Collections2.permutations(nonTxlogFieldsSubset);
 
             for (List<ContentTitleMatchingFields> nonTxlogFieldsPermutation : nonTxlogFieldsPermutations) {
-                String concatenatedTitle = TITLE_SPACE_JOINER.join(
+                String concatenatedTitle = TITLE_PERMUTATION_JOINER.join(
                         nonTxlogFieldsPermutation.stream()
                                 .map(ContentTitleMatchingFields::getTitle)
                                 .collect(MoreCollectors.toImmutableList())

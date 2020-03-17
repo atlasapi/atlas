@@ -67,7 +67,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         .withBroadcastFlexibility(Duration.standardMinutes(10))
                                         .withShortBroadcastFlexibility(Duration.standardMinutes(10))
                                         .withShortBroadcastMaxDuration(Duration.standardMinutes(10))
-                                        .withScoreOnMatch(Score.valueOf(3.0))
+                                        .withScoreOnMatch(Score.ONE)
                                         .withTitleMatchingScorer(
                                                 BarbTitleMatchingItemScorer.builder()
                                                         .withContentResolver(dependencies.getContentResolver())
@@ -75,7 +75,6 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                                         .withScoreOnPartialMatch(Score.nullScore())
                                                         .withScoreOnPerfectMatch(Score.ONE)
                                                         .withContainerCacheDuration(60)
-                                                        .withCheckContainersForAllPublishers(true)
                                                         .build()
                                         )
                                         .build(),
@@ -83,12 +82,9 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                         dependencies.getScheduleResolver(),
                                         dependencies.getChannelResolver(),
                                         targetPublishers,
-                                        //TODO: we may need to increase the flexibility since supposedly the actual transmission
-                                        // can differ by up to at least a few hours - perhaps the generator would first try
-                                        // 1 hour and gradually increase the search window up to a given limit?
                                         Duration.standardHours(1),
                                         null,
-                                        Score.valueOf(6.0)
+                                        Score.ONE
                                 )
                         )
                 )
@@ -97,11 +93,10 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                                 //The BarbAliasEquivalenceGeneratorAndScorer also adds a score
                                 BarbTitleMatchingItemScorer.builder()
                                         .withContentResolver(dependencies.getContentResolver())
-                                        .withScoreOnPerfectMatch(Score.valueOf(2.0))
-                                        .withScoreOnPartialMatch(Score.ONE)
+                                        .withScoreOnPerfectMatch(Score.valueOf(3.0))
+                                        .withScoreOnPartialMatch(Score.valueOf(2.0))
                                         .withScoreOnMismatch(Score.ZERO)
                                         .withContainerCacheDuration(60)
-                                        .withCheckContainersForAllPublishers(false)
                                         .build(),
                                 DescriptionMatchingScorer.makeItemScorer()
                         )
@@ -130,8 +125,8 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                 // even if one exists with a bcid. ENG-447
                 .withExtractor(
                         isSubjectTxlog
-                        ? new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 4D))
-                        : AllOverOrEqThresholdExtractor.create(4)
+                        ? new AllOverOrEqHighestNonEmptyThresholdExtractor<>(ImmutableSet.of(10D, 3D))
+                        : AllOverOrEqThresholdExtractor.create(3)
                 )
                 .build();
     }

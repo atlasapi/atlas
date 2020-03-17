@@ -72,7 +72,6 @@ public class TxlogsItemUpdaterProvider implements EquivalenceResultUpdaterProvid
                                                         .withScoreOnPartialMatch(Score.nullScore())
                                                         .withScoreOnPerfectMatch(Score.ONE)
                                                         .withContainerCacheDuration(60)
-                                                        .withCheckContainersForAllPublishers(true)
                                                         .build()
                                         )
                                         .build()

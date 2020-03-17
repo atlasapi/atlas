@@ -1,13 +1,17 @@
 package org.atlasapi.equiv.scorers.barb;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.apache.commons.lang3.StringUtils;
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -19,6 +23,7 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -29,6 +34,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -53,12 +61,13 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(unrated\\)", "\\(rated\\)");
     private static final Pattern TRAILING_YEAR_PATTERN = Pattern.compile("^(.*)\\(\\d{4}\\)$");
 
+    private static final Joiner TITLE_JOINER = Joiner.on(' ').skipNulls();
+
     private static final Pattern TRAILING_APOSTROPHE_PATTERN = Pattern.compile("\\w' ");
     private static final Score DEFAULT_SCORE_ON_PERFECT_MATCH = Score.valueOf(2D);
     private static final Score DEFAULT_SCORE_ON_PARTIAL_MATCH = Score.ONE;
     private static final Score DEFAULT_SCORE_ON_MISMATCH = Score.ZERO;
     private static final int DEFAULT_CONTAINER_CACHE_DURATION = 60;
-    private static final boolean DEFAULT_CHECK_CONTAINERS_FOR_ALL_PUBLISHERS = false;
     private static final int TXLOG_TITLE_LENGTH = 40;
 
     //Nitro<->Txlog specific rules
@@ -82,9 +91,9 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private final Score scoreOnPerfectMatch;
     private final Score scoreOnPartialMatch;
     private final Score scoreOnMismatch;
-    private final boolean checkContainersForAllPublishers;
     @Nullable private final ContentResolver contentResolver;
     private final LoadingCache<String, Optional<ContentTitleMatchingFields>> containerCache;
+    private final LoadingCache<String, Optional<ContentTitleMatchingFields>> seriesCache;
 
     public enum TitleType {
 
@@ -122,7 +131,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         scoreOnPerfectMatch = checkNotNull(builder.scoreOnPerfectMatch);
         scoreOnPartialMatch = checkNotNull(builder.scoreOnPartialMatch);
         scoreOnMismatch = checkNotNull(builder.scoreOnMismatch);
-        checkContainersForAllPublishers = checkNotNull(builder.checkContainersForAllPublishers);
         contentResolver = builder.contentResolver;
         containerCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(checkNotNull(builder.containerCacheDuration), TimeUnit.SECONDS)
@@ -130,6 +138,14 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     @Override
                     public Optional<ContentTitleMatchingFields> load(@Nonnull String containerUri) {
                         return getContainer(containerUri);
+                    }
+                });
+        seriesCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(checkNotNull(builder.containerCacheDuration), TimeUnit.SECONDS)
+                .build(new CacheLoader<String, Optional<ContentTitleMatchingFields>>() {
+                    @Override
+                    public Optional<ContentTitleMatchingFields> load(@Nonnull String seriesUri) {
+                        return getContent(seriesUri);
                     }
                 });
     }
@@ -196,6 +212,20 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return Optional.empty();
     }
 
+    private Optional<ContentTitleMatchingFields> getContent(String uri) {
+        if (contentResolver == null) {
+            return Optional.empty();
+        }
+        Maybe<Identified> resolved = contentResolver.findByCanonicalUris(
+                ImmutableSet.of(uri)
+        ).getFirstValue();
+        if(resolved.hasValue()) {
+            Content parent = (Content) resolved.requireValue();
+            return Optional.of(new ContentTitleMatchingFields(parent));
+        }
+        return Optional.empty();
+    }
+
     public Score score(Item subject, Item suggestion, ResultDescription desc) {
         Score equivScore = scoreContent(
                 new ContentTitleMatchingFields(subject),
@@ -203,9 +233,9 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 desc
         );
         if (equivScore != scoreOnPerfectMatch) {
-            // txlog titles are often just the title of the brand so score the txlog title
-            // against a brand title as well if applicable
-            Optional<Score> parentScore = getParentScore(subject, suggestion, desc);
+            // txlog titles can often contain brand or series information so score the txlog title
+            // against a these titles as well if applicable
+            Optional<Score> parentScore = scoreWithParentInformation(subject, suggestion, desc);
             if (parentScore.isPresent() && parentScore.get().isRealScore()
                     && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
                 equivScore = parentScore.get();
@@ -214,39 +244,98 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return equivScore;
     }
 
-    private Optional<Score> getParentScore(Item subject, Item suggestion, ResultDescription desc) {
+    private Optional<Score> scoreWithParentInformation(Item subject, Item suggestion, ResultDescription desc) {
         boolean singleTxlogPresent = TXLOG_PUBLISHERS.contains(subject.getPublisher())
                 // xor since we need the other publisher to be different and have a parent
                 ^ TXLOG_PUBLISHERS.contains(suggestion.getPublisher());
 
-        if (contentResolver == null || !(checkContainersForAllPublishers || singleTxlogPresent)) {
+        if (contentResolver == null || !singleTxlogPresent) {
             return Optional.empty();
         }
 
-        Optional<ContentTitleMatchingFields> subjectParent = subject.getContainer() != null
-                ? containerCache.getUnchecked(subject.getContainer().getUri())
-                : Optional.empty();
-        Optional<ContentTitleMatchingFields> suggestionParent = suggestion.getContainer() != null
-                ? containerCache.getUnchecked(suggestion.getContainer().getUri())
+        Item txlogItem;
+        Item nonTxlogItem;
+
+        if (TXLOG_PUBLISHERS.contains(subject.getPublisher())) {
+            txlogItem = subject;
+            nonTxlogItem = suggestion;
+        } else {
+            txlogItem = suggestion;
+            nonTxlogItem = subject;
+        }
+
+        Optional<ContentTitleMatchingFields> nonTxlogParent = nonTxlogItem.getContainer() != null
+                ? containerCache.getUnchecked(nonTxlogItem.getContainer().getUri())
                 : Optional.empty();
 
-        if (!subjectParent.isPresent() && !suggestionParent.isPresent()) {
+        if (!nonTxlogParent.isPresent()) {
             return Optional.empty();
         }
 
-        ContentTitleMatchingFields compareFrom = subjectParent
-                .orElseGet(() -> new ContentTitleMatchingFields(subject));
-        ContentTitleMatchingFields compareTo = suggestionParent
-                .orElseGet(() -> new ContentTitleMatchingFields(suggestion));
+        Optional<ContentTitleMatchingFields> nonTxlogSeries = Optional.empty();
 
-        Score parentScore = scoreContent(compareFrom, compareTo, desc);
-        return Optional.of(parentScore);
+        if (nonTxlogItem instanceof Episode) {
+            Episode nonTxlogEpisode = (Episode) nonTxlogItem;
+            if (nonTxlogEpisode.getSeriesRef() != null) {
+                nonTxlogSeries = seriesCache.getUnchecked(nonTxlogEpisode.getSeriesRef().getUri());
+            }
+        }
+
+        ContentTitleMatchingFields txlogItemFields = new ContentTitleMatchingFields(txlogItem);
+        ContentTitleMatchingFields nonTxlogItemFields = new ContentTitleMatchingFields(nonTxlogItem);
+
+        Set<ContentTitleMatchingFields> nonTxlogAndParentFields = new HashSet<>(3);
+        nonTxlogAndParentFields.add(nonTxlogItemFields);
+        nonTxlogAndParentFields.add(nonTxlogParent.get());
+        nonTxlogSeries.ifPresent(nonTxlogAndParentFields::add);
+
+        Score bestScore = null;
+
+        // Iterate through all possible combinations and permutations of the 3 non-txlog titles and compare the
+        // concatenation to the txlog title
+
+        Set<Set<ContentTitleMatchingFields>> nonTxlogFieldsPowerSet = Sets.powerSet(nonTxlogAndParentFields);
+
+        for (Set<ContentTitleMatchingFields> nonTxlogFieldsSubset : nonTxlogFieldsPowerSet) {
+            if (nonTxlogFieldsSubset.isEmpty()) {
+                continue;
+            }
+            if (nonTxlogFieldsSubset.size() == 1) {
+                if (nonTxlogFieldsSubset.contains(nonTxlogItemFields)) { //this was checked earlier for efficiency
+                    continue;
+                }
+            }
+            Collection<List<ContentTitleMatchingFields>> nonTxlogFieldsPermutations =
+                    Collections2.permutations(nonTxlogFieldsSubset);
+
+            for (List<ContentTitleMatchingFields> nonTxlogFieldsPermutation : nonTxlogFieldsPermutations) {
+                String concatenatedTitle = TITLE_JOINER.join(
+                        nonTxlogFieldsPermutation.stream()
+                                .map(ContentTitleMatchingFields::getTitle)
+                                .collect(MoreCollectors.toImmutableList())
+                );
+                // Copy the existing item fields object with a new title as if it were the title of the item.
+                // This is so we can still keep some information from the item such as year in case it is useful.
+                ContentTitleMatchingFields permutationFields = nonTxlogItemFields.withTitle(concatenatedTitle);
+                Score permutationScore = scoreContent(txlogItemFields, permutationFields, desc);
+                if (bestScore == null || !bestScore.isRealScore()
+                        || (permutationScore.isRealScore() && permutationScore.asDouble() > bestScore.asDouble())) {
+                    bestScore = permutationScore;
+                    if (bestScore == scoreOnPerfectMatch) {
+                        return Optional.of(bestScore);
+                    }
+                }
+            }
+        }
+
+        return Optional.ofNullable(bestScore);
     }
 
     private Score scoreContent(
             ContentTitleMatchingFields subject,
             ContentTitleMatchingFields suggestion,
-            ResultDescription desc) {
+            ResultDescription desc
+    ) {
         Score score = Score.nullScore();
         if (!Strings.isNullOrEmpty(subject.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
@@ -280,13 +369,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 String processedSubjectTitle = processBbcTitle(subjectTitle);
                 String processedSuggestionTitle = processBbcTitle(suggestionTitle);
                 if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
-                    log.info(
-                            "BBC Title Processing: subject({} -> {}) suggestion({} -> {})",
-                            subjectTitle,
-                            processedSubjectTitle,
-                            suggestionTitle,
-                            processedSuggestionTitle
-                    );
                     subjectTitle = processedSubjectTitle;
                     suggestionTitle = processedSuggestionTitle;
                 }
@@ -535,7 +617,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         private Score scoreOnPerfectMatch = DEFAULT_SCORE_ON_PERFECT_MATCH;
         private Score scoreOnPartialMatch = DEFAULT_SCORE_ON_PARTIAL_MATCH;
         private Score scoreOnMismatch = DEFAULT_SCORE_ON_MISMATCH;
-        private boolean checkContainersForAllPublishers = DEFAULT_CHECK_CONTAINERS_FOR_ALL_PUBLISHERS;
         private ContentResolver contentResolver;
         private int containerCacheDuration = DEFAULT_CONTAINER_CACHE_DURATION; //seconds
 
@@ -554,11 +635,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         public Builder withScoreOnMismatch(Score scoreOnMismatch) {
             this.scoreOnMismatch = scoreOnMismatch;
-            return this;
-        }
-
-        public Builder withCheckContainersForAllPublishers(boolean checkContainersForAllPublishers) {
-            this.checkContainersForAllPublishers = checkContainersForAllPublishers;
             return this;
         }
 
@@ -585,11 +661,25 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         private final Publisher publisher;
         private final Integer year;
 
+        public ContentTitleMatchingFields(
+                String canonicalUri,
+                String title,
+                Publisher publisher,
+                Integer year
+        ) {
+            this.canonicalUri = canonicalUri;
+            this.title = title;
+            this.publisher = publisher;
+            this.year = year;
+        }
+
         public ContentTitleMatchingFields(Content content) {
-            this.canonicalUri = content.getCanonicalUri();
-            this.title = content.getTitle();
-            this.publisher = content.getPublisher();
-            this.year = content.getYear();
+            this(
+                    content.getCanonicalUri(),
+                    content.getTitle(),
+                    content.getPublisher(),
+                    content.getYear()
+            );
         }
 
         public String getCanonicalUri() {
@@ -606,6 +696,15 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         public Integer getYear() {
             return year;
+        }
+
+        public ContentTitleMatchingFields withTitle(String title) {
+            return new ContentTitleMatchingFields(
+                    canonicalUri,
+                    title,
+                    publisher,
+                    year
+            );
         }
     }
 }

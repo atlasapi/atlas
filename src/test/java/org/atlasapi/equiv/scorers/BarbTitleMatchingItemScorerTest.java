@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.scorers;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
@@ -12,17 +14,24 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class BarbTitleMatchingItemScorerTest {
+    private static final Joiner SPACE_JOINER = Joiner.on(' ');
+
     private static final Score scoreOnMatch = Score.valueOf(2D);
     private static final Score scoreOnPartialMatch = Score.ONE;
     private static final Score scoreOnMismatch = Score.ZERO;
@@ -31,7 +40,6 @@ public class BarbTitleMatchingItemScorerTest {
 
     private BarbTitleMatchingItemScorer scorer;
     private BarbTitleMatchingItemScorer cachedScorer;
-    private BarbTitleMatchingItemScorer allContainerCheckingScorer;
 
     @Before
     public void setUp() throws Exception {
@@ -41,7 +49,6 @@ public class BarbTitleMatchingItemScorerTest {
                 .withScoreOnMismatch(scoreOnMismatch)
                 .withContentResolver(contentResolver)
                 .withContainerCacheDuration(0) //caching will break some tests due to reusing the same brand uri
-                .withCheckContainersForAllPublishers(false)
                 .build();
 
         cachedScorer = BarbTitleMatchingItemScorer.builder()
@@ -50,16 +57,6 @@ public class BarbTitleMatchingItemScorerTest {
                 .withScoreOnMismatch(scoreOnMismatch)
                 .withContentResolver(contentResolver)
                 .withContainerCacheDuration(60)
-                .withCheckContainersForAllPublishers(false)
-                .build();
-
-        allContainerCheckingScorer = BarbTitleMatchingItemScorer.builder()
-                .withScoreOnPerfectMatch(scoreOnMatch)
-                .withScoreOnPartialMatch(scoreOnPartialMatch)
-                .withScoreOnMismatch(scoreOnMismatch)
-                .withContentResolver(contentResolver)
-                .withContainerCacheDuration(0) //caching will break some tests due to reusing the same brand uri
-                .withCheckContainersForAllPublishers(true)
                 .build();
     }
 
@@ -133,6 +130,13 @@ public class BarbTitleMatchingItemScorerTest {
         return txlog;
     }
 
+    private Item nitroItem(String title) {
+        Item item = new Item();
+        item.setTitle(title);
+        item.setPublisher(Publisher.BBC_NITRO);
+        return item;
+    }
+
     private Brand nitroBrand(String title, String uri) {
         Brand nitroBrand = new Brand();
         nitroBrand.setTitle(title);
@@ -141,11 +145,27 @@ public class BarbTitleMatchingItemScorerTest {
         return nitroBrand;
     }
 
+    private Series nitroSeries(String title, String uri, Brand nitroBrand) {
+        Series nitroSeries = new Series();
+        nitroSeries.setTitle(title);
+        nitroSeries.setPublisher(Publisher.BBC_NITRO);
+        nitroSeries.setCanonicalUri(uri);
+        nitroSeries.setParent(nitroBrand);
+        return nitroSeries;
+    }
+
     private Episode nitroEpisode(String title, Brand nitroBrand) {
+        return nitroEpisode(title, nitroBrand, null);
+    }
+
+    private Episode nitroEpisode(String title, Brand nitroBrand, @Nullable Series nitroSeries) {
         Episode nitroEpisode = new Episode();
         nitroEpisode.setTitle(title);
         nitroEpisode.setPublisher(Publisher.BBC_NITRO);
         nitroEpisode.setParentRef(ParentRef.parentRefFrom(nitroBrand));
+        if (nitroSeries != null) {
+            nitroEpisode.setSeriesRef(ParentRef.parentRefFrom(nitroSeries));
+        }
         return nitroEpisode;
     }
 
@@ -168,15 +188,86 @@ public class BarbTitleMatchingItemScorerTest {
     }
 
     @Test
-    public void testContainersFromAllPublishersAreConsideredIfSpecified() {
-        Brand nitroBrand = nitroBrand("t1", "1");
-        Episode nitroEpisode = nitroEpisode("t2", nitroBrand);
-        Brand nitroBrand2 = nitroBrand("t1", "2");
-        Episode nitroEpisode2 = nitroEpisode("t3", nitroBrand2);
+    public void testBrandAndEpisodeTitleConcatenation() {
+        Brand nitroBrand = nitroBrand("Panorama", "1");
         setUpContentResolving(nitroBrand);
-        setUpContentResolving(nitroBrand2);
-        assertThat(score(nitroEpisode, nitroEpisode2, allContainerCheckingScorer), is(scoreOnMatch));
-        assertThat(score(nitroEpisode2, nitroEpisode, allContainerCheckingScorer), is(scoreOnMatch));
+        Episode nitroEpisode1 = nitroEpisode("The Corrupt Billionaire", nitroBrand);
+        Episode nitroEpisode2 = nitroEpisode("Britain's Killer Motorways?", nitroBrand);
+        Item txlog1 = txlog("PANORAMA: THE CORRUPT BILLIONAIRE");
+        Item txlog2 = txlog("BRITAIN'S KILLER MOTORWAYS? - PANORAMA");
+
+        assertEquals(scoreOnMatch, score(txlog1, nitroEpisode1));
+        assertEquals(scoreOnMatch, score(txlog2, nitroEpisode2));
+        assertEquals(scoreOnMatch, score(nitroEpisode1, txlog1));
+        assertEquals(scoreOnMatch, score(nitroEpisode2, txlog2));
+    }
+
+
+    @Test
+    public void testSeriesTitleCanMatchTxlog() {
+        Brand nitroBrand = nitroBrand("t1", "1");
+        Series nitroSeries = nitroSeries("Hayley Goes...", "2", nitroBrand);
+        Episode nitroEpisode = nitroEpisode("t3", nitroBrand, nitroSeries);
+        Item txlog = txlog("HAYLEY GOES...");
+        setUpContentResolving(nitroBrand);
+        setUpContentResolving(nitroSeries);
+        assertEquals(scoreOnMatch, score(txlog, nitroEpisode));
+        assertEquals(scoreOnMatch, score(nitroEpisode, txlog));
+    }
+
+    @Test
+    public void testAllPermutationsConsidered() {
+        String a = "A";
+        String b = "B";
+        String c = "C";
+        Brand nitroBrand = nitroBrand(a, "1");
+        Series nitroSeries = nitroSeries(b, "2", nitroBrand);
+        Episode nitroEpisode = nitroEpisode(c, nitroBrand, nitroSeries);
+
+        setUpContentResolving(nitroBrand);
+        setUpContentResolving(nitroSeries);
+
+        List<List<String>> permutations = ImmutableList.of(
+                ImmutableList.of(a),
+                ImmutableList.of(b),
+                ImmutableList.of(c),
+                ImmutableList.of(a, b),
+                ImmutableList.of(a, c),
+                ImmutableList.of(b, a),
+                ImmutableList.of(b, c),
+                ImmutableList.of(c, a),
+                ImmutableList.of(c, b),
+                ImmutableList.of(a, b, c),
+                ImmutableList.of(a, c, b),
+                ImmutableList.of(b, a, c),
+                ImmutableList.of(b, c, a),
+                ImmutableList.of(c, a, b),
+                ImmutableList.of(c, b, a)
+        );
+
+        for (List<String> permutation : permutations) {
+            Item txlog = txlog(SPACE_JOINER.join(permutation));
+            assertEquals(scoreOnMatch, score(txlog, nitroEpisode));
+        }
+
+        nitroEpisode = nitroEpisode(c, nitroBrand, null);
+
+        permutations = ImmutableList.of(
+                ImmutableList.of(a),
+                ImmutableList.of(c),
+                ImmutableList.of(a, c),
+                ImmutableList.of(c, a)
+        );
+
+        for (List<String> permutation : permutations) {
+            Item txlog = txlog(SPACE_JOINER.join(permutation));
+            assertEquals(scoreOnMatch, score(txlog, nitroEpisode));
+        }
+
+        Item nitroItem = nitroItem(c);
+        Item txlog = txlog(c);
+
+        assertEquals(scoreOnMatch, score(txlog, nitroItem));
     }
 
 }

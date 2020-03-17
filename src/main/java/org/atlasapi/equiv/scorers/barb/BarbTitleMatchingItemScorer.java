@@ -48,9 +48,10 @@ import static com.google.api.client.repackaged.com.google.common.base.Preconditi
 import static org.atlasapi.equiv.utils.barb.BarbEquivUtils.TXLOG_PUBLISHERS;
 
 /**
- * Caveat: Txlog names are scored against a suggestion's brand title as well so do not rely to heavily on this score for equiv
- * This score should be used as a guideline to ensure two unrelated pieces of content don't equiv purely on a single other factor
- * such as broadcast times for Txlogs
+ * Caveat: Txlog names are scored against a suggestion's brand title and series title as well,
+ * along with their permutations so do not rely to heavily on this score for equiv.
+ * This score should be used as a guideline to ensure two unrelated pieces of content don't equiv purely
+ * on a single other factor such as broadcast times for Txlogs.
  */
 public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
@@ -61,7 +62,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     );
     private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(unrated\\)", "\\(rated\\)");
     private static final Pattern TRAILING_YEAR_PATTERN = Pattern.compile("^(.*)\\(\\d{4}\\)$");
-    private static final Pattern GENERIC_TITLE_PATTERN = Pattern.compile("^([Ss]eries)|([Ee]pisode) \\d+$");
+    private static final Pattern GENERIC_TITLE_PATTERN = Pattern.compile("^(([Ss]eries)|([Ee]pisode)) \\d+$");
 
     private static final Joiner TITLE_SPACE_JOINER = Joiner.on(' ').skipNulls();
 

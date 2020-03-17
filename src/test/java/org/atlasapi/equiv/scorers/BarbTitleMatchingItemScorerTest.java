@@ -270,4 +270,21 @@ public class BarbTitleMatchingItemScorerTest {
         assertEquals(scoreOnMatch, score(txlog, nitroItem));
     }
 
+    @Test
+    public void testGenericSeriesTitlePermutationIsIgnored() {
+        Brand nitroBrand = nitroBrand("Brand Title", "1");
+        Series nitroSeries = nitroSeries("Series 10", "2", nitroBrand);
+        Episode nitroEpisode = nitroEpisode("Episode 3", nitroBrand, nitroSeries);
+
+        setUpContentResolving(nitroBrand);
+        setUpContentResolving(nitroSeries);
+
+        Item txlog = txlog("Episode 3");
+        // this is not ignored since the episode is compared directly first, separately of the permutation logic
+        assertEquals(scoreOnMatch, score(txlog, nitroEpisode));
+
+        txlog = txlog("Series 10");
+        assertEquals(scoreOnMismatch, score(txlog, nitroEpisode));
+    }
+
 }

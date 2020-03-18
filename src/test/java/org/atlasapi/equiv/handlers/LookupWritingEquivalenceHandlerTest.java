@@ -18,7 +18,6 @@ import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.LookupWriter;
-import org.joda.time.Duration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
@@ -26,7 +25,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Set;
 
-import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -34,7 +32,6 @@ import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,13 +49,11 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
             Publisher.PA,
             Publisher.ITV
     );
-    private final Duration cacheDuration = new Duration(5);
 
     private final LookupWritingEquivalenceHandler<Item> updater =
             new LookupWritingEquivalenceHandler<>(
                     lookupWriter,
-                    publishers,
-                    cacheDuration
+                    publishers
             );
 
     private final Item content = new Item("item", "c:item", Publisher.BBC);
@@ -113,86 +108,6 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
         boolean handled = updater.handle(equivResultsFor(content, ImmutableList.of(equiv1, equiv2)));
 
         assertThat(handled, is(false));
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void
-    testDoesntWriteLookupsForItemWhichWasSeenAsEquivalentButDoesntAssertAnyEquivalences() {
-        when(lookupWriter.writeLookup(
-                Matchers.any(ContentRef.class),
-                anyCollectionOf(ContentRef.class),
-                anySetOf(Publisher.class)
-        ))
-                .thenReturn(Optional.of(ImmutableSet.of()));
-
-        EquivalenceResults<Item> equivResult = equivResultsFor(
-                content,
-                ImmutableList.of(equiv1, equiv2)
-        );
-        EquivalenceResults<Item> noEquivalences = equivResultsFor(
-                equiv1,
-                ImmutableList.<Item>of()
-        );
-
-        assertThat(
-                updater.handle(equivResult),
-                is(true)
-        );
-
-        assertThat(
-                updater.handle(noEquivalences),
-                is(false)
-        );
-
-        verify(lookupWriter).writeLookup(
-                argThat(is(contentRef)),
-                argThat(hasItems(equiv1Ref, equiv2Ref)),
-                argThat(is(publishers))
-        );
-        verify(lookupWriter, never()).writeLookup(
-                argThat(is(equiv1Ref)),
-                argThat(any(Iterable.class)),
-                argThat(is(publishers))
-        );
-    }
-
-    @Test
-    public void
-    testWritesLookupsForItemWhichWasSeenAsEquivalentButDoesntAssertAnyEquivalencesWhenCacheTimesOut()
-            throws Exception {
-        when(lookupWriter.writeLookup(
-                Matchers.any(ContentRef.class),
-                anyCollectionOf(ContentRef.class),
-                anySetOf(Publisher.class)
-        ))
-                .thenReturn(Optional.of(ImmutableSet.of()));
-
-        EquivalenceResults<Item> equivResult1 = equivResultsFor(
-                content,
-                ImmutableList.of(equiv1, equiv2)
-        );
-
-        EquivalenceResults<Item> equivResult2 = equivResultsFor(
-                equiv1,
-                ImmutableList.<Item>of(content)
-        );
-
-        updater.handle(equivResult1);
-        Thread.sleep(cacheDuration.getMillis() * 2);
-        updater.handle(equivResult2);
-
-        verify(lookupWriter).writeLookup(
-                argThat(is(contentRef)),
-                argThat(hasItems(equiv1Ref, equiv2Ref)),
-                argThat(is(publishers))
-        );
-        verify(lookupWriter).writeLookup(
-                argThat(is(equiv1Ref)),
-                argThat(hasItems(contentRef)),
-                argThat(is(publishers))
-        );
-
     }
 
     @Test

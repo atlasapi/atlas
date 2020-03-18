@@ -2,9 +2,6 @@ package org.atlasapi.equiv.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.atlasapi.equiv.ContentRef;
@@ -13,35 +10,22 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
-import org.joda.time.Duration;
 
 import java.util.Set;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class LookupWritingEquivalenceHandler<T extends Content>
         implements EquivalenceResultHandler<T> {
  
     private final LookupWriter writer;
-    private final LoadingCache<String, String> seenAsEquiv;
     private final Set<Publisher> publishers;
 
     @VisibleForTesting
     LookupWritingEquivalenceHandler(
             LookupWriter writer,
-            Iterable<Publisher> publishers,
-            Duration cacheDuration
+            Iterable<Publisher> publishers
     ) {
         this.writer = writer;
         this.publishers = ImmutableSet.copyOf(publishers);
-        this.seenAsEquiv = CacheBuilder.newBuilder()
-                .expireAfterWrite(cacheDuration.getMillis(), MILLISECONDS)
-                .build(new CacheLoader<String, String>() {
-                    @Override
-                    public String load(String key) throws Exception {
-                        return "";
-                    }
-                });
     }
 
     /**
@@ -56,29 +40,16 @@ public class LookupWritingEquivalenceHandler<T extends Content>
     ) {
         return new LookupWritingEquivalenceHandler<>(
                 writer,
-                Publisher.all(),
-                Duration.standardHours(5)
+                Publisher.all()
         );
     }
 
     @Override
     public boolean handle(EquivalenceResults<T> results) {
-        
-        // abort writing if seens as equiv and not equiv to anything
-        Set<T> strongEquivalences = results.strongEquivalences();
-
-        if(seenAsEquiv.asMap().containsKey(results.subject().getCanonicalUri())
-                && strongEquivalences.isEmpty()) {
-            return false;
-        }
-        
-        for (T equiv : strongEquivalences) {
-            seenAsEquiv.getUnchecked(equiv.getCanonicalUri());
-        }
 
         Optional<Set<LookupEntry>> writtenLookups = writer.writeLookup(
                 ContentRef.valueOf(results.subject()),
-                Iterables.transform(strongEquivalences, ContentRef.FROM_CONTENT),
+                Iterables.transform(results.strongEquivalences(), ContentRef.FROM_CONTENT),
                 publishers
         );
 

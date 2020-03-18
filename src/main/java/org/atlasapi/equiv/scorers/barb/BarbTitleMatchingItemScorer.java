@@ -244,7 +244,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         );
         if (equivScore != scoreOnPerfectMatch) {
             // txlog titles can often contain brand or series information so score the txlog title
-            // against a these titles as well if applicable
+            // against these titles as well if applicable
             Optional<Score> parentScore = scoreWithParentInformation(subject, suggestion, desc);
             if (parentScore.isPresent() && parentScore.get().isRealScore()
                     && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {

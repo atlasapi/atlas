@@ -119,7 +119,7 @@ public class BbcTxlogsItemUpdaterProvider implements EquivalenceResultUpdaterPro
                         ))
                 )
 
-                // See TxlogsItemUpdaterProvider for reason behind 10-4 extractor on txlog->bbc equiv
+                // See TxlogsItemUpdaterProvider for reason behind 10-5 extractor on txlog->bbc equiv
                 // Bbc to txlog should stay the same and equiv to all candidates since some
                 // BBC txlogs are regional variants without bcids that still need to be equived to
                 // even if one exists with a bcid. ENG-447

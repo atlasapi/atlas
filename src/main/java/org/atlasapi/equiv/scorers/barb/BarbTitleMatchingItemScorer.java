@@ -95,7 +95,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private final Score scoreOnPartialMatch;
     private final Score scoreOnMismatch;
     @Nullable private final ContentResolver contentResolver;
-    private final LoadingCache<String, Optional<ContentTitleMatchingFields>> containerCache;
+    private final LoadingCache<String, Optional<ContentTitleMatchingFields>> topLevelContainerCache;
     private final LoadingCache<String, Optional<ContentTitleMatchingFields>> seriesCache;
 
     public enum TitleType {
@@ -135,7 +135,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         scoreOnPartialMatch = checkNotNull(builder.scoreOnPartialMatch);
         scoreOnMismatch = checkNotNull(builder.scoreOnMismatch);
         contentResolver = builder.contentResolver;
-        containerCache = CacheBuilder.newBuilder()
+        topLevelContainerCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(checkNotNull(builder.containerCacheDuration), TimeUnit.SECONDS)
                 .build(new CacheLoader<String, Optional<ContentTitleMatchingFields>>() {
                     @Override
@@ -276,7 +276,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
 
         Optional<ContentTitleMatchingFields> nonTxlogParent = nonTxlogItem.getContainer() != null
-                ? containerCache.getUnchecked(nonTxlogItem.getContainer().getUri())
+                ? topLevelContainerCache.getUnchecked(nonTxlogItem.getContainer().getUri())
                 : Optional.empty();
 
         if (!nonTxlogParent.isPresent()) {

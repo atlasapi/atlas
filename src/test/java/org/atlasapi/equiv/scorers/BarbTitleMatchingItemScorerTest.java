@@ -9,6 +9,7 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.scorers.barb.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
@@ -145,20 +146,22 @@ public class BarbTitleMatchingItemScorerTest {
         return nitroBrand;
     }
 
-    private Series nitroSeries(String title, String uri, Brand nitroBrand) {
+    private Series nitroSeries(String title, String uri, @Nullable Brand nitroBrand) {
         Series nitroSeries = new Series();
         nitroSeries.setTitle(title);
         nitroSeries.setPublisher(Publisher.BBC_NITRO);
         nitroSeries.setCanonicalUri(uri);
-        nitroSeries.setParent(nitroBrand);
+        if (nitroBrand != null) {
+            nitroSeries.setParent(nitroBrand);
+        }
         return nitroSeries;
     }
 
-    private Episode nitroEpisode(String title, Brand nitroBrand) {
+    private Episode nitroEpisode(String title, Container nitroBrand) {
         return nitroEpisode(title, nitroBrand, null);
     }
 
-    private Episode nitroEpisode(String title, Brand nitroBrand, @Nullable Series nitroSeries) {
+    private Episode nitroEpisode(String title, Container nitroBrand, @Nullable Series nitroSeries) {
         Episode nitroEpisode = new Episode();
         nitroEpisode.setTitle(title);
         nitroEpisode.setPublisher(Publisher.BBC_NITRO);
@@ -170,7 +173,7 @@ public class BarbTitleMatchingItemScorerTest {
     }
 
     @Test
-    public void testContainersAreCached() {
+    public void testBrandsAreCached() {
         Item txlog = txlog("t1");
         Brand nitroBrand = nitroBrand("t1", "1");
         Episode nitroEpisode = nitroEpisode("t2", nitroBrand);
@@ -181,6 +184,44 @@ public class BarbTitleMatchingItemScorerTest {
         assertThat(score(nitroEpisode, txlog, cachedScorer), is(scoreOnMatch));
         nitroBrand = nitroBrand("t3", "1");
         setUpContentResolving(nitroBrand);
+        assertThat(score(txlog, nitroEpisode), is(scoreOnMismatch));
+        assertThat(score(nitroEpisode, txlog), is(scoreOnMismatch));
+        assertThat(score(txlog, nitroEpisode, cachedScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog, cachedScorer), is(scoreOnMatch));
+    }
+
+    @Test
+    public void testTopLevelSeriesAreCached() {
+        Item txlog = txlog("t1");
+        Series nitroTopLevelSeries = nitroSeries("t1", "1", null);
+        Episode nitroEpisode = nitroEpisode("t2", nitroTopLevelSeries);
+        setUpContentResolving(nitroTopLevelSeries);
+        assertThat(score(txlog, nitroEpisode), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog), is(scoreOnMatch));
+        assertThat(score(txlog, nitroEpisode, cachedScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog, cachedScorer), is(scoreOnMatch));
+        nitroTopLevelSeries = nitroSeries("t3", "1", null);
+        setUpContentResolving(nitroTopLevelSeries);
+        assertThat(score(txlog, nitroEpisode), is(scoreOnMismatch));
+        assertThat(score(nitroEpisode, txlog), is(scoreOnMismatch));
+        assertThat(score(txlog, nitroEpisode, cachedScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog, cachedScorer), is(scoreOnMatch));
+    }
+
+    @Test
+    public void testSeriesAreCached() {
+        Item txlog = txlog("t1");
+        Brand nitroBrand = nitroBrand("t2", "2");
+        Series nitroSeries = nitroSeries("t1", "3", nitroBrand);
+        Episode nitroEpisode = nitroEpisode("t3", nitroBrand, nitroSeries);
+        setUpContentResolving(nitroBrand);
+        setUpContentResolving(nitroSeries);
+        assertThat(score(txlog, nitroEpisode), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog), is(scoreOnMatch));
+        assertThat(score(txlog, nitroEpisode, cachedScorer), is(scoreOnMatch));
+        assertThat(score(nitroEpisode, txlog, cachedScorer), is(scoreOnMatch));
+        nitroSeries = nitroSeries("t4", "3", nitroBrand);
+        setUpContentResolving(nitroSeries);
         assertThat(score(txlog, nitroEpisode), is(scoreOnMismatch));
         assertThat(score(nitroEpisode, txlog), is(scoreOnMismatch));
         assertThat(score(txlog, nitroEpisode, cachedScorer), is(scoreOnMatch));

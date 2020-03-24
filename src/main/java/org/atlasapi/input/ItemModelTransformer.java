@@ -17,6 +17,7 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Policy.RevenueContract;
+import org.atlasapi.media.entity.Provider;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Song;
@@ -261,7 +262,9 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         location.setEmbedId(inputLocation.getEmbedId());
         location.setTransportIsLive(inputLocation.getTransportIsLive());
         location.setUri(inputLocation.getUri());
-
+        if(inputLocation.getProvider() != null) {
+            location.setProvider(providerFrom(inputLocation.getProvider()));
+        }
         if (inputLocation.getTransportSubType() != null) {
             location.setTransportSubType(TransportSubType.fromString(inputLocation.getTransportSubType()));
         }
@@ -269,6 +272,10 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             location.setTransportType(TransportType.fromString(inputLocation.getTransportType()));
         }
         return location;
+    }
+
+    private Provider providerFrom(org.atlasapi.media.entity.simple.Provider simpleProvider) {
+        return new Provider(simpleProvider.getName(), simpleProvider.getIconUrl());
     }
 
     private Policy policyFrom(org.atlasapi.media.entity.simple.Location inputLocation, DateTime now) {

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.persistence.MongoTestHelper;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongoClient;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.mongodb.DBCollection;
 import org.atlasapi.media.entity.Alias;
@@ -26,9 +27,10 @@ import static org.junit.Assert.assertNotNull;
 public class LookupRefUpdateTaskTest {
 
     private final DatabasedMongo db = MongoTestHelper.anEmptyTestDatabase();
+    private final DatabasedMongoClient dbClient = MongoTestHelper.anEmptyTestDatabaseWithMongoClient();
     private final DBCollection lookupCollection = db.collection("lookup");
     private final DBCollection progressCollection = db.collection("progress");
-    private final LookupRefUpdateTask task = new LookupRefUpdateTask(lookupCollection, progressCollection);
+    private final LookupRefUpdateTask task = new LookupRefUpdateTask(dbClient, "lookup", progressCollection);
     private final LookupEntryTranslator translator = new LookupEntryTranslator();
     
     @Before

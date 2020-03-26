@@ -11,25 +11,28 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongoClient;
 import com.metabroadcast.common.persistence.mongo.MongoConstants;
 import com.metabroadcast.common.persistence.translator.TranslatorUtils;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.mongodb.BasicDBObject;
-import com.mongodb.Bytes;
 import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.ReadPreference;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.ReplaceOptions;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
 import org.atlasapi.persistence.lookup.entry.EquivRefs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.LookupEntryTranslator;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +48,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     
-    private final DBCollection lookupCollection;
+    private final MongoCollection<DBObject> lookupCollection;
     private final LookupEntryTranslator entryTranslator;
     private final MongoLookupEntryStore entryStore;
     private final DBCollection progressCollection;
@@ -56,10 +59,16 @@ public class LookupRefUpdateTask extends ScheduledTask {
 
     private final Predicate<Object> notNull = Predicates.not(Predicates.isNull());
     
-    public LookupRefUpdateTask(DBCollection lookupCollection, DBCollection progressCollection) {
-        this.lookupCollection = checkNotNull(lookupCollection);
+    public LookupRefUpdateTask(
+            DatabasedMongoClient mongo,
+            String lookupCollectionName,
+            DBCollection progressCollection
+    ) {
+        this.lookupCollection = mongo.collection(lookupCollectionName, DBObject.class);
         this.entryTranslator = new LookupEntryTranslator();
-        this.entryStore = new MongoLookupEntryStore(lookupCollection,
+        this.entryStore = new MongoLookupEntryStore(
+                mongo,
+                lookupCollectionName,
                 new NoLoggingPersistenceAuditLog(),
                 ReadPreference.primary());
         this.progressCollection = checkNotNull(progressCollection);
@@ -70,12 +79,13 @@ public class LookupRefUpdateTask extends ScheduledTask {
     protected void runTask() {
         Long start = getStart();
         log.info("Started: {} from {}", scheduleKey, startProgress(start));
-        
-        DBCursor aids = lookupCollection.find(aidGreaterThan(start),
-            selectAidOnly())
-            .sort(new BasicDBObject(ID_FIELD,1))
-            .batchSize(1000)
-            .addOption(Bytes.QUERYOPTION_NOTIMEOUT);
+
+        Iterator<DBObject> aids = lookupCollection.find(aidGreaterThan(start))
+                .projection(selectAidOnly())
+                .sort(new Document(ID_FIELD, 1))
+                .batchSize(1000)
+                .noCursorTimeout(true)
+                .iterator();
         
         UpdateProgress processed = UpdateProgress.START;
 
@@ -113,7 +123,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
         if (seen.contains(aid)) {
             return;
         }
-        LookupEntry entry = entryTranslator.fromDbo(lookupCollection.findOne(new BasicDBObject(ID_FIELD, aid)));
+        LookupEntry entry = entryTranslator.fromDbo(lookupCollection.find(new Document(ID_FIELD, aid)).first());
         if (allRefsHaveIds(entry)) {
             return;
         }
@@ -203,31 +213,35 @@ public class LookupRefUpdateTask extends ScheduledTask {
         }
         ImmutableSet<LookupRef> refs = ImmutableSet.of(ref);
         EquivRefs equivRefs = EquivRefs.of(ref, BIDIRECTIONAL);
-        lookupCollection.save(entryTranslator.toDbo(
-            new LookupEntry(
-                    e.uri(),
-                    e.id(),
-                    ref,
-                    e.aliasUrls(),
-                    e.aliases(),
-                    equivRefs,
-                    equivRefs,
-                    EquivRefs.of(),
-                    refs,
-                    e.created(),
-                    e.updated(),
-                    e.transitivesUpdated(),
-                    e.activelyPublished()
-            )
-        ));
+        lookupCollection.replaceOne(
+                new Document("_id", e.uri()),
+                entryTranslator.toDbo(
+                        new LookupEntry(
+                                e.uri(),
+                                e.id(),
+                                ref,
+                                e.aliasUrls(),
+                                e.aliases(),
+                                equivRefs,
+                                equivRefs,
+                                EquivRefs.of(),
+                                refs,
+                                e.created(),
+                                e.updated(),
+                                e.transitivesUpdated(),
+                                e.activelyPublished()
+                        )
+                ),
+                new ReplaceOptions().upsert(true)
+        );
     }
 
-    private BasicDBObject selectAidOnly() {
-        return new BasicDBObject(ImmutableMap.of(MongoConstants.ID,0,ID_FIELD,1));
+    private Document selectAidOnly() {
+        return new Document(ImmutableMap.of(MongoConstants.ID,0,ID_FIELD,1));
     }
 
-    private BasicDBObject aidGreaterThan(Long start) {
-        return new BasicDBObject(ID_FIELD, new BasicDBObject(MongoConstants.GREATER_THAN, start));
+    private Document aidGreaterThan(Long start) {
+        return new Document(ID_FIELD, new Document(MongoConstants.GREATER_THAN, start));
     }
     
     

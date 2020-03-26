@@ -1,17 +1,14 @@
 package org.atlasapi.equiv;
 
-import static com.metabroadcast.common.persistence.mongo.MongoBuilders.update;
-import static com.metabroadcast.common.persistence.mongo.MongoBuilders.where;
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.mock;
-
-import java.util.Iterator;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.persistence.MongoTestHelper;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongoClient;
+import com.metabroadcast.common.time.SystemClock;
+import com.mongodb.ReadPreference;
 import junit.framework.TestCase;
-
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
 import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.media.entity.Brand;
@@ -41,21 +38,28 @@ import org.atlasapi.persistence.service.ServiceResolver;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.persistence.MongoTestHelper;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.time.SystemClock;
-import com.mongodb.ReadPreference;
+import java.util.Iterator;
+
+import static com.metabroadcast.common.persistence.mongo.MongoBuilders.update;
+import static com.metabroadcast.common.persistence.mongo.MongoBuilders.where;
+import static org.atlasapi.media.entity.Publisher.BBC;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Mockito.mock;
 
 public class ChildRefUpdateTaskTest extends TestCase {
 
     DatabasedMongo mongo = MongoTestHelper.anEmptyTestDatabase();
+    DatabasedMongoClient mongoClient = MongoTestHelper.anEmptyTestDatabaseWithMongoClient();
     PersistenceAuditLog persistenceAuditLog = new NoLoggingPersistenceAuditLog();
     ScheduleTaskProgressStore progressStore = new MongoScheduleTaskProgressStore(mongo);
-    MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"), 
-            persistenceAuditLog, ReadPreference.primary());
+    MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(
+            mongoClient,
+            "lookup",
+            persistenceAuditLog,
+            ReadPreference.primary()
+    );
     ContentResolver resolver = new LookupResolvingContentResolver(new MongoContentResolver(mongo, lookupStore), lookupStore);
     
     private final ServiceResolver serviceResolver = mock(ServiceResolver.class);

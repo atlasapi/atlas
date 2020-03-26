@@ -1,11 +1,17 @@
 package org.atlasapi.equiv;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-
-import java.util.List;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.persistence.MongoTestHelper;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongoClient;
+import com.metabroadcast.common.persistence.mongo.MongoConstants;
+import com.metabroadcast.common.time.SystemClock;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.ReadPreference;
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
 import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.media.entity.Brand;
@@ -40,26 +46,25 @@ import org.atlasapi.persistence.service.ServiceResolver;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.persistence.MongoTestHelper;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.persistence.mongo.MongoConstants;
-import com.metabroadcast.common.time.SystemClock;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.ReadPreference;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class PersonRefUpdateTaskTest {
     
     private final DatabasedMongo mongo = MongoTestHelper.anEmptyTestDatabase();
+    private final DatabasedMongoClient mongoClient = MongoTestHelper.anEmptyTestDatabaseWithMongoClient();
     private final PersistenceAuditLog persistenceAuditLog = new NoLoggingPersistenceAuditLog();
 
     private final ScheduleTaskProgressStore progressStore = new MongoScheduleTaskProgressStore(mongo);
-    private final MongoLookupEntryStore contentLookup = new MongoLookupEntryStore(mongo.collection("lookup"), 
-            persistenceAuditLog, ReadPreference.primary());
+    private final MongoLookupEntryStore contentLookup = new MongoLookupEntryStore(
+            mongoClient,
+            "lookup",
+            persistenceAuditLog,
+            ReadPreference.primary()
+    );
     private final KnownTypeContentResolver knownTypeContentResolver = new MongoContentResolver(mongo, contentLookup);
     private final ContentLister lister = new MongoContentLister(mongo, knownTypeContentResolver);
 
@@ -72,8 +77,12 @@ public class PersonRefUpdateTaskTest {
     private final ContentWriter contentWriter = new MongoContentWriter(mongo, contentLookup, persistenceAuditLog, playerResolver, serviceResolver, new SystemClock());
     private final ContentResolver contentResolver = new LookupResolvingContentResolver(new MongoContentResolver(mongo, contentLookup), contentLookup);
 
-    private final LookupEntryStore peopleLookup = new MongoLookupEntryStore(mongo.collection("peopleLookup"), 
-            persistenceAuditLog, ReadPreference.primary());
+    private final LookupEntryStore peopleLookup = new MongoLookupEntryStore(
+            mongoClient,
+            "peopleLookup",
+            persistenceAuditLog,
+            ReadPreference.primary()
+    );
     private final PersonStore personStore = new MongoPersonStore(mongo, TransitiveLookupWriter.explicitTransitiveLookupWriter(peopleLookup), peopleLookup, persistenceAuditLog);
 
     private Item item1;

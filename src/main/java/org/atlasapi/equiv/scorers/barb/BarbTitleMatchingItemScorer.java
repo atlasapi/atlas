@@ -329,11 +329,13 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 if (onlyElement == nonTxlogItemFields) { //this was checked earlier for efficiency
                     continue;
                 }
-                // Ignore cases where one of the permutations is just "Series X" or "Episode X" just in case these
-                // could cause some false positives.
-                Matcher genericTitlePatternMatcher = GENERIC_TITLE_PATTERN.matcher(onlyElement.getTitle());
-                if (genericTitlePatternMatcher.matches()) {
-                    continue;
+                if (!Strings.isNullOrEmpty(onlyElement.getTitle())) {
+                    // Ignore cases where one of the permutations is just "Series X" or "Episode X" just in case these
+                    // could cause some false positives.
+                    Matcher genericTitlePatternMatcher = GENERIC_TITLE_PATTERN.matcher(onlyElement.getTitle());
+                    if (genericTitlePatternMatcher.matches()) {
+                        continue;
+                    }
                 }
             }
             Collection<List<ContentTitleMatchingFields>> nonTxlogFieldsPermutations =

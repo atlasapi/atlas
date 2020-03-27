@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -329,24 +330,31 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 if (onlyElement == nonTxlogItemFields) { //this was checked earlier for efficiency
                     continue;
                 }
-                if (!Strings.isNullOrEmpty(onlyElement.getTitle())) {
-                    // Ignore cases where one of the permutations is just "Series X" or "Episode X" just in case these
-                    // could cause some false positives.
-                    Matcher genericTitlePatternMatcher = GENERIC_TITLE_PATTERN.matcher(onlyElement.getTitle());
-                    if (genericTitlePatternMatcher.matches()) {
-                        continue;
-                    }
-                }
             }
             Collection<List<ContentTitleMatchingFields>> nonTxlogFieldsPermutations =
                     Collections2.permutations(nonTxlogFieldsSubset);
 
             for (List<ContentTitleMatchingFields> nonTxlogFieldsPermutation : nonTxlogFieldsPermutations) {
-                String concatenatedTitle = TITLE_PERMUTATION_JOINER.join(
-                        nonTxlogFieldsPermutation.stream()
-                                .map(ContentTitleMatchingFields::getTitle)
-                                .collect(MoreCollectors.toImmutableList())
-                );
+                List<String> titles = nonTxlogFieldsPermutation.stream()
+                        .map(ContentTitleMatchingFields::getTitle)
+                        .filter(Objects::nonNull)
+                        .collect(MoreCollectors.toImmutableList());
+
+                if (titles.isEmpty()) {
+                    continue;
+                }
+
+                if (titles.size() == 1) {
+                    // Ignore cases where one of the permutations is just "Series X" or "Episode X" just in case these
+                    // could cause some false positives.
+                    Matcher genericTitlePatternMatcher = GENERIC_TITLE_PATTERN.matcher(Iterables.getOnlyElement(titles));
+                    if (genericTitlePatternMatcher.matches()) {
+                        continue;
+                    }
+                }
+
+                String concatenatedTitle = TITLE_PERMUTATION_JOINER.join(titles);
+
                 // Copy the existing item fields object with a new title as if it were the title of the item.
                 // This is so we can still keep some information from the item such as year in case it is useful.
                 ContentTitleMatchingFields permutationFields = nonTxlogItemFields.withTitle(concatenatedTitle);

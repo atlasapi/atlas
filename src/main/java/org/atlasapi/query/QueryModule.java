@@ -14,6 +14,10 @@ permissions and limitations under the License. */
 
 package org.atlasapi.query;
 
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongoClient;
+import com.mongodb.ReadPreference;
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.YouViewOutputContentMerger;
 import org.atlasapi.equiv.query.MergeOnOutputQueryExecutor;
@@ -36,11 +40,6 @@ import org.atlasapi.query.content.FilterScheduleOnlyQueryExecutor;
 import org.atlasapi.query.content.LookupResolvingQueryExecutor;
 import org.atlasapi.query.content.UriFetchingQueryExecutor;
 import org.atlasapi.query.uri.canonical.CanonicalisingFetcher;
-
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-
-import com.google.common.collect.ImmutableSet;
-import com.mongodb.ReadPreference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,6 +57,7 @@ public class QueryModule {
 	private @Autowired @Qualifier("remoteSiteContentResolver") CanonicalisingFetcher localOrRemoteFetcher;
 
 	private @Autowired DatabasedMongo mongo;
+	private @Autowired DatabasedMongoClient mongoClient;
 	private @Autowired ReadPreference readPreference;
     private @Autowired CassandraContentStore cassandra;
     private @Autowired @Qualifier("contentUpdater") EquivalenceUpdater<Content> equivUpdater;
@@ -72,7 +72,8 @@ public class QueryModule {
 
         MongoLookupEntryStore lookupStore =
                 new MongoLookupEntryStore(
-                        mongo.collection("lookup"),
+						mongoClient,
+                        "lookup",
                         new NoLoggingPersistenceAuditLog(),
                         readPreference
                 );
@@ -111,7 +112,8 @@ public class QueryModule {
 	@Bean @Qualifier("EquivalenceQueryExecutor") KnownTypeQueryExecutor equivalenceQueryExecutor() {
 		MongoLookupEntryStore lookupStore =
                 new MongoLookupEntryStore(
-                        mongo.collection("lookup"),
+                		mongoClient,
+                        "lookup",
                         new NoLoggingPersistenceAuditLog(),
                         readPreference
                 );
@@ -157,9 +159,10 @@ public class QueryModule {
 
         MongoLookupEntryStore lookupStore =
                 new MongoLookupEntryStore(
-                        mongo.collection("lookup"),
-                        new NoLoggingPersistenceAuditLog(),
-                        readPreference
+						mongoClient,
+						"lookup",
+						new NoLoggingPersistenceAuditLog(),
+						readPreference
                 );
         KnownTypeContentResolver mongoContentResolver =
                 new MongoContentResolver(mongo, lookupStore);

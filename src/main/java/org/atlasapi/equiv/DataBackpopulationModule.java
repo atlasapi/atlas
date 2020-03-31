@@ -1,6 +1,7 @@
 package org.atlasapi.equiv;
 
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongoClient;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.mongodb.ReadPreference;
 import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
@@ -21,6 +22,7 @@ public class DataBackpopulationModule {
     private @Autowired ContentLister lister;
     private @Autowired ContentResolver resolver;
     private @Autowired DatabasedMongo mongo;
+    private @Autowired DatabasedMongoClient mongoClient;
     private @Autowired ScheduleTaskProgressStore progressStore;
     private @Autowired SimpleScheduler scheduler;
 
@@ -54,14 +56,18 @@ public class DataBackpopulationModule {
     @Bean
     public PersonLookupPopulationTask personLookupPopulationTask() {
         return new PersonLookupPopulationTask(mongo.collection("people"), 
-                new MongoLookupEntryStore(mongo.collection("peopleLookup"), 
+                new MongoLookupEntryStore(
+                        mongoClient,
+                        "peopleLookup",
                         new NoLoggingPersistenceAuditLog(),
                         ReadPreference.primary()));
     }
     
     @Bean
     public LookupRefUpdateTask lookupRefUpdateTask() {
-        return new LookupRefUpdateTask(mongo.collection("lookup"),
+        return new LookupRefUpdateTask(
+                mongoClient,
+                "lookup",
                 mongo.collection("scheduling"));
     }
 }

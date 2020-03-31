@@ -10,6 +10,7 @@ import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.persistence.MongoTestHelper;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongoClient;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.queue.MessagingException;
 import com.metabroadcast.common.time.DateTimeZones;
@@ -113,8 +114,12 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
         DatabasedMongo db = MongoTestHelper.anEmptyTestDatabase();
-        MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(db.collection("lookup"),
-                persistenceAuditLog, ReadPreference.primary()
+        DatabasedMongoClient dbWithClient = MongoTestHelper.anEmptyTestDatabaseWithMongoClient();
+        MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(
+                dbWithClient,
+                "lookup",
+                persistenceAuditLog,
+                ReadPreference.primary()
         );
         resolver = new LookupResolvingContentResolver(
                 new MongoContentResolver(db, lookupStore),

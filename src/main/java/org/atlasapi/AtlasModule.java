@@ -19,6 +19,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.health.HealthProbe;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongoClient;
 import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.properties.Parameter;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -50,10 +51,18 @@ public class AtlasModule {
 	private final MongoSecondaryReadPreferenceBuilder secondaryReadPreferenceBuilder = new MongoSecondaryReadPreferenceBuilder();
 
 	public @Bean DatabasedMongo databasedMongo() {
-	    return new DatabasedMongo(mongo(), dbName);
+	    return new DatabasedMongo(mongoClient(), dbName);
 	}
 
+    public @Bean DatabasedMongoClient databasedMongoClient() {
+        return new DatabasedMongoClient(mongoClient(), dbName);
+    }
+
     public @Bean Mongo mongo() {
+	    return mongoClient();
+    }
+
+    public @Bean MongoClient mongoClient() {
         MongoClientOptions.Builder optionsBuilder = MongoClientOptions.builder()
                 .readPreference(readPreference())
                 .connectionsPerHost(mongoMaxConnections);

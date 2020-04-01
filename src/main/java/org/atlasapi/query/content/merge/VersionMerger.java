@@ -68,5 +68,10 @@ public class VersionMerger {
 
         existing.setSegmentEvents(update.getSegmentEvents());
         existing.setRestriction(update.getRestriction());
+        if(update.getProvider() != null) {
+            existing.setProvider(update.getProvider());
+        } else {
+            existing.setProvider(null);
+        }
     }
 }

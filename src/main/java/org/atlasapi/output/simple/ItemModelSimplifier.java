@@ -31,6 +31,7 @@ import org.atlasapi.media.entity.simple.BrandSummary;
 import org.atlasapi.media.entity.simple.Channel;
 import org.atlasapi.media.entity.simple.Identified;
 import org.atlasapi.media.entity.simple.Language;
+import org.atlasapi.media.entity.simple.Provider;
 import org.atlasapi.media.entity.simple.Restriction;
 import org.atlasapi.media.entity.simple.SeriesSummary;
 import org.atlasapi.media.product.ProductResolver;
@@ -52,9 +53,7 @@ import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.metabroadcast.common.time.SystemClock;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -714,6 +713,10 @@ public class ItemModelSimplifier
         simpleLocation.setEmbedCode(location.getEmbedCode());
         simpleLocation.setEmbedId(location.getEmbedId());
         simpleLocation.setAvailable(location.getAvailable());
+        if (location.getProvider() != null) {
+            Provider provider = new Provider(location.getProvider().getName(), location.getProvider().getIconUrl());
+            simpleLocation.setProvider(provider);
+        }
 
     }
 }

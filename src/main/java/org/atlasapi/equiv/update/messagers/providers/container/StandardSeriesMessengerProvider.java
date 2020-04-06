@@ -2,7 +2,6 @@ package org.atlasapi.equiv.update.messagers.providers.container;
 
 import org.atlasapi.equiv.messengers.EquivalenceResultMessenger;
 import org.atlasapi.equiv.messengers.NopEquivalenceResultMessenger;
-import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.update.messagers.providers.EquivalenceResultMessengerProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Container;

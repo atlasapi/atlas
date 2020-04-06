@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.update.messagers.providers.container;
 
 import org.atlasapi.equiv.messengers.EquivalenceResultMessenger;
+import org.atlasapi.equiv.messengers.NopEquivalenceResultMessenger;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.update.messagers.providers.EquivalenceResultMessengerProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
@@ -23,9 +24,8 @@ public class StandardTopLevelContainerMessengerProvider implements EquivalenceRe
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return QueueingEquivalenceResultMessenger.create(
-                dependencies.getMessageSender(),
-                dependencies.getLookupEntryStore()
-        );
+        // This used to be a QueueingEquivalenceResultMessenger but this has been disabled due to the messaging being
+        // moved to the TransitiveLookupWriter. Framework has been kept intact for possible future use.
+        return new NopEquivalenceResultMessenger<>();
     }
 }

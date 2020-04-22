@@ -1,33 +1,5 @@
 package org.atlasapi.equiv;
 
-import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
-import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
-import static org.atlasapi.persistence.content.ContentCategory.CHILD_ITEM;
-import static org.atlasapi.persistence.content.ContentCategory.TOP_LEVEL_ITEM;
-import static org.atlasapi.persistence.content.listing.ContentListingCriteria.defaultCriteria;
-import static org.atlasapi.persistence.content.listing.ContentListingProgress.progressFrom;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
-import org.atlasapi.media.entity.ChildRef;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.CrewMember;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentCategory;
-import org.atlasapi.persistence.content.listing.ContentLister;
-import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.persistence.content.mongo.MongoContentTables;
-import org.atlasapi.persistence.media.entity.ChildRefTranslator;
-import org.atlasapi.persistence.media.entity.ContentGroupTranslator;
-import org.atlasapi.persistence.media.entity.CrewMemberTranslator;
-import org.atlasapi.persistence.media.entity.IdentifiedTranslator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -43,6 +15,33 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import org.atlasapi.media.entity.ChildRef;
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.CrewMember;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentCategory;
+import org.atlasapi.persistence.content.listing.ContentLister;
+import org.atlasapi.persistence.content.listing.ContentListingProgress;
+import org.atlasapi.persistence.content.mongo.MongoContentTables;
+import org.atlasapi.persistence.content.tasks.ScheduleTaskProgressStore;
+import org.atlasapi.persistence.media.entity.ChildRefTranslator;
+import org.atlasapi.persistence.media.entity.ContentGroupTranslator;
+import org.atlasapi.persistence.media.entity.CrewMemberTranslator;
+import org.atlasapi.persistence.media.entity.IdentifiedTranslator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
+import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
+import static org.atlasapi.persistence.content.ContentCategory.CHILD_ITEM;
+import static org.atlasapi.persistence.content.ContentCategory.TOP_LEVEL_ITEM;
+import static org.atlasapi.persistence.content.listing.ContentListingCriteria.defaultCriteria;
+import static org.atlasapi.persistence.content.listing.ContentListingProgress.progressFrom;
 
 public class PersonRefUpdateTask extends ScheduledTask {
     

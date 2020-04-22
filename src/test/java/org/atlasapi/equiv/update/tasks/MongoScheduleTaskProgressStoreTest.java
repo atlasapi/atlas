@@ -1,12 +1,11 @@
 package org.atlasapi.equiv.update.tasks;
 
+import com.metabroadcast.common.persistence.MongoTestHelper;
+import junit.framework.TestCase;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
-
-import com.metabroadcast.common.persistence.MongoTestHelper;
-
-import junit.framework.TestCase;
+import org.atlasapi.persistence.content.tasks.MongoScheduleTaskProgressStore;
 
 public class
 MongoScheduleTaskProgressStoreTest extends TestCase {

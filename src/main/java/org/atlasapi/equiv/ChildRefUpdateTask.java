@@ -1,41 +1,5 @@
 package org.atlasapi.equiv;
 
-import static com.metabroadcast.common.persistence.mongo.MongoBuilders.update;
-import static com.metabroadcast.common.persistence.mongo.MongoBuilders.where;
-import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
-import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
-import static org.atlasapi.persistence.content.ContentCategory.CONTAINER;
-import static org.atlasapi.persistence.content.listing.ContentListingCriteria.defaultCriteria;
-import static org.atlasapi.persistence.content.listing.ContentListingProgress.progressFrom;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.ChildRef;
-import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.SeriesRef;
-import org.atlasapi.persistence.content.ContentCategory;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
-import org.atlasapi.persistence.content.listing.ContentLister;
-import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.persistence.content.mongo.MongoContentTables;
-import org.atlasapi.persistence.media.entity.ChildRefTranslator;
-import org.atlasapi.persistence.media.entity.ContainerTranslator;
-import org.atlasapi.persistence.media.entity.ItemTranslator;
-import org.atlasapi.persistence.media.entity.SeriesRefTranslator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -52,6 +16,41 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.mongodb.BasicDBList;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.ChildRef;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.SeriesRef;
+import org.atlasapi.persistence.content.ContentCategory;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.content.listing.ContentLister;
+import org.atlasapi.persistence.content.listing.ContentListingProgress;
+import org.atlasapi.persistence.content.mongo.MongoContentTables;
+import org.atlasapi.persistence.content.tasks.ScheduleTaskProgressStore;
+import org.atlasapi.persistence.media.entity.ChildRefTranslator;
+import org.atlasapi.persistence.media.entity.ContainerTranslator;
+import org.atlasapi.persistence.media.entity.ItemTranslator;
+import org.atlasapi.persistence.media.entity.SeriesRefTranslator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static com.metabroadcast.common.persistence.mongo.MongoBuilders.update;
+import static com.metabroadcast.common.persistence.mongo.MongoBuilders.where;
+import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
+import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
+import static org.atlasapi.persistence.content.ContentCategory.CONTAINER;
+import static org.atlasapi.persistence.content.listing.ContentListingCriteria.defaultCriteria;
+import static org.atlasapi.persistence.content.listing.ContentListingProgress.progressFrom;
 
 public class ChildRefUpdateTask extends ScheduledTask {
     

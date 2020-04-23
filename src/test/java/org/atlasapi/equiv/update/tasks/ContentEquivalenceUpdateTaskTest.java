@@ -18,6 +18,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 import org.atlasapi.persistence.content.listing.SelectedContentLister;
+import org.atlasapi.persistence.content.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.util.AlwaysBlockingQueue;
 import org.junit.Test;

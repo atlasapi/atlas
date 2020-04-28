@@ -38,6 +38,7 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.messaging.v3.EntityUpdatedMessage;
+import org.atlasapi.messaging.v3.EquivalenceChangeMessage;
 import org.atlasapi.messaging.v3.JacksonMessageSerializer;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -224,6 +225,7 @@ public class EquivTaskModule {
     private Integer defaultStreamedEquivUpdateConsumers;
     @Value("${equiv.stream-updater.consumers.max}") private Integer maxStreamedEquivUpdateConsumers;
     @Value("${messaging.destination.content.changes}") private String contentChanges;
+    @Value("${messaging.destination.equiv.changes.content}") private String equivChangesContent;
 
     @Autowired private SelectedContentLister contentLister;
     @Autowired private SimpleScheduler taskScheduler;
@@ -908,11 +910,10 @@ public class EquivTaskModule {
         };
     }
 
-    private EquivalenceUpdatingWorker equivUpdatingWorker() {
-        return new EquivalenceUpdatingWorker(
+    private ContentChangesEquivalenceUpdatingWorker contentChangesEquivUpdatingWorker() {
+        return new ContentChangesEquivalenceUpdatingWorker(
                 contentResolver,
                 lookupStore,
-                equivalenceResultStore,
                 equivUpdater,
                 Predicates.or(ImmutableList.<Predicate<? super Content>>of(
                         sourceIsIn(
@@ -947,6 +948,15 @@ public class EquivTaskModule {
         );
     }
 
+    private EquivalenceChangesEquivalenceUpdatingWorker equivChangesEquivUpdatingWorker() {
+        return new EquivalenceChangesEquivalenceUpdatingWorker(
+                contentResolver,
+                lookupStore,
+                equivUpdater,
+                Predicates.alwaysTrue()
+        );
+    }
+
     private Predicate<Content> sourceIsIn(Publisher... srcs) {
         final ImmutableSet<Publisher> sources = ImmutableSet.copyOf(srcs);
         return new Predicate<Content>() {
@@ -963,9 +973,25 @@ public class EquivTaskModule {
     public KafkaConsumer equivalenceUpdatingMessageListener() {
         return messaging.messageConsumerFactory()
                 .createConsumer(
-                        equivUpdatingWorker(),
+                        contentChangesEquivUpdatingWorker(),
                         JacksonMessageSerializer.forType(EntityUpdatedMessage.class),
                         contentChanges,
+                        "EquivUpdater"
+                )
+                .withDefaultConsumers(defaultStreamedEquivUpdateConsumers)
+                .withMaxConsumers(maxStreamedEquivUpdateConsumers)
+                .withPersistentRetryPolicy(db)
+                .build();
+    }
+
+    @Bean
+    @Lazy()
+    public KafkaConsumer equivalenceChangesEquivalenceUpdatingMessageListener() {
+        return messaging.messageConsumerFactory()
+                .createConsumer(
+                        equivChangesEquivUpdatingWorker(),
+                        JacksonMessageSerializer.forType(EquivalenceChangeMessage.class),
+                        equivChangesContent,
                         "EquivUpdater"
                 )
                 .withDefaultConsumers(defaultStreamedEquivUpdateConsumers)

@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EquivalenceUpdatingWorkerTest {
+public class ContentChangesEquivalenceUpdatingWorkerTest {
 
     private final ContentResolver resolver = mock(ContentResolver.class);
     private final LookupEntryStore entryStore = mock(LookupEntryStore.class);
@@ -49,9 +49,9 @@ public class EquivalenceUpdatingWorkerTest {
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final Predicate<Object> filter = Predicates.instanceOf(Item.class);
     @SuppressWarnings("unchecked")
-    private final EquivalenceUpdatingWorker workerThatOnlyUpdatesItems
-        = new EquivalenceUpdatingWorker(resolver, 
-                entryStore, resultStore, updater, Predicates.<Content>and(filter));
+    private final ContentChangesEquivalenceUpdatingWorker workerThatOnlyUpdatesItems
+        = new ContentChangesEquivalenceUpdatingWorker(resolver,
+                entryStore, updater, Predicates.<Content>and(filter));
     @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
     
     @Test

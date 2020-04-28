@@ -72,7 +72,6 @@ public class BbcIonServices {
             .put("cbbc_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1849")
             .put("cbeebies", "http://www.bbc.co.uk/services/cbeebies")
             .put("cbeebies_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1850")
-            .put("bbc_bitesize", "http://www.bbc.co.uk/services/bbc_bitesize")
             .build();
 
     public static BiMap<String, String> radioServices = ImmutableBiMap.<String, String>builder()
@@ -148,7 +147,7 @@ public class BbcIonServices {
             //        .put("bbc_democracy_live", "")
             //        .put("bbc_local_radio", "")
             //        .put("bbc_music", "")
-            .put("bbc_bitesize", "http://www.bbc.co.uk/masterbrands/bbc_bitesize")
+            .put("bbc_bitesize", "http://www.bbc.co.uk/services/bbc_bitesize")
             .build();
 
     public static String get(String ionService) {

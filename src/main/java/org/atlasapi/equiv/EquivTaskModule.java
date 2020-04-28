@@ -1018,6 +1018,23 @@ public class EquivTaskModule {
 
             }, MoreExecutors.sameThreadExecutor());
             consumer.startAsync();
+
+            KafkaConsumer equivChangesConsumer = equivalenceChangesEquivalenceUpdatingMessageListener();
+            equivChangesConsumer.addListener(new Listener() {
+
+                @Override
+                public void failed(State from, Throwable failure) {
+                    log.warn("equiv changes update listener failed to transition from " + from, failure);
+                }
+
+                @Override
+                public void running() {
+                    log.info("equiv changes update listener running");
+                }
+
+            }, MoreExecutors.sameThreadExecutor());
+            equivChangesConsumer.startAsync();
+
         }
     }
 

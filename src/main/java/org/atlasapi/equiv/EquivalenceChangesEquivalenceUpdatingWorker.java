@@ -38,6 +38,13 @@ public class EquivalenceChangesEquivalenceUpdatingWorker
                 message.getOutgoingIdsChanged()
         );
         for (long id : message.getOutgoingIdsChanged()) {
+            if (id == message.getSubjectId()) {
+                // The subject should always have a bidirectional link to itself.
+                // We'll avoid running equiv on it again just in case it repeatedly causes messages to be produced.
+                // This is added just as a precaution and has not been observed to happen.
+                log.warn("Subject {} was listed as a changed outgoing id", message.getSubjectId());
+                continue;
+            }
             super.process(message.getMessageId(), id);
         }
     }

@@ -25,7 +25,7 @@ import org.atlasapi.equiv.results.probe.MongoEquivalenceProbeStore;
 import org.atlasapi.equiv.results.www.EquivGraphController;
 import org.atlasapi.equiv.results.www.EquivalenceResultController;
 import org.atlasapi.equiv.results.www.RecentResultController;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
+import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
 import org.atlasapi.equiv.update.RecoveringEquivalenceUpdater;
 import org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask;
 import org.atlasapi.equiv.update.tasks.DeltaContentEquivalenceUpdateTask;
@@ -239,7 +239,7 @@ public class EquivTaskModule {
     @Autowired @Qualifier(EXPLICIT_LOOKUP_WRITER) private LookupWriter explicitLookupWriter;
     @Autowired private YouViewChannelResolver youviewChannelResolver;
 
-    @Autowired @Qualifier("contentUpdater") private EquivalenceUpdater<Content> equivUpdater;
+    @Autowired @Qualifier("contentUpdater") private MultipleSourceEquivalenceUpdater equivUpdater;
     @Autowired private RecentEquivalenceResultStore equivalenceResultStore;
 
     @Autowired private KafkaMessagingModule messaging;
@@ -953,19 +953,16 @@ public class EquivTaskModule {
                 contentResolver,
                 lookupStore,
                 equivUpdater,
-                Predicates.alwaysTrue()
+                sourceIsIn(equivUpdater.getSupportedPublishers())
         );
     }
 
-    private Predicate<Content> sourceIsIn(Publisher... srcs) {
-        final ImmutableSet<Publisher> sources = ImmutableSet.copyOf(srcs);
-        return new Predicate<Content>() {
+    private Predicate<Content> sourceIsIn(Publisher... sources) {
+       return sourceIsIn(ImmutableSet.copyOf(sources));
+    }
 
-            @Override
-            public boolean apply(Content input) {
-                return sources.contains(input.getPublisher());
-            }
-        };
+    private Predicate<Content> sourceIsIn(Set<Publisher> sources) {
+        return input -> sources.contains(input.getPublisher());
     }
 
     @Bean

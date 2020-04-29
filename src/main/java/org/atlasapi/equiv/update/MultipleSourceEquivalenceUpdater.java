@@ -1,18 +1,17 @@
 package org.atlasapi.equiv.update;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.MultipleSourceEquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.collect.Maps;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Set;
 
 public class MultipleSourceEquivalenceUpdater implements EquivalenceUpdater<Content> {
 
@@ -51,5 +50,9 @@ public class MultipleSourceEquivalenceUpdater implements EquivalenceUpdater<Cont
                                 entry -> entry.getValue().getMetadata(sources)
                         ))
         );
+    }
+
+    public Set<Publisher> getSupportedPublishers() {
+        return ImmutableSet.copyOf(updaters.keySet());
     }
 }

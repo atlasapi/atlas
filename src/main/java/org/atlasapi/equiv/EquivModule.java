@@ -25,7 +25,6 @@ import org.atlasapi.equiv.results.persistence.FileEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
 import org.atlasapi.equiv.update.SourceSpecificEquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.configuration.UpdaterConfiguration;
@@ -35,7 +34,6 @@ import org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType;
 import org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
@@ -46,7 +44,6 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-import org.atlasapi.query.content.search.DeerSearchResolver;
 import org.atlasapi.remotesite.amazon.indexer.AmazonTitleIndexStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -81,8 +78,8 @@ public class EquivModule {
 
     @Autowired private AmazonTitleIndexStore amazonTitleIndexStore;
 
-    @Bean
-    public EquivalenceUpdater<Content> contentUpdater() {
+    @Bean @Qualifier("contentUpdater")
+    public MultipleSourceEquivalenceUpdater contentUpdater() {
         EquivalenceUpdaterProviderDependencies dependencies = EquivalenceUpdaterProviderDependencies
                 .builder()
                 .withScheduleResolver(scheduleResolver)

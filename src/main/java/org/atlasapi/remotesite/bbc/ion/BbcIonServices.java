@@ -147,6 +147,7 @@ public class BbcIonServices {
             //        .put("bbc_democracy_live", "")
             //        .put("bbc_local_radio", "")
             //        .put("bbc_music", "")
+            .put("bbc_bitesize", "http://www.bbc.co.uk/services/bbc_bitesize")
             .build();
 
     public static String get(String ionService) {

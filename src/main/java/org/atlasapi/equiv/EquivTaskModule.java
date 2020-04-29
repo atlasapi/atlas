@@ -953,7 +953,10 @@ public class EquivTaskModule {
                 contentResolver,
                 lookupStore,
                 equivUpdater,
-                sourceIsIn(equivUpdater.getSupportedPublishers())
+                Predicates.and(
+                        Content::isActivelyPublished,
+                        sourceIsIn(equivUpdater.getSupportedPublishers())
+                )
         );
     }
 

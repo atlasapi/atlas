@@ -33,16 +33,16 @@ public class EquivalenceChangesEquivalenceUpdatingWorker
     @Override
     public void process(EquivalenceChangeMessage message) {
         log.info(
-                "Processing equiv change for subject: {} with outgoing changed ids: {}",
+                "Processing equiv change for subject: {} with removed outgoing ids: {}",
                 message.getSubjectId(),
-                message.getOutgoingIdsChanged()
+                message.getOutgoingIdsRemoved()
         );
-        for (long id : message.getOutgoingIdsChanged()) {
+        for (long id : message.getOutgoingIdsRemoved()) {
             if (id == message.getSubjectId()) {
                 // The subject should always have a bidirectional link to itself.
                 // We'll avoid running equiv on it again just in case it repeatedly causes messages to be produced.
                 // This is added just as a precaution and has not been observed to happen.
-                log.warn("Subject {} was listed as a changed outgoing id", message.getSubjectId());
+                log.warn("Subject {} was listed as a removed outgoing id", message.getSubjectId());
                 continue;
             }
             super.process(message.getMessageId(), id);

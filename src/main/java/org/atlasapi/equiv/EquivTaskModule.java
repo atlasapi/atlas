@@ -25,7 +25,7 @@ import org.atlasapi.equiv.results.probe.MongoEquivalenceProbeStore;
 import org.atlasapi.equiv.results.www.EquivGraphController;
 import org.atlasapi.equiv.results.www.EquivalenceResultController;
 import org.atlasapi.equiv.results.www.RecentResultController;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
+import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
 import org.atlasapi.equiv.update.RecoveringEquivalenceUpdater;
 import org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask;
 import org.atlasapi.equiv.update.tasks.DeltaContentEquivalenceUpdateTask;
@@ -38,6 +38,7 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.messaging.v3.EntityUpdatedMessage;
+import org.atlasapi.messaging.v3.EquivalenceChangeMessage;
 import org.atlasapi.messaging.v3.JacksonMessageSerializer;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -224,6 +225,7 @@ public class EquivTaskModule {
     private Integer defaultStreamedEquivUpdateConsumers;
     @Value("${equiv.stream-updater.consumers.max}") private Integer maxStreamedEquivUpdateConsumers;
     @Value("${messaging.destination.content.changes}") private String contentChanges;
+    @Value("${messaging.destination.equiv.changes.content}") private String equivChangesContent;
 
     @Autowired private SelectedContentLister contentLister;
     @Autowired private SimpleScheduler taskScheduler;
@@ -237,7 +239,7 @@ public class EquivTaskModule {
     @Autowired @Qualifier(EXPLICIT_LOOKUP_WRITER) private LookupWriter explicitLookupWriter;
     @Autowired private YouViewChannelResolver youviewChannelResolver;
 
-    @Autowired @Qualifier("contentUpdater") private EquivalenceUpdater<Content> equivUpdater;
+    @Autowired @Qualifier("contentUpdater") private MultipleSourceEquivalenceUpdater equivUpdater;
     @Autowired private RecentEquivalenceResultStore equivalenceResultStore;
 
     @Autowired private KafkaMessagingModule messaging;
@@ -908,11 +910,10 @@ public class EquivTaskModule {
         };
     }
 
-    private EquivalenceUpdatingWorker equivUpdatingWorker() {
-        return new EquivalenceUpdatingWorker(
+    private ContentChangesEquivalenceUpdatingWorker contentChangesEquivUpdatingWorker() {
+        return new ContentChangesEquivalenceUpdatingWorker(
                 contentResolver,
                 lookupStore,
-                equivalenceResultStore,
                 equivUpdater,
                 Predicates.or(ImmutableList.<Predicate<? super Content>>of(
                         sourceIsIn(
@@ -947,15 +948,24 @@ public class EquivTaskModule {
         );
     }
 
-    private Predicate<Content> sourceIsIn(Publisher... srcs) {
-        final ImmutableSet<Publisher> sources = ImmutableSet.copyOf(srcs);
-        return new Predicate<Content>() {
+    private EquivalenceChangesEquivalenceUpdatingWorker equivChangesEquivUpdatingWorker() {
+        return new EquivalenceChangesEquivalenceUpdatingWorker(
+                contentResolver,
+                lookupStore,
+                equivUpdater,
+                Predicates.and(
+                        Content::isActivelyPublished,
+                        sourceIsIn(equivUpdater.getSupportedPublishers())
+                )
+        );
+    }
 
-            @Override
-            public boolean apply(Content input) {
-                return sources.contains(input.getPublisher());
-            }
-        };
+    private Predicate<Content> sourceIsIn(Publisher... sources) {
+       return sourceIsIn(ImmutableSet.copyOf(sources));
+    }
+
+    private Predicate<Content> sourceIsIn(Set<Publisher> sources) {
+        return input -> sources.contains(input.getPublisher());
     }
 
     @Bean
@@ -963,9 +973,25 @@ public class EquivTaskModule {
     public KafkaConsumer equivalenceUpdatingMessageListener() {
         return messaging.messageConsumerFactory()
                 .createConsumer(
-                        equivUpdatingWorker(),
+                        contentChangesEquivUpdatingWorker(),
                         JacksonMessageSerializer.forType(EntityUpdatedMessage.class),
                         contentChanges,
+                        "EquivUpdater"
+                )
+                .withDefaultConsumers(defaultStreamedEquivUpdateConsumers)
+                .withMaxConsumers(maxStreamedEquivUpdateConsumers)
+                .withPersistentRetryPolicy(db)
+                .build();
+    }
+
+    @Bean
+    @Lazy()
+    public KafkaConsumer equivalenceChangesEquivalenceUpdatingMessageListener() {
+        return messaging.messageConsumerFactory()
+                .createConsumer(
+                        equivChangesEquivUpdatingWorker(),
+                        JacksonMessageSerializer.forType(EquivalenceChangeMessage.class),
+                        equivChangesContent,
                         "EquivUpdater"
                 )
                 .withDefaultConsumers(defaultStreamedEquivUpdateConsumers)
@@ -992,6 +1018,23 @@ public class EquivTaskModule {
 
             }, MoreExecutors.sameThreadExecutor());
             consumer.startAsync();
+
+            KafkaConsumer equivChangesConsumer = equivalenceChangesEquivalenceUpdatingMessageListener();
+            equivChangesConsumer.addListener(new Listener() {
+
+                @Override
+                public void failed(State from, Throwable failure) {
+                    log.warn("equiv changes update listener failed to transition from " + from, failure);
+                }
+
+                @Override
+                public void running() {
+                    log.info("equiv changes update listener running");
+                }
+
+            }, MoreExecutors.sameThreadExecutor());
+            equivChangesConsumer.startAsync();
+
         }
     }
 

@@ -21,8 +21,7 @@ import com.mongodb.ReadPreference;
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.YouViewOutputContentMerger;
 import org.atlasapi.equiv.query.MergeOnOutputQueryExecutor;
-import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.media.entity.Content;
+import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
 import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
 import org.atlasapi.persistence.content.AllFromPublishersEquivalentContentResolver;
 import org.atlasapi.persistence.content.DefaultEquivalentContentResolver;
@@ -60,7 +59,7 @@ public class QueryModule {
 	private @Autowired DatabasedMongoClient mongoClient;
 	private @Autowired ReadPreference readPreference;
     private @Autowired CassandraContentStore cassandra;
-    private @Autowired @Qualifier("contentUpdater") EquivalenceUpdater<Content> equivUpdater;
+    private @Autowired @Qualifier("contentUpdater") MultipleSourceEquivalenceUpdater equivUpdater;
 
 	private @Value("${applications.enabled}") String applicationsEnabled;
 	private @Value("${atlas.search.host}") String searchHost;

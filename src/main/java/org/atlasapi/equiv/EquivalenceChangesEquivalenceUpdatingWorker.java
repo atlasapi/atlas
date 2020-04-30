@@ -32,11 +32,6 @@ public class EquivalenceChangesEquivalenceUpdatingWorker
 
     @Override
     public void process(EquivalenceChangeMessage message) {
-        log.info(
-                "Processing equiv change for subject: {} with removed outgoing ids: {}",
-                message.getSubjectId(),
-                message.getOutgoingIdsRemoved()
-        );
         for (long id : message.getOutgoingIdsRemoved()) {
             if (id == message.getSubjectId()) {
                 // The subject should always have a bidirectional link to itself.

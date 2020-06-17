@@ -23,6 +23,7 @@ import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
@@ -94,15 +95,16 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             Glycerin glycerin,
             GlycerinNitroClipsAdapter clipsAdapter,
             QueuingPersonWriter peopleWriter,
+            TopicStore topicStore,
             Clock clock,
             int pageSize
     ) {
         this.glycerin = checkNotNull(glycerin);
         this.pageSize = pageSize;
         this.clipsAdapter = checkNotNull(clipsAdapter);
-        this.brandExtractor = new NitroBrandExtractor(clock);
-        this.seriesExtractor = new NitroSeriesExtractor(clock);
-        this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
+        this.brandExtractor = new NitroBrandExtractor(topicStore, clock);
+        this.seriesExtractor = new NitroSeriesExtractor(topicStore, clock);
+        this.itemExtractor = new NitroEpisodeExtractor(topicStore, clock, peopleWriter);
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
     }
 

@@ -30,6 +30,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.bbc.nitro.channels.ChannelIngestTask;
 import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHydrator;
@@ -80,6 +81,7 @@ public class BbcNitroModule {
     private @Autowired ChannelResolver channelResolver;
     private @Autowired ChannelWriter channelWriter;
     private @Autowired QueuingPersonWriter peopleWriter;
+    private @Autowired TopicStore topicStore;
     
     private final ThreadFactory nitroThreadFactory
         = new ThreadFactoryBuilder().setNameFormat("nitro %s").build();
@@ -293,8 +295,20 @@ public class BbcNitroModule {
 
     GlycerinNitroContentAdapter nitroContentAdapter(Glycerin glycerin) {
         SystemClock clock = new SystemClock();
-        GlycerinNitroClipsAdapter clipsAdapter = new GlycerinNitroClipsAdapter(glycerin, clock, nitroRequestPageSize);
-        return new GlycerinNitroContentAdapter(glycerin, clipsAdapter, peopleWriter, clock, nitroRequestPageSize);
+        GlycerinNitroClipsAdapter clipsAdapter = new GlycerinNitroClipsAdapter(
+                glycerin,
+                topicStore,
+                clock,
+                nitroRequestPageSize
+        );
+        return new GlycerinNitroContentAdapter(
+                glycerin,
+                clipsAdapter,
+                peopleWriter,
+                topicStore,
+                clock,
+                nitroRequestPageSize
+        );
     }
 
     GlycerinNitroChannelAdapter nitroChannelAdapter(Glycerin glycerin) {

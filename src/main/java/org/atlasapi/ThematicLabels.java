@@ -21,10 +21,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ThematicLabels {
 
-    private static final Logger log = LoggerFactory.getLogger(ThematicLabels.class);
-    private static final String LABEL_NAMESPACE = "gb:barb:thematicLabel";
-    private static TopicStore topicStore;
-
     @Autowired
     private TopicStore autowiredTopicStore;
 
@@ -33,32 +29,18 @@ public class ThematicLabels {
         topicStore = this.autowiredTopicStore;
     }
 
+    private static final Logger log = LoggerFactory.getLogger(ThematicLabels.class);
+    private static final String LABEL_NAMESPACE = "gb:barb:thematicLabel";
+    private static TopicStore topicStore;
+
     private static final LoadingCache<String, Optional<TopicRef>> thematicLabelCache = CacheBuilder
             .newBuilder()
-            .build(
-                    new CacheLoader<String, Optional<TopicRef>>() {
-                        @Override
-                        public Optional<TopicRef> load(String value) {
-
-                            Optional<Topic> topicOptional = topicStore.topicFor(
-                                    LABEL_NAMESPACE,
-                                    value
-                            ).toOptional();
-
-                            if (!topicOptional.isPresent()) {
-                                log.warn(
-                                        "Couldn't find thematic label for value {}, the label will "
-                                        + "not attached to Nitro content.", value);
-                            }
-
-                            return topicOptional.map(topic -> new TopicRef(
-                                    topic,
-                                    0f,
-                                    false,
-                                    TopicRef.Relationship.ABOUT,
-                                    0));
-                        }
-                    });
+            .build(new CacheLoader<String, Optional<TopicRef>>() {
+                @Override
+                public Optional<TopicRef> load(String value) {
+                    return getTopicRefFromThematicValue(value);
+                }
+            });
 
     private static final Map<String, String> thematicLabelTitleToValueRelations = ImmutableMap.of(
             "bbc_three", "m0001"
@@ -72,5 +54,26 @@ public class ThematicLabels {
         } else {
             return thematicLabelCache.getUnchecked(title);
         }
+    }
+
+    private static Optional<TopicRef> getTopicRefFromThematicValue(String value) {
+
+        Optional<Topic> topicOptional = topicStore.topicFor(
+                LABEL_NAMESPACE,
+                value
+        ).toOptional();
+
+        if (!topicOptional.isPresent()) {
+            log.warn(
+                    "Couldn't find thematic label for value {}, the label will "
+                    + "not attached to Nitro content.", value);
+        }
+
+        return topicOptional.map(topic -> new TopicRef(
+                topic,
+                0f,
+                false,
+                TopicRef.Relationship.ABOUT,
+                0));
     }
 }

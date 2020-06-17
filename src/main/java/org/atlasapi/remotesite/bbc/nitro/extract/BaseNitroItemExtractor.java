@@ -26,6 +26,7 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -60,8 +61,8 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     private final NitroAvailabilityExtractor availabilityExtractor
             = new NitroAvailabilityExtractor();
 
-    public BaseNitroItemExtractor(Clock clock) {
-        super(clock);
+    public BaseNitroItemExtractor(TopicStore topicStore, Clock clock) {
+        super(topicStore, clock);
     }
 
     @Override

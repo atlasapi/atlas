@@ -1,10 +1,12 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.atlasapi.client.TopicQuery;
 import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
@@ -12,6 +14,9 @@ import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Topic;
+import org.atlasapi.media.entity.TopicRef;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
@@ -20,6 +25,7 @@ import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.time.Clock;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
@@ -45,6 +51,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
 
     private static final String PID_NAMESPACE = "gb:bbc:pid";
     private static final String URI_NAMESPACE = "uri";
+    private static final String LABEL_NAMESPACE = "gb:barb:thematicLabel";
 
     private static final Set<String> GENERIC_BBC_URL_LIST = ImmutableSet.of(
             //BBC Logo
@@ -65,10 +72,12 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             "bbc_southern_counties_radio"
     );
 
+    private final TopicStore topicStore;
     private final Clock clock;
     private final NitroImageExtractor imageExtractor
             = new NitroImageExtractor(1024, 576);
-    public NitroContentExtractor(Clock clock) {
+    public NitroContentExtractor(TopicStore topicStore, Clock clock) {
+        this.topicStore = topicStore;
         this.clock = clock;
     }
 
@@ -112,6 +121,21 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             if (masterBrandChannel == null) {
                 log.warn("No master brand mapping found for pid={}, uri={}, masterbrand={}",
                         pid , content.getCanonicalUri(), masterBrand.getMid());
+            }
+            if (masterBrand.getMid().equals("bbc_three")) {
+                Optional<Topic> optionalTopic = topicStore.topicFor(LABEL_NAMESPACE, "m0001").toOptional();
+                if (optionalTopic.isPresent()) {
+                    content.addTopicRef(
+                            new TopicRef(
+                                    optionalTopic.get(),
+                                    0f,
+                                    false,
+                                    TopicRef.Relationship.ABOUT,
+                                    0));
+                } else {
+                    log.warn("Couldn't find thematic label for the BBC Three masterbrand, "
+                             + "the label will not attached to Nitro content.");
+                }
             }
         }
         content.setYear(extractReleaseYear(source));

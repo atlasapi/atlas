@@ -23,6 +23,8 @@ import com.metabroadcast.atlas.glycerin.model.Programme;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.common.time.Clock;
+
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroClipExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
@@ -71,9 +73,9 @@ public class GlycerinNitroClipsAdapter {
 
     private final ListeningExecutorService executor;
 
-    public GlycerinNitroClipsAdapter(Glycerin glycerin, Clock clock, int pageSize) {
+    public GlycerinNitroClipsAdapter(Glycerin glycerin, TopicStore topicStore, Clock clock, int pageSize) {
         this.glycerin = glycerin;
-        this.clipExtractor = new NitroClipExtractor(clock);
+        this.clipExtractor = new NitroClipExtractor(topicStore, clock);
         this.pageSize = pageSize;
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(15));
     }

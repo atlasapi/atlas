@@ -5,8 +5,11 @@ import com.google.common.collect.Iterables;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.persistence.topic.TopicStore;
+
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
@@ -16,7 +19,9 @@ import static org.junit.Assert.assertEquals;
 
 public class NitroBrandExtractorTest {
 
-    private NitroBrandExtractor extractor = new NitroBrandExtractor(new SystemClock());
+    private NitroBrandExtractor extractor = new NitroBrandExtractor(
+            Mockito.mock(TopicStore.class),
+            new SystemClock());
 
     @Test
     public void testMediaTypeIsSetCorrectly() {

@@ -7,6 +7,7 @@ import com.metabroadcast.atlas.glycerin.model.Series;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.joda.time.DateTime;
 
@@ -23,8 +24,8 @@ import java.util.regex.Pattern;
 public class NitroSeriesExtractor
         extends NitroContentExtractor<Series, org.atlasapi.media.entity.Series> {
 
-    public NitroSeriesExtractor(Clock clock) {
-        super(clock);
+    public NitroSeriesExtractor(TopicStore topicStore, Clock clock) {
+        super(topicStore, clock);
     }
 
     @Override

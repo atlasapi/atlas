@@ -8,6 +8,8 @@ import com.metabroadcast.common.time.Clock;
 
 import javax.annotation.Nullable;
 
+import org.atlasapi.persistence.topic.TopicStore;
+
 /**
  * Extracts a {@link org.atlasapi.media.entity.Brand Atlas Brand} from a
  * {@link Brand Nitro Brand}.
@@ -17,8 +19,8 @@ import javax.annotation.Nullable;
 public class NitroBrandExtractor
         extends NitroContentExtractor<Brand, org.atlasapi.media.entity.Brand> {
 
-    public NitroBrandExtractor(Clock clock) {
-        super(clock);
+    public NitroBrandExtractor(TopicStore topicStore, Clock clock) {
+        super(topicStore, clock);
     }
 
     @Override

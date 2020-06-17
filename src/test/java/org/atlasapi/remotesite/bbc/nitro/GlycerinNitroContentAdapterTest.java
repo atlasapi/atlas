@@ -5,6 +5,7 @@ import java.util.List;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
+import org.atlasapi.persistence.topic.TopicStore;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.when;
 public class GlycerinNitroContentAdapterTest {
 
     @Mock Glycerin glycerin;
+    @Mock TopicStore topicStore;
     @Mock QueuingPersonWriter personWriter;
     @Mock Clock clock;
     @Mock GlycerinNitroClipsAdapter clipsAdapter;
@@ -58,7 +60,7 @@ public class GlycerinNitroContentAdapterTest {
     @Before
     public void setUp() {
         contentAdapter = new GlycerinNitroContentAdapter(
-                glycerin, clipsAdapter, personWriter, clock, pageSize);
+                glycerin, clipsAdapter, personWriter, topicStore, clock, pageSize);
     }
 
     @Test

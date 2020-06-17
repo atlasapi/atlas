@@ -23,6 +23,7 @@ import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.joda.time.DateTime;
@@ -67,8 +68,8 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
     private final NitroPersonExtractor personExtractor = new NitroPersonExtractor();
     private final QueuingPersonWriter personWriter;
 
-    public NitroEpisodeExtractor(Clock clock, QueuingPersonWriter personWriter) {
-        super(clock);
+    public NitroEpisodeExtractor(TopicStore topicStore, Clock clock, QueuingPersonWriter personWriter) {
+        super(topicStore, clock);
         this.personWriter = personWriter;
     }
 

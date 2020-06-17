@@ -1,14 +1,20 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import java.util.List;
+import java.util.concurrent.Executors;
+
+import javax.annotation.Nullable;
+
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Clip;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.persistence.content.people.QueuingPersonWriter;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
+
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
@@ -18,22 +24,18 @@ import com.metabroadcast.atlas.glycerin.model.Programme;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.columbus.telescope.client.ModelWithPayload;
 import com.metabroadcast.common.time.Clock;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Clip;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.persistence.content.people.QueuingPersonWriter;
-import org.atlasapi.persistence.topic.TopicStore;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
+
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.concurrent.Executors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -95,16 +97,15 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             Glycerin glycerin,
             GlycerinNitroClipsAdapter clipsAdapter,
             QueuingPersonWriter peopleWriter,
-            TopicStore topicStore,
             Clock clock,
             int pageSize
     ) {
         this.glycerin = checkNotNull(glycerin);
         this.pageSize = pageSize;
         this.clipsAdapter = checkNotNull(clipsAdapter);
-        this.brandExtractor = new NitroBrandExtractor(topicStore, clock);
-        this.seriesExtractor = new NitroSeriesExtractor(topicStore, clock);
-        this.itemExtractor = new NitroEpisodeExtractor(topicStore, clock, peopleWriter);
+        this.brandExtractor = new NitroBrandExtractor(clock);
+        this.seriesExtractor = new NitroSeriesExtractor(clock);
+        this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
     }
 

@@ -1,20 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.ImmutableSetMultimap.Builder;
-import com.google.common.collect.Iterables;
-import com.google.common.hash.Hashing;
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.model.WarningTexts;
-import com.metabroadcast.common.time.Clock;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.atlasapi.feeds.youview.nitro.NitroIdGenerator;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
@@ -26,15 +16,27 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
-import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
+
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.Programme;
+import com.metabroadcast.atlas.glycerin.model.WarningTexts;
+import com.metabroadcast.common.time.Clock;
+
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.ImmutableSetMultimap.Builder;
+import com.google.common.collect.Iterables;
+import com.google.common.hash.Hashing;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Base extractor for extracting common properties of {@link Item}s from a
@@ -61,8 +63,8 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     private final NitroAvailabilityExtractor availabilityExtractor
             = new NitroAvailabilityExtractor();
 
-    public BaseNitroItemExtractor(TopicStore topicStore, Clock clock) {
-        super(topicStore, clock);
+    public BaseNitroItemExtractor(Clock clock) {
+        super(clock);
     }
 
     @Override

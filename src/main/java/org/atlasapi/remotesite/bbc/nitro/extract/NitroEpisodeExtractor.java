@@ -1,10 +1,23 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.atlasapi.media.entity.CrewMember;
+import org.atlasapi.media.entity.Film;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.media.entity.Person;
+import org.atlasapi.media.entity.ReleaseDate;
+import org.atlasapi.media.entity.Specialization;
+import org.atlasapi.persistence.content.people.QueuingPersonWriter;
+import org.atlasapi.remotesite.ContentExtractor;
+import org.atlasapi.remotesite.bbc.BbcFeeds;
+
 import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
@@ -15,25 +28,14 @@ import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.time.Clock;
-import org.atlasapi.media.entity.CrewMember;
-import org.atlasapi.media.entity.Film;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.Person;
-import org.atlasapi.media.entity.ReleaseDate;
-import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.persistence.content.people.QueuingPersonWriter;
-import org.atlasapi.persistence.topic.TopicStore;
-import org.atlasapi.remotesite.ContentExtractor;
-import org.atlasapi.remotesite.bbc.BbcFeeds;
+
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
-
-import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Set;
 
 import static com.metabroadcast.atlas.glycerin.model.Brand.Contributions;
 
@@ -68,8 +70,8 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
     private final NitroPersonExtractor personExtractor = new NitroPersonExtractor();
     private final QueuingPersonWriter personWriter;
 
-    public NitroEpisodeExtractor(TopicStore topicStore, Clock clock, QueuingPersonWriter personWriter) {
-        super(topicStore, clock);
+    public NitroEpisodeExtractor(Clock clock, QueuingPersonWriter personWriter) {
+        super(clock);
         this.personWriter = personWriter;
     }
 

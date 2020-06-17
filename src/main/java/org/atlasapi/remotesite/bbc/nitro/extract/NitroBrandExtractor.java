@@ -1,14 +1,12 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
+import javax.annotation.Nullable;
+
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.persistence.topic.TopicStore;
 
 /**
  * Extracts a {@link org.atlasapi.media.entity.Brand Atlas Brand} from a
@@ -19,8 +17,8 @@ import org.atlasapi.persistence.topic.TopicStore;
 public class NitroBrandExtractor
         extends NitroContentExtractor<Brand, org.atlasapi.media.entity.Brand> {
 
-    public NitroBrandExtractor(TopicStore topicStore, Clock clock) {
-        super(topicStore, clock);
+    public NitroBrandExtractor(Clock clock) {
+        super(clock);
     }
 
     @Override

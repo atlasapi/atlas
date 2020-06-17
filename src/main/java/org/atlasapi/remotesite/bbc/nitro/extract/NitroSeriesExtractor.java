@@ -1,20 +1,22 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
+import java.math.BigInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.remotesite.bbc.BbcFeeds;
+
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Series;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
-import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.persistence.topic.TopicStore;
-import org.atlasapi.remotesite.bbc.BbcFeeds;
-import org.joda.time.DateTime;
 
-import javax.annotation.Nullable;
-import java.math.BigInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.joda.time.DateTime;
 
 /**
  * A {@link NitroContentExtractor} for extracting
@@ -24,8 +26,8 @@ import java.util.regex.Pattern;
 public class NitroSeriesExtractor
         extends NitroContentExtractor<Series, org.atlasapi.media.entity.Series> {
 
-    public NitroSeriesExtractor(TopicStore topicStore, Clock clock) {
-        super(topicStore, clock);
+    public NitroSeriesExtractor(Clock clock) {
+        super(clock);
     }
 
     @Override

@@ -16,24 +16,19 @@ import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Configuration
+@Component
 public class ThematicLabels {
 
-    @Autowired
-    private TopicStore autowiredTopicStore;
-
-    @PostConstruct
-    private void init() {
-        topicStore = this.autowiredTopicStore;
-    }
+    private static ThematicLabels thematicLabelsInstance = null;
 
     private static final Logger log = LoggerFactory.getLogger(ThematicLabels.class);
     private static final String LABEL_NAMESPACE = "gb:barb:thematicLabel";
-    private static TopicStore topicStore;
 
-    private static final LoadingCache<String, Optional<TopicRef>> thematicLabelCache = CacheBuilder
+    private @Autowired TopicStore topicStore;
+
+    private final LoadingCache<String, Optional<TopicRef>> thematicLabelCache = CacheBuilder
             .newBuilder()
             .build(new CacheLoader<String, Optional<TopicRef>>() {
                 @Override
@@ -42,11 +37,18 @@ public class ThematicLabels {
                 }
             });
 
-    private static final Map<String, String> thematicLabelTitleToValueRelations = ImmutableMap.of(
+    private final Map<String, String> thematicLabelTitleToValueRelations = ImmutableMap.of(
             "bbc_three", "m0001"
     );
 
-    public static Optional<TopicRef> get(String title) {
+    public static ThematicLabels getInstance() {
+        if (thematicLabelsInstance == null) {
+            thematicLabelsInstance = new ThematicLabels();
+        }
+        return thematicLabelsInstance;
+    }
+
+    public Optional<TopicRef> get(String title) {
         String thematicLabelValue = thematicLabelTitleToValueRelations.get(title);
         if (thematicLabelValue == null) {
             log.warn("A thematic label relation could not be found for title {}.", title);
@@ -56,7 +58,7 @@ public class ThematicLabels {
         }
     }
 
-    private static Optional<TopicRef> getTopicRefFromThematicValue(String value) {
+    private Optional<TopicRef> getTopicRefFromThematicValue(String value) {
 
         Optional<Topic> topicOptional = topicStore.topicFor(
                 LABEL_NAMESPACE,

@@ -115,7 +115,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
                         pid , content.getCanonicalUri(), masterBrand.getMid());
             }
             if (masterBrand.getMid().equals("bbc_three")) {
-                ThematicLabels.get("bbc_three").ifPresent(content::addTopicRef);
+                ThematicLabels.getInstance().get("bbc_three").ifPresent(content::addTopicRef);
             }
         }
         content.setYear(extractReleaseYear(source));

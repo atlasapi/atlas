@@ -19,14 +19,24 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ThematicLabels {
 
-    private static ThematicLabels thematicLabelsInstance = null;
+    // This is a quick hack to instantiate a static topic store from an autowired value. If this
+    // class is to be improved in the future one should look into instantiating the topic store
+    // properly. A possible problem of this implementation is if someone tries to use this class
+    // before spring injects this class with a topic store value, which is unlikely in the way
+    // this is currently used.
+    @Autowired
+    private TopicStore autowiredTopicStore;
+
+    @PostConstruct
+    private void init() {
+        topicStore = this.autowiredTopicStore;
+    }
 
     private static final Logger log = LoggerFactory.getLogger(ThematicLabels.class);
     private static final String LABEL_NAMESPACE = "gb:barb:thematicLabel";
+    private static TopicStore topicStore;
 
-    private @Autowired TopicStore topicStore;
-
-    private final LoadingCache<String, Optional<TopicRef>> thematicLabelCache = CacheBuilder
+    private static final LoadingCache<String, Optional<TopicRef>> thematicLabelCache = CacheBuilder
             .newBuilder()
             .build(new CacheLoader<String, Optional<TopicRef>>() {
                 @Override
@@ -35,23 +45,11 @@ public class ThematicLabels {
                 }
             });
 
-    @PostConstruct
-    private void init() {
-        getInstance();
+    public static Optional<TopicRef> get(Value value) {
+        return thematicLabelCache.getUnchecked(value.getValue());
     }
 
-    public static synchronized ThematicLabels getInstance() {
-        if (thematicLabelsInstance == null) {
-            thematicLabelsInstance = new ThematicLabels();
-        }
-        return thematicLabelsInstance;
-    }
-
-    public Optional<TopicRef> get(Title title) {
-        return thematicLabelCache.getUnchecked(title.getValue());
-    }
-
-    private Optional<TopicRef> getTopicRefFromThematicValue(String value) {
+    private static Optional<TopicRef> getTopicRefFromThematicValue(String value) {
 
         Optional<Topic> topicOptional = topicStore.topicFor(
                 LABEL_NAMESPACE,
@@ -70,12 +68,12 @@ public class ThematicLabels {
                 0));
     }
 
-    public enum Title {
+    public enum Value {
         BBC_THREE("m0001"),
         ;
 
         String value;
-        Title(String value) {
+        Value(String value) {
             this.value = value;
         }
 

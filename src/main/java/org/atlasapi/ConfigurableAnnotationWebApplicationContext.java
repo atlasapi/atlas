@@ -85,7 +85,8 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 SimilarContentModule.class,
                 ContentPurgeWebModule.class,
                 KnowledgeMotionModule.class,
-                QueryExecutorModule.class
+                QueryExecutorModule.class,
+                ThematicLabels.class
             );
 
             if (youViewUploadEnabled()) {

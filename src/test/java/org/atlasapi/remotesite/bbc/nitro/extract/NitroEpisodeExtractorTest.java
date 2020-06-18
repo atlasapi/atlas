@@ -60,7 +60,6 @@ public class NitroEpisodeExtractorTest {
 
     private static final String EPISODE_PID = "p01mv8m3";
     private final NitroEpisodeExtractor extractor = new NitroEpisodeExtractor(
-            Mockito.mock(TopicStore.class),
             new SystemClock(),
             Mockito.mock(QueuingPersonWriter.class)
     );

@@ -3,26 +3,20 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Topic;
-import org.atlasapi.persistence.topic.TopicStore;
 
 import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Series;
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.time.SystemClock;
 
 import com.google.common.collect.Iterables;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public class NitroSeriesExtractorTest {
 
-    private TopicStore topicStore = Mockito.mock(TopicStore.class);
-    private NitroSeriesExtractor extractor = new NitroSeriesExtractor(topicStore, new SystemClock());
+    private NitroSeriesExtractor extractor = new NitroSeriesExtractor(new SystemClock());
 
     @Test
     public void testMediaTypeIsSetCorrectly() {
@@ -65,29 +59,6 @@ public class NitroSeriesExtractorTest {
                 atlaseries.getSeriesNumber());
     }
 
-    @Test
-    public void testBbcThematicLabel() {
-
-        Long labelId = 563006L;
-        String labelNamespace = "gb:barb:thematicLabel";
-        String labelValue = "m0001";
-
-        Series series = videoSeriesBbcThree();
-
-        Topic topic = new Topic(labelId, labelNamespace, labelValue);
-
-        Mockito.when(topicStore.topicFor(labelNamespace, labelValue))
-                .thenReturn(Maybe.just(topic));
-
-        org.atlasapi.media.entity.Series atlaseries = extractor.extract(series);
-
-        assertTrue(
-                atlaseries.getTopicRefs()
-                        .stream()
-                        .anyMatch(tr -> tr.getTopic().equals(labelId))
-        );
-    }
-
     private Series audioSeries() {
         Series series = new Series();
         series.setPid("b04t74m8");
@@ -108,19 +79,6 @@ public class NitroSeriesExtractorTest {
         Brand.MasterBrand masterBrand = new Brand.MasterBrand();
         masterBrand.setMid("bbc_two");
         masterBrand.setHref("/nitro/api/master_brands?mid=bbc_two");
-
-        series.setMasterBrand(masterBrand);
-
-        return series;
-    }
-
-    private Series videoSeriesBbcThree() {
-        Series series = new Series();
-        series.setPid("b04g6rhb");
-
-        Brand.MasterBrand masterBrand = new Brand.MasterBrand();
-        masterBrand.setMid("bbc_three");
-        masterBrand.setHref("/nitro/api/master_brands?mid=bbc_three");
 
         series.setMasterBrand(masterBrand);
 

@@ -19,9 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 public class NitroBrandExtractorTest {
 
-    private NitroBrandExtractor extractor = new NitroBrandExtractor(
-            Mockito.mock(TopicStore.class),
-            new SystemClock());
+    private NitroBrandExtractor extractor = new NitroBrandExtractor(new SystemClock());
 
     @Test
     public void testMediaTypeIsSetCorrectly() {

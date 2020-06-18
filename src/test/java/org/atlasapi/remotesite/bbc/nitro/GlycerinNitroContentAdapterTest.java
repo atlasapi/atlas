@@ -44,7 +44,6 @@ import static org.mockito.Mockito.when;
 public class GlycerinNitroContentAdapterTest {
 
     @Mock Glycerin glycerin;
-    @Mock TopicStore topicStore;
     @Mock QueuingPersonWriter personWriter;
     @Mock Clock clock;
     @Mock GlycerinNitroClipsAdapter clipsAdapter;
@@ -60,7 +59,7 @@ public class GlycerinNitroContentAdapterTest {
     @Before
     public void setUp() {
         contentAdapter = new GlycerinNitroContentAdapter(
-                glycerin, clipsAdapter, personWriter, topicStore, clock, pageSize);
+                glycerin, clipsAdapter, personWriter, clock, pageSize);
     }
 
     @Test

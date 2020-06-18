@@ -1,9 +1,6 @@
 package org.atlasapi;
 
-import java.util.Map;
 import java.util.Optional;
-
-import javax.annotation.PostConstruct;
 
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
@@ -12,7 +9,6 @@ import org.atlasapi.persistence.topic.TopicStore;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,25 +33,15 @@ public class ThematicLabels {
                 }
             });
 
-    private final Map<String, String> thematicLabelTitleToValueRelations = ImmutableMap.of(
-            "bbc_three", "m0001"
-    );
-
-    public static ThematicLabels getInstance() {
+    public static synchronized ThematicLabels getInstance() {
         if (thematicLabelsInstance == null) {
             thematicLabelsInstance = new ThematicLabels();
         }
         return thematicLabelsInstance;
     }
 
-    public Optional<TopicRef> get(String title) {
-        String thematicLabelValue = thematicLabelTitleToValueRelations.get(title);
-        if (thematicLabelValue == null) {
-            log.warn("A thematic label relation could not be found for title {}.", title);
-            return Optional.empty();
-        } else {
-            return thematicLabelCache.getUnchecked(title);
-        }
+    public Optional<TopicRef> get(Title title) {
+        return thematicLabelCache.getUnchecked(title.getValue());
     }
 
     private Optional<TopicRef> getTopicRefFromThematicValue(String value) {
@@ -66,9 +52,7 @@ public class ThematicLabels {
         ).toOptional();
 
         if (!topicOptional.isPresent()) {
-            log.warn(
-                    "Couldn't find thematic label for value {}, the label will "
-                    + "not attached to Nitro content.", value);
+            log.warn("Couldn't find thematic label for value {}.", value);
         }
 
         return topicOptional.map(topic -> new TopicRef(
@@ -77,5 +61,19 @@ public class ThematicLabels {
                 false,
                 TopicRef.Relationship.ABOUT,
                 0));
+    }
+
+    public enum Title {
+        BBC_THREE("m0001"),
+        ;
+
+        String value;
+        Title(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 }

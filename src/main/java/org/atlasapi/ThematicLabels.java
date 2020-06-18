@@ -2,6 +2,8 @@ package org.atlasapi;
 
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
+
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.topic.TopicStore;
@@ -32,6 +34,11 @@ public class ThematicLabels {
                     return getTopicRefFromThematicValue(value);
                 }
             });
+
+    @PostConstruct
+    private void init() {
+        getInstance();
+    }
 
     public static synchronized ThematicLabels getInstance() {
         if (thematicLabelsInstance == null) {

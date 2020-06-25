@@ -59,7 +59,7 @@ public class LocalOrRemoteNitroFetcher {
         this(resolver, contentAdapter,
                 new ContentMerger(
                         MergeStrategy.NITRO_VERSIONS_REVOKE,
-                        MergeStrategy.KEEP,
+                        MergeStrategy.REPLACE,
                         MergeStrategy.REPLACE
                 ),
                 new Predicate<Item>() {
@@ -127,7 +127,7 @@ public class LocalOrRemoteNitroFetcher {
                 contentAdapter,
                 new ContentMerger(
                         MergeStrategy.NITRO_VERSIONS_REVOKE,
-                        MergeStrategy.KEEP,
+                        MergeStrategy.REPLACE,
                         MergeStrategy.REPLACE
                 ),
                 fullFetchPermitted

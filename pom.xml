@@ -778,16 +778,24 @@
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.sherlock</groupId>
-            <artifactId>client-shaded</artifactId>
+            <artifactId>client</artifactId>
             <version>1.0-SNAPSHOT</version>
             <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.apache.logging.log4j</groupId>
                     <artifactId>log4j-core</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
+                    <groupId>io.dropwizard</groupId>
+                    <artifactId>dropwizard-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.dropwizard</groupId>
+                    <artifactId>dropwizard-jackson</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

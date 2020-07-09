@@ -63,7 +63,7 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                                         true
                                 ),
                                 TitleSearchGenerator.create(
-                                        dependencies.getDeerSearchResolver(),
+                                        dependencies.getSherlockSearchResolver(),
                                         Item.class,
                                         targetPublishers,
                                         Score.ZERO,
@@ -90,7 +90,7 @@ public class ItemSearchUpdaterProvider implements EquivalenceResultUpdaterProvid
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
                                 new SoleCandidateTitleMatchingScorer<>(
-                                        dependencies.getDeerSearchResolver(),
+                                        dependencies.getSherlockSearchResolver(),
                                         Score.ONE,
                                         Score.nullScore(),
                                         Item.class

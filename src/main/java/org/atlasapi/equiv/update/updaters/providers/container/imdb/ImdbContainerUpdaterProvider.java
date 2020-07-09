@@ -75,7 +75,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         true
                                 ),
                                 TitleSearchGenerator.create(
-                                        dependencies.getDeerSearchResolver(),
+                                        dependencies.getSherlockSearchResolver(),
                                         Container.class,
                                         targetPublishers,
                                         Score.ZERO,
@@ -99,7 +99,7 @@ public class ImdbContainerUpdaterProvider implements EquivalenceResultUpdaterPro
                                         false
                                 ),
                                 new SoleCandidateTitleMatchingScorer<>(
-                                        dependencies.getDeerSearchResolver(),
+                                        dependencies.getSherlockSearchResolver(),
                                         Score.ONE,
                                         Score.nullScore(),
                                         Container.class

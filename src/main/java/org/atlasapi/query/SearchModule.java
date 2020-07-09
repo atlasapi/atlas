@@ -1,10 +1,7 @@
 package org.atlasapi.query;
 
-import com.google.common.base.Strings;
-import com.google.common.primitives.Ints;
-import com.metabroadcast.common.properties.Configurer;
-import org.atlasapi.deer.elasticsearch.ContentTitleSearcher;
-import org.atlasapi.deer.elasticsearch.EsContentTitleSearcher;
+import javax.annotation.PostConstruct;
+
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.SearchResolver;
@@ -12,21 +9,25 @@ import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.fuzzy.RemoteFuzzySearcher;
 import org.atlasapi.query.content.search.ContentResolvingSearcher;
-import org.atlasapi.query.content.search.DeerSearchResolver;
+import org.atlasapi.query.content.search.SherlockSearchResolver;
 import org.atlasapi.query.content.search.DummySearcher;
 import org.atlasapi.search.ContentSearcher;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.properties.Configurer;
+import com.metabroadcast.sherlock.common.SherlockIndex;
+import com.metabroadcast.sherlock.common.client.ElasticSearchProcessor;
+import com.metabroadcast.sherlock.common.config.ElasticSearchConfig;
+
+import com.google.common.base.Strings;
+import com.google.common.primitives.Ints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-
-import javax.annotation.PostConstruct;
 
 @Configuration
 public class SearchModule {
@@ -42,12 +43,10 @@ public class SearchModule {
     private @Autowired ContentResolver contentResolver;
     private @Autowired LookupEntryStore lookupEntryStore;
 
-    private final boolean esSsl = Configurer.get("elasticsearch.ssl").toBoolean();
-    private final String esCluster = Configurer.get("elasticsearch.cluster").get();
-    private final boolean esSniff = Configurer.get("elasticsearch.sniff").toBoolean();
-    private final String esTimeout = Configurer.get("elasticsearch.timeout").get();
-    private final String esSeeds = Configurer.get("elasticsearch.seeds").get();
-    private final int port = Ints.saturatedCast(Configurer.get("elasticsearch.port").toLong());
+    private final String sherlockScheme = Configurer.get("sherlock.scheme").get();
+    private final String sherlockHostname = Configurer.get("sherlock.hostname").get();
+    private final int sherlockPort = Ints.saturatedCast(Configurer.get("sherlock.port").toLong());
+    private final int sherlockTimeout = Ints.saturatedCast(Configurer.get("sherlock.timeout").toLong());
 
     @PostConstruct
     public void setExecutor() {
@@ -65,9 +64,9 @@ public class SearchModule {
             resolver.setPeopleQueryResolver(peopleQueryResolver);
         }
 
-        SearchResolver deerIdSearcher = equivDeerSearchResolver();
-        if (deerIdSearcher instanceof DeerSearchResolver) {
-            DeerSearchResolver resolver = (DeerSearchResolver) deerIdSearcher;
+        SearchResolver sherlockIdSearcher = sherlockSearchResolver();
+        if (sherlockIdSearcher instanceof SherlockSearchResolver) {
+            SherlockSearchResolver resolver = (SherlockSearchResolver) sherlockIdSearcher;
             resolver.setContentResolver(contentResolver);
             resolver.setLookupEntryStore(lookupEntryStore);
         }
@@ -96,32 +95,36 @@ public class SearchModule {
     }
 
     @Bean
-    @Qualifier("DeerSearchResolver")
-    SearchResolver equivDeerSearchResolver() {
-        TransportClient esClient = getTransportClient();
-        ContentTitleSearcher contentSearcher = new EsContentTitleSearcher(esClient);
-        return new DeerSearchResolver(
-                contentSearcher,
-                Long.parseLong(esTimeout),
+    @Qualifier("SherlockSearchResolver")
+    SearchResolver sherlockSearchResolver() {
+        return new SherlockSearchResolver(
+                contentSearcher(),
+                sherlockTimeout,
                 null,
-                null
+                null,
+                SubstitutionTableNumberCodec.lowerCaseOnly()
         );
     }
 
-    private TransportClient getTransportClient() {
-
-        Settings settings = ImmutableSettings.settingsBuilder()
-                .put("client.transport.sniff", esSniff)
-                .put("cluster.name", esCluster)
-                .put("shield.transport.ssl", esSsl)
+    @Bean
+    public ElasticSearchConfig sherlockElasticSearchConfig() {
+        return ElasticSearchConfig.builder()
+                .withScheme(sherlockScheme)
+                .withHostname(sherlockHostname)
+                .withPort(sherlockPort)
                 .build();
+    }
 
-        TransportClient esClient = new TransportClient(settings);
-
-        for (String host : esSeeds.split(",")) {
-            esClient.addTransportAddress(new InetSocketTransportAddress(host, port));
-        }
-
-        return esClient;
+    @Bean
+    @Primary
+    public com.metabroadcast.sherlock.client.search.ContentSearcher contentSearcher() {
+        return com.metabroadcast.sherlock.client.search.ContentSearcher.builder()
+                .withElasticSearchProcessor(
+                        new ElasticSearchProcessor(
+                                sherlockElasticSearchConfig().getElasticSearchClient()
+                        )
+                )
+                .withIndex(SherlockIndex.CONTENT)
+                .build();
     }
 }

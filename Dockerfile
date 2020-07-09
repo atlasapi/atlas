@@ -170,12 +170,10 @@ CMD java \
     -Dcassandra.requestTimeout="$CASSANDRA_REQUESTTIMEOUT" \
     -Dcassandra.seeds="$CASSANDRA_SEEDS" \
     -Dchannel.equiv.enabled="$CHANNEL_EQUIV_ENABLED" \
-    -Delasticsearch.ssl="$ELASTICSEARCH_SSL" \
-    -Delasticsearch.cluster="$ELASTICSEARCH_CLUSTER" \
-    -Delasticsearch.sniff="$ELASTICSEARCH_SNIFF" \
-    -Delasticsearch.timeout="$ELASTICSEARCH_TIMEOUT" \
-    -Delasticsearch.seeds="$ELASTICSEARCH_SEEDS" \
-    -Delasticsearch.port="$ELASTICSEARCH_PORT" \
+    -Dsherlock.scheme="$SHERLOCK_SCHEME" \
+    -Dsherlock.hostname="$SHERLOCK_HOSTNAME" \
+    -Dsherlock.port="$SHERLOCK_PORT" \
+    -Dsherlock.timeout="$SHERLOCK_TIMEOUT" \
     -Demipub.dataFile="$EMIPUB_DATAFILE" \
     -Dequiv.excludedUris="$EQUIV_EXCLUDEDURIS" \
     -Dequiv.excludedIds="$EQUIV_EXCLUDEDIDS" \

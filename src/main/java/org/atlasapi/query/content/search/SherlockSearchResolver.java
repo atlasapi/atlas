@@ -73,9 +73,7 @@ public class SherlockSearchResolver implements SearchResolver {
                 //.withBoost(owlQuery.getTitleWeighting())
                 .build();
 
-        // TODO These specific weighting functionalities do not currently exist in Sherlock, so
-        // commented out all boosts/weightings for the time being
-
+        // TODO Specific weightings are not yet supported in Sherlock
 //        QueryWeighting queryWeighting = QueryWeighting.builder()
 //                .withWeighting(Weightings.broadcastCount(owlQuery.getBroadcastWeighting()))
 //                // .withWeighting(owlQuery.getCatchupWeighting())
@@ -111,7 +109,7 @@ public class SherlockSearchResolver implements SearchResolver {
         }
 
         if (owlQuery.currentBroadcastsOnly() != null) {
-            // TODO is this for future broadcasts, or broadcasts that are currently being broadcast?
+            // Not implemented because Sherlock does not support this either
 //            searchQueryBuilder.addFilter()
 //            deerSearchQuery.withCurrentBroadcastsOnly(owlQuery.currentBroadcastsOnly());
         }

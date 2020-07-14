@@ -146,7 +146,7 @@ public class SherlockSearchResolver implements SearchResolver {
 
     private List<Identified> resolveIds(List<Long> ids) {
         Set<LookupEntry> potentialCandidatesSet = ids.stream()
-                .map(this::getLookupEntries) //from atlas
+                .map(this::getLookupEntries) // from atlas owl
                 .filter(Objects::nonNull)
                 .flatMap(MoreStreams::stream)
                 .collect(MoreCollectors.toImmutableSet());

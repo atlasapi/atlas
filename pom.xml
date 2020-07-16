@@ -436,7 +436,7 @@
         <dependency>
             <groupId>org.atlasapi</groupId>
             <artifactId>atlas-feeds</artifactId>
-            <version>5.7-SNAPSHOT</version>
+            <version>${atlas.version}</version>
         </dependency>
         <dependency>
             <groupId>org.atlasapi</groupId>

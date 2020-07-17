@@ -132,12 +132,12 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
             try {
                 String successName = "YouViewSuccessfulTasks_" + publisherStr + "_" + timespan;
                 writer.write("# TYPE " + successName + " gauge\n");
-                writer.write(successName + " " + stats.get().successfulTasks());
-                writer.write("");
+                writer.write(successName + " " + stats.get().successfulTasks()+"\n");
+                writer.write("\n");
 
                 String failureName = "YouViewFailedTasks_" + publisherStr + "_" + timespan;
                 writer.write("# TYPE " + failureName + " gauge\n");
-                writer.write(failureName + " " + stats.get().unsuccessfulTasks());
+                writer.write(failureName + " " + stats.get().unsuccessfulTasks()+"\n");
             } finally {
                 Flushables.flushQuietly(writer);
                 if (out instanceof GZIPOutputStream) {

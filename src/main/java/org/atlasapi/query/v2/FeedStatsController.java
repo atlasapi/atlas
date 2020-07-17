@@ -125,13 +125,19 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
                 response.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
                 out = new GZIPOutputStream(out);
             }
+            response.setContentType("text/plain; version=0.0.4");
 
             OutputStreamWriter writer = new OutputStreamWriter(out, Charsets.UTF_8);
 
             try {
-                String name = "YouViewSuccessfulTasks_" + publisherStr + "_" + timespan;
-                writer.write("# TYPE " + name + " gauge\n");
-                writer.write(name + " " + stats.get().successfulTasks());
+                String successName = "YouViewSuccessfulTasks_" + publisherStr + "_" + timespan;
+                writer.write("# TYPE " + successName + " gauge\n");
+                writer.write(successName + " " + stats.get().successfulTasks());
+                writer.write("");
+
+                String failureName = "YouViewFailedTasks_" + publisherStr + "_" + timespan;
+                writer.write("# TYPE " + failureName + " gauge\n");
+                writer.write(failureName + " " + stats.get().unsuccessfulTasks());
             } finally {
                 Flushables.flushQuietly(writer);
                 if (out instanceof GZIPOutputStream) {
@@ -139,8 +145,6 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
                 }
             }
 
-
-            modelAndViewFor(request, response, ImmutableSet.of(stats.get()), application);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }

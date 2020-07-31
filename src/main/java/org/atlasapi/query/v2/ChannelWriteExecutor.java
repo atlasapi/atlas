@@ -4,10 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigInteger;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
@@ -24,6 +27,7 @@ import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageColor;
 import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.exceptions.ForbiddenException;
@@ -43,6 +47,7 @@ import com.google.common.collect.Sets;
 import joptsimple.internal.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -73,21 +78,21 @@ public class ChannelWriteExecutor {
         return new Builder();
     }
 
-    @RequestMapping(value = "/3.0/channels", method = RequestMethod.POST)
-    public Void postChannel(HttpServletRequest req, HttpServletResponse resp) {
+    public WriteResponse postChannel(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateChannel(req, resp);
     }
 
-    public Void createOrUpdateChannelImage(
+    @Nullable
+    public WriteResponse createOrUpdateChannelImage(
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
 
-        Optional<Void> invalidApplication = validateApplication(request, response);
-        if (invalidApplication.isPresent()) {
-            return invalidApplication.get();
+        PossibleApplication possibleApplication = validateApplicationConfiguration(request);
+        if (possibleApplication.getErrorSummary().isPresent()) {
+            return error(request, response, possibleApplication.getErrorSummary().get());
         }
 
         String channelId = imageDetails.getChannelId();
@@ -140,52 +145,72 @@ public class ChannelWriteExecutor {
         createOrUpdateImage(existingChannel, imageDetails);
 
         try {
-            store.createOrUpdate(existingChannel);
+            Channel savedChannel = store.createOrUpdate(existingChannel);
+            response.setStatus(HttpServletResponse.SC_OK);
+            return new WriteResponse(encodeId(savedChannel.getId()));
         } catch (Exception e) {
             log.error("Error while updating channel for request {}", request.getRequestURL(), e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
             return error(request, response, AtlasErrorSummary.forException(e));
         }
-
-        response.setStatus(HttpServletResponse.SC_OK);
-        return null;
-
     }
 
-    private Optional<Void> validateApplication(HttpServletRequest request, HttpServletResponse response) {
-        Optional<Application> possibleApplication;
+    @Nonnull
+    private PossibleApplication validateApplicationConfiguration(HttpServletRequest request) {
+        PossibleApplication possibleApplication = new PossibleApplication();
         try {
-            possibleApplication = appConfigFetcher.applicationFor(request);
+            possibleApplication.setApplication(appConfigFetcher.applicationFor(request).orElse(null));
         } catch (InvalidApiKeyException ex) {
-            return Optional.of(error(request, response, AtlasErrorSummary.forException(ex)));
+            possibleApplication.setErrorSummary(AtlasErrorSummary.forException(ex));
         }
 
-        if (!possibleApplication.isPresent()) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return Optional.of(error(
-                    request,
-                    response,
-                    AtlasErrorSummary.forException(
-                            new UnauthorizedException(
-                                    "API key is unauthorised"
-                            )
-                    )
-            ));
+        if (!possibleApplication.getApplication().isPresent()) {
+            possibleApplication.setErrorSummary(
+                    AtlasErrorSummary.forException(new UnauthorizedException(
+                            "API key is unauthorised"
+                    ))
+            );
         }
-        return Optional.empty();
+
+        return possibleApplication;
     }
 
-    public Void deleteChannelImage(
+    private class PossibleApplication {
+
+        private AtlasErrorSummary errorSummary;
+        private Application application;
+
+        @Nonnull
+        public Optional<AtlasErrorSummary> getErrorSummary() {
+            return Optional.ofNullable(errorSummary);
+        }
+
+        public void setErrorSummary(@Nullable AtlasErrorSummary errorSummary) {
+            this.errorSummary = errorSummary;
+        }
+
+        @Nonnull
+        public Optional<Application> getApplication() {
+            return Optional.ofNullable(application);
+        }
+
+        public void setApplication(@Nullable Application application) {
+            this.application = application;
+        }
+    }
+
+    @Nullable
+    public WriteResponse deleteChannelImage(
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
 
-        Optional<Void> invalidApplication = validateApplication(request, response);
-        if (invalidApplication.isPresent()) {
-            return invalidApplication.get();
+        PossibleApplication possibleApplication = validateApplicationConfiguration(request);
+        if (possibleApplication.getErrorSummary().isPresent()) {
+            return error(request, response, possibleApplication.getErrorSummary().get());
         }
 
         String channelId = imageDetails.getChannelId();
@@ -224,16 +249,15 @@ public class ChannelWriteExecutor {
         }
 
         try {
-            store.createOrUpdate(existingChannel);
+            Channel savedChannel = store.createOrUpdate(existingChannel);
+            response.setStatus(HttpServletResponse.SC_OK);
+            return new WriteResponse(encodeId(savedChannel.getId()));
         } catch (Exception e) {
             log.error("Error while updating channel for request {}", request.getRequestURL(), e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
             return error(request, response, AtlasErrorSummary.forException(e));
         }
-
-        response.setStatus(HttpServletResponse.SC_OK);
-        return null;
     }
 
     private void deleteImage(String imageTheme, Channel existingChannel) {
@@ -308,24 +332,13 @@ public class ChannelWriteExecutor {
         existingImage.setHeight(Integer.valueOf(imageDetails.getHeight()));
     }
 
-    private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
+    @Nullable
+    private WriteResponse deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
 
-        Optional<Application> possibleApplication;
-        try {
-            possibleApplication = appConfigFetcher.applicationFor(req);
-        } catch (InvalidApiKeyException ex) {
-            return error(req, resp, AtlasErrorSummary.forException(ex));
-        }
-
-        if (!possibleApplication.isPresent()) {
-            return error(
-                    req,
-                    resp,
-                    AtlasErrorSummary.forException(new UnauthorizedException(
-                            "API key is unauthorised"
-                    ))
-            );
+        PossibleApplication possibleApplication = validateApplicationConfiguration(req);
+        if (possibleApplication.getErrorSummary().isPresent()) {
+            return error(req, resp, possibleApplication.getErrorSummary().get());
         }
 
         Channel channel;
@@ -350,7 +363,7 @@ public class ChannelWriteExecutor {
             return error(req, resp, errorSummary);
         }
 
-        if (!possibleApplication.get().getConfiguration().isWriteEnabled(channel.getSource())) {
+        if (!possibleApplication.getApplication().get().getConfiguration().isWriteEnabled(channel.getSource())) {
             return error(
                     req,
                     resp,
@@ -361,7 +374,9 @@ public class ChannelWriteExecutor {
         }
 
         try {
-            store.createOrUpdate(channel);
+            Channel savedChannel = store.createOrUpdate(channel);
+            resp.setStatus(HttpStatus.OK.value());
+            return new WriteResponse(encodeId(savedChannel.getId()));
         } catch (Exception e) {
             log.error("Error while creating/updating channel for request " + req.getRequestURL(), e);
             AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
@@ -369,9 +384,10 @@ public class ChannelWriteExecutor {
             return error(req, resp, errorSummary);
         }
 
-        resp.setStatus(HttpStatusCode.OK.code());
-        resp.setContentLength(0);
-        return null;
+    }
+
+    private String encodeId(Long contentId) {
+        return codec.encode(BigInteger.valueOf(contentId));
     }
 
     private org.atlasapi.media.entity.simple.Channel deserialize(Reader input, Boolean strict)
@@ -379,7 +395,8 @@ public class ChannelWriteExecutor {
         return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Channel.class, strict);
     }
 
-    private Void error(
+    @Nullable
+    private WriteResponse error(
             HttpServletRequest request,
             HttpServletResponse response,
             AtlasErrorSummary summary

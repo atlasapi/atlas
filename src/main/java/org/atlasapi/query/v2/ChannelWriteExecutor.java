@@ -380,7 +380,7 @@ public class ChannelWriteExecutor {
             resp.setStatus(HttpStatus.OK.value());
             return new WriteResponse(encodeId(savedChannel.getId()));
         } catch (Exception e) {
-            log.error("Error while creating/updating channel for request " + req.getRequestURL(), e);
+            log.error("Error while creating/updating channel for request {}", req.getRequestURL(), e);
             AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
                     .withStatusCode(HttpStatusCode.BAD_REQUEST);
             return error(req, resp, errorSummary);

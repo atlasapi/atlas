@@ -176,6 +176,8 @@ public class ChannelWriteExecutor {
         return possibleApplication;
     }
 
+    //this is knowlngly ugly cause we didn't think it was worth doing anything prettier. Don't
+    //use it a good example.
     private class PossibleApplication {
 
         private AtlasErrorSummary errorSummary;

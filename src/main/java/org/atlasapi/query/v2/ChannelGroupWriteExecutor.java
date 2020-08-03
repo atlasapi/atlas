@@ -23,6 +23,7 @@ import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
+import joptsimple.internal.Strings;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,16 +75,19 @@ public class ChannelGroupWriteExecutor {
             //if it's a new group, create it, then update the canonicalUri that requires the ID
             ChannelGroup newChannelGroup = channelGroupStore.createOrUpdate(complex);
 
-            //we create a URI that allows us to detect BT has created that group through us
-            //and because we use the new ID format for it (all lowercase), we need to create it
-            //after it was written to the database.
-            newChannelGroup.setCanonicalUri(String.format(
-                    "http://%s/metabroadcast/%s",
-                    newChannelGroup.getPublisher().key(),
-                    deerCodec.encode(BigInteger.valueOf(newChannelGroup.getId()))
-            ));
-            newChannelGroup = channelGroupStore.createOrUpdate(newChannelGroup);
-
+            if(Strings.isNullOrEmpty(newChannelGroup.getCanonicalUri())) {
+                //we create a URI that allows us to detect BT has created that group through us
+                //and because we use the new ID format for it (all lowercase), we need to create it
+                //after it was written to the database.
+                //NB: this looks stupid and should be removed - the BT Channel Group Tool UI should
+                //    elect the URI
+                newChannelGroup.setCanonicalUri(String.format(
+                        "http://%s/metabroadcast/%s",
+                        newChannelGroup.getPublisher().key(),
+                        deerCodec.encode(BigInteger.valueOf(newChannelGroup.getId()))
+                ));
+                newChannelGroup = channelGroupStore.createOrUpdate(newChannelGroup);
+            }
             addNewNumberingsToChannels(newChannelGroup, simple.getChannels(), channelResolver);
 
             return com.google.common.base.Optional.of(newChannelGroup);

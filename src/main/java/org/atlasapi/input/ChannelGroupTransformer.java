@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.Platform;
+import org.atlasapi.media.channel.Region;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.PublisherDetails;
@@ -24,7 +25,13 @@ public class ChannelGroupTransformer implements
 
     @Override
     public ChannelGroup transform(org.atlasapi.media.entity.simple.ChannelGroup simple) {
-        Platform complex = new Platform();
+        ChannelGroup complex;
+        if("region".equals(simple.getType())) {
+            complex = new Region();
+        }
+        else {
+            complex = new Platform();
+        }
 
         //set the fields we agreed on with BT. Check BT Channel Groups in Google Docs for more info
         if (!Strings.isNullOrEmpty(simple.getId())) {
@@ -46,7 +53,7 @@ public class ChannelGroupTransformer implements
 
     private void setChannelNumbers(
             org.atlasapi.media.entity.simple.ChannelGroup simple,
-            Platform complex,
+            ChannelGroup complex,
             long channelGroupId
     ) {
         Set<ChannelNumbering> channelNumberings = simple.getChannels()

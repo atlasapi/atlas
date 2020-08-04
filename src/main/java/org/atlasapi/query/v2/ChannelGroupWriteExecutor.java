@@ -72,7 +72,7 @@ public class ChannelGroupWriteExecutor {
                 );
                 return com.google.common.base.Optional.of(channelGroup);
             }
-            //if it's a new group, create it, then update the canonicalUri that requires the ID
+            //if it's a new group, create it
             ChannelGroup newChannelGroup = channelGroupStore.createOrUpdate(complex);
 
             if(Strings.isNullOrEmpty(newChannelGroup.getCanonicalUri())) {

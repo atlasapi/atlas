@@ -1,10 +1,12 @@
 package org.atlasapi.remotesite.pa.channels;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -67,7 +69,7 @@ public class PaChannelDataHandler {
         return false;
     };
     private static final Function<Region, String> REGION_TO_URI = Identified::getCanonicalUri;
-    private static final Joiner JOINER = Joiner.on(",");
+    private static final String RADIOTIMES_CHANNEL_GROUP_URI = "http://www.radiotimes.com/platforms/enabled_channels";
 
     private final DateTimeFormatter formatter = ISODateTimeFormat.date();
     private final PaChannelsIngester channelsIngester;
@@ -166,6 +168,44 @@ public class PaChannelDataHandler {
             );
         }
 
+        Optional<ChannelGroup> maybeRtChannelGroup = resolveChannelGroup(RADIOTIMES_CHANNEL_GROUP_URI);
+        if (maybeRtChannelGroup.isPresent()) {
+
+            int highestExistingChannelNumber = 0;
+            Set<Long> existingChannelsInRtChannelNumberings = new HashSet<>();
+            ChannelGroup rtChannelGroup = maybeRtChannelGroup.get();
+            for (ChannelNumbering channelNumbering : rtChannelGroup.getChannelNumberings()) {
+                existingChannelsInRtChannelNumberings.add(channelNumbering.getChannel());
+                String channelNumber = channelNumbering.getChannelNumber();
+                try {
+                    int parsedChannelNumber = Integer.parseInt(channelNumber);
+                    if (parsedChannelNumber > highestExistingChannelNumber) {
+                        highestExistingChannelNumber = parsedChannelNumber;
+                    }
+                } catch (NumberFormatException nfe) {
+                    log.warn("A channel number could not be parsed in the RadioTimes channel group: "
+                            + channelNumber);
+                }
+            }
+
+            for (Channel channel : channelMap.values()) {
+                if (!existingChannelsInRtChannelNumberings.contains(channel.getId())) {
+                    int channelNumberToWrite = ++highestExistingChannelNumber;
+                    ChannelNumbering channelNumbering = ChannelNumbering.builder()
+                            .withChannelNumber(String.valueOf(channelNumberToWrite))
+                            .withChannel(channel.getId())
+                            .withChannelGroup(rtChannelGroup)
+                            .build();
+                    rtChannelGroup.addChannelNumbering(channelNumbering);
+                }
+            }
+
+            channelGroupWriter.createOrUpdate(rtChannelGroup);
+        } else {
+            log.warn("The RadioTimes channel group could not be resolved using uri: "
+                     + RADIOTIMES_CHANNEL_GROUP_URI + ", it will not be updated.");
+        }
+
         // write channels
         // TODO should this be multi-threaded? is slowest part by far...
         for (Channel child : channelMap.values()) {
@@ -239,8 +279,8 @@ public class PaChannelDataHandler {
         return allBtCustomChannelGroupsMap;
     }
 
-    private Optional<ChannelGroup> resolveChannelGroup(Long channelGroup) {
-        return channelGroupResolver.channelGroupFor(channelGroup);
+    private Optional<ChannelGroup> resolveChannelGroup(String channelGroupUri) {
+        return channelGroupResolver.channelGroupFor(channelGroupUri);
     }
 
     private boolean isCustomBtChannelGroup(ChannelGroup channelGroup) {

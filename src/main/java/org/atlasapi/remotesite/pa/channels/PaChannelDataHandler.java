@@ -174,7 +174,8 @@ public class PaChannelDataHandler {
         // write channels
         // TODO should this be multi-threaded? is slowest part by far...
         for (Channel child : channelMap.values()) {
-            channelsWithIds.add(createOrMerge(child));
+            Channel createdOrMergedChannel = createOrMerge(child);
+            channelsWithIds.add(createdOrMergedChannel);
         }
 
         updateRadioTimesChannelGroup(channelsWithIds);

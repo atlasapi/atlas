@@ -1,12 +1,12 @@
 package org.atlasapi.remotesite.pa.channels;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -168,49 +168,16 @@ public class PaChannelDataHandler {
             );
         }
 
-        Optional<ChannelGroup> maybeRtChannelGroup = resolveChannelGroup(RADIOTIMES_CHANNEL_GROUP_URI);
-        if (maybeRtChannelGroup.isPresent()) {
-
-            int highestExistingChannelNumber = 0;
-            Set<Long> existingChannelsInRtChannelNumberings = new HashSet<>();
-            ChannelGroup rtChannelGroup = maybeRtChannelGroup.get();
-            for (ChannelNumbering channelNumbering : rtChannelGroup.getChannelNumberings()) {
-                existingChannelsInRtChannelNumberings.add(channelNumbering.getChannel());
-                String channelNumber = channelNumbering.getChannelNumber();
-                try {
-                    int parsedChannelNumber = Integer.parseInt(channelNumber);
-                    if (parsedChannelNumber > highestExistingChannelNumber) {
-                        highestExistingChannelNumber = parsedChannelNumber;
-                    }
-                } catch (NumberFormatException nfe) {
-                    log.warn("A channel number could not be parsed in the RadioTimes channel group: "
-                            + channelNumber);
-                }
-            }
-
-            for (Channel channel : channelMap.values()) {
-                if (!existingChannelsInRtChannelNumberings.contains(channel.getId())) {
-                    int channelNumberToWrite = ++highestExistingChannelNumber;
-                    ChannelNumbering channelNumbering = ChannelNumbering.builder()
-                            .withChannelNumber(String.valueOf(channelNumberToWrite))
-                            .withChannel(channel.getId())
-                            .withChannelGroup(rtChannelGroup)
-                            .build();
-                    rtChannelGroup.addChannelNumbering(channelNumbering);
-                }
-            }
-
-            channelGroupWriter.createOrUpdate(rtChannelGroup);
-        } else {
-            log.warn("The RadioTimes channel group could not be resolved using uri: "
-                     + RADIOTIMES_CHANNEL_GROUP_URI + ", it will not be updated.");
-        }
+        // New channels are not assigned an id until the createOrMerge() step
+        List<Channel> channelsWithIds = new ArrayList<>();
 
         // write channels
         // TODO should this be multi-threaded? is slowest part by far...
         for (Channel child : channelMap.values()) {
-            createOrMerge(child);
+            channelsWithIds.add(createOrMerge(child));
         }
+
+        updateRadioTimesChannelGroup(channelsWithIds);
     }
 
     // The custom channel groups created by BT through the channel grouping tool should contain the
@@ -495,5 +462,46 @@ public class PaChannelDataHandler {
         combined.addAll(newAliases);
 
         return combined.build();
+    }
+
+    private void updateRadioTimesChannelGroup(List<Channel> channels) {
+
+        Optional<ChannelGroup> maybeRtChannelGroup = resolveChannelGroup(RADIOTIMES_CHANNEL_GROUP_URI);
+        if (maybeRtChannelGroup.isPresent()) {
+
+            int highestExistingChannelNumber = 0;
+            Set<Long> existingChannelsInRtChannelNumberings = new HashSet<>();
+            ChannelGroup rtChannelGroup = maybeRtChannelGroup.get();
+            for (ChannelNumbering channelNumbering : rtChannelGroup.getChannelNumberings()) {
+                existingChannelsInRtChannelNumberings.add(channelNumbering.getChannel());
+                String channelNumber = channelNumbering.getChannelNumber();
+                try {
+                    int parsedChannelNumber = Integer.parseInt(channelNumber);
+                    if (parsedChannelNumber > highestExistingChannelNumber) {
+                        highestExistingChannelNumber = parsedChannelNumber;
+                    }
+                } catch (NumberFormatException nfe) {
+                    log.warn("A channel number could not be parsed in the RadioTimes channel group: "
+                             + channelNumber);
+                }
+            }
+
+            for (Channel channel : channels) {
+                if (!existingChannelsInRtChannelNumberings.contains(channel.getId())) {
+                    int channelNumberToWrite = ++highestExistingChannelNumber;
+                    ChannelNumbering channelNumbering = ChannelNumbering.builder()
+                            .withChannelNumber(String.valueOf(channelNumberToWrite))
+                            .withChannel(channel.getId())
+                            .withChannelGroup(rtChannelGroup)
+                            .build();
+                    rtChannelGroup.addChannelNumbering(channelNumbering);
+                }
+            }
+
+            channelGroupWriter.createOrUpdate(rtChannelGroup);
+        } else {
+            log.warn("The RadioTimes channel group could not be resolved using uri: "
+                     + RADIOTIMES_CHANNEL_GROUP_URI + ", it will not be updated.");
+        }
     }
 }

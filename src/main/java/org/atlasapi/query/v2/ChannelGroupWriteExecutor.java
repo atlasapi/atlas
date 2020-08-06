@@ -62,15 +62,16 @@ public class ChannelGroupWriteExecutor {
     ) {
         try {
             if (complex.getId() != null) {
-                Set<Long> existingChannelIds = getChannelIdsForChannelGroupId(complex.getId());
-                ChannelGroup channelGroup = channelGroupStore.createOrUpdate(complex);
-                updateChannelGroupNumberings(
-                        complex,
-                        simple.getChannels(),
-                        existingChannelIds,
-                        channelResolver
-                );
-                return com.google.common.base.Optional.of(channelGroup);
+                return updateChannelGroup(complex, simple, channelResolver);
+            }
+            if (complex.getCanonicalUri() != null) {
+                com.google.common.base.Optional<ChannelGroup> existingChannelGroup = channelGroupStore
+                        .channelGroupFor(complex.getCanonicalUri());
+
+                if(existingChannelGroup.isPresent()) {
+                    complex.setId(existingChannelGroup.get().getId());
+                }
+                return updateChannelGroup(complex, simple, channelResolver);
             }
             //if it's a new group, create it
             ChannelGroup newChannelGroup = channelGroupStore.createOrUpdate(complex);
@@ -99,6 +100,19 @@ public class ChannelGroupWriteExecutor {
             );
             return com.google.common.base.Optional.absent();
         }
+    }
+
+    private com.google.common.base.Optional<ChannelGroup> updateChannelGroup(ChannelGroup complex,
+            org.atlasapi.media.entity.simple.ChannelGroup simple, ChannelResolver channelResolver) {
+        Set<Long> existingChannelIds = getChannelIdsForChannelGroupId(complex.getId());
+        ChannelGroup channelGroup = channelGroupStore.createOrUpdate(complex);
+        updateChannelGroupNumberings(
+                complex,
+                simple.getChannels(),
+                existingChannelIds,
+                channelResolver
+        );
+        return com.google.common.base.Optional.of(channelGroup);
     }
 
     private Set<Long> getChannelIdsForChannelGroupId(Long channelGroupId) {

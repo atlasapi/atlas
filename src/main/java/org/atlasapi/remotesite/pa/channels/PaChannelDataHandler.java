@@ -465,9 +465,9 @@ public class PaChannelDataHandler {
         return combined.build();
     }
 
-    // To the best of my knowledge, the RadioTimes channel group is only used so that the backup
-    // script knows for which channels to produce schedule for, hence why the channel numbers
-    // assigned are just auto-incrementing numbers, that need not persist through updates.
+    // To the best of my knowledge, the RadioTimes channel group is only used as a collection of
+    // channels in which the channel numbers are meaningless, hence why the channel numbers are just
+    // arbitrarily assigned auto-incrementing numbers, that need not persist through updates.
     private void updateRadioTimesChannelGroup(List<Channel> channels) {
 
         Optional<ChannelGroup> maybeChannelGroup = resolveChannelGroup(RADIOTIMES_CHANNEL_GROUP_URI);
@@ -476,15 +476,15 @@ public class PaChannelDataHandler {
             ChannelGroup channelGroup = maybeChannelGroup.get();
             channelGroup.setChannelNumberings(ImmutableSet.of());
 
-            int channelNumberToWrite = 1;
+            int channelNumber = 1;
             for (Channel channel : channels) {
                 ChannelNumbering channelNumbering = ChannelNumbering.builder()
-                        .withChannelNumber(String.valueOf(channelNumberToWrite))
+                        .withChannelNumber(String.valueOf(channelNumber))
                         .withChannel(channel.getId())
                         .withChannelGroup(channelGroup.getId())
                         .build();
                 channelGroup.addChannelNumbering(channelNumbering);
-                channelNumberToWrite++;
+                channelNumber++;
             }
 
             channelGroupWriter.createOrUpdate(channelGroup);

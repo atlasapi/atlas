@@ -465,41 +465,32 @@ public class PaChannelDataHandler {
         return combined.build();
     }
 
+    // Replaces whatever channels are in RadioTimes channel group with provided pa channels, this
+    // method handles the addition of new channels and removal of old channels, and is not
+    // problematic since channel numbers within this channel group do not need to persist.
     private void updateRadioTimesChannelGroup(List<Channel> channels) {
 
-        Optional<ChannelGroup> maybeRtChannelGroup = resolveChannelGroup(RADIOTIMES_CHANNEL_GROUP_URI);
-        if (maybeRtChannelGroup.isPresent()) {
+        Optional<ChannelGroup> maybeChannelGroup = resolveChannelGroup(RADIOTIMES_CHANNEL_GROUP_URI);
+        if (maybeChannelGroup.isPresent()) {
 
-            int highestExistingChannelNumber = 0;
-            Set<Long> existingChannelsInRtChannelNumberings = new HashSet<>();
-            ChannelGroup rtChannelGroup = maybeRtChannelGroup.get();
-            for (ChannelNumbering channelNumbering : rtChannelGroup.getChannelNumberings()) {
-                existingChannelsInRtChannelNumberings.add(channelNumbering.getChannel());
-                String channelNumber = channelNumbering.getChannelNumber();
-                try {
-                    int parsedChannelNumber = Integer.parseInt(channelNumber);
-                    if (parsedChannelNumber > highestExistingChannelNumber) {
-                        highestExistingChannelNumber = parsedChannelNumber;
-                    }
-                } catch (NumberFormatException nfe) {
-                    log.warn("A channel number could not be parsed in the RadioTimes channel group: "
-                             + channelNumber);
-                }
-            }
+            ChannelGroup channelGroup = maybeChannelGroup.get();
 
+            Set<ChannelNumbering> channelNumberings = new HashSet<>();
+            int channelNumberToWrite = 1;
             for (Channel channel : channels) {
-                if (!existingChannelsInRtChannelNumberings.contains(channel.getId())) {
-                    int channelNumberToWrite = ++highestExistingChannelNumber;
-                    ChannelNumbering channelNumbering = ChannelNumbering.builder()
-                            .withChannelNumber(String.valueOf(channelNumberToWrite))
-                            .withChannel(channel.getId())
-                            .withChannelGroup(rtChannelGroup)
-                            .build();
-                    rtChannelGroup.addChannelNumbering(channelNumbering);
-                }
+                ChannelNumbering channelNumbering = ChannelNumbering.builder()
+                        .withChannelNumber(String.valueOf(channelNumberToWrite))
+                        .withChannel(channel.getId())
+                        .withChannelGroup(channelGroup.getId())
+                        .build();
+                channelNumberings.add(channelNumbering);
+                channelNumberToWrite++;
             }
 
-            channelGroupWriter.createOrUpdate(rtChannelGroup);
+            channelGroup.setChannelNumberings(channelNumberings);
+
+            channelGroupWriter.createOrUpdate(channelGroup);
+
         } else {
             log.warn("The RadioTimes channel group could not be resolved using uri: "
                      + RADIOTIMES_CHANNEL_GROUP_URI + ", it will not be updated.");

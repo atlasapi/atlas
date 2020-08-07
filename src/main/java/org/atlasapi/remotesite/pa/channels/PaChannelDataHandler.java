@@ -465,9 +465,9 @@ public class PaChannelDataHandler {
         return combined.build();
     }
 
-    // Replaces whatever channels are in RadioTimes channel group with provided pa channels, this
-    // method handles the addition of new channels and removal of old channels, and is not
-    // problematic since channel numbers within this channel group do not need to persist.
+    // To the best of my knowledge, the RadioTimes channel group is only used so that the backup
+    // script knows for which channels to produce schedule for, hence why the channel numbers
+    // assigned are just auto-incrementing numbers, that need not persist through updates.
     private void updateRadioTimesChannelGroup(List<Channel> channels) {
 
         Optional<ChannelGroup> maybeChannelGroup = resolveChannelGroup(RADIOTIMES_CHANNEL_GROUP_URI);

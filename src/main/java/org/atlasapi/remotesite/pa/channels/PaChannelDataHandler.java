@@ -474,8 +474,8 @@ public class PaChannelDataHandler {
         if (maybeChannelGroup.isPresent()) {
 
             ChannelGroup channelGroup = maybeChannelGroup.get();
+            channelGroup.setChannelNumberings(ImmutableSet.of());
 
-            Set<ChannelNumbering> channelNumberings = new HashSet<>();
             int channelNumberToWrite = 1;
             for (Channel channel : channels) {
                 ChannelNumbering channelNumbering = ChannelNumbering.builder()
@@ -483,11 +483,9 @@ public class PaChannelDataHandler {
                         .withChannel(channel.getId())
                         .withChannelGroup(channelGroup.getId())
                         .build();
-                channelNumberings.add(channelNumbering);
+                channelGroup.addChannelNumbering(channelNumbering);
                 channelNumberToWrite++;
             }
-
-            channelGroup.setChannelNumberings(channelNumberings);
 
             channelGroupWriter.createOrUpdate(channelGroup);
 

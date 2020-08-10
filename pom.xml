@@ -431,7 +431,7 @@
         <dependency>
             <groupId>org.atlasapi</groupId>
             <artifactId>atlas-model</artifactId>
-            <version>5.1-SNAPSHOT</version>
+            <version>${atlas.version}</version>
         </dependency>
         <dependency>
             <groupId>org.atlasapi</groupId>

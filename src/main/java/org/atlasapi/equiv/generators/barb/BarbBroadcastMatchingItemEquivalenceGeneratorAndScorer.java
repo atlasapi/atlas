@@ -103,7 +103,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("BARB Broadcast Matching Item Equivalence Generator");
 
-        if (!BroadcasterGroupTier.hasTierOneAlias(subject)) {
+        if (!ContentProvider.isTier1(subject)) {
             desc.appendText("Item not from tier 1 broadcaster, ignoring all broadcasts.");
             return scores.build();
         }

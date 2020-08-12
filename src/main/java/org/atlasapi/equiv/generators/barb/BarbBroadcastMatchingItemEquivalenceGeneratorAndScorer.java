@@ -103,39 +103,39 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("BARB Broadcast Matching Item Equivalence Generator");
 
-        if (ContentProvider.isTierOneBroadcaster(subject)) {
+        if (!BroadcasterGroupTier.hasTierOneAlias(subject)) {
+            desc.appendText("Item not from tier 1 broadcaster, ignoring all broadcasts.");
+            return scores.build();
+        }
 
-            Set<Publisher> validPublishers = Sets.difference(
-                    supportedPublishers,
-                    ImmutableSet.of(subject.getPublisher())
-            );
+        Set<Publisher> validPublishers = Sets.difference(
+                supportedPublishers,
+                ImmutableSet.of(subject.getPublisher())
+        );
 
-            int processedBroadcasts = 0;
-            int totalBroadcasts = 0;
+        int processedBroadcasts = 0;
+        int totalBroadcasts = 0;
 
-            for (Version version : subject.getVersions()) {
-                int broadcastCount = version.getBroadcasts().size();
-                for (Broadcast broadcast : version.getBroadcasts()) {
-                    totalBroadcasts++;
-                    if (broadcast.isActivelyPublished() && broadcastFilter.test(broadcast)) {
-                        processedBroadcasts++;
-                        findMatchesForBroadcast(
-                                scores,
-                                subject,
-                                broadcast,
-                                subject.getPublisher(),
-                                validPublishers,
-                                desc,
-                                generatorComponent
-                        );
-                    }
+        for (Version version : subject.getVersions()) {
+            int broadcastCount = version.getBroadcasts().size();
+            for (Broadcast broadcast : version.getBroadcasts()) {
+                totalBroadcasts++;
+                if (broadcast.isActivelyPublished() && broadcastFilter.test(broadcast)) {
+                    processedBroadcasts++;
+                    findMatchesForBroadcast(
+                            scores,
+                            subject,
+                            broadcast,
+                            subject.getPublisher(),
+                            validPublishers,
+                            desc,
+                            generatorComponent
+                    );
                 }
             }
-
-            desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
-        } else {
-            desc.appendText("Item not from tier 1 broadcaster, ignoring all broadcasts.");
         }
+
+        desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
 
         equivToTelescopeResult.addGeneratorResult(generatorComponent);
 

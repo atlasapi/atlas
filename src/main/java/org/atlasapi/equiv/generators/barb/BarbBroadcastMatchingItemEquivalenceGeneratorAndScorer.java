@@ -103,6 +103,11 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("BARB Broadcast Matching Item Equivalence Generator");
 
+        if (!TieredBroadcaster.isTierOne(subject)) {
+            desc.appendText("Item not from a tier 1 broadcaster, ignoring all broadcasts.");
+            return scores.build();
+        }
+
         Set<Publisher> validPublishers = Sets.difference(
                 supportedPublishers,
                 ImmutableSet.of(subject.getPublisher())
@@ -130,9 +135,9 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             }
         }
 
-        equivToTelescopeResult.addGeneratorResult(generatorComponent);
-
         desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
+
+        equivToTelescopeResult.addGeneratorResult(generatorComponent);
 
         return scores.build();
     }

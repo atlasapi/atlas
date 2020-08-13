@@ -71,8 +71,6 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
             MediaType.AUDIO,
             "http://www.bbc.co.uk/services/bbcone/cambridge"
     );
-    private static final Alias BBC_BGID_ALIAS = new Alias("gb:barb:broadcastGroup:1:transmission", "");
-    private static final Alias SKY_BGID_ALIAS = new Alias("gb:barb:broadcastGroup:5:transmission", "");
 
     public static final Channel BBC_TWO_ENGLAND = new Channel(
             Publisher.BBC_NITRO,

@@ -135,9 +135,9 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
             }
         }
 
-        desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
-
         equivToTelescopeResult.addGeneratorResult(generatorComponent);
+
+        desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
 
         return scores.build();
     }

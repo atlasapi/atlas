@@ -16,7 +16,6 @@ import org.atlasapi.equiv.scorers.barb.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
@@ -603,7 +602,6 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 BBC_NITRO,
                 new Broadcast(BBC_TWO_ENGLAND.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z"))
         );
-        nitroItem.addCustomField(TXLOG_BROADCASTER_GROUP, "1"); // since we now ignore tier 2 broadcasts
 
         final Item txlogItem1 = episodeWithBroadcasts(
                 "equivItem1",

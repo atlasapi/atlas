@@ -23,8 +23,8 @@ import static org.atlasapi.equiv.update.messagers.types.ContainerEquivalenceMess
 import static org.atlasapi.equiv.update.messagers.types.ContainerEquivalenceMessengerType.STANDARD_SERIES_MESSENGER;
 import static org.atlasapi.equiv.update.messagers.types.ItemEquivalenceMessengerType.NOP_ITEM_MESSENGER;
 import static org.atlasapi.equiv.update.messagers.types.ItemEquivalenceMessengerType.STANDARD_ITEM_MESSENGER;
+import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.DEFAULT_EQUIV_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.MUSIC_SOURCES;
-import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.NON_STANDARD_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.TARGET_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.VF_SOURCES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_AMAZON_CONTAINER;
@@ -121,9 +121,9 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
  * picks up an item, it will check its source to see if there is a specific configuration for it,
  * and if there is it will only match it against the specified sources.
  * <p>
- * WHEN CREATING A NEW CONFIG, keep in mind to add your source to the NON_STANDARD_SOURCES list.
+ * WHEN CREATING A NEW CONFIG, keep in mind to remove your source from the DEFAULT_EQUIV_SOURCE list if present.
  * If you don't, standard equivalence will run on top of whatever config you have set, and
- * standard equivalence equivs to all sources.
+ * might equiv to undesired sources.
  */
 public class UpdaterConfigurationRegistry {
 
@@ -229,9 +229,7 @@ public class UpdaterConfigurationRegistry {
     }
 
     private static ImmutableList<UpdaterConfiguration> makeDefaultConfigurations() {
-        return Publisher.all()
-                .stream()
-                .filter(source -> !NON_STANDARD_SOURCES.contains(source))
+        return DEFAULT_EQUIV_SOURCES.stream()
                 .map(UpdaterConfigurationRegistry::makeDefaultConfiguration)
                 .collect(MoreCollectors.toImmutableList());
     }

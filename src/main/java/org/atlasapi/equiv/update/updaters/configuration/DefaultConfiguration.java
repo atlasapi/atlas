@@ -10,13 +10,6 @@ import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.ARCHIVE_ORG;
 import static org.atlasapi.media.entity.Publisher.ARQIVA;
-import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
-import static org.atlasapi.media.entity.Publisher.BARB_EDITOR_OVERRIDES;
-import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
-import static org.atlasapi.media.entity.Publisher.BARB_NLE;
-import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
-import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
-import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_AUDIENCE_STATS;
 import static org.atlasapi.media.entity.Publisher.BBC_KIWI;
@@ -25,7 +18,6 @@ import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
 import static org.atlasapi.media.entity.Publisher.BBC_PRODUCTS;
 import static org.atlasapi.media.entity.Publisher.BBC_RD_TOPIC;
-import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
 import static org.atlasapi.media.entity.Publisher.BETTY;
 import static org.atlasapi.media.entity.Publisher.BLIP;
 import static org.atlasapi.media.entity.Publisher.BT;
@@ -33,7 +25,6 @@ import static org.atlasapi.media.entity.Publisher.BT_BLACKOUT;
 import static org.atlasapi.media.entity.Publisher.BT_EVENTS;
 import static org.atlasapi.media.entity.Publisher.BT_FEATURED_CONTENT;
 import static org.atlasapi.media.entity.Publisher.BT_SPORT_DANTE;
-import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
 import static org.atlasapi.media.entity.Publisher.BT_SPORT_ZEUS;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_PROD_CONFIG2;
@@ -53,7 +44,6 @@ import static org.atlasapi.media.entity.Publisher.C4;
 import static org.atlasapi.media.entity.Publisher.C4_INT;
 import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
 import static org.atlasapi.media.entity.Publisher.C4_PMLSD_P06;
-import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.C5_TV_CLIPS;
 import static org.atlasapi.media.entity.Publisher.CANARY;
@@ -72,14 +62,12 @@ import static org.atlasapi.media.entity.Publisher.FLICKR;
 import static org.atlasapi.media.entity.Publisher.HBO;
 import static org.atlasapi.media.entity.Publisher.HULU;
 import static org.atlasapi.media.entity.Publisher.ICTOMORROW;
-import static org.atlasapi.media.entity.Publisher.IMDB;
 import static org.atlasapi.media.entity.Publisher.IMDB_API;
 import static org.atlasapi.media.entity.Publisher.INTERNET_VIDEO_ARCHIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV;
 import static org.atlasapi.media.entity.Publisher.ITV_CPS;
 import static org.atlasapi.media.entity.Publisher.ITV_INTERLINKING;
-import static org.atlasapi.media.entity.Publisher.JUSTWATCH;
 import static org.atlasapi.media.entity.Publisher.KANDL_TOPICS;
 import static org.atlasapi.media.entity.Publisher.KM_AP;
 import static org.atlasapi.media.entity.Publisher.KM_BBC_WORLDWIDE;
@@ -87,9 +75,7 @@ import static org.atlasapi.media.entity.Publisher.KM_BLOOMBERG;
 import static org.atlasapi.media.entity.Publisher.KM_GETTY;
 import static org.atlasapi.media.entity.Publisher.KM_GLOBALIMAGEWORKS;
 import static org.atlasapi.media.entity.Publisher.KM_MOVIETONE;
-import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
 import static org.atlasapi.media.entity.Publisher.LONDON_ALSO;
-import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.LYREBIRD_YOUTUBE;
 import static org.atlasapi.media.entity.Publisher.MAGPIE;
 import static org.atlasapi.media.entity.Publisher.METABROADCAST;
@@ -97,7 +83,6 @@ import static org.atlasapi.media.entity.Publisher.METABROADCAST_PICKS;
 import static org.atlasapi.media.entity.Publisher.METABROADCAST_SIMILAR_CONTENT;
 import static org.atlasapi.media.entity.Publisher.MSN_VIDEO;
 import static org.atlasapi.media.entity.Publisher.MUSIC_BRAINZ;
-import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.NONAME_TV;
 import static org.atlasapi.media.entity.Publisher.OPTA;
 import static org.atlasapi.media.entity.Publisher.PA;
@@ -106,9 +91,8 @@ import static org.atlasapi.media.entity.Publisher.PA_FEATURES_IRELAND;
 import static org.atlasapi.media.entity.Publisher.PA_FEATURES_SOAP_ENTERTAINMENT;
 import static org.atlasapi.media.entity.Publisher.PA_PEOPLE;
 import static org.atlasapi.media.entity.Publisher.PA_SERIES_SUMMARIES;
+import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
 import static org.atlasapi.media.entity.Publisher.PRIORITIZER;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES_UPCOMING;
 import static org.atlasapi.media.entity.Publisher.RDIO;
 import static org.atlasapi.media.entity.Publisher.REDBEE_BDS;
 import static org.atlasapi.media.entity.Publisher.REDBEE_MEDIA;
@@ -137,20 +121,14 @@ import static org.atlasapi.media.entity.Publisher.VF_ITV;
 import static org.atlasapi.media.entity.Publisher.VF_OVERRIDES;
 import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
 import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
-import static org.atlasapi.media.entity.Publisher.VIACOM_18_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.VIMEO;
-import static org.atlasapi.media.entity.Publisher.VIMN_DATA_SUBMISSION;
 import static org.atlasapi.media.entity.Publisher.VOILA;
 import static org.atlasapi.media.entity.Publisher.VOILA_CHANNEL_GROUPS;
 import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
 import static org.atlasapi.media.entity.Publisher.WORLD_SERVICE;
 import static org.atlasapi.media.entity.Publisher.YOUTUBE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 import static org.atlasapi.media.entity.Publisher.YURI;
 
 public class DefaultConfiguration {
@@ -181,60 +159,104 @@ public class DefaultConfiguration {
             VF_VUBIQUITY
     );
 
-    public static final ImmutableSet<Publisher> NON_STANDARD_SOURCES = ImmutableSet
-            .<Publisher>builder()
-            .addAll(
-                    ImmutableSet.of(
-                            ITUNES,
-                            BBC_REDUX,
-                            RADIO_TIMES,
-                            FACEBOOK,
-                            LOVEFILM,
-                            NETFLIX,
-                            RTE,
-                            YOUVIEW,
-                            YOUVIEW_STAGE,
-                            YOUVIEW_BT,
-                            YOUVIEW_BT_STAGE,
-                            TALK_TALK,
-                            PA,
-                            PA_SERIES_SUMMARIES,
-                            BT_VOD,
-                            BT_TVE_VOD,
-                            BETTY,
-                            AMC_EBS,
-                            BT_SPORT_EBS,
-                            C4_PRESS,
-                            RADIO_TIMES_UPCOMING,
-                            FIVE,
-                            AMAZON_UNBOX,
-                            YOUVIEW_SCOTLAND_RADIO,
-                            YOUVIEW_SCOTLAND_RADIO_STAGE,
-                            BARB_MASTER,
-                            BARB_TRANSMISSIONS,
-                            LAYER3_TXLOGS,
-                            BARB_OVERRIDES,
-                            ITV_CPS,
-                            BBC_NITRO,
-                            C4_PMLSD,
-                            UKTV,
-                            WIKIPEDIA,
-                            BARB_X_MASTER,
-                            IMDB_API,
-                            IMDB,
-                            C5_DATA_SUBMISSION,
-                            BARB_CENSUS,
-                            BARB_NLE,
-                            BARB_EDITOR_OVERRIDES,
-                            JUSTWATCH,
-                            VIACOM_18_DATA_SUBMISSION,
-                            VIMN_DATA_SUBMISSION
-                    )
-            )
-            .addAll(MUSIC_SOURCES)
-            .addAll(ROVI_SOURCES)
-            .addAll(VF_SOURCES)
-            .build();
+    // This used to be calculated from a Sets.difference of all publishers and a hardcoded set of publishers not to run
+    // default equiv on. However over time we have found that default equiv generally doesn't meet our purposes and
+    // helps contribute to large equiv sets.
+    public static final ImmutableSet<Publisher> DEFAULT_EQUIV_SOURCES = ImmutableSet.of(
+            ADAPT_BBC_PODCASTS,
+            ARCHIVE_ORG,
+            ARQIVA,
+            BBC,
+            BBC_AUDIENCE_STATS,
+            BBC_KIWI,
+            BBC_LYREBIRD,
+            BBC_PRODUCTS,
+            BBC_RD_TOPIC,
+            BLIP,
+            BT,
+            BT_BLACKOUT,
+            BT_EVENTS,
+            BT_FEATURED_CONTENT,
+            BT_SPORT_DANTE,
+            BT_SPORT_ZEUS,
+            BT_TVE_VOD_PROD_CONFIG2,
+            BT_TVE_VOD_SYSTEST2_CONFIG_1,
+            BT_TVE_VOD_SYSTEST2_CONFIG_2,
+            BT_TVE_VOD_VOLD_CONFIG_1,
+            BT_TVE_VOD_VOLD_CONFIG_2,
+            BT_TVE_VOD_VOLE_CONFIG_1,
+            BT_TVE_VOD_VOLE_CONFIG_2,
+            BT_TV_CHANNELS,
+            BT_TV_CHANNELS_REFERENCE,
+            BT_TV_CHANNELS_TEST1,
+            BT_TV_CHANNELS_TEST2,
+            BT_TV_CHANNEL_GROUPS,
+            C4,
+            C4_INT,
+            C4_PMLSD_P06,
+            C5_TV_CLIPS,
+            CANARY,
+            COYOTE,
+            DAILYMOTION,
+            DBPEDIA,
+            DIGITALSPY_RELATED_LINKS,
+            DOTMEDIA,
+            EBMS_VF_UK,
+            EMI_MUSIC,
+            EMI_PUB,
+            EVENT_MATCHER,
+            FLICKR,
+            HBO,
+            HULU,
+            ICTOMORROW,
+            INTERNET_VIDEO_ARCHIVE,
+            ITV,
+            ITV_INTERLINKING,
+            KANDL_TOPICS,
+            KM_AP,
+            KM_BBC_WORLDWIDE,
+            KM_BLOOMBERG,
+            KM_GETTY,
+            KM_GLOBALIMAGEWORKS,
+            KM_MOVIETONE,
+            LONDON_ALSO,
+            LYREBIRD_YOUTUBE,
+            MAGPIE,
+            METABROADCAST,
+            METABROADCAST_PICKS,
+            METABROADCAST_SIMILAR_CONTENT,
+            MSN_VIDEO,
+            MUSIC_BRAINZ,
+            NONAME_TV,
+            OPTA,
+            PA_FEATURES,
+            PA_FEATURES_IRELAND,
+            PA_FEATURES_SOAP_ENTERTAINMENT,
+            PA_PEOPLE,
+            PREVIEW_NETWORKS,
+            PRIORITIZER,
+            REDBEE_BDS,
+            REDBEE_MEDIA,
+            SCRAPERWIKI,
+            SCRUBBABLES,
+            SCRUBBABLES_PRODUCER,
+            SEESAW,
+            SVERIGES_RADIO,
+            TED,
+            THESPACE,
+            THETVDB,
+            THE_SUN,
+            TMS_EN_GB,
+            TVBLOB,
+            TVCHOICE_RELATED_LINKS,
+            TWITCH,
+            VF_OVERRIDES,
+            VIMEO,
+            VOILA,
+            VOILA_CHANNEL_GROUPS,
+            WORLD_SERVICE,
+            YURI
+    );
 
     // This was changed from being a Sets.difference of all publishers and a select set of publishers
     // to a hardcoded list of what that Sets.difference actually was.

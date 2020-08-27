@@ -4,8 +4,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.BlackoutRestriction;
 import org.atlasapi.media.entity.Broadcast;
 import org.joda.time.DateTime;
@@ -51,6 +53,11 @@ public class BroadcastModelTransformer {
         complex.setSurround(simple.getSurround());
         complex.setLive(simple.getLive());
         complex.setAliasUrls(simple.getAliases());
+        complex.setAliases(
+                simple.getV4Aliases().stream()
+                        .map(alias -> new Alias(alias.getNamespace(), alias.getValue()))
+                        .collect(MoreCollectors.toImmutableSet())
+        );
         if (simple.getBlackoutRestriction() != null) {
             complex.setBlackoutRestriction(new BlackoutRestriction(simple.getBlackoutRestriction().getAll()));
         }

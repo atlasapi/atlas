@@ -1,20 +1,18 @@
 package org.atlasapi.query.v2;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.math.BigInteger;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.stream.MoreCollectors;
+import joptsimple.internal.Strings;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.input.ChannelModelTransformer;
@@ -32,24 +30,24 @@ import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.exceptions.ForbiddenException;
 import org.atlasapi.output.exceptions.UnauthorizedException;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.media.MimeType;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.google.common.collect.Sets;
-import joptsimple.internal.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigInteger;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -79,7 +77,11 @@ public class ChannelWriteExecutor {
     }
 
     public WriteResponse postChannel(HttpServletRequest req, HttpServletResponse resp) {
-        return deserializeAndUpdateChannel(req, resp);
+        return deserializeAndUpdateChannel(req, resp, true);
+    }
+
+    public WriteResponse putChannel(HttpServletRequest req, HttpServletResponse resp) {
+        return deserializeAndUpdateChannel(req, resp, false);
     }
 
     @Nullable
@@ -335,7 +337,7 @@ public class ChannelWriteExecutor {
     }
 
     @Nullable
-    private WriteResponse deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
+    private WriteResponse deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp, boolean merge) {
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
 
         PossibleApplication possibleApplication = validateApplicationConfiguration(req);
@@ -375,6 +377,13 @@ public class ChannelWriteExecutor {
             );
         }
 
+        if (merge) {
+            Optional<Channel> existingChannel = store.fromUri(channel.getCanonicalUri()).toOptional();
+            if (existingChannel.isPresent()) {
+                mergeChannel(channel, existingChannel.get());
+            }
+        }
+
         try {
             Channel savedChannel = store.createOrUpdate(channel);
             resp.setStatus(HttpStatus.OK.value());
@@ -385,6 +394,37 @@ public class ChannelWriteExecutor {
                     .withStatusCode(HttpStatusCode.BAD_REQUEST);
             return error(req, resp, errorSummary);
         }
+
+    }
+
+    // There used to be no merging done at all, with the POST endpoint as the only endpoint
+    // The merging is kept minimal for now since the only current use case is to preserve BT custom channel logos
+    // on api.youview.tv channels.
+    private void mergeChannel(Channel newChannel, Channel existingChannel) {
+        newChannel.setImages(mergeImages(newChannel.getAllImages(), existingChannel.getAllImages()));
+    }
+
+    // Update the existing channel images to avoid overwriting all existing images, in case the theme
+    // comes from elsewhere, e.g. from BT using the channel logo tool.
+    private Iterable<TemporalField<Image>> mergeImages(
+            Iterable<TemporalField<Image>> newImages,
+            Iterable<TemporalField<Image>> existingImages
+    ) {
+        Set<ImageTheme> newThemes = StreamSupport
+                .stream(newImages.spliterator(), false)
+                .map(image -> image.getValue().getTheme())
+                .collect(MoreCollectors.toImmutableSet());
+
+        Set<TemporalField<Image>> preservedImages = StreamSupport
+                .stream(existingImages.spliterator(), false)
+                .filter(image -> !newThemes.contains(image.getValue().getTheme()))
+                .collect(MoreCollectors.toImmutableSet());
+
+        if (preservedImages.isEmpty()) {
+            return newImages;
+        }
+
+        return Sets.union(ImmutableSet.copyOf(newImages), preservedImages);
 
     }
 

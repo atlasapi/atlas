@@ -19,9 +19,9 @@ import org.joda.time.Duration;
 import org.joda.time.LocalDate;
 
 import java.math.BigInteger;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.gdata.util.common.base.Preconditions.checkArgument;
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
@@ -112,6 +112,14 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
 
         if (simple.getImage() != null) {
             complex.withImage(Image.builder(simple.getImage()).build());
+        }
+
+        if (simple.getImages() != null && !simple.getImages().isEmpty()) {
+            complex.withImages(
+                    simple.getImages().stream()
+                            .map(imageTranslator::transform)
+                            .collect(Collectors.toList())
+            );
         }
 
         if (simple.getAdvertisedFrom() != null) {

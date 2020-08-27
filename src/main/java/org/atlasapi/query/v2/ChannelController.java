@@ -1,7 +1,9 @@
 package org.atlasapi.query.v2;
 
-import com.google.common.base.*;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -41,7 +43,7 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Set;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -359,6 +361,12 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     @RequestMapping(value = {"/3.0/channels.*", "/channels.*"}, method = RequestMethod.POST)
     public WriteResponse postChannel(HttpServletRequest request, HttpServletResponse response) {
         return channelWriteExecutor.postChannel(request, response);
+    }
+
+    @Nullable
+    @RequestMapping(value = {"/3.0/channels.*", "/channels.*"}, method = RequestMethod.PUT)
+    public WriteResponse putChannel(HttpServletRequest request, HttpServletResponse response) {
+        return channelWriteExecutor.putChannel(request, response);
     }
 
     @Nullable

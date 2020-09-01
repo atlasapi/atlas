@@ -370,7 +370,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     }
 
     @Nullable
-    @RequestMapping(value = {"/3.0/channels/updateImage"}, method = RequestMethod.POST)
+    @RequestMapping(value = {"/3.0/channels/updateImage.*"}, method = RequestMethod.POST)
     public WriteResponse createChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         return channelWriteExecutor.createOrUpdateChannelImage(
                 request,
@@ -379,7 +379,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     }
 
     @Nullable
-    @RequestMapping(value = {"/3.0/channels/updateImage"}, method = RequestMethod.DELETE)
+    @RequestMapping(value = {"/3.0/channels/updateImage.*"}, method = RequestMethod.DELETE)
     public WriteResponse deleteChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         return channelWriteExecutor.deleteChannelImage(
                 request,

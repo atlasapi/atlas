@@ -1,8 +1,9 @@
 package org.atlasapi.query.v2;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.media.channel.ChannelGroupStore;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelStore;
@@ -11,14 +12,11 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.Channel;
 import org.atlasapi.media.entity.simple.ChannelGroup;
 import org.atlasapi.media.entity.simple.ChannelNumbering;
-
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -61,11 +59,15 @@ public class ChannelGroupWriteExecutorTest {
 
     @Test
     public void testUpdateExistingChannelGroup() {
+        org.atlasapi.media.channel.ChannelGroup existingComplexChannelGroup = mock(org.atlasapi.media.channel.ChannelGroup.class);
+        org.atlasapi.media.channel.ChannelNumbering existingComplexChannelNumbering = mock(org.atlasapi.media.channel.ChannelNumbering.class);
         when(complexChannelGroup.getId()).thenReturn(17L);
-        when(channelGroupStore.channelGroupFor(17L)).thenReturn(Optional.of(complexChannelGroup));
+        when(channelGroupStore.channelGroupFor(17L)).thenReturn(Optional.of(existingComplexChannelGroup));
+        when(existingComplexChannelGroup.getChannelNumberings()).thenReturn(Sets.newHashSet(existingComplexChannelNumbering));
+        when(existingComplexChannelNumbering.getChannel()).thenReturn(16L);
         when(channelGroupStore.createOrUpdate(complexChannelGroup)).thenReturn(complexChannelGroup);
         when(complexChannelGroup.getChannelNumberings()).thenReturn(Sets.newHashSet(complexChannelNumbering));
-        when(complexChannelNumbering.getChannel()).thenReturn(16L);
+        when(complexChannelNumbering.getChannel()).thenReturn(22515L);
         when(channelResolver.fromId(anyLong())).thenReturn(Maybe.just(complexChannel));
         when(simpleChannelGroup.getChannels()).thenReturn(Lists.newArrayList(channelNumbering));
         when(channelNumbering.getChannel()).thenReturn(simpleChannel);
@@ -89,7 +91,7 @@ public class ChannelGroupWriteExecutorTest {
         updatedChannelGroup.setId(17L);
         updatedChannelGroup.setPublisher(Publisher.BT_TV_CHANNELS);
 
-        when(complexChannelGroup.getId()).thenReturn(null);
+        when(complexChannelGroup.getId()).thenReturn(null).thenReturn(17L);
         when(channelGroupStore.createOrUpdate(complexChannelGroup)).thenReturn(updatedChannelGroup);
         when(channelGroupStore.createOrUpdate(updatedChannelGroup)).thenReturn(updatedChannelGroup);
         when(simpleChannelGroup.getChannels()).thenReturn(Lists.newArrayList(channelNumbering));

@@ -130,11 +130,15 @@ public class ChannelGroupWriteExecutor {
             List<org.atlasapi.media.entity.simple.ChannelNumbering> simpleNumberings,
             ChannelResolver channelResolver
     ) {
-        complex.setChannelNumberings(
-                simpleNumberings.stream()
-                        .map(numbering -> transformChannelNumbering(numbering, complex.getId()))
-                        .collect(MoreCollectors.toImmutableSet())
-        );
+        // These aren't always set by the complexifier because sometimes only a uri is initially specified on the channel
+        // group, with the channel numberings requiring a channel group id
+        if (complex.getChannelNumberings().isEmpty() && !simpleNumberings.isEmpty()) {
+            complex.setChannelNumberings(
+                    simpleNumberings.stream()
+                            .map(numbering -> transformChannelNumbering(numbering, complex.getId()))
+                            .collect(MoreCollectors.toImmutableSet())
+            );
+        }
         Set<ChannelNumbering> existingChannelNumberings = getExistingChannelNumberings(complex.getId());
         ChannelGroup channelGroup = channelGroupStore.createOrUpdate(complex);
         updateChannelGroupNumberings(

@@ -1,9 +1,9 @@
 package org.atlasapi.query.v2;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -92,7 +92,10 @@ public class ChannelGroupWriteExecutor {
             Set<ChannelNumbering> channelNumberings = simple.getChannels().stream()
                     .map(numbering -> transformChannelNumbering(numbering, complex.getId()))
                     .collect(MoreCollectors.toImmutableSet());
-            addNewNumberingsToChannels(newChannelGroup.getId(), channelNumberings, channelResolver);
+            Set<Long> channelsToUpdate = channelNumberings.stream()
+                    .map(ChannelNumbering::getChannel)
+                    .collect(MoreCollectors.toImmutableSet());
+            updateChannelGroupNumberings(newChannelGroup.getId(), channelNumberings, channelsToUpdate, channelResolver);
 
             return com.google.common.base.Optional.of(newChannelGroup);
         } catch (Exception e) {
@@ -163,27 +166,22 @@ public class ChannelGroupWriteExecutor {
             Set<ChannelNumbering> existingChannelNumberings,
             ChannelResolver channelResolver
     ) {
-        Set<Long> newChannelIds = complex.getChannelNumberings().stream()
+        //Channel ids corresponding to any channel numberings between the two sets which have changes
+        Set<Long> channelsToUpdate = Sets.union(
+                Sets.difference(complex.getChannelNumberings(), existingChannelNumberings),
+                Sets.difference(existingChannelNumberings, complex.getChannelNumberings())
+
+        ).stream()
                 .map(ChannelNumbering::getChannel)
                 .collect(MoreCollectors.toImmutableSet());
 
-        Set<Long> existingChannelIds = existingChannelNumberings.stream()
-                .map(ChannelNumbering::getChannel)
-                .collect(MoreCollectors.toImmutableSet());
-
-        SetView<Long> staleChannelIds = Sets.difference(existingChannelIds, newChannelIds);
-        removeStaleChannelNumbersForChannels(
-                complex.getId(),
-                staleChannelIds,
-                channelResolver
-        );
-
-        addNewNumberingsToChannels(complex.getId(), complex.getChannelNumberings(), channelResolver);
+        updateChannelGroupNumberings(complex.getId(), complex.getChannelNumberings(), channelsToUpdate, channelResolver);
     }
 
-    private void addNewNumberingsToChannels(
+    private void updateChannelGroupNumberings(
             long channelGroupId,
             Set<ChannelNumbering> newNumberings,
+            Set<Long> channelsToUpdate,
             ChannelResolver channelResolver
     ) {
         SetMultimap<Long, ChannelNumbering> channelNumberingsByChannel = HashMultimap.create();
@@ -192,7 +190,7 @@ public class ChannelGroupWriteExecutor {
             channelNumberingsByChannel.put(numbering.getChannel(), numbering);
         }
 
-        for (Long newChannelId : channelNumberingsByChannel.keySet()) {
+        for (Long newChannelId : channelsToUpdate) {
             Set<ChannelNumbering> channelNumberingsForChannel = channelNumberingsByChannel.get(newChannelId);
             channelResolver.refreshCache();
             Maybe<Channel> resolvedChannel = channelResolver.fromId(newChannelId);
@@ -217,30 +215,6 @@ public class ChannelGroupWriteExecutor {
         return idCodec.decode(channelId).longValue();
     }
 
-    private void removeStaleChannelNumbersForChannels(
-            Long channelGroupId,
-            Set<Long> staleChannelIds,
-            ChannelResolver channelResolver
-    ) {
-        staleChannelIds.forEach(channelId -> {
-            channelResolver.refreshCache();
-            Maybe<Channel> resolvedChannel = channelResolver.fromId(channelId);
-            if (!resolvedChannel.hasValue()) {
-                log.warn("Couldn't resolve channel for ID {}", channelId);
-                return;
-            }
-            Channel channel = resolvedChannel.requireValue();
-
-            Set<ChannelNumbering> updatedChannelNumberings = channel.getChannelNumbers()
-                    .stream()
-                    .filter(channelNumbering -> !channelNumbering.getChannelGroup().equals(channelGroupId))
-                    .collect(Collectors.toSet());
-            channel.setChannelNumbers(updatedChannelNumberings);
-
-            channelStore.createOrUpdate(channel);
-        });
-    }
-
     public Optional<AtlasErrorSummary> deletePlatform(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -252,8 +226,9 @@ public class ChannelGroupWriteExecutor {
             Set<Long> channelIds = channelNumberings.stream()
                     .map(ChannelNumbering::getChannel)
                     .collect(MoreCollectors.toImmutableSet());
-            removeStaleChannelNumbersForChannels(
+            updateChannelGroupNumberings(
                     channelGroupId,
+                    ImmutableSet.of(),
                     channelIds,
                     channelResolver
             );

@@ -57,12 +57,12 @@ public class ChannelGroupWriteExecutor {
     public com.google.common.base.Optional<ChannelGroup> createOrUpdateChannelGroup(
             HttpServletRequest request,
             ChannelGroup complex,
-            org.atlasapi.media.entity.simple.ChannelGroup simple,
+            List<org.atlasapi.media.entity.simple.ChannelNumbering> simpleNumberings,
             ChannelResolver channelResolver
     ) {
         try {
             if (complex.getId() != null) {
-                return updateChannelGroup(complex, simple.getChannels(), channelResolver);
+                return updateChannelGroup(complex, simpleNumberings, channelResolver);
             }
             if (complex.getCanonicalUri() != null) {
                 com.google.common.base.Optional<ChannelGroup> existingChannelGroup = channelGroupStore
@@ -71,7 +71,7 @@ public class ChannelGroupWriteExecutor {
                 if(existingChannelGroup.isPresent()) {
                     complex.setId(existingChannelGroup.get().getId());
                 }
-                return updateChannelGroup(complex, simple.getChannels(), channelResolver);
+                return updateChannelGroup(complex, simpleNumberings, channelResolver);
             }
             //if it's a new group, create it
             ChannelGroup newChannelGroup = channelGroupStore.createOrUpdate(complex);
@@ -89,7 +89,7 @@ public class ChannelGroupWriteExecutor {
                 ));
                 newChannelGroup = channelGroupStore.createOrUpdate(newChannelGroup);
             }
-            Set<ChannelNumbering> channelNumberings = simple.getChannels().stream()
+            Set<ChannelNumbering> channelNumberings = simpleNumberings.stream()
                     .map(numbering -> transformChannelNumbering(numbering, complex.getId()))
                     .collect(MoreCollectors.toImmutableSet());
             Set<Long> channelsToUpdate = channelNumberings.stream()

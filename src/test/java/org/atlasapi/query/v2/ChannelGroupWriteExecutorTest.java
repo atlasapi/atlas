@@ -10,7 +10,6 @@ import org.atlasapi.media.channel.ChannelStore;
 import org.atlasapi.media.channel.Platform;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.Channel;
-import org.atlasapi.media.entity.simple.ChannelGroup;
 import org.atlasapi.media.entity.simple.ChannelNumbering;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +30,6 @@ public class ChannelGroupWriteExecutorTest {
     private ChannelResolver channelResolver;
     private ChannelStore channelStore;
     private ChannelNumbering channelNumbering;
-    private ChannelGroup simpleChannelGroup;
     private org.atlasapi.media.channel.ChannelGroup complexChannelGroup;
     private org.atlasapi.media.channel.ChannelNumbering complexChannelNumbering;
     private ChannelGroupStore channelGroupStore;
@@ -49,7 +47,6 @@ public class ChannelGroupWriteExecutorTest {
         channelNumbering = mock(ChannelNumbering.class);
         complexChannelGroup = mock(org.atlasapi.media.channel.ChannelGroup.class);
         complexChannelNumbering = mock(org.atlasapi.media.channel.ChannelNumbering.class);
-        simpleChannelGroup = mock(ChannelGroup.class);
         channelGroupStore = mock(ChannelGroupStore.class);
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
@@ -69,14 +66,13 @@ public class ChannelGroupWriteExecutorTest {
         when(complexChannelGroup.getChannelNumberings()).thenReturn(Sets.newHashSet(complexChannelNumbering));
         when(complexChannelNumbering.getChannel()).thenReturn(22515L);
         when(channelResolver.fromId(anyLong())).thenReturn(Maybe.just(complexChannel));
-        when(simpleChannelGroup.getChannels()).thenReturn(Lists.newArrayList(channelNumbering));
         when(channelNumbering.getChannel()).thenReturn(simpleChannel);
         when(simpleChannel.getId()).thenReturn("pnd");
 
         executor.createOrUpdateChannelGroup(
                 request,
                 complexChannelGroup,
-                simpleChannelGroup,
+                Lists.newArrayList(channelNumbering),
                 channelResolver
         );
 
@@ -94,7 +90,6 @@ public class ChannelGroupWriteExecutorTest {
         when(complexChannelGroup.getId()).thenReturn(null).thenReturn(17L);
         when(channelGroupStore.createOrUpdate(complexChannelGroup)).thenReturn(updatedChannelGroup);
         when(channelGroupStore.createOrUpdate(updatedChannelGroup)).thenReturn(updatedChannelGroup);
-        when(simpleChannelGroup.getChannels()).thenReturn(Lists.newArrayList(channelNumbering));
         when(channelNumbering.getChannel()).thenReturn(simpleChannel);
         when(simpleChannel.getId()).thenReturn("pnd");
         when(channelResolver.fromId(anyLong())).thenReturn(Maybe.just(complexChannel));
@@ -102,7 +97,7 @@ public class ChannelGroupWriteExecutorTest {
         executor.createOrUpdateChannelGroup(
                 request,
                 complexChannelGroup,
-                simpleChannelGroup,
+                Lists.newArrayList(channelNumbering),
                 channelResolver
         );
 

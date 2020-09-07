@@ -16,6 +16,7 @@ import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Set;
@@ -47,11 +48,22 @@ public class ChannelGroupWriteExecutorTest {
     }
 
     private org.atlasapi.media.entity.simple.ChannelNumbering simpleNumbering(String channelId, String channelNumber) {
+        return simpleNumbering(channelId, channelNumber, null, null);
+    }
+
+    private org.atlasapi.media.entity.simple.ChannelNumbering simpleNumbering(
+            String channelId,
+            String channelNumber,
+            @Nullable LocalDate start,
+            @Nullable LocalDate end
+    ) {
         org.atlasapi.media.entity.simple.ChannelNumbering numbering = new org.atlasapi.media.entity.simple.ChannelNumbering();
         org.atlasapi.media.entity.simple.Channel channel = new org.atlasapi.media.entity.simple.Channel();
         channel.setId(channelId);
         numbering.setChannel(channel);
         numbering.setChannelNumber(channelNumber);
+        numbering.setStartDate(start.toDate());
+        numbering.setEndDate(end.toDate());
         return numbering;
     }
 
@@ -278,7 +290,8 @@ public class ChannelGroupWriteExecutorTest {
                 request,
                 newChannelGroup,
                 ImmutableList.of(
-                        simpleNumbering("p", "20")
+                        simpleNumbering("p", "20", LocalDate.parse("2000-06-01"), LocalDate.parse("2005-12-01")),
+                        simpleNumbering("p", "21", LocalDate.parse("2020-06-01"), LocalDate.parse("2025-12-01"))
                 ),
                 channelResolver
         );
@@ -288,6 +301,15 @@ public class ChannelGroupWriteExecutorTest {
                         .withChannel(10L)
                         .withChannelGroup(existingChannelGroup.getId())
                         .withChannelNumber("20")
+                        .withStartDate(LocalDate.parse("2000-06-01"))
+                        .withEndDate(LocalDate.parse("2005-12-01"))
+                        .build(),
+                ChannelNumbering.builder()
+                        .withChannel(10L)
+                        .withChannelGroup(existingChannelGroup.getId())
+                        .withChannelNumber("21")
+                        .withStartDate(LocalDate.parse("2020-06-01"))
+                        .withEndDate(LocalDate.parse("2025-12-01"))
                         .build()
         );
 

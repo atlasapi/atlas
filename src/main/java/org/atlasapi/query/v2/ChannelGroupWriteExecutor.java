@@ -95,7 +95,7 @@ public class ChannelGroupWriteExecutor {
             Set<Long> channelsToUpdate = channelNumberings.stream()
                     .map(ChannelNumbering::getChannel)
                     .collect(MoreCollectors.toImmutableSet());
-            updateChannelGroupNumberings(newChannelGroup.getId(), channelNumberings, channelsToUpdate, channelResolver);
+            updateChannelNumberings(newChannelGroup.getId(), channelNumberings, channelsToUpdate, channelResolver);
 
             return com.google.common.base.Optional.of(newChannelGroup);
         } catch (Exception e) {
@@ -144,7 +144,7 @@ public class ChannelGroupWriteExecutor {
         }
         Set<ChannelNumbering> existingChannelNumberings = getExistingChannelNumberings(complex.getId());
         ChannelGroup channelGroup = channelGroupStore.createOrUpdate(complex);
-        updateChannelGroupNumberings(
+        updateChannelNumberings(
                 complex,
                 existingChannelNumberings,
                 channelResolver
@@ -161,7 +161,7 @@ public class ChannelGroupWriteExecutor {
         return channelGroupOptional.get().getChannelNumberings();
     }
 
-    private void updateChannelGroupNumberings(
+    private void updateChannelNumberings(
             ChannelGroup complex,
             Set<ChannelNumbering> existingChannelNumberings,
             ChannelResolver channelResolver
@@ -175,10 +175,18 @@ public class ChannelGroupWriteExecutor {
                 .map(ChannelNumbering::getChannel)
                 .collect(MoreCollectors.toImmutableSet());
 
-        updateChannelGroupNumberings(complex.getId(), complex.getChannelNumberings(), channelsToUpdate, channelResolver);
+        updateChannelNumberings(complex.getId(), complex.getChannelNumberings(), channelsToUpdate, channelResolver);
     }
 
-    private void updateChannelGroupNumberings(
+    /**
+     * Update the numberings on specified channels for the specified channel group based on the provided
+     * group's numberings. The existing channel's numberings for the specified channel group are replaced by those
+     * which appear for that channel in the provided numberings.
+     * @param channelGroupId the channel group whose numberings will be modified on the specified channels
+     * @param newNumberings the channel group's new numberings
+     * @param channelsToUpdate the ids of the channels that will be updated
+     */
+    private void updateChannelNumberings(
             long channelGroupId,
             Set<ChannelNumbering> newNumberings,
             Set<Long> channelsToUpdate,
@@ -190,23 +198,27 @@ public class ChannelGroupWriteExecutor {
             channelNumberingsByChannel.put(numbering.getChannel(), numbering);
         }
 
+        // N.B. It looks like in atlas-persistence this is a CachingChannelStore since this is used within the API.
+        // We want to try and avoid fetching stale channel data so we'll make sure the data is recent, even though
+        // this could be a more expensive operation than it needs to be.
+        channelResolver.refreshCache();
+
         for (Long newChannelId : channelsToUpdate) {
-            Set<ChannelNumbering> channelNumberingsForChannel = channelNumberingsByChannel.get(newChannelId);
-            channelResolver.refreshCache();
+            Set<ChannelNumbering> numberingsFromUpdatedGroup = channelNumberingsByChannel.get(newChannelId);
             Maybe<Channel> resolvedChannel = channelResolver.fromId(newChannelId);
             if (!resolvedChannel.hasValue()) {
                 log.warn("Couldn't resolve channel for ID {}", newChannelId);
-                return;
+                continue;
             }
             Channel channel = resolvedChannel.requireValue();
 
-            Set<ChannelNumbering> channelNumberingsToKeep = channel.getChannelNumbers().stream()
+            Set<ChannelNumbering> numberingsFromOtherGroups = channel.getChannelNumbers().stream()
                     .filter(numbering -> !numbering.getChannelGroup().equals(channelGroupId))
                     .collect(Collectors.toSet());
 
-            channel.setChannelNumbers(Sets.union(channelNumberingsToKeep, channelNumberingsForChannel));
+            channel.setChannelNumbers(Sets.union(numberingsFromOtherGroups, numberingsFromUpdatedGroup));
 
-            // updating the channel also updates the channel numbering on the channel group
+            // N.B. updating the channel also updates the channel numbering on the channel group
             channelStore.createOrUpdate(channel);
         }
     }
@@ -226,7 +238,7 @@ public class ChannelGroupWriteExecutor {
             Set<Long> channelIds = channelNumberings.stream()
                     .map(ChannelNumbering::getChannel)
                     .collect(MoreCollectors.toImmutableSet());
-            updateChannelGroupNumberings(
+            updateChannelNumberings(
                     channelGroupId,
                     ImmutableSet.of(),
                     channelIds,

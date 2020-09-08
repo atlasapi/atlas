@@ -7,7 +7,6 @@ import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
-import joptsimple.internal.Strings;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupStore;
@@ -21,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -70,27 +68,13 @@ public class ChannelGroupWriteExecutor {
 
                 if(existingChannelGroup.isPresent()) {
                     complex.setId(existingChannelGroup.get().getId());
+                    return updateChannelGroup(complex, simpleNumberings, channelResolver);
                 }
-                return updateChannelGroup(complex, simpleNumberings, channelResolver);
             }
             //if it's a new group, create it
             ChannelGroup newChannelGroup = channelGroupStore.createOrUpdate(complex);
-
-            if(Strings.isNullOrEmpty(newChannelGroup.getCanonicalUri())) {
-                //we create a URI that allows us to detect BT has created that group through us
-                //and because we use the new ID format for it (all lowercase), we need to create it
-                //after it was written to the database.
-                //NB: this looks stupid and should be removed - the BT Channel Group Tool UI should
-                //    elect the URI
-                newChannelGroup.setCanonicalUri(String.format(
-                        "http://%s/metabroadcast/%s",
-                        newChannelGroup.getPublisher().key(),
-                        deerCodec.encode(BigInteger.valueOf(newChannelGroup.getId()))
-                ));
-                newChannelGroup = channelGroupStore.createOrUpdate(newChannelGroup);
-            }
             Set<ChannelNumbering> channelNumberings = simpleNumberings.stream()
-                    .map(numbering -> transformChannelNumbering(numbering, complex.getId()))
+                    .map(numbering -> transformChannelNumbering(numbering, newChannelGroup.getId()))
                     .collect(MoreCollectors.toImmutableSet());
             Set<Long> channelsToUpdate = channelNumberings.stream()
                     .map(ChannelNumbering::getChannel)

@@ -62,8 +62,12 @@ public class ChannelGroupWriteExecutorTest {
         channel.setId(channelId);
         numbering.setChannel(channel);
         numbering.setChannelNumber(channelNumber);
-        numbering.setStartDate(start.toDate());
-        numbering.setEndDate(end.toDate());
+        if (start != null) {
+            numbering.setStartDate(start.toDate());
+        }
+        if (end != null) {
+            numbering.setEndDate(end.toDate());
+        }
         return numbering;
     }
 

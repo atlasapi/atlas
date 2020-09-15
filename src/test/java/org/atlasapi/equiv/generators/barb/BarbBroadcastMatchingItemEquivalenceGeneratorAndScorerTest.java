@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.atlasapi.equiv.generators.barb.TieredBroadcaster.TXLOG_BROADCASTER_GROUP;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
@@ -140,6 +141,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z")),
                 new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z"))
         );
+        item1.addCustomField(TXLOG_BROADCASTER_GROUP, "1"); // since we now ignore tier 2 broadcasts
 
         final Item item2 = episodeWithBroadcasts(
                 "equivItem",
@@ -191,6 +193,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 PA,
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T15:50:00Z"))
         );
+        item1.addCustomField(TXLOG_BROADCASTER_GROUP, "1"); // since we now ignore tier 2 broadcasts
 
         final Item item2 = episodeWithBroadcasts(
                 "equivItem2",
@@ -296,6 +299,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 PA,
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T15:50:00Z"))
         );
+        item1.addCustomField(TXLOG_BROADCASTER_GROUP, "1"); // since we now ignore tier 2 broadcasts
 
         final Item item2 = episodeWithBroadcasts(
                 "equivItem2",
@@ -402,6 +406,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 PA,
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T15:05:00Z"))
         );
+        item1.addCustomField(TXLOG_BROADCASTER_GROUP, "1"); // since we now ignore tier 2 broadcasts
 
         final Item item2 = episodeWithBroadcasts(
                 "equivItem2",
@@ -508,6 +513,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 PA,
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T15:05:00Z"))
         );
+        item1.addCustomField(TXLOG_BROADCASTER_GROUP, "1"); // since we now ignore tier 2 broadcasts
 
         final Item item2 = episodeWithBroadcasts(
                 "equivItem2",
@@ -602,6 +608,8 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 BARB_TRANSMISSIONS,
                 new Broadcast(BBC_TWO_SOUTH_TXLOG.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z"))
         );
+        txlogItem1.addCustomField(TXLOG_BROADCASTER_GROUP, "1"); // since we now ignore tier 2 broadcasts
+
         final Item txlogItem2 = episodeWithBroadcasts(
                 "equivItem2",
                 BARB_TRANSMISSIONS,
@@ -728,6 +736,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
                 Publisher.PA,
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T15:20:00Z"))
         );
+        subject.addCustomField(TXLOG_BROADCASTER_GROUP, "1"); // since we now ignore tier 2 broadcasts
 
         final Item similarAfterSubject = episodeWithBroadcasts(
                 "similarItem3",
@@ -860,6 +869,37 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorerTest {
         Item scored = Iterables.getOnlyElement(scoreMap.keySet());
         assertEquals(candidate, scored);
         assertEquals(SCORE_ON_MATCH, scoreMap.get(scored));
+    }
+
+    @Test
+    public void testGenerateEquivalencesForTierTwoBroadcasts() {
+        final Item item1 = episodeWithBroadcasts("subjectItem", Publisher.PA,
+                new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z")),
+                new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z"))
+        );
+
+        final Item item2 = episodeWithBroadcasts(
+                "equivItem",
+                BBC,
+                new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z"))
+        );
+
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_ONE, PA, item1);
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_ONE_CAMBRIDGE, PA, item1);
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_ONE, PUBLISHERS, item2);
+        setupScheduleResolving("2014-03-21T14:00:00Z", "2014-03-21T17:00:00Z", BBC_ONE_CAMBRIDGE, PUBLISHERS);
+
+        setupTitleScoring(item1, item2, SCORE_ON_MATCH);
+
+        ScoredCandidates<Item> equivalents = generator.generate(
+                item1,
+                new DefaultDescription(),
+                EquivToTelescopeResult.create("id", "publisher")
+        );
+
+        Map<Item, Score> scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(0));
     }
 
     private void setupScheduleResolving(

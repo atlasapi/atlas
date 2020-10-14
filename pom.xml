@@ -803,7 +803,7 @@
         <deer.version>7.0.698-SNAPSHOT</deer.version>
         <common.version>1.0-SNAPSHOT</common.version>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
-        <jetty.version>9.4.1.v20170120</jetty.version>
+        <jetty.version>9.4.32.v20200930</jetty.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>
         <spring.version>4.2.1.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

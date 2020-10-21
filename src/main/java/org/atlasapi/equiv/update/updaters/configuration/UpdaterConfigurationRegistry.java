@@ -1293,7 +1293,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(C4_PMLSD)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                BARB_ITEM, ImmutableSet.of(PA, RADIO_TIMES, BARB_MASTER),
+                                STANDARD_ITEM, ImmutableSet.of(PA, RADIO_TIMES),
+                                BARB_ITEM, ImmutableSet.of(BARB_MASTER),
                                 TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,

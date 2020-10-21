@@ -7,6 +7,7 @@ import org.atlasapi.equiv.update.updaters.providers.container.FacebookContainerU
 import org.atlasapi.equiv.update.updaters.providers.container.NopContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RtUpcomingContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RteContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.SimpleHierarchyContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.StandardSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.StandardTopLevelContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.VodContainerUpdaterProvider;
@@ -32,6 +33,9 @@ public enum ContainerEquivalenceUpdaterType {
     ),
     STANDARD_TOP_LEVEL_CONTAINER(
             StandardTopLevelContainerUpdaterProvider.create()
+    ),
+    SIMPLE_HIERARCHY_CONTAINER( // Used in C4 only since C4 hierarchy is messed up (films are represented as brands with a single episode)
+            SimpleHierarchyContainerUpdaterProvider.create()
     ),
     STANDARD_SERIES(
             StandardSeriesUpdaterProvider.create()

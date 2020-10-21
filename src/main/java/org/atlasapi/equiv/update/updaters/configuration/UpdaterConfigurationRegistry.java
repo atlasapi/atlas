@@ -41,6 +41,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.NOP_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RTE_VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RT_UPCOMING_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.SIMPLE_HIERARCHY_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.STANDARD_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.STANDARD_TOP_LEVEL_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.VOD_CONTAINER;
@@ -1287,7 +1288,7 @@ public class UpdaterConfigurationRegistry {
                 Sets.difference(
                         TARGET_SOURCES,
                         //Top level containers from the following sources are explicitly equived to by editors
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, C4_PMLSD, C5_DATA_SUBMISSION, UKTV)
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, C4_PMLSD, C5_DATA_SUBMISSION, UKTV, PA)
                 ).immutableCopy();
         return UpdaterConfiguration.builder()
                 .withSource(C4_PMLSD)
@@ -1302,7 +1303,8 @@ public class UpdaterConfigurationRegistry {
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_TOP_LEVEL_CONTAINER, topLevelContainerTargetSources
+                                STANDARD_TOP_LEVEL_CONTAINER, topLevelContainerTargetSources,
+                                SIMPLE_HIERARCHY_CONTAINER, ImmutableSet.of(PA)
                         ),
                         STANDARD_CONTAINER_HANDLER,
                         STANDARD_CONTAINER_MESSENGER

@@ -74,7 +74,9 @@ public abstract class AbstractBtChannelGroupSaver {
             List<String> keys = keysFor(channel);
 
             for (String key : keys) {
-                builder.put(key, channel.getGuid());
+                for (String mbid : channel.getGuid()) {
+                    builder.put(key, mbid);
+                }
             }
         }
         return updateChannelGroups(builder.build());

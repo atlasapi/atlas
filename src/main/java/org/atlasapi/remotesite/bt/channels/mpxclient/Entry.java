@@ -1,14 +1,19 @@
 package org.atlasapi.remotesite.bt.channels.mpxclient;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.annotations.SerializedName;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 
 public class Entry {
+
+    private static final Splitter COMMA_SPLITTER = Splitter.on(',')
+            .trimResults()
+            .omitEmptyStrings();
 
     // required for GSON
     public Entry() {
@@ -73,8 +78,10 @@ public class Entry {
     @SerializedName("plproductmetadata$linearOutputProtection")
     private boolean hasOutputProtection;
 
-    public String getGuid() {
-        return guid;
+    public List<String> getGuid() {
+        return Strings.isNullOrEmpty(guid)
+               ? ImmutableList.of()
+               : ImmutableList.copyOf(COMMA_SPLITTER.split(guid));
     }
 
     public String getScheme() {

@@ -2,7 +2,10 @@ package org.atlasapi.remotesite.bt.channels;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,12 +38,15 @@ import static com.google.common.base.Predicates.not;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GsonBtMpxClientTest {
+
+    private static final Splitter COMMA_SPLITTER = Splitter.on(',')
+            .trimResults()
+            .omitEmptyStrings();
 
     private static final String baseUri = "http://example.org/1/root";
     private final Gson gson = new GsonBuilder()
@@ -66,7 +72,7 @@ public class GsonBtMpxClientTest {
         assertThat(channels.getEntries().size(), is(2));
         Entry firstChannel = Iterables.getFirst(channels.getEntries(), null);
         
-        assertThat(firstChannel.getGuid(), is("hkqs"));
+        assertThat(firstChannel.getGuid(), is(ImmutableList.of("hkqs")));
         assertThat(firstChannel.getTitle(), is ("BBC One London"));
         assertThat(firstChannel.getCategories().size(), is(4));
         
@@ -82,6 +88,44 @@ public class GsonBtMpxClientTest {
         assertTrue(firstChannel.isApproved());
         assertTrue(firstChannel.isStreamable());
         assertTrue(firstChannel.hasOutputProtection());
+
+    }
+
+
+    @Test
+    public void testMultipleGuids() throws BtMpxClientException {
+        SimpleHttpClient httpClient
+                = FixedResponseHttpClient.respondTo(
+                baseUri + "?form=cjson",
+                Resources.getResource("media-feed-example-list-guid.json"));
+
+        BtMpxClient client = new GsonBtMpxClient(httpClient, baseUri);
+
+        PaginatedEntries channels = client.getChannels(Optional.<Selection>absent());
+
+        assertThat(channels.getEntryCount(), is(2));
+        assertThat(channels.getStartIndex(), is(1));
+        assertThat(channels.getTitle(), is("Media Feed for Linear Channel Availability"));
+
+        assertThat(channels.getEntries().size(), is(2));
+        Entry firstEntry = Iterables.getFirst(channels.getEntries(), null);
+
+        assertEquals(Lists.newArrayList(COMMA_SPLITTER.split("hkqs,htns")), firstEntry.getGuid());
+        assertThat(firstEntry.getTitle(), is ("BBC One London"));
+        assertThat(firstEntry.getCategories().size(), is(4));
+
+        Category firstCategory = Iterables.getFirst(firstEntry.getCategories(), null);
+        assertThat(firstCategory.getName(), is("S0123456"));
+        assertThat(firstCategory.getScheme(), is("subscription"));
+        assertThat(firstCategory.getLabel(), is(""));
+
+        Content content = Iterables.getOnlyElement(firstEntry.getContent());
+        assertThat(Iterables.getOnlyElement(content.getAssetTypes()), is("image-single-packshot"));
+        assertThat(content.getSourceUrl(), is("http://img01.bt.co.uk/s/assets/290414/images/bts-logo.png"));
+
+        assertTrue(firstEntry.isApproved());
+        assertTrue(firstEntry.isStreamable());
+        assertTrue(firstEntry.hasOutputProtection());
 
     }
 

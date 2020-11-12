@@ -1,14 +1,21 @@
 package org.atlasapi.equiv.channel.matchers;
 
+import java.util.Set;
+
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
 
 public abstract class ChannelMatcher {
 
     private final Publisher publisher;
+    private final Set<Publisher> allowedTargetPublishers;
 
-    ChannelMatcher(Publisher publisher) {
+    ChannelMatcher(
+            Publisher publisher,
+            Set<Publisher> allowedTargetPublishers) {
+
             this.publisher = publisher;
+            this.allowedTargetPublishers = allowedTargetPublishers;
     }
 
     public abstract boolean isAMatch(Channel existing, Channel candidate);
@@ -22,11 +29,11 @@ public abstract class ChannelMatcher {
             ));
         }
 
-        if (!candidate.getSource().equals(Publisher.METABROADCAST)) {
+        if (!allowedTargetPublishers.contains(candidate.getSource())) {
             throw new IllegalArgumentException(String.format(
                     "Existing channel publisher (%s) is only allowed to equivalate to %s. Found: %s",
                     publisher.key(),
-                    Publisher.METABROADCAST.key(),
+                    allowedTargetPublishers,
                     candidate.getSource().key()
             ));
         }

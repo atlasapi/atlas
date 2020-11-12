@@ -3,6 +3,8 @@ package org.atlasapi.equiv.channel.matchers;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
+
+import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,7 +15,12 @@ import static org.junit.Assert.assertTrue;
 public class BtChannelMatcherTest {
 
     private SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
-    private ChannelMatcher btChannelMatcher = BtChannelMatcher.create(Publisher.BT_TV_CHANNELS);
+    private ChannelMatcher btChannelMatcher = BtChannelMatcher.create(
+            Publisher.BT_TV_CHANNELS,
+            ImmutableSet.of(
+                    Publisher.METABROADCAST,
+                    Publisher.YOUVIEW_JSON
+            ));
 
     private Channel existingChannel;
 

@@ -38,9 +38,9 @@ public class ChannelEquivTaskModule {
     private static final LocalTime BT_NON_PROD_BASE_START_TIME = new LocalTime(16, 30);
 
     private static final RepetitionRule BT_PROD_REPETITION = RepetitionRules.every(Duration.standardHours(2));
-    private static final RepetitionRule BT_DEV_1_REPETITION = RepetitionRules.daily(BT_NON_PROD_BASE_START_TIME);
-    private static final RepetitionRule BT_DEV_2_REPETITION = RepetitionRules.daily(BT_NON_PROD_BASE_START_TIME.plusHours(1));
-    private static final RepetitionRule BT_REF_REPETITION = RepetitionRules.daily(BT_NON_PROD_BASE_START_TIME.plusHours(2));
+    private static final RepetitionRule BT_DEV_1_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule BT_DEV_2_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule BT_REF_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule BARB_CHANNEL_REPETITION = RepetitionRules.NEVER;
 
     @Value("${equiv.updater.enabled}") private boolean updaterEnabled;

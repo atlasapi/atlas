@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.channel;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.atlasapi.equiv.channel.matchers.BtChannelMatcher;
@@ -35,11 +36,20 @@ public class ChannelEquivModule {
     private static final Logger log = LoggerFactory.getLogger(ChannelEquivModule.class);
     private static final String EQUIV_MAPPING_PATH = "equiv/equivList.csv";
 
+    private final Set<Publisher> BT_TARGET_PUBLISHERS = ImmutableSet.of(
+            Publisher.METABROADCAST,
+            Publisher.YOUVIEW_JSON
+    );
+
     private final Map<Publisher, ChannelMatcher> channelMatchers = ImmutableMap.of(
-            Publisher.BT_TV_CHANNELS, BtChannelMatcher.create(Publisher.BT_TV_CHANNELS),
-            Publisher.BT_TV_CHANNELS_TEST1, BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_TEST1),
-            Publisher.BT_TV_CHANNELS_TEST2, BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_TEST2),
-            Publisher.BT_TV_CHANNELS_REFERENCE, BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_REFERENCE)
+            Publisher.BT_TV_CHANNELS,
+            BtChannelMatcher.create(Publisher.BT_TV_CHANNELS, BT_TARGET_PUBLISHERS),
+            Publisher.BT_TV_CHANNELS_TEST1,
+            BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_TEST1, BT_TARGET_PUBLISHERS),
+            Publisher.BT_TV_CHANNELS_TEST2,
+            BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_TEST2, BT_TARGET_PUBLISHERS),
+            Publisher.BT_TV_CHANNELS_REFERENCE,
+            BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_REFERENCE, BT_TARGET_PUBLISHERS)
             // Leave out Publisher.BARB_CHANNELS as it has a custom equiv updater so we don't want it to be auto built
     );
 

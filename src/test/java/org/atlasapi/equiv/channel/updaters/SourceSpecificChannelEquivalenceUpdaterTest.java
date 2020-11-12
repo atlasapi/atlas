@@ -112,6 +112,7 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
         return SourceSpecificChannelEquivalenceUpdater.builder()
                 .forPublisher(publisher)
                 .withChannelWriter(channelWriter)
+                .withCandidateSources(ImmutableSet.of(Publisher.METABROADCAST))
                 .withChannelResolver(channelResolver)
                 .withChannelMatcher(channelMatcher)
                 .withMetadata(metadata)

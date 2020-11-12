@@ -1,5 +1,9 @@
 package org.atlasapi.equiv.channel.updaters;
 
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.StreamSupport;
+
 import org.atlasapi.equiv.ChannelRef;
 import org.atlasapi.equiv.channel.ChannelEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.channel.matchers.ChannelMatcher;
@@ -12,10 +16,6 @@ import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.StreamSupport;
-
 import com.metabroadcast.columbus.telescope.client.EntityType;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -27,10 +27,12 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     private final ChannelWriter channelWriter;
     private final ChannelResolver channelResolver;
     private final EquivalenceUpdaterMetadata metadata;
+    private final Set<Publisher> candidateSources;
 
     SourceSpecificChannelEquivalenceUpdater(Builder builder) {
         this.publisher = checkNotNull(builder.publisher);
         this.channelMatcher = checkNotNull(builder.channelMatcher);
+        this.candidateSources = checkNotNull(builder.candidateSources);
         this.channelWriter = checkNotNull(builder.channelWriter);
         this.channelResolver = checkNotNull(builder.channelResolver);
         this.metadata = checkNotNull(builder.metadata);
@@ -40,15 +42,15 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     public boolean updateEquivalences(Channel subject, OwlTelescopeReporter telescope) {
         verify(subject, publisher);
 
-        Optional<Channel> potentialCandidate = StreamSupport.stream(
-                channelResolver.allChannels(
-                        ChannelQuery.builder()
-                                .withPublisher(Publisher.METABROADCAST)
-                                .build()).spliterator(),
-                false
-        )
-                .filter(candidate -> channelMatcher.isAMatch(subject, candidate))
-                .findFirst();
+        Optional<Channel> potentialCandidate =
+                candidateSources.stream()
+                        .map(source ->
+                                channelResolver.allChannels(ChannelQuery.builder()
+                                        .withPublisher(source)
+                                        .build()))
+                        .flatMap(i -> StreamSupport.stream(i.spliterator(), false))
+                        .filter(candidate -> channelMatcher.isAMatch(subject, candidate))
+                        .findFirst();
 
         potentialCandidate.ifPresent(candidate ->
                 setAndUpdateEquivalents(candidate, subject, telescope)
@@ -112,6 +114,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
         private ChannelResolver channelResolver;
         private ChannelWriter channelWriter;
         private ChannelEquivalenceUpdaterMetadata metadata;
+        private Set<Publisher> candidateSources;
 
         private Builder() {
 
@@ -139,6 +142,11 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
 
         public Builder withMetadata(ChannelEquivalenceUpdaterMetadata metadata) {
             this.metadata = metadata;
+            return this;
+        }
+
+        public Builder withCandidateSources(Set<Publisher> candidateSources) {
+            this.candidateSources = candidateSources;
             return this;
         }
 

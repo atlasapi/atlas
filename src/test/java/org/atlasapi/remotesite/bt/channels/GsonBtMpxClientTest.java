@@ -72,7 +72,7 @@ public class GsonBtMpxClientTest {
         assertThat(channels.getEntries().size(), is(2));
         Entry firstChannel = Iterables.getFirst(channels.getEntries(), null);
         
-        assertThat(firstChannel.getGuid(), is(ImmutableList.of("hkqs")));
+        assertThat(firstChannel.getGuids(), is(ImmutableList.of("hkqs")));
         assertThat(firstChannel.getTitle(), is ("BBC One London"));
         assertThat(firstChannel.getCategories().size(), is(4));
         
@@ -110,7 +110,7 @@ public class GsonBtMpxClientTest {
         assertThat(channels.getEntries().size(), is(2));
         Entry firstEntry = Iterables.getFirst(channels.getEntries(), null);
 
-        assertEquals(Lists.newArrayList(COMMA_SPLITTER.split("hkqs,htns")), firstEntry.getGuid());
+        assertEquals(Lists.newArrayList(COMMA_SPLITTER.split("hkqs,htns")), firstEntry.getGuids());
         assertThat(firstEntry.getTitle(), is ("BBC One London"));
         assertThat(firstEntry.getCategories().size(), is(4));
 

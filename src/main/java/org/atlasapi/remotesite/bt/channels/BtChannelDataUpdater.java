@@ -117,7 +117,7 @@ public class BtChannelDataUpdater {
 
         String linearEpgChannelId = entry.getLinearEpgChannelId();
 
-        for (String mbid : entry.getGuid()) {
+        for (String mbid : entry.getGuids()) {
             Optional<Channel> channelOptional = channelFor(mbid);
 
             if (!channelOptional.isPresent()) {
@@ -157,7 +157,7 @@ public class BtChannelDataUpdater {
     private Set<Optional<Channel>> processEntryForAdvertisedDates(Entry entry) {
         Set<Optional<Channel>> channels = new HashSet<>();
 
-        for (String mbid : entry.getGuid()) {
+        for (String mbid : entry.getGuids()) {
             Optional<Channel> channel = channelFor(mbid);
 
             if (!channel.isPresent()) {
@@ -229,10 +229,6 @@ public class BtChannelDataUpdater {
         }
     }
 
-    /**
-     * @param guid comma-separated list of channel MBIDs.
-     * @return returns channel(s) resolved by ID from GUID
-     */
     private Optional<Channel> channelFor(String guid) {
         long channelId;
         try {

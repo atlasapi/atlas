@@ -16,7 +16,6 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.Content;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
 import org.joda.time.DateTime;
-import org.joda.time.Instant;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -24,8 +23,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +35,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtChannelDataUpdaterTest {
@@ -70,7 +66,7 @@ public class BtChannelDataUpdaterTest {
         entries.add(entry2);
 
         Channel testChannel2 = new Channel(Publisher.METABROADCAST, "Channel 2", "b", true, MediaType.VIDEO, "http://channel2.com");
-        for (String mbid : entry2.getGuid()) {
+        for (String mbid : entry2.getGuids()) {
             long channelId = codec.decode(mbid).longValue();
             testChannel2.setId(channelId);
             Alias shouldNotRemove1 = new Alias("gb:bt:tv:mpx:testing:service", "urn:BT:linear:service:700000");
@@ -130,7 +126,7 @@ public class BtChannelDataUpdaterTest {
         Entry entry1 = entryForTesting();
 
         entries.add(entry1);
-        List<String> guid = entry1.getGuid();
+        List<String> guid = entry1.getGuids();
 
         Channel testChannel = new Channel(Publisher.METABROADCAST, "Channel 1",
                 "a", true, MediaType.VIDEO, "http://channel1.com");
@@ -193,7 +189,7 @@ public class BtChannelDataUpdaterTest {
 
         List<Entry> entries = Lists.newArrayList();
         Entry entry1 = entryForTesting();
-        List<String> guid = entry1.getGuid();
+        List<String> guid = entry1.getGuids();
 
         entries.add(entry1);
 

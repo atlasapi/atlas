@@ -78,7 +78,12 @@ public class Entry {
     @SerializedName("plproductmetadata$linearOutputProtection")
     private boolean hasOutputProtection;
 
-    public List<String> getGuid() {
+    //as part of ENG-955 BT can send more than one IDs in a comma separated list. These should
+    //be treated in exactly the same way we would treat 2 separate and identical entries each with
+    //its own ID. It is expected for the comma separated IDs to only come in as BT is migrating
+    //from PA to YV.
+    //GUID is where BT is actually putting MBIDs, so in this context guid and mbid are the same.
+    public List<String> getGuids() {
         return Strings.isNullOrEmpty(guid)
                ? ImmutableList.of()
                : ImmutableList.copyOf(COMMA_SPLITTER.split(guid));

@@ -1287,7 +1287,7 @@ public class UpdaterConfigurationRegistry {
         ImmutableSet<Publisher> topLevelContainerTargetSources =
                 Sets.difference(
                         TARGET_SOURCES,
-                        //Top level containers from the following sources are explicitly equived to by editors
+                        //Top level containers from the following sources (except PA) are explicitly equived to by editors
                         ImmutableSet.of(BBC_NITRO, ITV_CPS, C4_PMLSD, C5_DATA_SUBMISSION, UKTV, PA)
                 ).immutableCopy();
         return UpdaterConfiguration.builder()

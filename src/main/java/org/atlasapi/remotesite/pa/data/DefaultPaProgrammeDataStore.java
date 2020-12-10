@@ -25,7 +25,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class DefaultPaProgrammeDataStore implements PaProgrammeDataStore {
 
     private static final String TV_LISTINGS_DTD = "TVListings.dtd";
-    private static final String FEATURES_DTD = "features.dtd";
     private static final String TV_CHANNEL_DATA_DTD = "tv_channel_data.dtd";
     private static final String TV_ARCHIVES_DTD = "TVArchive.dtd";
     private static final FilenameFilter tvDataFilenameFilter = new FilenameFilter() {
@@ -95,7 +94,6 @@ public class DefaultPaProgrammeDataStore implements PaProgrammeDataStore {
         }
         
         loadDtdFile(TV_LISTINGS_DTD);
-        loadDtdFile(FEATURES_DTD);
         loadDtdFile(TV_CHANNEL_DATA_DTD);
         loadDtdFile(TV_ARCHIVES_DTD);
     }

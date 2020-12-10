@@ -1,6 +1,16 @@
 package org.atlasapi.remotesite.pa.data;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
+import com.metabroadcast.common.base.Maybe;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.net.ftp.FTPFile;
+import org.atlasapi.s3.S3Client;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -10,18 +20,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.net.ftp.FTPFile;
-import org.atlasapi.s3.S3Client;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Ordering;
-import com.metabroadcast.common.base.Maybe;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DefaultPaProgrammeDataStore implements PaProgrammeDataStore {
 
@@ -117,16 +116,18 @@ public class DefaultPaProgrammeDataStore implements PaProgrammeDataStore {
                     fos = new FileOutputStream(dtdFile);
                     IOUtils.copy(resourceAsStream, fos);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    throw new IllegalStateException(e);
                 } finally {
                     if (fos != null) {
                         try {
                             fos.close();
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            throw new IllegalStateException(e);
                         }
                     }
                 }
+            } else {
+                throw new IllegalStateException("Expected to find " + dtdFileName + " in resources but was missing");
             }
         }
         
@@ -134,7 +135,7 @@ public class DefaultPaProgrammeDataStore implements PaProgrammeDataStore {
             try {
                 FileUtils.copyFileToDirectory(dtdFile, processingFolder);
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new IllegalStateException(e);
             }
         }
     }

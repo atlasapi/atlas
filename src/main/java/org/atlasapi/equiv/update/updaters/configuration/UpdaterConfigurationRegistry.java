@@ -1294,7 +1294,8 @@ public class UpdaterConfigurationRegistry {
                 .withSource(C4_PMLSD)
                 .withItemEquivalenceUpdater(
                         ImmutableMap.of(
-                                STANDARD_ITEM, ImmutableSet.of(PA, RADIO_TIMES),
+                                STANDARD_ITEM, ImmutableSet.of(PA),
+                                PA_C4_FILM, ImmutableSet.of(PA),
                                 BARB_ITEM, ImmutableSet.of(BARB_MASTER),
                                 TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),

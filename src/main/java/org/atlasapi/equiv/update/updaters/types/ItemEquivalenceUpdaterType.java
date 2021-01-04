@@ -6,6 +6,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.AliasItemUpdaterProvide
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.C4PmlsdFilmItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.ItemSearchUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.ItemSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.MusicItemUpdaterProvider;
@@ -110,6 +111,9 @@ public enum ItemEquivalenceUpdaterType {
     ),
     ITEM_SEARCH(
             ItemSearchUpdaterProvider.create()
+    ),
+    C4_PMLSD_FILM(
+            C4PmlsdFilmItemUpdaterProvider.create()
     ),
     ;
 

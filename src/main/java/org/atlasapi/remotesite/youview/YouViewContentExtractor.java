@@ -85,8 +85,7 @@ public class YouViewContentExtractor {
     }
     
     public Item extract(Channel channel, Publisher targetPublisher, Element source) {
-        checkChannel(channel, source);
-        
+
         Item item = new Item();
 
         String id = getId(source);
@@ -206,18 +205,12 @@ public class YouViewContentExtractor {
         return YOUVIEW_PREFIX + broadcastId.getValue();
     }
 
-    private int getServiceId(Element source) {
+    private String getServiceId(Element source) {
         Element serviceId = source.getFirstChildElement(SERVICE_ID_KEY, source.getNamespaceURI(YV_PREFIX));
         if (serviceId == null) {
             throw new ElementNotFoundException(source, YV_PREFIX + ":" + SERVICE_ID_KEY);
         }
-        return Integer.parseInt(serviceId.getValue());
-    }
-
-    /** @deprecated only used for checks */
-    @Deprecated
-    private Collection<Channel> getChannels(Element source) {
-        return channelResolver.getChannels(getServiceId(source));
+        return serviceId.getValue();
     }
 
     private Duration getBroadcastDuration(Element source) {
@@ -288,15 +281,6 @@ public class YouViewContentExtractor {
     private Optional<String> getProgrammeId(Element source) {
         Element programmeId = source.getFirstChildElement(PROGRAMME_ID_KEY, source.getNamespaceURI(YV_PREFIX));
         return Optional.ofNullable(programmeId).map(Element::getValue);
-    }
-
-    private void checkChannel(Channel channel, Element source) {
-        @SuppressWarnings("deprecated") // used for checks only
-        Collection<Channel> channels = getChannels(source);     //NOSONAR: deprecated
-        if (!channels.contains(channel)) {
-            log.warn("Extraction channel ({}) isn't included in channels for serviceId={}: {}",
-                    channel, getServiceId(source), channels);
-        }
     }
 
     private String getTitle(Element source) {

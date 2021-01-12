@@ -1,8 +1,11 @@
 package org.atlasapi.query;
 
-import javax.annotation.PostConstruct;
-
+import com.google.common.base.Strings;
+import com.google.common.primitives.Ints;
+import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.sherlock.client.search.SherlockSearcher;
+import com.metabroadcast.sherlock.common.client.ElasticSearchProcessor;
+import com.metabroadcast.sherlock.common.config.ElasticSearchConfig;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.SearchResolver;
@@ -10,23 +13,17 @@ import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.fuzzy.RemoteFuzzySearcher;
 import org.atlasapi.query.content.search.ContentResolvingSearcher;
-import org.atlasapi.query.content.search.SherlockSearchResolver;
 import org.atlasapi.query.content.search.DummySearcher;
+import org.atlasapi.query.content.search.SherlockSearchResolver;
 import org.atlasapi.search.ContentSearcher;
-
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.properties.Configurer;
-import com.metabroadcast.sherlock.common.client.ElasticSearchProcessor;
-import com.metabroadcast.sherlock.common.config.ElasticSearchConfig;
-
-import com.google.common.base.Strings;
-import com.google.common.primitives.Ints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+
+import javax.annotation.PostConstruct;
 
 @Configuration
 public class SearchModule {
@@ -100,8 +97,7 @@ public class SearchModule {
                 sherlockSearcher(),
                 sherlockTimeout,
                 null,
-                null,
-                SubstitutionTableNumberCodec.lowerCaseOnly()
+                null
         );
     }
 

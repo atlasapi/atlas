@@ -2,7 +2,6 @@ package org.atlasapi.query.content.search;
 
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.stream.MoreStreams;
 import com.metabroadcast.sherlock.client.parameter.SearchParameter;
@@ -37,20 +36,17 @@ public class SherlockSearchResolver implements SearchResolver {
     private ContentResolver contentResolver;
     private LookupEntryStore lookupEntryStore;
     private final long timeout;
-    private final NumberToShortStringCodec idCodec;
 
     public SherlockSearchResolver(
             SherlockSearcher searcher,
             long timeout,
             ContentResolver contentResolver,
-            LookupEntryStore lookupEntryStore,
-            NumberToShortStringCodec idCodec
+            LookupEntryStore lookupEntryStore
     ) {
         this.searcher = checkNotNull(searcher);
         this.timeout = timeout;
         this.contentResolver = contentResolver;
         this.lookupEntryStore = lookupEntryStore;
-        this.idCodec = idCodec;
     }
 
     @Override

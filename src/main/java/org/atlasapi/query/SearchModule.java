@@ -2,6 +2,7 @@ package org.atlasapi.query;
 
 import javax.annotation.PostConstruct;
 
+import com.metabroadcast.sherlock.client.search.SherlockSearcher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.SearchResolver;
@@ -13,10 +14,8 @@ import org.atlasapi.query.content.search.SherlockSearchResolver;
 import org.atlasapi.query.content.search.DummySearcher;
 import org.atlasapi.search.ContentSearcher;
 
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.properties.Configurer;
-import com.metabroadcast.sherlock.common.SherlockIndex;
 import com.metabroadcast.sherlock.common.client.ElasticSearchProcessor;
 import com.metabroadcast.sherlock.common.config.ElasticSearchConfig;
 
@@ -98,7 +97,7 @@ public class SearchModule {
     @Qualifier("SherlockSearchResolver")
     SearchResolver sherlockSearchResolver() {
         return new SherlockSearchResolver(
-                contentSearcher(),
+                sherlockSearcher(),
                 sherlockTimeout,
                 null,
                 null,
@@ -117,14 +116,11 @@ public class SearchModule {
 
     @Bean
     @Primary
-    public com.metabroadcast.sherlock.client.search.ContentSearcher contentSearcher() {
-        return com.metabroadcast.sherlock.client.search.ContentSearcher.builder()
-                .withElasticSearchProcessor(
-                        new ElasticSearchProcessor(
-                                sherlockElasticSearchConfig().getElasticSearchClient()
-                        )
+    public SherlockSearcher sherlockSearcher() {
+        return new SherlockSearcher(
+                new ElasticSearchProcessor(
+                        sherlockElasticSearchConfig().getElasticSearchClient()
                 )
-                .withIndex(SherlockIndex.CONTENT)
-                .build();
+        );
     }
 }

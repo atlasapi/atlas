@@ -1,24 +1,18 @@
 package org.atlasapi.query.content.search;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.apache.lucene.index.Term;
-
 import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.stream.MoreStreams;
-import com.metabroadcast.sherlock.client.search.ContentSearcher;
+import com.metabroadcast.sherlock.client.parameter.SearchParameter;
+import com.metabroadcast.sherlock.client.parameter.TermParameter;
+import com.metabroadcast.sherlock.client.response.IdSearchQueryResponse;
 import com.metabroadcast.sherlock.client.search.SearchQuery;
-import com.metabroadcast.sherlock.client.search.SearchQueryResponse;
-import com.metabroadcast.sherlock.client.search.parameter.SearchParameter;
-import com.metabroadcast.sherlock.client.search.parameter.TermParameter;
-import com.metabroadcast.sherlock.client.search.scoring.QueryWeighting;
-import com.metabroadcast.sherlock.client.search.scoring.Weightings;
+import com.metabroadcast.sherlock.client.search.SherlockSearcher;
+import com.metabroadcast.sherlock.common.SherlockIndex;
 import com.metabroadcast.sherlock.common.mapping.ContentMapping;
 import com.metabroadcast.sherlock.common.mapping.IndexMapping;
-
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Specialization;
@@ -28,28 +22,25 @@ import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SherlockSearchResolver implements SearchResolver {
 
-    private static final ContentMapping CONTENT = IndexMapping.getContent();
+    private static final ContentMapping CONTENT = IndexMapping.getContentMapping();
 
-    private final ContentSearcher searcher;
+    private final SherlockSearcher searcher;
     private ContentResolver contentResolver;
     private LookupEntryStore lookupEntryStore;
     private final long timeout;
     private final NumberToShortStringCodec idCodec;
 
     public SherlockSearchResolver(
-            ContentSearcher searcher,
+            SherlockSearcher searcher,
             long timeout,
             ContentResolver contentResolver,
             LookupEntryStore lookupEntryStore,
@@ -102,6 +93,14 @@ public class SherlockSearchResolver implements SearchResolver {
                 searchQueryBuilder.addFilter(
                         TermParameter.of(CONTENT.getSource().getKey(), publisher.key()));
             }
+            searchQueryBuilder.withIndex(
+                    SherlockIndex.CONTENT,
+                    owlQuery.getIncludedPublishers().stream()
+                            .map(Publisher::key)
+                            .collect(MoreCollectors.toImmutableSet())
+            );
+        } else {
+            searchQueryBuilder.withIndex(SherlockIndex.CONTENT);
         }
 
         if (owlQuery.type() != null) {
@@ -124,23 +123,11 @@ public class SherlockSearchResolver implements SearchResolver {
 
     public List<Identified> search(SearchQuery query) {
         try {
-            SearchQueryResponse results = searcher.searchForIds(query)
+            IdSearchQueryResponse results = searcher.searchForIds(query)
                     .get(timeout, TimeUnit.MILLISECONDS);
-            List<Long> ids = decodeIds(results.getIds());
-            return resolveIds(ids);
+            return resolveIds(results.getIds());
         } catch (Exception ex) {
             throw new RuntimeException(ex.getMessage(), ex);
-        }
-    }
-
-    private List<Long> decodeIds(Iterable<String> input) {
-        if (input == null) {
-            return ImmutableList.of();
-        } else {
-            return StreamSupport.stream(input.spliterator(), false)
-                    .map(idCodec::decode)
-                    .map(BigInteger::longValue)
-                    .collect(Collectors.toList());
         }
     }
 

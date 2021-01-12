@@ -778,7 +778,7 @@
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.sherlock</groupId>
-            <artifactId>client-shaded</artifactId>
+            <artifactId>client</artifactId>
             <version>1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>

@@ -4,9 +4,13 @@ import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.stream.MoreStreams;
-import com.metabroadcast.sherlock.client.parameter.SearchParameter;
+import com.metabroadcast.sherlock.client.parameter.CompositeTitleSearchParameter;
+import com.metabroadcast.sherlock.client.parameter.RangeParameter;
 import com.metabroadcast.sherlock.client.parameter.TermParameter;
+import com.metabroadcast.sherlock.client.parameter.TermsParameter;
 import com.metabroadcast.sherlock.client.response.IdSearchQueryResponse;
+import com.metabroadcast.sherlock.client.scoring.QueryWeighting;
+import com.metabroadcast.sherlock.client.scoring.Weightings;
 import com.metabroadcast.sherlock.client.search.SearchQuery;
 import com.metabroadcast.sherlock.client.search.SherlockSearcher;
 import com.metabroadcast.sherlock.common.SherlockIndex;
@@ -21,6 +25,8 @@ import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -54,22 +60,33 @@ public class SherlockSearchResolver implements SearchResolver {
             org.atlasapi.search.model.SearchQuery owlQuery,
             Application application
     ) {
-        SearchParameter titleSearchParameter = SearchParameter.builder()
-                .withMapping(CONTENT.getTitle())
-                .withValue(owlQuery.getTerm())
-                //.withBoost(owlQuery.getTitleWeighting())
-                .build();
+        CompositeTitleSearchParameter.Builder titleSearchParameter = CompositeTitleSearchParameter
+                .forContentTitle(owlQuery.getTerm());
 
-        // TODO Specific weightings are not yet supported in Sherlock
-//        QueryWeighting queryWeighting = QueryWeighting.builder()
-//                .withWeighting(Weightings.broadcastCount(owlQuery.getBroadcastWeighting()))
-//                // .withWeighting(owlQuery.getCatchupWeighting())
-//                // .withWeighting(owlQuery.getPriorityChannelWeighting())
-//                .build();
+        if (owlQuery.getTitleWeighting() != 0.0f) {
+            titleSearchParameter.withRelativeDefaultBoosts(owlQuery.getTitleWeighting());
+        }
 
         SearchQuery.Builder searchQueryBuilder = SearchQuery.builder()
-                .addSearcher(titleSearchParameter);
-                //.withQueryWeighting(queryWeighting);
+                .addSearcher(titleSearchParameter.build());
+
+        //TODO priority channel weighting not currently supported since it would require calculating the channel
+        // ids in this class before querying Sherlock. Since we do not likely need this we have left it out for now.
+        if (owlQuery.getBroadcastWeighting() != 0.0f || owlQuery.getCatchupWeighting() != 0.0f) {
+            QueryWeighting.Builder queryWeighting = QueryWeighting.builder();
+
+            if (owlQuery.getBroadcastWeighting() != 0.0f) {
+                queryWeighting.withWeighting(Weightings.broadcastCount(owlQuery.getBroadcastWeighting()));
+            }
+
+            if (owlQuery.getCatchupWeighting() != 0.0f) {
+                queryWeighting.withWeighting(Weightings.availability(owlQuery.getCatchupWeighting()));
+            }
+
+            // owlQuery.getPriorityChannelWeighting()
+
+            searchQueryBuilder.withQueryWeighting(queryWeighting.build());
+        }
 
         if (owlQuery.getSelection() != null) {
             searchQueryBuilder
@@ -85,16 +102,12 @@ public class SherlockSearchResolver implements SearchResolver {
         }
 
         if (owlQuery.getIncludedPublishers() != null) {
-            for (Publisher publisher : owlQuery.getIncludedPublishers()) {
-                searchQueryBuilder.addFilter(
-                        TermParameter.of(CONTENT.getSource().getKey(), publisher.key()));
-            }
-            searchQueryBuilder.withIndex(
-                    SherlockIndex.CONTENT,
-                    owlQuery.getIncludedPublishers().stream()
-                            .map(Publisher::key)
-                            .collect(MoreCollectors.toImmutableSet())
-            );
+            Set<String> sources = owlQuery.getIncludedPublishers().stream()
+                    .map(Publisher::key)
+                    .collect(MoreCollectors.toImmutableSet());
+            searchQueryBuilder.addFilter(
+                    TermsParameter.of(CONTENT.getSource().getKey(), sources));
+            searchQueryBuilder.withIndex(SherlockIndex.CONTENT, sources);
         } else {
             searchQueryBuilder.withIndex(SherlockIndex.CONTENT);
         }
@@ -104,9 +117,13 @@ public class SherlockSearchResolver implements SearchResolver {
         }
 
         if (owlQuery.currentBroadcastsOnly() != null) {
-            // Not implemented because Sherlock does not support this either
-//            searchQueryBuilder.addFilter()
-//            deerSearchQuery.withCurrentBroadcastsOnly(owlQuery.currentBroadcastsOnly());
+            searchQueryBuilder.addFilter(
+                    RangeParameter.from(
+                            CONTENT.getBroadcasts().getTransmissionStartTime(),
+                            // matches what was generally being done in Owl search indexing
+                            Instant.now().minus(8, ChronoUnit.DAYS)
+                    )
+            );
         }
 
         if (owlQuery.topLevelOnly() != null) {

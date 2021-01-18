@@ -67,7 +67,7 @@ public class EquivModule {
 
     @Autowired private ScheduleResolver scheduleResolver;
     @Autowired @Qualifier("EquivalenceSearchResolver") private SearchResolver owlSearchResolver;
-    @Autowired @Qualifier("DeerSearchResolver") private SearchResolver deerSearchResolver;
+    @Autowired @Qualifier("SherlockSearchResolver") private SearchResolver sherlockSearchResolver;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ChannelResolver channelResolver;
     @Autowired private EquivalenceSummaryStore equivSummaryStore;
@@ -84,7 +84,7 @@ public class EquivModule {
                 .builder()
                 .withScheduleResolver(scheduleResolver)
                 .withOwlSearchResolver(owlSearchResolver)
-                .withDeerSearchResolver(deerSearchResolver)
+                .withSherlockSearchResolver(sherlockSearchResolver)
                 .withContentResolver(contentResolver)
                 .withChannelResolver(channelResolver)
                 .withEquivSummaryStore(equivSummaryStore)

@@ -18,7 +18,7 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
-import org.atlasapi.query.content.search.DeerSearchResolver;
+import org.atlasapi.query.content.search.SherlockSearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
 import com.metabroadcast.applications.client.model.internal.Application;
@@ -144,8 +144,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     }
 
     private String getName(boolean changeComponentName) {
-        if (searchResolver instanceof DeerSearchResolver) {
-            return "Deer Search";
+        if (searchResolver instanceof SherlockSearchResolver) {
+            return "Sherlock Search";
         } else if (changeComponentName) {
             return "Title Search";
         } else {

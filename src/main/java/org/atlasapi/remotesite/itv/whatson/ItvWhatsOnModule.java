@@ -36,16 +36,18 @@ public class ItvWhatsOnModule {
     
     private @Value("${service.web.id}") Long webServiceId;
     private @Value("${player.itvplayer.id}") Long itvPlayerId;
-    
+
     private static final Every EVERY_FIFTEEN_MINUTES = RepetitionRules.every(Duration.standardMinutes(15));
     private static final Every EVERY_HOUR = RepetitionRules.every(Duration.standardHours(1));
     
     private @Autowired AdapterLog log;
-    
+
+    // Disabled since we have lost access to the source, and have good reason to believe that none
+    // of the applications have access to this publisher anyway
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(itvWhatsOnUpdaterDaily().withName("ITV What's On Daily"), EVERY_FIFTEEN_MINUTES);
-        scheduler.schedule(itvWhatsOnUpdaterPlusMinus7Day().withName("ITV What's On +/- 7 days"), EVERY_HOUR);
+        scheduler.schedule(itvWhatsOnUpdaterDaily().withName("ITV What's On Daily"), RepetitionRules.NEVER);
+        scheduler.schedule(itvWhatsOnUpdaterPlusMinus7Day().withName("ITV What's On +/- 7 days"), RepetitionRules.NEVER);
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("ITV What's On Schedule task installed.").withSource(getClass()));
     }
     

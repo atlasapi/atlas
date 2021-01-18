@@ -1,15 +1,12 @@
 package org.atlasapi.query.v2;
 
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupStore;
@@ -17,15 +14,17 @@ import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelStore;
 import org.atlasapi.output.AtlasErrorSummary;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-
-import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -56,35 +55,31 @@ public class ChannelGroupWriteExecutor {
     public com.google.common.base.Optional<ChannelGroup> createOrUpdateChannelGroup(
             HttpServletRequest request,
             ChannelGroup complex,
-            org.atlasapi.media.entity.simple.ChannelGroup simple,
+            List<org.atlasapi.media.entity.simple.ChannelNumbering> simpleNumberings,
             ChannelResolver channelResolver
     ) {
         try {
             if (complex.getId() != null) {
-                Set<Long> existingChannelIds = getChannelIdsForChannelGroupId(complex.getId());
-                ChannelGroup channelGroup = channelGroupStore.createOrUpdate(complex);
-                updateChannelGroupNumberings(
-                        complex,
-                        simple.getChannels(),
-                        existingChannelIds,
-                        channelResolver
-                );
-                return com.google.common.base.Optional.of(channelGroup);
+                return updateChannelGroup(complex, simpleNumberings, channelResolver);
             }
-            //if it's a new group, create it, then update the canonicalUri that requires the ID
+            if (complex.getCanonicalUri() != null) {
+                com.google.common.base.Optional<ChannelGroup> existingChannelGroup = channelGroupStore
+                        .channelGroupFor(complex.getCanonicalUri());
+
+                if(existingChannelGroup.isPresent()) {
+                    complex.setId(existingChannelGroup.get().getId());
+                    return updateChannelGroup(complex, simpleNumberings, channelResolver);
+                }
+            }
+            //if it's a new group, create it
             ChannelGroup newChannelGroup = channelGroupStore.createOrUpdate(complex);
-
-            //we create a URI that allows us to detect BT has created that group through us
-            //and because we use the new ID format for it (all lowercase), we need to create it
-            //after it was written to the database.
-            newChannelGroup.setCanonicalUri(String.format(
-                    "http://%s/metabroadcast/%s",
-                    newChannelGroup.getPublisher().key(),
-                    deerCodec.encode(BigInteger.valueOf(newChannelGroup.getId()))
-            ));
-            newChannelGroup = channelGroupStore.createOrUpdate(newChannelGroup);
-
-            addNewNumberingsToChannels(newChannelGroup, simple.getChannels(), channelResolver);
+            Set<ChannelNumbering> channelNumberings = simpleNumberings.stream()
+                    .map(numbering -> transformChannelNumbering(numbering, newChannelGroup.getId()))
+                    .collect(MoreCollectors.toImmutableSet());
+            Set<Long> channelsToUpdate = channelNumberings.stream()
+                    .map(ChannelNumbering::getChannel)
+                    .collect(MoreCollectors.toImmutableSet());
+            updateChannelNumberings(newChannelGroup.getId(), channelNumberings, channelsToUpdate, channelResolver);
 
             return com.google.common.base.Optional.of(newChannelGroup);
         } catch (Exception e) {
@@ -97,143 +92,123 @@ public class ChannelGroupWriteExecutor {
         }
     }
 
-    private Set<Long> getChannelIdsForChannelGroupId(Long channelGroupId) {
+    private ChannelNumbering transformChannelNumbering(
+            org.atlasapi.media.entity.simple.ChannelNumbering numbering,
+            long channelGroupId
+    ) {
+        long channelId = decodeOwlChannelId(numbering.getChannel().getId());
+        LocalDate startDate = Objects.isNull(numbering.getStartDate())
+                ? null
+                : LocalDate.fromDateFields(numbering.getStartDate());
+        LocalDate endDate = Objects.isNull(numbering.getEndDate())
+                ? null
+                : LocalDate.fromDateFields(numbering.getEndDate());
+        return ChannelNumbering.builder()
+                .withChannel(channelId)
+                .withChannelGroup(channelGroupId)
+                .withChannelNumber(numbering.getChannelNumber())
+                .withStartDate(startDate)
+                .withEndDate(endDate)
+                .build();
+    }
+
+    private com.google.common.base.Optional<ChannelGroup> updateChannelGroup(
+            ChannelGroup complex,
+            List<org.atlasapi.media.entity.simple.ChannelNumbering> simpleNumberings,
+            ChannelResolver channelResolver
+    ) {
+        // These aren't always set by the complexifier because sometimes only a uri is initially specified on the channel
+        // group, with the channel numberings requiring a channel group id
+        if (complex.getChannelNumberings().isEmpty() && !simpleNumberings.isEmpty()) {
+            complex.setChannelNumberings(
+                    simpleNumberings.stream()
+                            .map(numbering -> transformChannelNumbering(numbering, complex.getId()))
+                            .collect(MoreCollectors.toImmutableSet())
+            );
+        }
+        Set<ChannelNumbering> existingChannelNumberings = getExistingChannelNumberings(complex.getId());
+        ChannelGroup channelGroup = channelGroupStore.createOrUpdate(complex);
+        updateChannelNumberings(
+                complex,
+                existingChannelNumberings,
+                channelResolver
+        );
+        return com.google.common.base.Optional.of(channelGroup);
+    }
+
+    private Set<ChannelNumbering> getExistingChannelNumberings(Long channelGroupId) {
         com.google.common.base.Optional<ChannelGroup> channelGroupOptional = channelGroupStore.channelGroupFor(channelGroupId);
         if (!channelGroupOptional.isPresent()) {
             log.info("Couldn't find channel group for ID {}", channelGroupId);
             return Sets.newHashSet();
         }
-
-        return channelGroupOptional.get()
-                .getChannelNumberings()
-                .stream()
-                .map(ChannelNumbering::getChannel)
-                .collect(Collectors.toSet());
+        return channelGroupOptional.get().getChannelNumberings();
     }
 
-    private void updateChannelGroupNumberings(
+    private void updateChannelNumberings(
             ChannelGroup complex,
-            List<org.atlasapi.media.entity.simple.ChannelNumbering> channelNumberings,
-            Set<Long> existingChannelIds,
+            Set<ChannelNumbering> existingChannelNumberings,
             ChannelResolver channelResolver
     ) {
-        Set<Long> channelIds = channelNumberings.stream()
-                .map(channelNumbering -> decodeOwlChannelId(channelNumbering.getChannel().getId()))
-                .collect(Collectors.toSet());
+        //Channel ids corresponding to any channel numberings between the two sets which have changes
+        Set<Long> channelsToUpdate = Sets.union(
+                Sets.difference(complex.getChannelNumberings(), existingChannelNumberings),
+                Sets.difference(existingChannelNumberings, complex.getChannelNumberings())
 
-        SetView<Long> staleChannelIds = Sets.difference(existingChannelIds, channelIds);
-        removeStaleChannelNumbersForChannels(
-                complex.getId(),
-                staleChannelIds,
-                channelResolver
-        );
+        ).stream()
+                .map(ChannelNumbering::getChannel)
+                .collect(MoreCollectors.toImmutableSet());
 
-        List<org.atlasapi.media.entity.simple.ChannelNumbering> newChannelNumberings = channelNumberings.stream()
-                .filter(channelNumbering -> !exist(existingChannelIds, channelNumbering))
-                .collect(Collectors.toList());
-        addNewNumberingsToChannels(complex, newChannelNumberings, channelResolver);
+        updateChannelNumberings(complex.getId(), complex.getChannelNumberings(), channelsToUpdate, channelResolver);
     }
 
-    private boolean exist(
-            Set<Long> existingChannelIds,
-            org.atlasapi.media.entity.simple.ChannelNumbering channelNumbering
-    ) {
-        return existingChannelIds.contains(
-                decodeOwlChannelId(channelNumbering.getChannel().getId())
-        );
-    }
-
-    private void addNewNumberingsToChannels(
-            ChannelGroup channelGroup,
-            List<org.atlasapi.media.entity.simple.ChannelNumbering> newChannelNumberings,
+    /**
+     * Update the numberings on specified channels for the specified channel group based on the provided
+     * group's numberings. The existing channel's numberings for the specified channel group are replaced by those
+     * which appear for that channel in the provided numberings.
+     * @param channelGroupId the channel group whose numberings will be modified on the specified channels
+     * @param newNumberings the channel group's new numberings
+     * @param channelsToUpdate the ids of the channels that will be updated
+     */
+    private void updateChannelNumberings(
+            long channelGroupId,
+            Set<ChannelNumbering> newNumberings,
+            Set<Long> channelsToUpdate,
             ChannelResolver channelResolver
     ) {
-        newChannelNumberings.forEach(numbering -> {
-            long newChannelId = decodeOwlChannelId(numbering.getChannel().getId());
-            channelResolver.refreshCache();
+        SetMultimap<Long, ChannelNumbering> channelNumberingsByChannel = HashMultimap.create();
+
+        for (ChannelNumbering numbering : newNumberings) {
+            channelNumberingsByChannel.put(numbering.getChannel(), numbering);
+        }
+
+        // N.B. It looks like in atlas-persistence this is a CachingChannelStore since this is used within the API.
+        // We want to try and avoid fetching stale channel data so we'll make sure the data is recent, even though
+        // this could be a more expensive operation than it needs to be.
+        channelResolver.refreshCache();
+
+        for (Long newChannelId : channelsToUpdate) {
+            Set<ChannelNumbering> numberingsFromUpdatedGroup = channelNumberingsByChannel.get(newChannelId);
             Maybe<Channel> resolvedChannel = channelResolver.fromId(newChannelId);
             if (!resolvedChannel.hasValue()) {
                 log.warn("Couldn't resolve channel for ID {}", newChannelId);
-                return;
+                continue;
             }
             Channel channel = resolvedChannel.requireValue();
 
-            if (channelContainsNumbering(channel, newChannelId, channelGroup.getId())) {
-                log.warn(
-                        "New channel numbering with channel group {} and channel {} already exist for channel {}",
-                        channelGroup.getId(),
-                        newChannelId,
-                        channel.getId()
-                );
-                return;
-            }
+            Set<ChannelNumbering> numberingsFromOtherGroups = channel.getChannelNumbers().stream()
+                    .filter(numbering -> !numbering.getChannelGroup().equals(channelGroupId))
+                    .collect(Collectors.toSet());
 
-            LocalDate startDate = Objects.isNull(numbering.getStartDate())
-                                  ? null
-                                  : LocalDate.fromDateFields(numbering.getStartDate());
-            LocalDate endDate = Objects.isNull(numbering.getEndDate())
-                                ? null
-                                : LocalDate.fromDateFields(numbering.getEndDate());
-            channel.addChannelNumber(
-                    channelGroup,
-                    numbering.getChannelNumber(),
-                    startDate,
-                    endDate
-            );
+            channel.setChannelNumbers(Sets.union(numberingsFromOtherGroups, numberingsFromUpdatedGroup));
 
-            // updating the channel also updates the channel numbering on the channel group
+            // N.B. updating the channel also updates the channel numbering on the channel group
             channelStore.createOrUpdate(channel);
-        });
-    }
-
-    private boolean channelContainsNumbering(
-            Channel channel,
-            long newChannelId,
-            long channelGroupId
-    ) {
-        return channel.getChannelNumbers()
-                .stream()
-                .anyMatch(channelNumbering -> channelNumbering.getChannelGroup() == channelGroupId
-                        && channelNumbering.getChannel() == newChannelId
-                );
+        }
     }
 
     private long decodeOwlChannelId(String channelId) {
         return idCodec.decode(channelId).longValue();
-    }
-
-    private void removeStaleChannelNumbersForChannels(
-            Long channelGroupId,
-            Set<Long> staleChannelIds,
-            ChannelResolver channelResolver
-    ) {
-        staleChannelIds.forEach(channelId -> {
-            channelResolver.refreshCache();
-            Maybe<Channel> resolvedChannel = channelResolver.fromId(channelId);
-            if (!resolvedChannel.hasValue()) {
-                log.warn("Couldn't resolve channel for ID {}", channelId);
-                return;
-            }
-            Channel channel = resolvedChannel.requireValue();
-
-            Set<ChannelNumbering> updatedChannelNumberings = channel.getChannelNumbers()
-                    .stream()
-                    .filter(channelNumbering -> !isLinkedToChannelGroup(
-                            channelGroupId,
-                            channelNumbering
-                    ))
-                    .collect(Collectors.toSet());
-            channel.setChannelNumbers(updatedChannelNumberings);
-
-            channelStore.createOrUpdate(channel);
-        });
-    }
-
-    private boolean isLinkedToChannelGroup(
-            Long channelGroupId,
-            ChannelNumbering channelNumbering
-    ) {
-        return channelNumbering.getChannelGroup().equals(channelGroupId);
     }
 
     public Optional<AtlasErrorSummary> deletePlatform(
@@ -243,9 +218,13 @@ public class ChannelGroupWriteExecutor {
             ChannelResolver channelResolver
     ) {
         try {
-            Set<Long> channelIds = getChannelIdsForChannelGroupId(channelGroupId);
-            removeStaleChannelNumbersForChannels(
+            Set<ChannelNumbering> channelNumberings = getExistingChannelNumberings(channelGroupId);
+            Set<Long> channelIds = channelNumberings.stream()
+                    .map(ChannelNumbering::getChannel)
+                    .collect(MoreCollectors.toImmutableSet());
+            updateChannelNumberings(
                     channelGroupId,
+                    ImmutableSet.of(),
                     channelIds,
                     channelResolver
             );

@@ -1,29 +1,30 @@
 package org.atlasapi.remotesite.bt.channels;
 
-import com.google.api.client.util.Sets;
-import com.google.common.base.Strings;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
+
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+
+import com.google.api.client.util.Sets;
+import com.google.common.base.Strings;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -56,10 +57,11 @@ public class BtChannelDataUpdater {
         for(Entry currentEntry : paginatedEntries.getEntries()) {
 
             try {
-                Optional<Channel> channelOptional = processEntryForAliases(currentEntry);
+                Set<Optional<Channel>> optionalChannels = processEntryForAliases(currentEntry);
 
-                channelOptional.ifPresent(channel -> updatedChannels.add(channel.getId()));
-
+                for (Optional<Channel> channelOptional : optionalChannels) {
+                    channelOptional.ifPresent(channel -> updatedChannels.add(channel.getId()));
+                }
             } catch (IllegalArgumentException e) {
                 LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
             }
@@ -83,10 +85,11 @@ public class BtChannelDataUpdater {
 
         for (Entry currentEntry : entries) {
             try {
-                Optional<Channel> channelOptional = processEntryForAdvertisedDates(currentEntry);
+                Set<Optional<Channel>> optionalChannels = processEntryForAdvertisedDates(currentEntry);
 
-                channelOptional.ifPresent(channel -> updatedChannels.add(channel.getId()));
-
+                for (Optional<Channel> channelOptional : optionalChannels) {
+                    channelOptional.ifPresent(channel -> updatedChannels.add(channel.getId()));
+                }
             } catch (IllegalArgumentException e) {
                 LOGGER.error(
                         "Failure to process. Channel Id may contain illegal characters that are not accepted by the codec",
@@ -105,19 +108,28 @@ public class BtChannelDataUpdater {
         );
     }
 
-    private Optional<Channel> processEntryForAliases(Entry entry) {
+    /**
+     * @param entry
+     * @return Channels with BT TV Channel publisher with updated aliases
+     */
+    private Set<Optional<Channel>> processEntryForAliases(Entry entry) {
+        Set<Optional<Channel>> optionalChannels = new HashSet<>();
+
         String linearEpgChannelId = entry.getLinearEpgChannelId();
 
-        Optional<Channel> channelOptional = channelFor(entry.getGuid());
+        for (String mbid : entry.getGuids()) {
+            Optional<Channel> channelOptional = channelFor(mbid);
 
-        if (!channelOptional.isPresent()) {
-            return Optional.empty();
+            if (!channelOptional.isPresent()) {
+                optionalChannels.add(Optional.empty());
+            } else {
+                optionalChannels.add(updateChannelWithAliases(
+                        findOrCreateSourceChannel(channelOptional.get()),
+                        linearEpgChannelId
+                ));
+            }
         }
-
-        return updateChannelWithAliases(
-                findOrCreateSourceChannel(channelOptional.get()),
-                linearEpgChannelId
-        );
+        return optionalChannels;
     }
 
     private Optional<Channel> updateChannelWithAliases(Channel channel, String linearEpgChannelId) {
@@ -138,23 +150,31 @@ public class BtChannelDataUpdater {
         return Optional.empty();
     }
 
-    private Optional<Channel> processEntryForAdvertisedDates(Entry entry) {
+    /**
+     * @param entry
+     * @return Channels with BT TV Channel publisher with updated advertise from/to dates
+     */
+    private Set<Optional<Channel>> processEntryForAdvertisedDates(Entry entry) {
+        Set<Optional<Channel>> channels = new HashSet<>();
 
-        Optional<Channel> channel = channelFor(entry.getGuid());
+        for (String mbid : entry.getGuids()) {
+            Optional<Channel> channel = channelFor(mbid);
 
-        if (!channel.isPresent()) {
-            return Optional.empty();
+            if (!channel.isPresent()) {
+                channels.add(Optional.empty());
+            } else {
+                DateTime advertiseFromDate = new DateTime(entry.getAvailableDate());
+                DateTime advertiseToDate = new DateTime(entry.getAvailableToDate());
+
+                channels.add(Optional.of(updateChannelWithAdvertisedDates(
+                        findOrCreateSourceChannel(channel.get()),
+                        advertiseFromDate,
+                        advertiseToDate
+                )));
+            }
         }
 
-        DateTime advertiseFromDate = new DateTime(entry.getAvailableDate());
-        DateTime advertiseToDate = new DateTime(entry.getAvailableToDate());
-
-        return Optional.of(updateChannelWithAdvertisedDates(
-                findOrCreateSourceChannel(channel.get()),
-                advertiseFromDate,
-                advertiseToDate
-        ));
-
+        return channels;
     }
 
     private Channel updateChannelWithAdvertisedDates(

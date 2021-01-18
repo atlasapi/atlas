@@ -1,11 +1,13 @@
 package org.atlasapi.input;
 
 import com.google.api.client.util.Lists;
+import com.google.api.client.util.Sets;
 import com.google.common.base.Optional;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelType;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
@@ -18,6 +20,8 @@ import org.joda.time.LocalDate;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.gdata.util.common.base.Preconditions.checkArgument;
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
@@ -110,6 +114,14 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
             complex.withImage(Image.builder(simple.getImage()).build());
         }
 
+        if (simple.getImages() != null && !simple.getImages().isEmpty()) {
+            complex.withImages(
+                    simple.getImages().stream()
+                            .map(imageTranslator::transform)
+                            .collect(Collectors.toList())
+            );
+        }
+
         if (simple.getAdvertisedFrom() != null) {
             complex.withAdvertiseFrom(new DateTime(simple.getAdvertisedFrom()));
         }
@@ -166,7 +178,17 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
 
             complex.withChannelNumbers(channelNumberings);
         }
-        
+
+        if (simple.getV4Aliases() != null && !simple.getV4Aliases().isEmpty()) {
+            Set<Alias> aliases = Sets.newHashSet();
+
+            simple.getV4Aliases()
+                    .stream()
+                    .forEach(alias -> aliases.add(translateAlias(alias)));
+
+            complex.withAliases(aliases);
+        }
+
         return complex.build();
     }
 
@@ -222,5 +244,9 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
         }
 
         return complex.build();
+    }
+
+    private Alias translateAlias(org.atlasapi.media.entity.simple.Alias alias) {
+        return new Alias(alias.getNamespace(), alias.getValue());
     }
 }

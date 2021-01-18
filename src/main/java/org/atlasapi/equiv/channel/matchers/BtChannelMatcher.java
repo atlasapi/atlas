@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.channel.matchers;
 
+import java.util.Set;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -14,13 +16,16 @@ public class BtChannelMatcher extends ChannelMatcher {
     private static final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     private final String uriPrefix;
 
-    private BtChannelMatcher(Publisher publisher) {
-        super(publisher);
+    private BtChannelMatcher(Publisher publisher,  Set<Publisher> allowedTargetPublishers) {
+        super(publisher, allowedTargetPublishers);
         this.uriPrefix = String.format("http://%s/", publisher);
     }
 
-    public static BtChannelMatcher create(Publisher publisher) {
-        return new BtChannelMatcher(publisher);
+    public static BtChannelMatcher create(
+            Publisher publisher,
+            Set<Publisher> allowedTargetPublishers) {
+
+        return new BtChannelMatcher(publisher, allowedTargetPublishers);
     }
 
     @Override

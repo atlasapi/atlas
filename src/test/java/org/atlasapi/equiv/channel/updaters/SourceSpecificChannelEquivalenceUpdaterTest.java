@@ -14,6 +14,7 @@ import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
+import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -38,7 +39,12 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
     @Mock private ChannelEquivalenceUpdaterMetadata metadata = mock(ChannelEquivalenceUpdaterMetadata.class);
     @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
 
-    private ChannelMatcher btChannelMatcher = BtChannelMatcher.create(Publisher.BT_TV_CHANNELS);
+    private ChannelMatcher btChannelMatcher = BtChannelMatcher.create(
+            Publisher.BT_TV_CHANNELS,
+            ImmutableSet.of(
+                    Publisher.METABROADCAST,
+                    Publisher.YOUVIEW_JSON
+            ));
     private SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     private Iterable<Channel> allChannels = generateAllChannels();
 
@@ -106,6 +112,7 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
         return SourceSpecificChannelEquivalenceUpdater.builder()
                 .forPublisher(publisher)
                 .withChannelWriter(channelWriter)
+                .withCandidateSources(ImmutableSet.of(Publisher.METABROADCAST))
                 .withChannelResolver(channelResolver)
                 .withChannelMatcher(channelMatcher)
                 .withMetadata(metadata)

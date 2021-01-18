@@ -16,7 +16,6 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.Content;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
 import org.joda.time.DateTime;
-import org.joda.time.Instant;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -24,7 +23,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +35,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtChannelDataUpdaterTest {
@@ -69,44 +66,46 @@ public class BtChannelDataUpdaterTest {
         entries.add(entry2);
 
         Channel testChannel2 = new Channel(Publisher.METABROADCAST, "Channel 2", "b", true, MediaType.VIDEO, "http://channel2.com");
-        long channelId = codec.decode(entry2.getGuid()).longValue();
-        testChannel2.setId(channelId);
-        Alias shouldNotRemove1 = new Alias("gb:bt:tv:mpx:testing:service", "urn:BT:linear:service:700000");
-        Alias shouldNotRemove2 = new Alias("bbcone", "urn:BT:linear:service:710000");
-        Alias shouldRemove = new Alias("gb:bt:tv:mpx:vole:service", "urn:BT:linear:service:710000");
-        testChannel2.addAlias(shouldNotRemove1);
-        testChannel2.addAlias(shouldRemove);
-        testChannel2.addAlias(shouldNotRemove2);
+        for (String mbid : entry2.getGuids()) {
+            long channelId = codec.decode(mbid).longValue();
+            testChannel2.setId(channelId);
+            Alias shouldNotRemove1 = new Alias("gb:bt:tv:mpx:testing:service", "urn:BT:linear:service:700000");
+            Alias shouldNotRemove2 = new Alias("bbcone", "urn:BT:linear:service:710000");
+            Alias shouldRemove = new Alias("gb:bt:tv:mpx:vole:service", "urn:BT:linear:service:710000");
+            testChannel2.addAlias(shouldNotRemove1);
+            testChannel2.addAlias(shouldRemove);
+            testChannel2.addAlias(shouldNotRemove2);
 
-        Maybe<Channel> channelMaybe = Maybe.just(testChannel2);
+            Maybe<Channel> channelMaybe = Maybe.just(testChannel2);
 
-        List<Channel> channels = Lists.newArrayList();
+            List<Channel> channels = Lists.newArrayList();
 
-        channels.add(testChannel2);
+            channels.add(testChannel2);
 
-        when(paginatedEntries.getEntries()).thenReturn(entries);
-        when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
-        when(channelWriter.createOrUpdate(channelBeingWrittenCaptor.capture())).thenReturn(testChannel2);
-        when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
+            when(paginatedEntries.getEntries()).thenReturn(entries);
+            when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
+            when(channelWriter.createOrUpdate(channelBeingWrittenCaptor.capture())).thenReturn(testChannel2);
+            when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
 
-        channelDataUpdater.addAliasesToChannel(paginatedEntries);
+            channelDataUpdater.addAliasesToChannel(paginatedEntries);
 
-        verify(paginatedEntries).getEntries();
-        verify(channelResolver).fromId(channelId);
-        verify(channelResolver).allChannels(any(ChannelQuery.class));
+            verify(paginatedEntries).getEntries();
+            verify(channelResolver).fromId(channelId);
+            verify(channelResolver).allChannels(any(ChannelQuery.class));
 
-        Set<Alias> channelAliases = testChannel2.getAliases();
-        assertThat(channelAliases.contains(shouldNotRemove1), is(true));
-        assertThat(channelAliases.contains(shouldNotRemove2), is(true));
-        assertThat(channelAliases.contains(shouldRemove), is(false));
+            Set<Alias> channelAliases = testChannel2.getAliases();
+            assertThat(channelAliases.contains(shouldNotRemove1), is(true));
+            assertThat(channelAliases.contains(shouldNotRemove2), is(true));
+            assertThat(channelAliases.contains(shouldRemove), is(false));
 
-        Channel testChannel2BeingWrittenCaptured = channelBeingWrittenCaptor.getValue();
+            Channel testChannel2BeingWrittenCaptured = channelBeingWrittenCaptor.getValue();
 
-        Set<Alias> channelBeingWrittenAliases = testChannel2BeingWrittenCaptured.getAliases();
+            Set<Alias> channelBeingWrittenAliases = testChannel2BeingWrittenCaptured.getAliases();
 
-        assertThat(channelBeingWrittenAliases.contains(shouldNotRemove1), is(true));
-        assertThat(channelBeingWrittenAliases.contains(shouldNotRemove2), is(true));
-        assertThat(channelBeingWrittenAliases.contains(shouldRemove), is(false));
+            assertThat(channelBeingWrittenAliases.contains(shouldNotRemove1), is(true));
+            assertThat(channelBeingWrittenAliases.contains(shouldNotRemove2), is(true));
+            assertThat(channelBeingWrittenAliases.contains(shouldRemove), is(false));
+        }
     }
 
     @Test
@@ -127,46 +126,52 @@ public class BtChannelDataUpdaterTest {
         Entry entry1 = entryForTesting();
 
         entries.add(entry1);
+        List<String> guid = entry1.getGuids();
 
-        Channel testChannel = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
-        Channel environmentChannel = new Channel(Publisher.BT_TV_CHANNELS_TEST1, "Channel 1", "a", true, MediaType.VIDEO, "http://dev1.tv-channels.bt.com/" + codec.decode(entry1.getGuid()));
+        Channel testChannel = new Channel(Publisher.METABROADCAST, "Channel 1",
+                "a", true, MediaType.VIDEO, "http://channel1.com");
+        for (String mbid : guid) {
+            Channel environmentChannel = new Channel(Publisher.BT_TV_CHANNELS_TEST1, "Channel 1",
+                    "a", true, MediaType.VIDEO, "http://dev1.tv-channels.bt.com/" + codec.decode(mbid));
 
-        Alias shouldNotRemove = new Alias("bbcone", "urn:BT:linear:service:710000");
-        testChannel.addAlias(shouldNotRemove);
-        List<Channel> channels = Lists.newArrayList();
+            Alias shouldNotRemove = new Alias("bbcone", "urn:BT:linear:service:710000");
+            testChannel.addAlias(shouldNotRemove);
+            List<Channel> channels = Lists.newArrayList();
 
-        channels.add(testChannel);
-        channels.add(environmentChannel);
+            channels.add(testChannel);
+            channels.add(environmentChannel);
 
-        Channel expectedChannelWithAlias = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
+            Channel expectedChannelWithAlias = new Channel(Publisher.METABROADCAST, "Channel 1",
+                    "a", true, MediaType.VIDEO, "http://channel1.com");
 
-        Alias alias = new Alias(ALIAS_NAMESPACE, LINEAR_CHANNEL_ID);
-        expectedChannelWithAlias.addAlias(alias);
+            Alias alias = new Alias(ALIAS_NAMESPACE, LINEAR_CHANNEL_ID);
+            expectedChannelWithAlias.addAlias(alias);
 
-        long channelId = codec.decode(entry1.getGuid()).longValue();
-        testChannel.setId(channelId);
-        Maybe<Channel> channelMaybe = Maybe.just(testChannel);
+            long channelId = codec.decode(mbid).longValue();
+            testChannel.setId(channelId);
+            Maybe<Channel> channelMaybe = Maybe.just(testChannel);
 
-        when(paginatedEntries.getEntries()).thenReturn(entries);
-        when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
-        when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.just(environmentChannel));
-        when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
+            when(paginatedEntries.getEntries()).thenReturn(entries);
+            when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
+            when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.just(environmentChannel));
+            when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
 
-        channelDataUpdater.addAliasesToChannel(paginatedEntries);
+            channelDataUpdater.addAliasesToChannel(paginatedEntries);
 
-        verify(paginatedEntries).getEntries();
-        verify(channelResolver).fromId(channelId);
-        verify(channelWriter).createOrUpdate(expectedChannelWithAlias);
-        verify(channelResolver).allChannels(any(ChannelQuery.class));
+            verify(paginatedEntries).getEntries();
+            verify(channelResolver).fromId(channelId);
+            verify(channelWriter).createOrUpdate(expectedChannelWithAlias);
+            verify(channelResolver).allChannels(any(ChannelQuery.class));
 
-        Set<Alias> channelAliases = testChannel.getAliases();
-        Set<Alias> environmentAliases = environmentChannel.getAliases();
+            Set<Alias> channelAliases = testChannel.getAliases();
+            Set<Alias> environmentAliases = environmentChannel.getAliases();
 
-        assertFalse(channelAliases.contains(alias));
-        assertTrue(environmentAliases.contains(alias));
+            assertFalse(channelAliases.contains(alias));
+            assertTrue(environmentAliases.contains(alias));
 
-        //Make sure that we don't remove the old aliases after adding the new one.
-        assertThat(channelAliases.contains(shouldNotRemove), is(true));
+            //Make sure that we don't remove the old aliases after adding the new one.
+            assertThat(channelAliases.contains(shouldNotRemove), is(true));
+        }
     }
 
     @Test
@@ -184,46 +189,52 @@ public class BtChannelDataUpdaterTest {
 
         List<Entry> entries = Lists.newArrayList();
         Entry entry1 = entryForTesting();
+        List<String> guid = entry1.getGuids();
 
         entries.add(entry1);
 
-        Channel testChannel = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
-        Channel environmentChannel = new Channel(Publisher.BT_TV_CHANNELS_TEST1, "Channel 1", "b", true, MediaType.VIDEO, "http://dev1.tv-channels.bt.com/" + entry1.getGuid());
+        for (String mbid : guid) {
+            Channel testChannel = new Channel(Publisher.METABROADCAST, "Channel 1",
+                    "a", true, MediaType.VIDEO, "http://channel1.com");
+            Channel environmentChannel = new Channel(Publisher.BT_TV_CHANNELS_TEST1, "Channel 1",
+                    "b", true, MediaType.VIDEO, "http://dev1.tv-channels.bt.com/" + mbid);
 
-        List<Channel> channels = Lists.newArrayList();
+            List<Channel> channels = Lists.newArrayList();
 
-        channels.add(testChannel);
-        channels.add(environmentChannel);
+            channels.add(testChannel);
+            channels.add(environmentChannel);
 
-        Channel expectedChannelWithAvailableDate = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
+            Channel expectedChannelWithAvailableDate = new Channel(Publisher.METABROADCAST, "Channel 1",
+                    "a", true, MediaType.VIDEO, "http://channel1.com");
 
-        expectedChannelWithAvailableDate.setAdvertiseFrom(DateTime.now());
+            expectedChannelWithAvailableDate.setAdvertiseFrom(DateTime.now());
 
-        long channelId = codec.decode(entry1.getGuid()).longValue();
-        testChannel.setId(channelId);
+            long channelId = codec.decode(mbid).longValue();
+            testChannel.setId(channelId);
 
-        Maybe<Channel> channelMaybe = Maybe.just(testChannel);
+            Maybe<Channel> channelMaybe = Maybe.just(testChannel);
 
-        when(paginatedEntries.getEntries()).thenReturn(entries);
-        when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
-        when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
-        when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.just(environmentChannel));
+            when(paginatedEntries.getEntries()).thenReturn(entries);
+            when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
+            when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
+            when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.just(environmentChannel));
 
-        channelDataUpdater.addAvailableDatesToChannel(paginatedEntries);
+            channelDataUpdater.addAvailableDatesToChannel(paginatedEntries);
 
-        verify(paginatedEntries).getEntries();
-        verify(channelResolver).fromId(channelId);
-        verify(channelResolver).allChannels(any(ChannelQuery.class));
+            verify(paginatedEntries).getEntries();
+            verify(channelResolver).fromId(channelId);
+            verify(channelResolver).allChannels(any(ChannelQuery.class));
 
-        assertEquals(
-                new DateTime(1446556354000L),
-                environmentChannel.getAdvertiseFrom()
-        );
+            assertEquals(
+                    new DateTime(1446556354000L),
+                    environmentChannel.getAdvertiseFrom()
+            );
 
-        assertEquals(
-                new DateTime(1447556354000L),
-                environmentChannel.getAdvertiseTo()
-        );
+            assertEquals(
+                    new DateTime(1447556354000L),
+                    environmentChannel.getAdvertiseTo()
+            );
+        }
 
     }
 

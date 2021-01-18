@@ -195,7 +195,7 @@ public class EquivTaskModule {
     private static final RepetitionRule IMDB_EQUIVALENCE_REPETITION =
             RepetitionRules.NEVER;
     private static final RepetitionRule IMDB_EQUIVALENCE_DELTA_REPETITION =
-            RepetitionRules.daily(new LocalTime(23, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule JUSTWATCH_EQUIVALENCE_REPETITION =
             RepetitionRules.NEVER;
     private static final RepetitionRule JUSTWATCH_EQUIVALENCE_DELTA_REPETITION =

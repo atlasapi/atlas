@@ -1,19 +1,23 @@
 package org.atlasapi.query.v2;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.query.Selection.SelectionBuilder;
+import com.metabroadcast.common.social.exceptions.BadRequestException;
+import org.apache.commons.cli.MissingArgumentException;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.application.v3.DefaultApplication;
@@ -36,26 +40,6 @@ import org.atlasapi.output.exceptions.UnauthorizedException;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.query.v2.ChannelGroupFilterer.ChannelGroupFilter;
 import org.atlasapi.query.v2.ChannelGroupFilterer.ChannelGroupFilter.ChannelGroupFilterBuilder;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.query.Selection.SelectionBuilder;
-import com.metabroadcast.common.social.exceptions.BadRequestException;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import org.apache.commons.cli.MissingArgumentException;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +48,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -440,7 +437,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         Optional<ChannelGroup> channelGroup = channelGroupWriteExecutor.createOrUpdateChannelGroup(
                 request,
                 complexChannelGroup,
-                simpleChannelGroup,
+                simpleChannelGroup.getChannels(),
                 channelResolver
         );
 

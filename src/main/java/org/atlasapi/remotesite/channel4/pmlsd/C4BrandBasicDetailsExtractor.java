@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
@@ -20,6 +21,8 @@ import com.sun.syndication.feed.atom.Category;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extracts basic properties of a Brand from a C4 Atom Feed representing a Brand.
@@ -27,6 +30,8 @@ import com.sun.syndication.feed.atom.Link;
  * @author Fred van den Driessche (fred@metabroadcast.com)
  */
 public class C4BrandBasicDetailsExtractor implements ContentExtractor<Feed, Brand> {
+
+    Logger log = LoggerFactory.getLogger(C4BrandBasicDetailsExtractor.class);
 
     private static final String PRESENTATION_BRAND = "relation.presentationBrand";
 
@@ -71,7 +76,17 @@ public class C4BrandBasicDetailsExtractor implements ContentExtractor<Feed, Bran
 
         String presentationBrand = getPresentationBrand(source);
         if(presentationBrand != null) {
-            brand.setPresentationChannel(c4AtomApi.getChannelMap().get(presentationBrand));
+            Channel channel = c4AtomApi.getChannelMap().get(presentationBrand);
+            if (channel != null) {
+                brand.setPresentationChannel(channel);
+            } else {
+                log.warn(String.format(
+                        "Tried to set presentation channel for brand (%s), but could not find %s in"
+                        + " the channel map.",
+                        brand.getTitle(),
+                        presentationBrand
+                ));
+            }
         }
 
         C4AtomApi.addImages(brand, source.getLogo());

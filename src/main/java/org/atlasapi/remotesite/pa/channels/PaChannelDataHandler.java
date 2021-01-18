@@ -1,6 +1,8 @@
 package org.atlasapi.remotesite.pa.channels;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -67,7 +69,7 @@ public class PaChannelDataHandler {
         return false;
     };
     private static final Function<Region, String> REGION_TO_URI = Identified::getCanonicalUri;
-    private static final Joiner JOINER = Joiner.on(",");
+    private static final String RADIOTIMES_CHANNEL_GROUP_URI = "http://www.radiotimes.com/platforms/enabled_channels";
 
     private final DateTimeFormatter formatter = ISODateTimeFormat.date();
     private final PaChannelsIngester channelsIngester;
@@ -166,11 +168,17 @@ public class PaChannelDataHandler {
             );
         }
 
+        // New channels are not assigned an id until the createOrMerge() step
+        List<Channel> channelsWithIds = new ArrayList<>();
+
         // write channels
         // TODO should this be multi-threaded? is slowest part by far...
         for (Channel child : channelMap.values()) {
-            createOrMerge(child);
+            Channel createdOrMergedChannel = createOrMerge(child);
+            channelsWithIds.add(createdOrMergedChannel);
         }
+
+        updateRadioTimesChannelGroup(channelsWithIds);
     }
 
     // The custom channel groups created by BT through the channel grouping tool should contain the
@@ -239,8 +247,8 @@ public class PaChannelDataHandler {
         return allBtCustomChannelGroupsMap;
     }
 
-    private Optional<ChannelGroup> resolveChannelGroup(Long channelGroup) {
-        return channelGroupResolver.channelGroupFor(channelGroup);
+    private Optional<ChannelGroup> resolveChannelGroup(String channelGroupUri) {
+        return channelGroupResolver.channelGroupFor(channelGroupUri);
     }
 
     private boolean isCustomBtChannelGroup(ChannelGroup channelGroup) {
@@ -455,5 +463,35 @@ public class PaChannelDataHandler {
         combined.addAll(newAliases);
 
         return combined.build();
+    }
+
+    // To the best of my knowledge, the RadioTimes channel group is only used as a collection of
+    // channels in which the channel numbers are meaningless, hence why the channel numbers are just
+    // arbitrarily assigned auto-incrementing numbers, that need not persist through updates.
+    private void updateRadioTimesChannelGroup(List<Channel> channels) {
+
+        Optional<ChannelGroup> maybeChannelGroup = resolveChannelGroup(RADIOTIMES_CHANNEL_GROUP_URI);
+        if (maybeChannelGroup.isPresent()) {
+
+            ChannelGroup channelGroup = maybeChannelGroup.get();
+            channelGroup.setChannelNumberings(ImmutableSet.of());
+
+            int channelNumber = 1;
+            for (Channel channel : channels) {
+                ChannelNumbering channelNumbering = ChannelNumbering.builder()
+                        .withChannelNumber(String.valueOf(channelNumber))
+                        .withChannel(channel.getId())
+                        .withChannelGroup(channelGroup.getId())
+                        .build();
+                channelGroup.addChannelNumbering(channelNumbering);
+                channelNumber++;
+            }
+
+            channelGroupWriter.createOrUpdate(channelGroup);
+
+        } else {
+            log.warn("The RadioTimes channel group could not be resolved using uri: "
+                     + RADIOTIMES_CHANNEL_GROUP_URI + ", it will not be updated.");
+        }
     }
 }

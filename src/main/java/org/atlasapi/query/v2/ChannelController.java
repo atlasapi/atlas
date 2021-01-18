@@ -1,7 +1,9 @@
 package org.atlasapi.query.v2;
 
-import com.google.common.base.*;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -24,6 +26,7 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
@@ -36,10 +39,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.Set;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -348,22 +352,36 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         }
     }
 
+    // *************************************************************************************
+    // **************                                                        ***************
+    // **************   THESE CALLS USE AND RETURN LOWERCASE IDS ¯\_(ツ)_/¯  ***************
+    // **************                                                        ***************
+    // *************************************************************************************
+    @Nullable
     @RequestMapping(value = {"/3.0/channels.*", "/channels.*"}, method = RequestMethod.POST)
-    public void postChannel(HttpServletRequest request, HttpServletResponse response) {
-        channelWriteExecutor.postChannel(request, response);
+    public WriteResponse postChannel(HttpServletRequest request, HttpServletResponse response) {
+        return channelWriteExecutor.postChannel(request, response);
     }
 
-    @RequestMapping(value = {"/3.0/channels/updateImage"}, method = RequestMethod.POST)
-    public void createChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        channelWriteExecutor.createOrUpdateChannelImage(
+    @Nullable
+    @RequestMapping(value = {"/3.0/channels.*", "/channels.*"}, method = RequestMethod.PUT)
+    public WriteResponse putChannel(HttpServletRequest request, HttpServletResponse response) {
+        return channelWriteExecutor.putChannel(request, response);
+    }
+
+    @Nullable
+    @RequestMapping(value = {"/3.0/channels/updateImage.*"}, method = RequestMethod.POST)
+    public WriteResponse createChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return channelWriteExecutor.createOrUpdateChannelImage(
                 request,
                 response
         );
     }
 
-    @RequestMapping(value = {"/3.0/channels/updateImage"}, method = RequestMethod.DELETE)
-    public void deleteChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        channelWriteExecutor.deleteChannelImage(
+    @Nullable
+    @RequestMapping(value = {"/3.0/channels/updateImage.*"}, method = RequestMethod.DELETE)
+    public WriteResponse deleteChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return channelWriteExecutor.deleteChannelImage(
                 request,
                 response
         );

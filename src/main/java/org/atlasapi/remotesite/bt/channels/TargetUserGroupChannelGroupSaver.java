@@ -65,7 +65,9 @@ public class TargetUserGroupChannelGroupSaver extends AbstractBtChannelGroupSave
             ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
             for (Entry category : categories.getEntries()) {
                 if (TARGET_USER_GROUP.equals(category.getScheme())) {
-                    builder.put(category.getTitle(), category.getGuid());
+                    for (String mbid : category.getGuids()) {
+                        builder.put(category.getTitle(), mbid);
+                    }
                 }
             }
             labelToGuidMap = builder.build();

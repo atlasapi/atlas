@@ -1,8 +1,11 @@
 package org.atlasapi.equiv.channel;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import org.apache.commons.io.FileUtils;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.atlasapi.equiv.channel.matchers.BtChannelMatcher;
 import org.atlasapi.equiv.channel.matchers.ChannelMatcher;
 import org.atlasapi.equiv.channel.matchers.ForcedEquivChannelMatcher;
@@ -14,17 +17,16 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -35,11 +37,20 @@ public class ChannelEquivModule {
     private static final Logger log = LoggerFactory.getLogger(ChannelEquivModule.class);
     private static final String EQUIV_MAPPING_PATH = "equiv/equivList.csv";
 
+    private final Set<Publisher> BT_TARGET_PUBLISHERS = ImmutableSet.of(
+            Publisher.METABROADCAST,
+            Publisher.YOUVIEW_JSON
+    );
+
     private final Map<Publisher, ChannelMatcher> channelMatchers = ImmutableMap.of(
-            Publisher.BT_TV_CHANNELS, BtChannelMatcher.create(Publisher.BT_TV_CHANNELS),
-            Publisher.BT_TV_CHANNELS_TEST1, BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_TEST1),
-            Publisher.BT_TV_CHANNELS_TEST2, BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_TEST2),
-            Publisher.BT_TV_CHANNELS_REFERENCE, BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_REFERENCE)
+            Publisher.BT_TV_CHANNELS,
+            BtChannelMatcher.create(Publisher.BT_TV_CHANNELS, BT_TARGET_PUBLISHERS),
+            Publisher.BT_TV_CHANNELS_TEST1,
+            BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_TEST1, BT_TARGET_PUBLISHERS),
+            Publisher.BT_TV_CHANNELS_TEST2,
+            BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_TEST2, BT_TARGET_PUBLISHERS),
+            Publisher.BT_TV_CHANNELS_REFERENCE,
+            BtChannelMatcher.create(Publisher.BT_TV_CHANNELS_REFERENCE, BT_TARGET_PUBLISHERS)
             // Leave out Publisher.BARB_CHANNELS as it has a custom equiv updater so we don't want it to be auto built
     );
 
@@ -78,11 +89,14 @@ public class ChannelEquivModule {
     private EquivalenceUpdater<Channel> createUpdaterFor(Publisher publisher) {
         return SourceSpecificChannelEquivalenceUpdater.builder()
                 .forPublisher(publisher)
+                .withCandidateSources(BT_TARGET_PUBLISHERS)
                 .withChannelMatcher(channelMatchers.get(publisher))
                 .withChannelResolver(channelResolver)
                 .withChannelWriter(channelWriter)
                 .withMetadata(
-                        ChannelEquivalenceUpdaterMetadata.create(channelMatchers.get(publisher), publisher)
+                        ChannelEquivalenceUpdaterMetadata.create(
+                                channelMatchers.get(publisher),
+                                publisher)
                 )
                 .build();
     }
@@ -92,11 +106,14 @@ public class ChannelEquivModule {
 
         return BarbForcedChannelEquivalenceUpdater.create(
                 SourceSpecificChannelEquivalenceUpdater.builder()
-                    .forPublisher(Publisher.BARB_CHANNELS)
-                    .withChannelMatcher(forcedBarbMatcher)
-                    .withChannelResolver(channelResolver)
-                    .withChannelWriter(channelWriter)
-                    .withMetadata(ChannelEquivalenceUpdaterMetadata.create(forcedBarbMatcher, Publisher.BARB_CHANNELS)),
+                        .forPublisher(Publisher.BARB_CHANNELS)
+                        .withCandidateSources(ImmutableSet.of(Publisher.METABROADCAST))
+                        .withChannelMatcher(forcedBarbMatcher)
+                        .withChannelResolver(channelResolver)
+                        .withChannelWriter(channelWriter)
+                        .withMetadata(ChannelEquivalenceUpdaterMetadata.create(
+                                forcedBarbMatcher,
+                                Publisher.BARB_CHANNELS)),
                 channelResolver,
                 channelWriter,
                 barbStationCodeToUriEquivMap

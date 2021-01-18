@@ -1,14 +1,19 @@
 package org.atlasapi.remotesite.bt.channels.mpxclient;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.annotations.SerializedName;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 
 public class Entry {
+
+    private static final Splitter COMMA_SPLITTER = Splitter.on(',')
+            .trimResults()
+            .omitEmptyStrings();
 
     // required for GSON
     public Entry() {
@@ -73,8 +78,15 @@ public class Entry {
     @SerializedName("plproductmetadata$linearOutputProtection")
     private boolean hasOutputProtection;
 
-    public String getGuid() {
-        return guid;
+    //as part of ENG-955 BT can send more than one IDs in a comma separated list. These should
+    //be treated in exactly the same way we would treat 2 separate and identical entries each with
+    //its own ID. It is expected for the comma separated IDs to only come in as BT is migrating
+    //from PA to YV.
+    //GUID is where BT is actually putting MBIDs, so in this context guid and mbid are the same.
+    public List<String> getGuids() {
+        return Strings.isNullOrEmpty(guid)
+               ? ImmutableList.of()
+               : ImmutableList.copyOf(COMMA_SPLITTER.split(guid));
     }
 
     public String getScheme() {

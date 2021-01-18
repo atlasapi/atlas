@@ -851,7 +851,7 @@
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.sherlock</groupId>
-            <artifactId>client-shaded</artifactId>
+            <artifactId>client</artifactId>
             <version>1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
@@ -869,6 +869,18 @@
                 <exclusion>
                     <groupId>io.dropwizard</groupId>
                     <artifactId>dropwizard-jackson</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.metabroadcast.common</groupId>
+                    <artifactId>common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.metabroadcast.common.health</groupId>
+                    <artifactId>common-health</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.metabroadcast.common.queue</groupId>
+                    <artifactId>common-queue</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

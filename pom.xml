@@ -782,11 +782,6 @@
             <version>4.5.3</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.metabroadcast.sherlock</groupId>
             <artifactId>client-shaded</artifactId>
             <version>1.0-SNAPSHOT</version>
@@ -815,9 +810,8 @@
         <atlas.version>${project.version}</atlas.version>
         <common.version>1.0-SNAPSHOT</common.version>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
-        <jetty.version>9.4.32.v20200930</jetty.version>
+        <jetty.version>9.4.1.v20170120</jetty.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>
-        <spring.version>4.3.29.RELEASE</spring.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <sonar.jacoco.itReportPath>${project.basedir}/target/jacoco-it.exec

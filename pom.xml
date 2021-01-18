@@ -855,6 +855,18 @@
             <version>1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
+                    <groupId>com.metabroadcast.common</groupId>
+                    <artifactId>common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.metabroadcast.common.health</groupId>
+                    <artifactId>common-health</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.metabroadcast.common.queue</groupId>
+                    <artifactId>common-queue</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
                 </exclusion>

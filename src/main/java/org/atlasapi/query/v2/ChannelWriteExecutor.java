@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigInteger;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -401,9 +402,7 @@ public class ChannelWriteExecutor {
     // The merging is kept minimal for now since the only current use case is to preserve BT custom channel logos
     // and custom channel groups on api.youview.tv channels.
     private void mergeChannel(Channel newChannel, Channel existingChannel) {
-        if(existingChannel.getAllImages() != null) {
-            newChannel.setImages(mergeImages(newChannel.getAllImages(), existingChannel.getAllImages()));
-        }
+        newChannel.setImages(mergeImages(newChannel.getAllImages(), existingChannel.getAllImages()));
         if (newChannel.getChannelNumbers().isEmpty()) {
             newChannel.setChannelNumbers(existingChannel.getChannelNumbers());
         }
@@ -417,6 +416,7 @@ public class ChannelWriteExecutor {
     ) {
         Set<ImageTheme> newThemes = StreamSupport
                 .stream(newImages.spliterator(), false)
+                .filter(image -> image.getValue().getTheme() != null)
                 .map(image -> image.getValue().getTheme())
                 .collect(MoreCollectors.toImmutableSet());
 

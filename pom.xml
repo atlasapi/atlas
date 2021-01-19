@@ -839,40 +839,6 @@
             <groupId>com.metabroadcast.sherlock</groupId>
             <artifactId>client-shaded</artifactId>
             <version>1.1-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.metabroadcast.common</groupId>
-                    <artifactId>common</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.metabroadcast.common.health</groupId>
-                    <artifactId>common-health</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.metabroadcast.common.queue</groupId>
-                    <artifactId>common-queue</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.dropwizard</groupId>
-                    <artifactId>dropwizard-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.dropwizard</groupId>
-                    <artifactId>dropwizard-jackson</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
     </dependencies>

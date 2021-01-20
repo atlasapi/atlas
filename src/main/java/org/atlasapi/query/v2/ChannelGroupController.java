@@ -389,22 +389,9 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
 
         try {
             simpleChannelGroup = deserialize(new InputStreamReader(request.getInputStream()));
-
             if(idFormat.toLowerCase().equals(DEER)) {
                 convertFromDeerToOwlIds(simpleChannelGroup);
             }
-
-            if (simpleChannelGroup.getChannels() == null || simpleChannelGroup.getChannels().isEmpty()) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return error(
-                        request,
-                        response,
-                        AtlasErrorSummary.forException(new MissingArgumentException(
-                                "Channel list must not be empty"
-                        ))
-                );
-            }
-
             complexChannelGroup = complexify(simpleChannelGroup);
 
         } catch (UnrecognizedPropertyException |

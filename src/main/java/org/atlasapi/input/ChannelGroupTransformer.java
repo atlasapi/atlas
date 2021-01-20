@@ -1,6 +1,5 @@
 package org.atlasapi.input;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -11,7 +10,6 @@ import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.Platform;
 import org.atlasapi.media.channel.Region;
 import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.PublisherDetails;
 
@@ -19,7 +17,6 @@ import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.joda.time.LocalDate;
 
@@ -35,9 +32,13 @@ public class ChannelGroupTransformer implements
         ChannelGroup complex;
         if(REGION.equals(simple.getType())) {
             complex = new Region();
+            if (PLATFORM.equals(simple.getPlatform().getType())) {
+                ((Region) complex).setPlatform(transformInnerPlatform(simple.getPlatform()));
+            }
         }
         else {
             complex = new Platform();
+            ((Platform) complex).setRegions(transformInnerRegions(simple));
         }
 
         //set the fields we agreed on with BT. Check BT Channel Groups in Google Docs for more info
@@ -55,27 +56,46 @@ public class ChannelGroupTransformer implements
                 .collect(Collectors.toSet())
         );
 
-        if (complex instanceof Region) {
-            if (PLATFORM.equals(simple.getPlatform().getType())) {
-                ((Region) complex).setPlatform((Platform) transform(simple.getPlatform()));
-            }
-        }
-        else {
-            ((Platform) complex).setRegions(transformRegions(simple));
-        }
+        return complex;
+    }
+
+    private Platform transformInnerPlatform(org.atlasapi.media.entity.simple.ChannelGroup simple) {
+        Platform complex = new Platform();
+        complex.setCanonicalUri(simple.getUri());
+        complex.addTitle(simple.getTitle());
+        complex.setPublisher(extractPublisher(simple.getPublisherDetails()));
+        complex.setAliases(simple.getV4Aliases()
+                .stream()
+                .map(alias -> new Alias(alias.getNamespace(), alias.getValue()))
+                .collect(Collectors.toSet())
+        );
 
         return complex;
     }
 
-    private Iterable<Region> transformRegions(org.atlasapi.media.entity.simple.ChannelGroup simple) {
+    private Iterable<Region> transformInnerRegions(org.atlasapi.media.entity.simple.ChannelGroup simple) {
         Set<org.atlasapi.media.entity.simple.ChannelGroup> simpleRegions = simple.getRegions();
         List<Region> regions = Lists.newArrayListWithCapacity(simple.getRegions().size());
         for (org.atlasapi.media.entity.simple.ChannelGroup simpleRegion : simpleRegions) {
             if (REGION.equals(simpleRegion.getType())) {
-                regions.add((Region) transform(simpleRegion));
+                regions.add(transformInnerRegion(simpleRegion));
             }
         }
         return regions;
+    }
+
+    private Region transformInnerRegion(org.atlasapi.media.entity.simple.ChannelGroup simple) {
+        Region complex = new Region();
+        complex.setCanonicalUri(simple.getUri());
+        complex.addTitle(simple.getTitle());
+        complex.setPublisher(extractPublisher(simple.getPublisherDetails()));
+        complex.setAliases(simple.getV4Aliases()
+                .stream()
+                .map(alias -> new Alias(alias.getNamespace(), alias.getValue()))
+                .collect(Collectors.toSet())
+        );
+
+        return complex;
     }
 
     private void setChannelNumbers(

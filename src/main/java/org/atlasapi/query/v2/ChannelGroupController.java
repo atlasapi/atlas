@@ -476,8 +476,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                             channelGroupResolver.channelGroupFor(region.getUri());
                     if(innerRegionOptional.isPresent()) {
                         region.setId(idCodec.encode(BigInteger.valueOf(innerRegionOptional.get().getId())));
+                        resolvedRegions.add(region);
                     }
-                    resolvedRegions.add(region);
                 });
         simplePlatform.setRegions(resolvedRegions);
     }

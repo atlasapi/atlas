@@ -65,13 +65,13 @@ public class ChannelGroupTransformer implements
 
     private List<Long> transformInnerRegions(org.atlasapi.media.entity.simple.ChannelGroup simple) {
         Set<org.atlasapi.media.entity.simple.ChannelGroup> simpleRegions = simple.getRegions();
-        List<Long> regions = Lists.newArrayListWithCapacity(simple.getRegions().size());
-        for (org.atlasapi.media.entity.simple.ChannelGroup simpleRegion : simpleRegions) {
-            if (REGION.equals(simpleRegion.getType())) {
-                regions.add(idCodec.decode(simple.getId()).longValue());
+        List<Long> innerRegionIds = Lists.newArrayListWithCapacity(simple.getRegions().size());
+        for (org.atlasapi.media.entity.simple.ChannelGroup innerSimpleRegion : simpleRegions) {
+            if (REGION.equals(innerSimpleRegion.getType())) {
+                innerRegionIds.add(idCodec.decode(innerSimpleRegion.getId()).longValue());
             }
         }
-        return regions;
+        return innerRegionIds;
     }
 
     private void setChannelNumbers(

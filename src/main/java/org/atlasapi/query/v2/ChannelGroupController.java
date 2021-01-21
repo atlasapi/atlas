@@ -31,6 +31,7 @@ import org.atlasapi.media.channel.ChannelGroupType;
 import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.Platform;
+import org.atlasapi.media.channel.Region;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
@@ -389,6 +390,12 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
 
         try {
             simpleChannelGroup = deserialize(new InputStreamReader(request.getInputStream()));
+            if("region".equals(simpleChannelGroup.getType())) {
+                complexChannelGroup = new Region();
+            }
+            else {
+                complexChannelGroup = new Platform();
+            }
             if(idFormat.toLowerCase().equals(DEER)) {
                 convertFromDeerToOwlIds(simpleChannelGroup);
             }

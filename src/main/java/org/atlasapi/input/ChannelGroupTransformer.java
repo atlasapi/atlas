@@ -31,14 +31,16 @@ public class ChannelGroupTransformer implements
     public ChannelGroup transform(org.atlasapi.media.entity.simple.ChannelGroup simple) {
         ChannelGroup complex;
         if(REGION.equals(simple.getType())) {
-            complex = new Region();
+            Region region = new Region();
             if (PLATFORM.equals(simple.getPlatform().getType())) {
-                ((Region) complex).setPlatform(transformInnerPlatform(simple.getPlatform()));
+                region.setPlatform(idCodec.decode(simple.getPlatform().getId()).longValue());
             }
+            complex = region;
         }
         else {
-            complex = new Platform();
-            ((Platform) complex).setRegions(transformInnerRegions(simple));
+            Platform platform = new Platform();
+            platform.setRegionIds(transformInnerRegions(simple));
+            complex = platform;
         }
 
         //set the fields we agreed on with BT. Check BT Channel Groups in Google Docs for more info
@@ -59,43 +61,15 @@ public class ChannelGroupTransformer implements
         return complex;
     }
 
-    private Platform transformInnerPlatform(org.atlasapi.media.entity.simple.ChannelGroup simple) {
-        Platform complex = new Platform();
-        complex.setCanonicalUri(simple.getUri());
-        complex.addTitle(simple.getTitle());
-        complex.setPublisher(extractPublisher(simple.getPublisherDetails()));
-        complex.setAliases(simple.getV4Aliases()
-                .stream()
-                .map(alias -> new Alias(alias.getNamespace(), alias.getValue()))
-                .collect(Collectors.toSet())
-        );
-
-        return complex;
-    }
-
-    private Iterable<Region> transformInnerRegions(org.atlasapi.media.entity.simple.ChannelGroup simple) {
+    private List<Long> transformInnerRegions(org.atlasapi.media.entity.simple.ChannelGroup simple) {
         Set<org.atlasapi.media.entity.simple.ChannelGroup> simpleRegions = simple.getRegions();
-        List<Region> regions = Lists.newArrayListWithCapacity(simple.getRegions().size());
+        List<Long> regions = Lists.newArrayListWithCapacity(simple.getRegions().size());
         for (org.atlasapi.media.entity.simple.ChannelGroup simpleRegion : simpleRegions) {
             if (REGION.equals(simpleRegion.getType())) {
-                regions.add(transformInnerRegion(simpleRegion));
+                regions.add(idCodec.decode(simple.getId()).longValue());
             }
         }
         return regions;
-    }
-
-    private Region transformInnerRegion(org.atlasapi.media.entity.simple.ChannelGroup simple) {
-        Region complex = new Region();
-        complex.setCanonicalUri(simple.getUri());
-        complex.addTitle(simple.getTitle());
-        complex.setPublisher(extractPublisher(simple.getPublisherDetails()));
-        complex.setAliases(simple.getV4Aliases()
-                .stream()
-                .map(alias -> new Alias(alias.getNamespace(), alias.getValue()))
-                .collect(Collectors.toSet())
-        );
-
-        return complex;
     }
 
     private void setChannelNumbers(

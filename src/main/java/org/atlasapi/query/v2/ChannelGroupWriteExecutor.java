@@ -13,6 +13,7 @@ import org.atlasapi.media.channel.ChannelGroupStore;
 import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelStore;
+import org.atlasapi.media.channel.Platform;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;

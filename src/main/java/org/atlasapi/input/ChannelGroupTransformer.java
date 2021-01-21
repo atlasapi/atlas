@@ -32,14 +32,16 @@ public class ChannelGroupTransformer implements
         ChannelGroup complex;
         if(REGION.equals(simple.getType())) {
             Region region = new Region();
-            if (PLATFORM.equals(simple.getPlatform().getType())) {
+            if (simple.getPlatform() != null && PLATFORM.equals(simple.getPlatform().getType())) {
                 region.setPlatform(idCodec.decode(simple.getPlatform().getId()).longValue());
             }
             complex = region;
         }
         else {
             Platform platform = new Platform();
-            platform.setRegionIds(transformInnerRegions(simple));
+            if (simple.getRegions() != null && !simple.getRegions().isEmpty()) {
+                platform.setRegionIds(transformInnerRegions(simple));
+            }
             complex = platform;
         }
 

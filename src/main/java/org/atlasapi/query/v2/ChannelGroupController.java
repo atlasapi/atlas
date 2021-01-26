@@ -472,7 +472,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             if(!Strings.isNullOrEmpty(region.getId())) {
                 existingRegions.add(region);
             }
-            if (!Strings.isNullOrEmpty(region.getUri())) {
+            else if (!Strings.isNullOrEmpty(region.getUri())) {
                 Optional<ChannelGroup> innerRegionOptional =
                         channelGroupResolver.channelGroupFor(region.getUri());
                 if (innerRegionOptional.isPresent()) {

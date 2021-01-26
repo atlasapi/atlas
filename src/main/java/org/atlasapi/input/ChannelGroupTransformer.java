@@ -1,5 +1,6 @@
 package org.atlasapi.input;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,21 +17,32 @@ import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.joda.time.LocalDate;
 
 public class ChannelGroupTransformer implements
         ModelTransformer<org.atlasapi.media.entity.simple.ChannelGroup, ChannelGroup> {
 
     private static final SubstitutionTableNumberCodec idCodec = new SubstitutionTableNumberCodec();
+    public static final String REGION = "region";
+    public static final String PLATFORM = "platform";
 
     @Override
     public ChannelGroup transform(org.atlasapi.media.entity.simple.ChannelGroup simple) {
         ChannelGroup complex;
-        if("region".equals(simple.getType())) {
-            complex = new Region();
+        if(REGION.equals(simple.getType())) {
+            Region region = new Region();
+            if (simple.getPlatform() != null && PLATFORM.equals(simple.getPlatform().getType())) {
+                region.setPlatform(idCodec.decode(simple.getPlatform().getId()).longValue());
+            }
+            complex = region;
         }
         else {
-            complex = new Platform();
+            Platform platform = new Platform();
+            if (simple.getRegions() != null && !simple.getRegions().isEmpty()) {
+                platform.setRegionIds(transformInnerRegions(simple));
+            }
+            complex = platform;
         }
 
         //set the fields we agreed on with BT. Check BT Channel Groups in Google Docs for more info
@@ -49,6 +61,17 @@ public class ChannelGroupTransformer implements
         );
 
         return complex;
+    }
+
+    private List<Long> transformInnerRegions(org.atlasapi.media.entity.simple.ChannelGroup simple) {
+        Set<org.atlasapi.media.entity.simple.ChannelGroup> simpleRegions = simple.getRegions();
+        List<Long> innerRegionIds = Lists.newArrayListWithCapacity(simple.getRegions().size());
+        for (org.atlasapi.media.entity.simple.ChannelGroup innerSimpleRegion : simpleRegions) {
+            if (REGION.equals(innerSimpleRegion.getType())) {
+                innerRegionIds.add(idCodec.decode(innerSimpleRegion.getId()).longValue());
+            }
+        }
+        return innerRegionIds;
     }
 
     private void setChannelNumbers(

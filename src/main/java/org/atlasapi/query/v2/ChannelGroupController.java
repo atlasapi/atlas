@@ -1,23 +1,20 @@
 package org.atlasapi.query.v2;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.query.Selection.SelectionBuilder;
-import com.metabroadcast.common.social.exceptions.BadRequestException;
-import org.apache.commons.cli.MissingArgumentException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
+
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.application.v3.DefaultApplication;
@@ -40,6 +37,25 @@ import org.atlasapi.output.exceptions.UnauthorizedException;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.query.v2.ChannelGroupFilterer.ChannelGroupFilter;
 import org.atlasapi.query.v2.ChannelGroupFilterer.ChannelGroupFilter.ChannelGroupFilterBuilder;
+
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.query.Selection.SelectionBuilder;
+import com.metabroadcast.common.social.exceptions.BadRequestException;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,19 +64,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -389,22 +392,10 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
 
         try {
             simpleChannelGroup = deserialize(new InputStreamReader(request.getInputStream()));
-
             if(idFormat.toLowerCase().equals(DEER)) {
                 convertFromDeerToOwlIds(simpleChannelGroup);
             }
-
-            if (simpleChannelGroup.getChannels() == null || simpleChannelGroup.getChannels().isEmpty()) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return error(
-                        request,
-                        response,
-                        AtlasErrorSummary.forException(new MissingArgumentException(
-                                "Channel list must not be empty"
-                        ))
-                );
-            }
-
+            fillInInnerChannelGroupIds(simpleChannelGroup);
             complexChannelGroup = complexify(simpleChannelGroup);
 
         } catch (UnrecognizedPropertyException |
@@ -455,6 +446,58 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         return new WriteResponseWithOldIds(
                 oldFormatIdCodec.encode(BigInteger.valueOf(channelGroup.get().getId())),
                 newFormatIdCodec.encode(BigInteger.valueOf(channelGroup.get().getId())));
+    }
+
+    /** When writing ChannelGroups that have one or more ChannelGroups inside them, those inner
+     * ChannelGroups have to have IDs, otherwise the transformer/complexifier step further down fails.
+     *
+     *  This method attempts to fill in the ids by resolving the inner channelGroups using their uris.
+     *  If this inner ChannelGroup is not found by the resolver, then we remove it from inside the
+     *  initial ChannelGroup.
+     *
+     * @param simpleChannelGroup - potentially modified by this method
+     */
+    private void fillInInnerChannelGroupIds(org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup) {
+        if("platform".equals(simpleChannelGroup.getType())) {
+            fillInInnerRegionIds(simpleChannelGroup);
+        }
+        else {
+            fillInInnerPlatformId(simpleChannelGroup);
+        }
+    }
+
+    private void fillInInnerRegionIds(org.atlasapi.media.entity.simple.ChannelGroup simplePlatform) {
+        Set<org.atlasapi.media.entity.simple.ChannelGroup> existingRegions = new HashSet<>();
+        for (org.atlasapi.media.entity.simple.ChannelGroup region : simplePlatform.getRegions()) {
+            if(!Strings.isNullOrEmpty(region.getId())) {
+                existingRegions.add(region);
+            }
+            else if (!Strings.isNullOrEmpty(region.getUri())) {
+                Optional<ChannelGroup> innerRegionOptional =
+                        channelGroupResolver.channelGroupFor(region.getUri());
+                if (innerRegionOptional.isPresent()) {
+                    region.setId(idCodec.encode(BigInteger.valueOf(innerRegionOptional.get()
+                            .getId())));
+                    existingRegions.add(region);
+                }
+            }
+        }
+        simplePlatform.setRegions(existingRegions);
+    }
+
+    private void fillInInnerPlatformId(org.atlasapi.media.entity.simple.ChannelGroup simpleRegion) {
+        org.atlasapi.media.entity.simple.ChannelGroup innerPlatform = simpleRegion.getPlatform();
+        if(!Strings.isNullOrEmpty(simpleRegion.getUri())) {
+            Optional<ChannelGroup> innerPlatformOptional = channelGroupResolver.channelGroupFor(
+                    simpleRegion.getUri());
+            if(innerPlatformOptional.isPresent()) {
+                innerPlatform.setId(idCodec.encode(BigInteger.valueOf(innerPlatformOptional.get().getId())));
+                simpleRegion.setPlatform(innerPlatform);
+            }
+            else {
+                simpleRegion.setPlatform(new org.atlasapi.media.entity.simple.ChannelGroup());
+            }
+        }
     }
 
     private void convertFromDeerToOwlIds(

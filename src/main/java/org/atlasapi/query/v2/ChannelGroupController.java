@@ -467,35 +467,38 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     }
 
     private void fillInInnerRegionIds(org.atlasapi.media.entity.simple.ChannelGroup simplePlatform) {
-        Set<org.atlasapi.media.entity.simple.ChannelGroup> existingRegions = new HashSet<>();
-        for (org.atlasapi.media.entity.simple.ChannelGroup region : simplePlatform.getRegions()) {
-            if(!Strings.isNullOrEmpty(region.getId())) {
-                existingRegions.add(region);
-            }
-            else if (!Strings.isNullOrEmpty(region.getUri())) {
-                Optional<ChannelGroup> innerRegionOptional =
-                        channelGroupResolver.channelGroupFor(region.getUri());
-                if (innerRegionOptional.isPresent()) {
-                    region.setId(idCodec.encode(BigInteger.valueOf(innerRegionOptional.get()
-                            .getId())));
+        if (simplePlatform.getRegions() != null) {
+            Set<org.atlasapi.media.entity.simple.ChannelGroup> existingRegions = new HashSet<>();
+            for (org.atlasapi.media.entity.simple.ChannelGroup region : simplePlatform.getRegions()) {
+                if (!Strings.isNullOrEmpty(region.getId())) {
                     existingRegions.add(region);
+                } else if (!Strings.isNullOrEmpty(region.getUri())) {
+                    Optional<ChannelGroup> innerRegionOptional =
+                            channelGroupResolver.channelGroupFor(region.getUri());
+                    if (innerRegionOptional.isPresent()) {
+                        region.setId(idCodec.encode(BigInteger.valueOf(innerRegionOptional.get()
+                                .getId())));
+                        existingRegions.add(region);
+                    }
                 }
             }
+            simplePlatform.setRegions(existingRegions);
         }
-        simplePlatform.setRegions(existingRegions);
     }
 
     private void fillInInnerPlatformId(org.atlasapi.media.entity.simple.ChannelGroup simpleRegion) {
         org.atlasapi.media.entity.simple.ChannelGroup innerPlatform = simpleRegion.getPlatform();
-        if(!Strings.isNullOrEmpty(simpleRegion.getUri())) {
-            Optional<ChannelGroup> innerPlatformOptional = channelGroupResolver.channelGroupFor(
-                    simpleRegion.getUri());
-            if(innerPlatformOptional.isPresent()) {
-                innerPlatform.setId(idCodec.encode(BigInteger.valueOf(innerPlatformOptional.get().getId())));
-                simpleRegion.setPlatform(innerPlatform);
-            }
-            else {
-                simpleRegion.setPlatform(new org.atlasapi.media.entity.simple.ChannelGroup());
+        if (innerPlatform != null) {
+            if (!Strings.isNullOrEmpty(simpleRegion.getUri())) {
+                Optional<ChannelGroup> innerPlatformOptional = channelGroupResolver.channelGroupFor(
+                        simpleRegion.getUri());
+                if (innerPlatformOptional.isPresent()) {
+                    innerPlatform.setId(idCodec.encode(BigInteger.valueOf(innerPlatformOptional.get()
+                            .getId())));
+                    simpleRegion.setPlatform(innerPlatform);
+                } else {
+                    simpleRegion.setPlatform(new org.atlasapi.media.entity.simple.ChannelGroup());
+                }
             }
         }
     }

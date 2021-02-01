@@ -79,56 +79,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.equiv.update.tasks.ContentEquivalenceUpdateTask.SAVE_EVERY_BLOCK_SIZE;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
-import static org.atlasapi.media.entity.Publisher.AMC_EBS;
-import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
-import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
-import static org.atlasapi.media.entity.Publisher.BARB_NLE;
-import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
-import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
-import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
-import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
-import static org.atlasapi.media.entity.Publisher.BETTY;
-import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
-import static org.atlasapi.media.entity.Publisher.BT_VOD;
-import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
-import static org.atlasapi.media.entity.Publisher.C4_PRESS;
-import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
-import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
-import static org.atlasapi.media.entity.Publisher.FIVE;
-import static org.atlasapi.media.entity.Publisher.IMDB;
-import static org.atlasapi.media.entity.Publisher.IMDB_API;
-import static org.atlasapi.media.entity.Publisher.ITUNES;
-import static org.atlasapi.media.entity.Publisher.ITV;
-import static org.atlasapi.media.entity.Publisher.ITV_CPS;
-import static org.atlasapi.media.entity.Publisher.ITV_INTERLINKING;
-import static org.atlasapi.media.entity.Publisher.JUSTWATCH;
-import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
-import static org.atlasapi.media.entity.Publisher.LOVEFILM;
-import static org.atlasapi.media.entity.Publisher.NETFLIX;
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-import static org.atlasapi.media.entity.Publisher.REDBEE_MEDIA;
-import static org.atlasapi.media.entity.Publisher.ROVI_EN;
-import static org.atlasapi.media.entity.Publisher.RTE;
-import static org.atlasapi.media.entity.Publisher.TALK_TALK;
-import static org.atlasapi.media.entity.Publisher.UKTV;
-import static org.atlasapi.media.entity.Publisher.VF_AE;
-import static org.atlasapi.media.entity.Publisher.VF_BBC;
-import static org.atlasapi.media.entity.Publisher.VF_C5;
-import static org.atlasapi.media.entity.Publisher.VF_ITV;
-import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
-import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
-import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
+import static org.atlasapi.media.entity.Publisher.*;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.EXPLICIT_LOOKUP_WRITER;
 
 @Configuration
@@ -179,6 +130,8 @@ public class EquivTaskModule {
     private static final RepetitionRule TXLOGS_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(9, 0));
     private static final RepetitionRule LAYER3_TXLOGS_EQUIVALENCE_DELTA_REPETITION =
+            RepetitionRules.daily(new LocalTime(15, 0));
+    private static final RepetitionRule AE_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(15, 0));
     private static final RepetitionRule XCDMF_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.daily(new LocalTime(1, 30));
@@ -539,6 +492,30 @@ public class EquivTaskModule {
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(LAYER3_TXLOGS).withName("Layer3 TxLogs Updater"),
+                RepetitionRules.NEVER
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(AE_NETWORKS)
+                        .forLast(new Period().withDays(3))
+                        .withName("AE Delta Updater (last 72h)"),
+                AE_EQUIVALENCE_DELTA_REPETITION
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored)
+                        .forPublisher(AE_NETWORKS)
+                        .forLast(new Period().withWeeks(2))
+                        .withName("AE Delta Updater (last 2 weeks)"),
+                RepetitionRules.NEVER
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(AE_NETWORKS).withName("AE Updater"),
                 RepetitionRules.NEVER
         );
         scheduleEquivalenceJob(

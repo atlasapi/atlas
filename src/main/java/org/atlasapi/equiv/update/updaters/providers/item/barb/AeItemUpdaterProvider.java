@@ -65,15 +65,13 @@ public class AeItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                //The BarbAliasEquivalenceGeneratorAndScorer also adds a score
                                 BarbTitleMatchingItemScorer.builder()
                                         .withContentResolver(dependencies.getContentResolver())
                                         .withScoreOnPerfectMatch(Score.valueOf(4.0))
                                         .withScoreOnPartialMatch(Score.valueOf(3.0))
                                         .withScoreOnMismatch(Score.ZERO)
                                         .withContainerCacheDuration(60)
-                                        .build(),
-                                DescriptionMatchingScorer.makeItemScorer()
+                                        .build()
                         )
                 )
                 .withCombiner(

@@ -12,6 +12,8 @@ import com.google.common.collect.ImmutableBiMap;
 
 public class TieredBroadcaster {
 
+    private static final String A_AND_E_BGID = "135";
+
     private static final BiMap<String, String> tierOneBroadcasterGroups = ImmutableBiMap.<String, String>builder()
             .put("1", "nitro.bbc.co.uk")
             .put("2", "cps.itv.com")
@@ -33,6 +35,20 @@ public class TieredBroadcaster {
 
         return (publisher != null && tierOneBroadcasterGroups.containsValue(publisher.key()))
                || (bgid != null && tierOneBroadcasterGroups.containsKey(bgid));
+    }
+
+    public static boolean isTierOneOrAAndE(@Nullable Content content) {
+
+        if (content == null) {
+            return false;
+        }
+
+        Publisher publisher = content.getPublisher();
+        String bgid = content.getCustomField(TXLOG_BROADCASTER_GROUP);
+
+        return (publisher != null && tierOneBroadcasterGroups.containsValue(publisher.key()))
+                || (bgid != null && (tierOneBroadcasterGroups.containsKey(bgid)
+                    || bgid.equals(A_AND_E_BGID)));
     }
 
     public static Optional<String> getSource(String bgid) {

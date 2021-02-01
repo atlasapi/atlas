@@ -97,5 +97,6 @@ public class AeItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                         AllOverOrEqThresholdExtractor.create(5)
                 )
                 .build();
+
     }
 }

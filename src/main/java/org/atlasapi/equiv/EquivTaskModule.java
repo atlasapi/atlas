@@ -199,7 +199,7 @@ public class EquivTaskModule {
     private static final RepetitionRule JUSTWATCH_EQUIVALENCE_REPETITION =
             RepetitionRules.NEVER;
     private static final RepetitionRule JUSTWATCH_EQUIVALENCE_DELTA_REPETITION =
-            RepetitionRules.daily(new LocalTime(22, 0));
+            RepetitionRules.NEVER;
     private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;

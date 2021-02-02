@@ -280,9 +280,9 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 ? topLevelContainerCache.getUnchecked(nonTxlogItem.getContainer().getUri())
                 : Optional.empty();
 
-        if (!nonTxlogParent.isPresent()) {
-            return Optional.empty();
-        }
+//        if (!nonTxlogParent.isPresent()) {
+//            return Optional.empty();
+//        }
 
         Optional<ContentTitleMatchingFields> nonTxlogSeries = Optional.empty();
 
@@ -298,8 +298,16 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         Set<ContentTitleMatchingFields> nonTxlogAndParentFields = new HashSet<>(3);
         nonTxlogAndParentFields.add(nonTxlogItemFields);
-        nonTxlogAndParentFields.add(nonTxlogParent.get());
+        nonTxlogParent.ifPresent(nonTxlogAndParentFields::add);
         nonTxlogSeries.ifPresent(nonTxlogAndParentFields::add);
+        if (nonTxlogItem.getPublisher().equals(Publisher.AE_NETWORKS)) {
+            String seriesTitle = nonTxlogItem.getCustomField("aande:series_title");
+            nonTxlogAndParentFields.add(nonTxlogItemFields.withTitle(seriesTitle));
+        }
+
+        if (nonTxlogAndParentFields.size() <= 1) {
+            return Optional.empty();
+        }
 
         Set<Set<ContentTitleMatchingFields>> nonTxlogFieldsPowerSet = Sets.powerSet(nonTxlogAndParentFields);
 

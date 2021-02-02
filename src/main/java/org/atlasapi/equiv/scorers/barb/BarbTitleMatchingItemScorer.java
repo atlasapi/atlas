@@ -91,6 +91,12 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             "highlights"
     );
 
+    private static final String AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME = "aande:series_title";
+    //AE Networks<->Txlog specific rules
+    //Lowercase because the logic happens after converting content titles to lower case
+    private static final Pattern SERIES_AND_EPISODE_PATTERN = Pattern.compile(".*\\d+ - \\d+ -(.+)");
+    private static final Pattern THE_AT_THE_END_PATTERN = Pattern.compile("(,\\s+the$)");
+
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
     private final Score scoreOnPerfectMatch;
     private final Score scoreOnPartialMatch;
@@ -280,10 +286,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 ? topLevelContainerCache.getUnchecked(nonTxlogItem.getContainer().getUri())
                 : Optional.empty();
 
-//        if (!nonTxlogParent.isPresent()) {
-//            return Optional.empty();
-//        }
-
         Optional<ContentTitleMatchingFields> nonTxlogSeries = Optional.empty();
 
         if (nonTxlogItem instanceof Episode) {
@@ -301,7 +303,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         nonTxlogParent.ifPresent(nonTxlogAndParentFields::add);
         nonTxlogSeries.ifPresent(nonTxlogAndParentFields::add);
         if (nonTxlogItem.getPublisher().equals(Publisher.AE_NETWORKS)) {
-            String seriesTitle = nonTxlogItem.getCustomField("aande:series_title");
+            String seriesTitle = nonTxlogItem.getCustomField(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME);
             nonTxlogAndParentFields.add(nonTxlogItemFields.withTitle(seriesTitle));
         }
 
@@ -410,6 +412,15 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             ) {
                 String processedSubjectTitle = processBbcTitle(subjectTitle);
                 String processedSuggestionTitle = processBbcTitle(suggestionTitle);
+                if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
+                    subjectTitle = processedSubjectTitle;
+                    suggestionTitle = processedSuggestionTitle;
+                }
+            } else if(suggestion.getPublisher().equals(Publisher.AE_NETWORKS)
+                    || subject.getPublisher().equals(Publisher.AE_NETWORKS)
+            ) {
+                String processedSubjectTitle = processAeTitle(subjectTitle);
+                String processedSuggestionTitle = processAeTitle(suggestionTitle);
                 if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
                     subjectTitle = processedSubjectTitle;
                     suggestionTitle = processedSuggestionTitle;
@@ -648,6 +659,28 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
         title = BBC_WEEKEND_NEWS_PATTERN.matcher(title).replaceFirst(BBC_WEEKEND_NEWS_REPLACEMENT);
         return title;
+    }
+
+    /**
+     * Used for custom rules between txlogs and AE Networks
+     */
+    private String processAeTitle(String title) {
+        Matcher seriesEpisodeMatcher = SERIES_AND_EPISODE_PATTERN.matcher(title);
+        if (seriesEpisodeMatcher.find()) {
+            title = seriesEpisodeMatcher.group(1);
+        }
+        //Removes # number
+        title = title.replaceAll("#\\s*\\w+", "");
+        //Removes (number)
+        title = title.replaceAll("\\(\\d+\\)", "");
+        //Removes <copy>
+        title = title.replaceAll("<copy>", "");
+        //Places the word 'the' at the start
+        Matcher theAtTheEndMatcher = THE_AT_THE_END_PATTERN.matcher(title);
+        if (theAtTheEndMatcher.find()) {
+            title = String.format("the %s",title.trim().replaceAll(theAtTheEndMatcher.group(1), "").trim());
+        }
+        return title.trim();
     }
 
     @Override

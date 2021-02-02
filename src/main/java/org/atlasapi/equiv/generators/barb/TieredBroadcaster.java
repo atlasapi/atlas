@@ -12,14 +12,16 @@ import com.google.common.collect.ImmutableBiMap;
 
 public class TieredBroadcaster {
 
-    private static final String A_AND_E_BGID = "135";
-
     private static final BiMap<String, String> tierOneBroadcasterGroups = ImmutableBiMap.<String, String>builder()
             .put("1", "nitro.bbc.co.uk")
             .put("2", "cps.itv.com")
             .put("3", "pmlsd.channel4.com")
             .put("4", "datasubmission.channel5.com")
             .put("63", "uktv.co.uk")
+            .build();
+
+    private static final BiMap<String, String> aAndEBgidToPublisher = ImmutableBiMap.<String, String>builder()
+            .put("135", "aenetworks.co.uk")
             .build();
 
     public static final String TXLOG_BROADCASTER_GROUP = "txlog:broadcaster_group";
@@ -46,9 +48,10 @@ public class TieredBroadcaster {
         Publisher publisher = content.getPublisher();
         String bgid = content.getCustomField(TXLOG_BROADCASTER_GROUP);
 
-        return (publisher != null && tierOneBroadcasterGroups.containsValue(publisher.key()))
+        return (publisher != null && (tierOneBroadcasterGroups.containsValue(publisher.key())
+                    || aAndEBgidToPublisher.containsValue(publisher.key())))
                 || (bgid != null && (tierOneBroadcasterGroups.containsKey(bgid)
-                    || bgid.equals(A_AND_E_BGID)));
+                    || aAndEBgidToPublisher.containsKey(bgid)));
     }
 
     public static Optional<String> getSource(String bgid) {

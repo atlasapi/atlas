@@ -134,7 +134,7 @@ public class BbcIonServices {
             //       I don't think the following are required, but leaving here so the full list can be
             //       checked
             //        .put("bbc_radio_swindon", "")
-                    .put("bbc_wales", "http://www.bbc.co.uk/services/bbc_wales")
+            //        .put("bbc_wales", "")
             //        .put("bbc_weather", "")
             //        .put("bbc_webonly", "")
                     .put("bbc_world_news", "http://www.bbc.co.uk/services/bbcworldnews")

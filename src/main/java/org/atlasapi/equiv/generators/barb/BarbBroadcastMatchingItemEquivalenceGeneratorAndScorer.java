@@ -58,6 +58,7 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQua
  */
 public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
     private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
+    private static final String AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME = "aande:series_title";
 
     private final ScheduleResolver scheduleResolver;
     private final Set<Publisher> supportedPublishers;
@@ -480,6 +481,10 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
         if (subject.getContainer() != null || candidate.getContainer() != null) {
             return Objects.equals(subject.getContainer(), candidate.getContainer());
         }
+        if (subject.containsCustomFieldKey(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME) && candidate.containsCustomFieldKey(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME)) {
+            return subject.getCustomField(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME).equals(candidate.getCustomField(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME));
+        }
+
         return isRealPositiveScore(
                 titleMatchingScorer.score(
                         subject,

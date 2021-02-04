@@ -91,7 +91,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             "highlights"
     );
 
-    private static final String AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME = "aande:series_title";
+    private static final String AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME = "ae:series_title";
     private static final String TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME = "txlog:episode_title";
     //AE Networks<->Txlog specific rules
     //Lowercase because the logic happens after converting content titles to lower case

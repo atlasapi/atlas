@@ -45,6 +45,7 @@ public class BroadcastModelTransformer {
         }
         complex.setScheduleDate(simple.getScheduleDate());
         complex.setRepeat(simple.getRepeat());
+        complex.setPremiere(simple.getPremier());
         complex.setSubtitled(simple.getSubtitled());
         complex.setSigned(simple.getSigned());
         complex.setAudioDescribed(simple.getAudioDescribed());

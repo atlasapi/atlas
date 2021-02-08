@@ -39,6 +39,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_PA_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.IMDB_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.NOP_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.PA_API_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RTE_VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.RT_UPCOMING_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.STANDARD_SERIES;
@@ -59,6 +60,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ITEM_SEQUENCE;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.PA_API_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.RT_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.RT_UPCOMING_ITEM;
@@ -98,6 +100,7 @@ import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.PA;
+import static org.atlasapi.media.entity.Publisher.PA_API;
 import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
 import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
 import static org.atlasapi.media.entity.Publisher.RADIO_TIMES_UPCOMING;
@@ -177,7 +180,8 @@ public class UpdaterConfigurationRegistry {
                 makeBarbCensusConfiguration(),
                 makeBarbNleConfiguration(),
                 makeViacom18DataSubmissionConfiguration(),
-                makeVimnDataSubmissionConfiguration()
+                makeVimnDataSubmissionConfiguration(),
+                makePaApiConfiguration()
         );
 
         configurations.add(
@@ -1435,6 +1439,34 @@ public class UpdaterConfigurationRegistry {
                         ),
                         NOP_CONTAINER_HANDLER,
                         NOP_CONTAINER_MESSENGER
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makePaApiConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(PA_API)
+                .withItemEquivalenceUpdater(
+                        ImmutableMap.of(
+                                PA_API_ITEM, ImmutableSet.of(PA)
+                        ),
+                        STANDARD_ITEM_HANDLER,
+                        STANDARD_ITEM_MESSENGER
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                PA_API_CONTAINER, ImmutableSet.of(PA)
+                        ),
+                        STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER,
+                        STANDARD_CONTAINER_MESSENGER
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                IMDB_PA_SERIES, ImmutableSet.of(PA),
+                                IMDB_SERIES, ImmutableSet.of(AMAZON_UNBOX, JUSTWATCH)
+                        ),
+                        STANDARD_NO_EPISODE_MATCHING_CONTAINER_HANDLER,
+                        STANDARD_CONTAINER_MESSENGER
                 )
                 .build();
     }

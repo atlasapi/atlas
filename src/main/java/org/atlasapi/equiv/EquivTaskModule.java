@@ -110,6 +110,7 @@ import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.PA;
+import static org.atlasapi.media.entity.Publisher.PA_API;
 import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
 import static org.atlasapi.media.entity.Publisher.REDBEE_MEDIA;
 import static org.atlasapi.media.entity.Publisher.ROVI_EN;
@@ -200,6 +201,11 @@ public class EquivTaskModule {
             RepetitionRules.NEVER;
     private static final RepetitionRule JUSTWATCH_EQUIVALENCE_DELTA_REPETITION =
             RepetitionRules.NEVER;
+    private static final RepetitionRule PA_API_EQUIVALENCE_REPETITION =
+            RepetitionRules.NEVER;
+    private static final RepetitionRule PA_API_EQUIVALENCE_DELTA_REPETITION =
+            RepetitionRules.NEVER;
+
     private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
@@ -703,6 +709,22 @@ public class EquivTaskModule {
                         .forLast(new Period().withDays(3))
                         .withName("JustWatch Delta Updater (last 72h)"),
                 JUSTWATCH_EQUIVALENCE_DELTA_REPETITION
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(PA_API).withName("PA API Updater"),
+                PA_API_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                new DeltaContentEquivalenceUpdateTask(
+                        contentFinder,
+                        RecoveringEquivalenceUpdater.create(contentResolver, equivUpdater),
+                        ignored
+                )
+                        .forPublisher(PA_API)
+                        .forLast(new Period().withDays(3))
+                        .withName("PA API Delta Updater (last 72h)"),
+                PA_API_EQUIVALENCE_DELTA_REPETITION
         );
     }
 

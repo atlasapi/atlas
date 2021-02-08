@@ -27,6 +27,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.barb.BbcRegionalTxlogIt
 import org.atlasapi.equiv.update.updaters.providers.item.barb.BbcTxlogsItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.barb.TxlogsItemUpdaterProvider;
 import org.atlasapi.equiv.utils.imdb.ImdbEquivUtils;
+import org.atlasapi.equiv.utils.pa.PaApiEquivUtils;
 import org.atlasapi.media.entity.Item;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -102,6 +103,13 @@ public enum ItemEquivalenceUpdaterType {
             AliasItemUpdaterProvider.create(
                     ImmutableSet.of(
                             ImdbEquivUtils.IMDB_ALIAS_NAMESPACES
+                    )
+            )
+    ),
+    PA_API_ITEM(
+            AliasItemUpdaterProvider.create(
+                    ImmutableSet.of(
+                            PaApiEquivUtils.PA_LEGACY_ID_ALIAS_NAMESPACES
                     )
             )
     ),

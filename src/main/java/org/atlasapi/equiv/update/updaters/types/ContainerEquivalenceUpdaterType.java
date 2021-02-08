@@ -20,6 +20,7 @@ import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbPaContain
 import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbPaSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.imdb.ImdbSeriesUpdaterProvider;
 import org.atlasapi.equiv.utils.imdb.ImdbEquivUtils;
+import org.atlasapi.equiv.utils.pa.PaApiEquivUtils;
 import org.atlasapi.media.entity.Container;
 
 import com.google.common.collect.ImmutableSet;
@@ -83,6 +84,18 @@ public enum ContainerEquivalenceUpdaterType {
     ),
     IMDB_PA_SERIES(
             ImdbPaSeriesUpdaterProvider.create()
+    ),
+    PA_API_CONTAINER(
+            PaApiContainerUpdaterProvider.create(
+                    ImmutableSet.of(
+                            PaApiEquivUtils.PA_LEGACY_ID_ALIAS_NAMESPACES
+                    ))
+    ),
+    PA_API_SERIES(
+            PaApiSeriesUpdaterProvider.create(
+                    ImmutableSet.of(
+                            PaApiEquivUtils.PA_LEGACY_ID_ALIAS_NAMESPACES
+                    ))
     ),
     ;
 

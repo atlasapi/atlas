@@ -109,7 +109,7 @@ public enum ItemEquivalenceUpdaterType {
     PA_API_ITEM(
             AliasItemUpdaterProvider.create(
                     ImmutableSet.of(
-                            PaApiEquivUtils.PA_LEGACY_ID_ALIAS_NAMESPACES
+                            PaApiEquivUtils.ITEM_LEGACY_PA_ID_ALIAS_NAMESPACES
                     )
             )
     ),

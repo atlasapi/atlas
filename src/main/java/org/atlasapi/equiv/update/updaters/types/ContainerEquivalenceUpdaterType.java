@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.update.updaters.types;
 
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.AliasContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BroadcastItemContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BtVodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.FacebookContainerUpdaterProvider;
@@ -86,15 +87,15 @@ public enum ContainerEquivalenceUpdaterType {
             ImdbPaSeriesUpdaterProvider.create()
     ),
     PA_API_CONTAINER(
-            PaApiContainerUpdaterProvider.create(
+            AliasContainerUpdaterProvider.create(
                     ImmutableSet.of(
-                            PaApiEquivUtils.PA_LEGACY_ID_ALIAS_NAMESPACES
+                            PaApiEquivUtils.ITEM_LEGACY_PA_ID_ALIAS_NAMESPACES
                     ))
     ),
     PA_API_SERIES(
-            PaApiSeriesUpdaterProvider.create(
+            AliasContainerUpdaterProvider.create(
                     ImmutableSet.of(
-                            PaApiEquivUtils.PA_LEGACY_ID_ALIAS_NAMESPACES
+                            PaApiEquivUtils.ITEM_LEGACY_PA_ID_ALIAS_NAMESPACES
                     ))
     ),
     ;

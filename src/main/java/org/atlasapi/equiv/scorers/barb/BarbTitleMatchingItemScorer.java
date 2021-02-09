@@ -355,12 +355,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             if (nonTxlogFieldsSubset.isEmpty()) {
                 continue;
             }
-            if (nonTxlogFieldsSubset.size() == 1) {
-                ContentTitleMatchingFields onlyElement = Iterables.getOnlyElement(nonTxlogFieldsSubset);
-                if (onlyElement == nonTxlogItemFields) { //this was checked earlier for efficiency
-                    continue;
-                }
-            }
             Collection<List<ContentTitleMatchingFields>> nonTxlogFieldsPermutations =
                     Collections2.permutations(nonTxlogFieldsSubset);
 

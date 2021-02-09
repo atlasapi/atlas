@@ -62,6 +62,10 @@ public class PaHelper {
     public static Alias getSeriesAlias(String id, String seriesNumber) {
         return new Alias(PA_BASE_ALIAS + "series", id + "-" + seriesNumber);
     }
+
+    public static Alias getSeriesAlias(String id) {
+        return new Alias(PA_BASE_ALIAS + "series", id);
+    }
     
     public static String getEpisodeCurie(String id) {
         return "pa:e-" + id;

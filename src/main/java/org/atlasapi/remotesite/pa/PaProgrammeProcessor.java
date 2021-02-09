@@ -546,10 +546,18 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                 progData.getSeriesId(),
                 progData.getSeriesNumber()
         );
-        Alias seriesAlias = PaHelper.getSeriesAlias(
-                progData.getSeriesId(),
-                progData.getSeriesNumber()
-        );
+
+        Alias seriesAlias;
+        // pa series <=> to atlas brand, so we need season.id NOT series.id. Related to ENG-979
+        if (progData.getSeason() != null && !Strings.isNullOrEmpty(progData.getSeason().getId())) {
+            seriesAlias = PaHelper.getSeriesAlias(progData.getSeason().getId());
+        }
+        else {
+            seriesAlias = PaHelper.getSeriesAlias(
+                    progData.getSeriesId(),     // this is actually the brand id?
+                    progData.getSeriesNumber()
+            );
+        }
 
         Maybe<Identified> possiblePrevious = contentResolver.findByCanonicalUris(
                 ImmutableList.of(seriesUri)

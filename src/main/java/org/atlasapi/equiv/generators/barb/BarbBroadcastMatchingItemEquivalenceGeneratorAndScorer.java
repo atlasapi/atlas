@@ -58,7 +58,7 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.hasQua
  */
 public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
     private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
-    private static final String AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME = "aande:series_title";
+    private static final String AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME = "ae:series_title";
 
     private final ScheduleResolver scheduleResolver;
     private final Set<Publisher> supportedPublishers;

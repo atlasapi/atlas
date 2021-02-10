@@ -89,13 +89,13 @@ public enum ContainerEquivalenceUpdaterType {
     PA_API_CONTAINER(
             AliasContainerUpdaterProvider.create(
                     ImmutableSet.of(
-                            PaApiEquivUtils.ITEM_LEGACY_PA_ID_ALIAS_NAMESPACES
+                            PaApiEquivUtils.CONTAINER_LEGACY_PA_ID_ALIAS_NAMESPACES
                     ))
     ),
     PA_API_SERIES(
             AliasContainerUpdaterProvider.create(
                     ImmutableSet.of(
-                            PaApiEquivUtils.ITEM_LEGACY_PA_ID_ALIAS_NAMESPACES
+                            PaApiEquivUtils.SERIES_LEGACY_PA_ID_ALIAS_NAMESPACES
                     ))
     ),
     ;

@@ -72,6 +72,9 @@ public class BarbTitleMatchingItemScorerTest {
         assertTxlogAeScore("There's a New Team in Town - Part Two", "There's A New Team In Town - Part 2 #175B", scoreOnMatch);
         assertTxlogAeScore("Seth v Rich", "Seth Vs. Rich # 11", scoreOnMatch);
         assertTxlogAeScore("Everyone's Replaceable - Even Abby", "Everyone's Replaceable...Even Abby #176", scoreOnMatch);
+        assertTxlogAeScore("A New Baby Born And Love All Around! - Part Two", "A New Baby Born and Love All Around Part 2", scoreOnMatch);
+        assertTxlogAeScore("The Drone Wars", "Storage Wars 2 - 2 - Drone Wars 24, The", scoreOnMatch);
+        assertTxlogAeScore("Senior Centre Showdown", "Storage Wars 1 - 1 - Senior Center Showdown", scoreOnMatch);
     }
 
     @Test

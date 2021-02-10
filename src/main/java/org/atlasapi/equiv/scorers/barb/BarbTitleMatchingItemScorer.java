@@ -97,6 +97,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     //Lowercase because the logic happens after converting content titles to lower case
     private static final Pattern SERIES_AND_EPISODE_PATTERN = Pattern.compile(".*\\d+ - \\d+ -(.+)");
     private static final Pattern THE_AT_THE_END_PATTERN = Pattern.compile("(,\\s+the$)");
+    private static final Pattern PART_PATTERN = Pattern.compile("(part\\s*\\d+)");
 
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
     private final Score scoreOnPerfectMatch;
@@ -694,6 +695,18 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (theAtTheEndMatcher.find()) {
             title = String.format("the %s",title.trim().replaceAll(theAtTheEndMatcher.group(1), "").trim());
         }
+        title = title.replaceAll("[!-]+", "");
+
+        Matcher partMatcher = PART_PATTERN.matcher(title);
+        String partNumber = "";
+        if (partMatcher.find()) {
+            partNumber = partMatcher.group(1);
+            title = title.trim().replaceAll(partMatcher.group(1), "").trim();
+        }
+
+        title = title.replaceAll("[\\d]", "").trim();
+        title  = title + " " + partNumber;
+        title = title.replaceAll("\\s\\s+", " ");
         return title.trim();
     }
 

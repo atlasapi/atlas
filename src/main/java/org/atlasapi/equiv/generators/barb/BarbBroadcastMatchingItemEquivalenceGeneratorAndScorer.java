@@ -206,7 +206,7 @@ public class BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer implements E
                         candidateItemArray,
                         subject,
                         subjectBroadcast,
-                        nopDesc
+                        desc
                 );
                 if (candidateItemIndex < 0) {
                     desc.appendText("Could not find any suitable candidate in the schedule");

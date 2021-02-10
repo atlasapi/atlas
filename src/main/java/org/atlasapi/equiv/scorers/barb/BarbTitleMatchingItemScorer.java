@@ -406,7 +406,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title so scored %s", score);
             } else {
-                score = scoreContent(subject, suggestion);
+                score = scoreContent(subject, suggestion, desc, true);
                 desc.appendText("%s: %s", score, suggestion.getTitle());
             }
         }
@@ -414,7 +414,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    private Score scoreContent(ContentTitleMatchingFields subject, ContentTitleMatchingFields suggestion) {
+    private Score scoreContent(ContentTitleMatchingFields subject, ContentTitleMatchingFields suggestion, ResultDescription desc, boolean b) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 
@@ -469,6 +469,8 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (subjectType == suggestionType) {
             subjectTitle = removePostfix(subjectTitle, subject.getYear());
             suggestionTitle = removePostfix(suggestionTitle, suggestion.getYear());
+            desc.appendText("Subject title: %s", subject.getTitle());
+            desc.appendText("Suggestion title: %s", suggestion.getTitle());
             return compareTitles(subjectTitle, suggestionTitle);
         }
 

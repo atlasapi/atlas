@@ -15,7 +15,6 @@ import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
-import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Episode;
@@ -186,19 +185,13 @@ public class SoleCandidateTitleMatchingScorer<T extends Content> implements Equi
     }
 
     public static boolean isTopLevelContent(Content content) {
-        if(content instanceof Item) {
-            if (content instanceof Episode) {
-                return false;
-            }
-            if (((Item) content).getContainer() != null) {
-                return false;
-            }
-        } else if(content instanceof Container) {
-            if (content instanceof Series) {
-                if (((Series) content).getParent() != null) {
-                    return false;
-                }
-            }
+        if (content instanceof Episode) {
+            Episode episode = (Episode) content;
+            return episode.getContainer() == null && episode.getSeriesRef() == null;
+        } else if (content instanceof Item) {
+            return ((Item) content).getContainer() == null;
+        } else if (content instanceof Series) {
+            return ((Series) content).getParent() == null;
         }
         return true;
     }

@@ -2,6 +2,7 @@ package org.atlasapi.equiv.update.updaters.providers.item.barb;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import org.atlasapi.equiv.generators.aenetworks.AeBroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer;
@@ -11,6 +12,7 @@ import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.*;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
+import org.atlasapi.equiv.scorers.aenetworks.AeTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.barb.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
@@ -42,7 +44,7 @@ public class AeItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
-                                BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer.builder()
+                                AeBroadcastMatchingItemEquivalenceGeneratorAndScorer.builder()
                                         .withScheduleResolver(dependencies.getScheduleResolver())
                                         .withChannelResolver(dependencies.getChannelResolver())
                                         .withSupportedPublishers(targetPublishers)
@@ -51,21 +53,12 @@ public class AeItemUpdaterProvider implements EquivalenceResultUpdaterProvider<I
                                         .withShortBroadcastFlexibility(Duration.standardMinutes(10))
                                         .withShortBroadcastMaxDuration(Duration.standardMinutes(10))
                                         .withScoreOnMatch(Score.valueOf(2.0))
-                                        .withTitleMatchingScorer(
-                                                BarbTitleMatchingItemScorer.builder()
-                                                        .withContentResolver(dependencies.getContentResolver())
-                                                        .withScoreOnMismatch(Score.nullScore())
-                                                        .withScoreOnPartialMatch(Score.nullScore())
-                                                        .withScoreOnPerfectMatch(Score.ONE)
-                                                        .withContainerCacheDuration(60)
-                                                        .build()
-                                        )
                                         .build()
                         )
                 )
                 .withScorers(
                         ImmutableSet.of(
-                                BarbTitleMatchingItemScorer.builder()
+                                AeTitleMatchingItemScorer.builder()
                                         .withContentResolver(dependencies.getContentResolver())
                                         .withScoreOnPerfectMatch(Score.valueOf(4.0))
                                         .withScoreOnPartialMatch(Score.valueOf(3.0))

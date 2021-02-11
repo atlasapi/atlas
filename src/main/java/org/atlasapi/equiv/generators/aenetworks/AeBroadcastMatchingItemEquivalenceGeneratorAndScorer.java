@@ -5,9 +5,7 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
-import org.atlasapi.equiv.generators.aenetworks.TieredBroadcaster;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.results.description.NopDescription;
@@ -15,7 +13,6 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.scorers.aenetworks.AeTitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.barb.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResult;
@@ -36,12 +33,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.*;
 
-/**
- * This is a heavily adapted take on {@link BroadcastMatchingItemEquivalenceGeneratorAndScorer}.
- */
 public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
     private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
-    private static final String AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME = "ae:series_title";
 
     private final ScheduleResolver scheduleResolver;
     private final Set<Publisher> supportedPublishers;
@@ -99,14 +92,12 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
         int totalBroadcasts = 0;
 
         for (Version version : subject.getVersions()) {
-            int broadcastCount = version.getBroadcasts().size();
             for (Broadcast broadcast : version.getBroadcasts()) {
                 totalBroadcasts++;
                 if (broadcast.isActivelyPublished() && broadcastFilter.test(broadcast)) {
                     processedBroadcasts++;
                     findMatchesForBroadcast(
                             scores,
-                            subject,
                             broadcast,
                             subject.getPublisher(),
                             validPublishers,
@@ -133,14 +124,10 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
     }
 
     /**
-     * Resolves the subject's schedule and the candidate schedules for the given subject's broadcast; for each candidate
-     * schedule finds the block of similar episodes which contains a broadcast within the specified flexibility to the
-     * subject broadcast. Compares this block with the block containing the subject episode and if the same size will
-     * generate and score the candidate whose position in the block is the same as the subject within its block.
+     * Resolves the subject's schedule and the candidate schedules for the given subject's broadcast.
      */
     private void findMatchesForBroadcast(
             DefaultScoredCandidates.Builder<Item> scores,
-            Item subject,
             Broadcast subjectBroadcast,
             Publisher subjectPublisher,
             Set<Publisher> validPublishers,
@@ -185,28 +172,14 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
                 Item[] candidateItemArray = publisherItems.get(publisher).toArray(new Item[0]);
                 int candidateItemIndex = findClosestCandidateInSchedule(
                         candidateItemArray,
-                        subject,
                         subjectBroadcast,
-                        desc
+                        nopDesc
                 );
                 if (candidateItemIndex < 0) {
                     desc.appendText("Could not find any suitable candidate in the schedule");
                     desc.finishStage();
                     continue;
                 }
-
-//                Optional<Item> foundCandidate = checkBlocksAndDetermineCandidate(
-//                        subjectItemArray,
-//                        subjectItemIndex,
-//                        candidateItemArray,
-//                        candidateItemIndex,
-//                        nopDesc
-//                );
-//                if (!foundCandidate.isPresent()) {
-//                    desc.appendText("Could not determine candidate from schedule");
-//                    desc.finishStage();
-//                    continue;
-//                }
 
                 Item candidate = candidateItemArray[candidateItemIndex];
                 if (candidate.isActivelyPublished()) {
@@ -298,12 +271,10 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
 
     /**
      * Find the Item whose schedule slot start time is closest to the subject broadcast's start time which satisfies
-     * the specified broadcast flexibility and has the same title as the subject as determined by the title matching
-     * scorer.
+     * the specified broadcast flexibility.
      */
     private int findClosestCandidateInSchedule(
             Item[] scheduleItems,
-            Item subject,
             Broadcast subjectBroadcast,
             ResultDescription desc
     ) {
@@ -336,7 +307,6 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
             if (shorterOffset && withinFlexibility) {
                 shortestDurationOffset = offset;
                 bestCandidateFound = i;
-
             }
         }
         return bestCandidateFound;
@@ -370,109 +340,6 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
         }
         return broadcastFlexibility;
     }
-
-//    /**
-//     * Determines the start and end of the block of similar episodes containing the subject and candidate;
-//     * If the block sizes are the same and do not extend past the corresponding list of schedule items the candidate
-//     * item is returned that is in the same position within its block as the subject is in its. Otherwise no item is
-//     * returned.
-//     */
-//    private Optional<Item> checkBlocksAndDetermineCandidate(
-//            Item[] subjectItemArray,
-//            int subjectItemPosition,
-//            Item[] candidateItemArray,
-//            int candidateItemPosition,
-//            ResultDescription desc
-//    ) {
-//        Item subject = subjectItemArray[subjectItemPosition];
-//        Item possibleCandidate = candidateItemArray[candidateItemPosition];
-//
-//        int subjectPreviousBlockEnd = subjectItemPosition - 1;
-//        while (subjectPreviousBlockEnd >= 0
-//                && similarEpisodes(
-//                subject,
-//                subjectItemArray[subjectPreviousBlockEnd],
-//                desc
-//        )
-//        ) {
-//            subjectPreviousBlockEnd--;
-//        }
-//
-//        int candidatePreviousBlockEnd = candidateItemPosition - 1;
-//        while (candidatePreviousBlockEnd >= 0
-//                && similarEpisodes(
-//                possibleCandidate,
-//                candidateItemArray[candidatePreviousBlockEnd],
-//                desc
-//        )
-//        ) {
-//            candidatePreviousBlockEnd--;
-//        }
-//
-//        if ((subjectPreviousBlockEnd < 0 || candidatePreviousBlockEnd < 0)) {
-//            return Optional.empty();
-//        }
-//
-//        int subjectNextBlockStart = subjectItemPosition + 1;
-//        while (subjectNextBlockStart < subjectItemArray.length
-//                && similarEpisodes(
-//                subject,
-//                subjectItemArray[subjectNextBlockStart],
-//                desc
-//        )
-//        ) {
-//            subjectNextBlockStart++;
-//        }
-//
-//        int candidateNextBlockStart = candidateItemPosition + 1;
-//        while (candidateNextBlockStart < candidateItemArray.length
-//                && similarEpisodes(
-//                possibleCandidate,
-//                candidateItemArray[candidateNextBlockStart],
-//                desc
-//        )
-//        ) {
-//            candidateNextBlockStart++;
-//        }
-//
-//        if (subjectNextBlockStart >= subjectItemArray.length
-//                || candidateNextBlockStart >= candidateItemArray.length) {
-//            return Optional.empty();
-//        }
-//
-//        int subjectBlockDifference = subjectNextBlockStart - subjectPreviousBlockEnd;
-//        int candidateBlockDifference = candidateNextBlockStart - candidatePreviousBlockEnd;
-//
-//        if (subjectBlockDifference != candidateBlockDifference) {
-//            return Optional.empty();
-//        }
-//
-//        int subjectPositionInBlock = subjectItemPosition - subjectPreviousBlockEnd; //1-indexed
-//        int foundCandidatePosition = candidatePreviousBlockEnd + subjectPositionInBlock;
-//
-//        return Optional.of(candidateItemArray[foundCandidatePosition]);
-//    }
-//
-//    private boolean isRealPositiveScore(Score score) {
-//        return score.isRealScore() && score.asDouble() > 0D;
-//    }
-
-//    private boolean similarEpisodes(Item subject, Item candidate, ResultDescription desc) {
-//        if (subject.getContainer() != null || candidate.getContainer() != null) {
-//            return Objects.equals(subject.getContainer(), candidate.getContainer());
-//        }
-//        if (subject.containsCustomFieldKey(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME) && candidate.containsCustomFieldKey(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME)) {
-//            return subject.getCustomField(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME).equals(candidate.getCustomField(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME));
-//        }
-//
-//        return isRealPositiveScore(
-//                titleMatchingScorer.score(
-//                        subject,
-//                        candidate,
-//                        desc
-//                )
-//        );
-//    }
 
     @Override
     public String toString() {

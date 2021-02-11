@@ -42,12 +42,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final Logger log = LoggerFactory.getLogger(AeTitleMatchingItemScorer.class);
 
     public static final String NAME = "A+E-Title";
-    private static final ImmutableSet<String> PREFIXES = ImmutableSet.of(
-            "the ", "live ", "film:", "new:", "live:"
-    );
-    private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(unrated\\)", "\\(rated\\)");
     private static final Pattern TRAILING_YEAR_PATTERN = Pattern.compile("^(.*)\\(\\d{4}\\)$");
-    private static final Pattern GENERIC_TITLE_PATTERN = Pattern.compile("^(([Ss]eries)|([Ee]pisode)) \\d+$");
 
     private static final Joiner TITLE_PERMUTATION_JOINER = Joiner.on('-').skipNulls();
 
@@ -334,15 +329,6 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     continue;
                 }
 
-                if (titles.size() == 1) {
-                    // Ignore cases where one of the permutations is just "Series X" or "Episode X" just in case these
-                    // could cause some false positives.
-                    Matcher genericTitlePatternMatcher = GENERIC_TITLE_PATTERN.matcher(Iterables.getOnlyElement(titles));
-                    if (genericTitlePatternMatcher.matches()) {
-                        continue;
-                    }
-                }
-
                 String concatenatedTitle = TITLE_PERMUTATION_JOINER.join(titles);
 
                 // Copy the existing item fields object with a new title as if it were the title of the item.
@@ -371,7 +357,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title so scored %s", score);
             } else {
-                score = scoreContent(subject, suggestion, desc, true);
+                score = scoreContent(subject, suggestion);
                 desc.appendText("%s: %s", score, suggestion.getTitle());
             }
         }
@@ -379,7 +365,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    private Score scoreContent(ContentTitleMatchingFields subject, ContentTitleMatchingFields suggestion, ResultDescription desc, boolean b) {
+    private Score scoreContent(ContentTitleMatchingFields subject, ContentTitleMatchingFields suggestion) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 
@@ -423,10 +409,6 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
 
         if (subjectType == suggestionType) {
-            subjectTitle = removePostfix(subjectTitle, subject.getYear());
-            suggestionTitle = removePostfix(suggestionTitle, suggestion.getYear());
-            desc.appendText("Subject title: %s", subject.getTitle());
-            desc.appendText("Suggestion title: %s", suggestion.getTitle());
             return compareTitles(subjectTitle, suggestionTitle);
         }
 
@@ -441,38 +423,15 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return suggestionTitle;
     }
 
-    private String removePostfix(String title, @Nullable Integer year) {
-        String removedYear = removeYearFromTitle(title, year);
-        return removeRatings(removedYear).trim();
-    }
-
-    private String removeRatings(String title) {
-        for (String postfix : POSTFIXES) {
-            title = title.replaceAll(postfix, "");
-        }
-        return title;
-    }
-
-    private String removeYearFromTitle(String title, @Nullable Integer year) {
-
-        if (year != null) {
-            return title.replaceAll("\\(" + year + "\\)", "");
-        } else {
-            return title;
-        }
-    }
-
     private Score compareTitles(final String subjectTitle, final String suggestionTitle) {
         boolean matches;
         String subjTitle = normalize(subjectTitle);
         String suggTitle = normalize(suggestionTitle);
 
         if (appearsToBeWithApostrophe(subjectTitle)) {
-            String regexp = normalizeRegularExpression(subjectTitle);
-            matches = Pattern.matches(regexp, suggTitle);
+            matches = Pattern.matches(subjectTitle, suggTitle);
         } else if (appearsToBeWithApostrophe(suggestionTitle)) {
-            String regexp = normalizeRegularExpression(suggestionTitle);
-            matches = Pattern.matches(regexp, subjTitle);
+            matches = Pattern.matches(suggestionTitle, subjTitle);
         } else {
             matches = matchWithoutDashes(subjTitle, suggTitle) || subjTitle.equals(suggTitle);
         }
@@ -526,12 +485,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private String normalizeWithoutReplacing(String title) {
         String withoutSequencePrefix = removeSequencePrefix(title).trim();
         String expandedTitle = titleExpander.expand(withoutSequencePrefix).trim();
-        String withoutCommonPrefixes = removeCommonPrefixes(expandedTitle).trim();
-        return StringUtils.stripAccents(withoutCommonPrefixes);
-    }
-
-    private String normalizeRegularExpression(String title) {
-        return regularExpressionReplaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title)));
+        return StringUtils.stripAccents(expandedTitle);
     }
 
     private boolean appearsToBeWithApostrophe(String title) {
@@ -555,53 +509,6 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 .replace("'", "")
                 .replace(" ", "-");
 
-    }
-
-    private String regularExpressionReplaceSpecialChars(String title) {
-        return applyCommonReplaceRules(title)
-                .replaceAll("[^A-Za-z0-9\\s']+", "-")
-                .replace(" ", "\\-")
-                .replaceAll("'\\\\-", "(\\\\w+|\\\\W*)\\-");
-    }
-
-    private String removeCommonPrefixes(String title) {
-        return removePrefixes(title, PREFIXES);
-    }
-
-    private String removePrefixes(String title, Set<String> prefixes) {
-        String remainingTitle = title;
-        boolean removedAtLeastOne;
-        do {
-            removedAtLeastOne = false;
-            for (String prefix : prefixes) {
-                if (remainingTitle.length() > prefix.length() && remainingTitle.startsWith(prefix)) {
-                    remainingTitle = remainingTitle.substring(prefix.length()).trim();
-                    removedAtLeastOne = true;
-                    break;
-                }
-            }
-        }
-        while (removedAtLeastOne);
-
-        return remainingTitle;
-    }
-
-    private String removeSuffixes(String title, Set<String> suffixes) {
-        String remainingTitle = title;
-        boolean removedAtLeastOne;
-        do {
-            removedAtLeastOne = false;
-            for (String suffix : suffixes) {
-                if (remainingTitle.length() > suffix.length() && remainingTitle.endsWith(suffix)) {
-                    remainingTitle = remainingTitle.substring(0, remainingTitle.length() - suffix.length()).trim();
-                    removedAtLeastOne = true;
-                    break;
-                }
-            }
-        }
-        while (removedAtLeastOne);
-
-        return remainingTitle;
     }
 
     private boolean matchWithoutDashes(String subject, String suggestion) {
@@ -635,17 +542,21 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (theAtTheEndMatcher.find()) {
             title = String.format("the %s",title.trim().replaceAll(theAtTheEndMatcher.group(1), "").trim());
         }
+        //Removes ! and -
         title = title.replaceAll("[!-]+", "");
 
+        //Checks if contains 'part #'
         Matcher partMatcher = PART_PATTERN.matcher(title);
         String partNumber = "";
         if (partMatcher.find()) {
             partNumber = partMatcher.group(1);
             title = title.trim().replaceAll(partMatcher.group(1), "").trim();
         }
-
+        //Removes all numbers
         title = title.replaceAll("[\\d]", "").trim();
+        //Adds 'part #'
         title  = title + " " + partNumber;
+        //Removes more than one spaces
         title = title.replaceAll("\\s\\s+", " ");
         return title.trim();
     }

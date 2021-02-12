@@ -1,26 +1,19 @@
-package org.atlasapi.equiv.update.updaters.providers.item.barb;
+package org.atlasapi.equiv.update.updaters.providers.item.aenetworks;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.generators.aenetworks.AeBroadcastMatchingItemEquivalenceGeneratorAndScorer;
-import org.atlasapi.equiv.generators.barb.BarbAliasEquivalenceGeneratorAndScorer;
-import org.atlasapi.equiv.generators.barb.BarbBbcActualTransmissionItemEquivalenceGeneratorAndScorer;
-import org.atlasapi.equiv.generators.barb.BarbBroadcastMatchingItemEquivalenceGeneratorAndScorer;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
-import org.atlasapi.equiv.results.extractors.AllOverOrEqHighestNonEmptyThresholdExtractor;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.*;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.aenetworks.AeTitleMatchingItemScorer;
-import org.atlasapi.equiv.scorers.barb.BarbTitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceResultUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceResultUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import org.joda.time.Duration;
 
 import java.util.Set;

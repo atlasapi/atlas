@@ -19,6 +19,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.VodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.aenetworks.AeItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToAmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.barb.*;

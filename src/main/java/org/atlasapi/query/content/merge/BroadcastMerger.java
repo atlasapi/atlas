@@ -179,7 +179,7 @@ public class BroadcastMerger {
 
             checkNotNull(from);
             checkNotNull(to);
-            checkArgument(from.isBefore(to));
+            checkArgument(from.isBefore(to) || from.isEqual(to));
 
             this.interval = new Interval(from, to);
         }

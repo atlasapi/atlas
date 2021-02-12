@@ -54,6 +54,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final int TXLOG_TITLE_LENGTH = 40;
 
     private static final String AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME = "ae:series_title";
+    private static final String AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME = "ae:episode_number";
     private static final String TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME = "txlog:episode_title";
     //AE Networks<->Txlog specific rules
     //Lowercase because the logic happens after converting content titles to lower case
@@ -210,7 +211,9 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         );
         Score equivScore = scoreContent(
                 new ContentTitleMatchingFields(subject),
+                subject.getCustomFields(),
                 new ContentTitleMatchingFields(suggestion),
+                suggestion.getCustomFields(),
                 desc
         );
         if (equivScore != scoreOnPerfectMatch) {
@@ -253,13 +256,6 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             nonTxlogItem = subject;
         }
 
-        String txlogTitle = null;
-        if(useTxlogEpisodeTitle) {
-            txlogTitle = txlogItem.getTitle();
-            String episodeTitle = txlogItem.getCustomField(TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME);
-            txlogItem.setTitle(episodeTitle);
-        }
-
         Optional<ContentTitleMatchingFields> nonTxlogParent = nonTxlogItem.getContainer() != null
                 ? topLevelContainerCache.getUnchecked(nonTxlogItem.getContainer().getUri())
                 : Optional.empty();
@@ -272,13 +268,16 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 nonTxlogSeries = seriesCache.getUnchecked(nonTxlogEpisode.getSeriesRef().getUri());
             }
         }
-
-        ContentTitleMatchingFields txlogItemFields = new ContentTitleMatchingFields(txlogItem);
-        ContentTitleMatchingFields nonTxlogItemFields = new ContentTitleMatchingFields(nonTxlogItem);
-
+        ContentTitleMatchingFields txlogItemFields;
         if(useTxlogEpisodeTitle) {
-            txlogItem.setTitle(txlogTitle);
+            Item txlogItemWithEpisodeTitle = txlogItem.copy();
+            String episodeTitle = txlogItem.getCustomField(TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME);
+            txlogItemWithEpisodeTitle.setTitle(episodeTitle);
+            txlogItemFields = new ContentTitleMatchingFields(txlogItemWithEpisodeTitle);
+        } else {
+            txlogItemFields = new ContentTitleMatchingFields(txlogItem);
         }
+        ContentTitleMatchingFields nonTxlogItemFields = new ContentTitleMatchingFields(nonTxlogItem);
 
         Set<ContentTitleMatchingFields> nonTxlogAndParentFields = new HashSet<>(3);
         nonTxlogAndParentFields.add(nonTxlogItemFields);
@@ -295,7 +294,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         Set<Set<ContentTitleMatchingFields>> nonTxlogFieldsPowerSet = Sets.powerSet(nonTxlogAndParentFields);
 
         desc.startStage("Scoring permutations for " + nonTxlogItem.getCanonicalUri());
-        Optional<Score> bestScore = scorePermutations(nonTxlogFieldsPowerSet, nonTxlogItemFields, txlogItemFields, desc);
+        Optional<Score> bestScore = scorePermutations(nonTxlogFieldsPowerSet, nonTxlogItemFields, nonTxlogItem.getCustomFields(), txlogItemFields, txlogItem.getCustomFields(), desc);
         desc.finishStage();
 
         return bestScore;
@@ -308,8 +307,8 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private Optional<Score> scorePermutations(
             Set<Set<ContentTitleMatchingFields>> nonTxlogFieldsPowerSet,
             ContentTitleMatchingFields nonTxlogItemFields,
-            ContentTitleMatchingFields txlogItemFields,
-            ResultDescription desc
+            Map<String, String> nonTxlogCustomFields, ContentTitleMatchingFields txlogItemFields,
+            Map<String, String> txlogCustomFields, ResultDescription desc
     ) {
         Score bestScore = null;
         for (Set<ContentTitleMatchingFields> nonTxlogFieldsSubset : nonTxlogFieldsPowerSet) {
@@ -334,7 +333,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 // Copy the existing item fields object with a new title as if it were the title of the item.
                 // This is so we can still keep some information from the item such as year in case it is useful.
                 ContentTitleMatchingFields permutationFields = nonTxlogItemFields.withTitle(concatenatedTitle);
-                Score permutationScore = scoreContent(txlogItemFields, permutationFields, desc);
+                Score permutationScore = scoreContent(txlogItemFields, txlogCustomFields, permutationFields, nonTxlogCustomFields, desc);
                 if (bestScore == null || !bestScore.isRealScore()
                         || (permutationScore.isRealScore() && permutationScore.asDouble() > bestScore.asDouble())) {
                     bestScore = permutationScore;
@@ -349,15 +348,15 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     private Score scoreContent(
             ContentTitleMatchingFields subject,
-            ContentTitleMatchingFields suggestion,
-            ResultDescription desc
+            Map<String, String> subjectCustomFields, ContentTitleMatchingFields suggestion,
+            Map<String, String> suggestionCustomFields, ResultDescription desc
     ) {
         Score score = Score.nullScore();
         if (!Strings.isNullOrEmpty(subject.getTitle())) {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title so scored %s", score);
             } else {
-                score = scoreContent(subject, suggestion);
+                score = scoreContent(subject, subjectCustomFields, suggestion, suggestionCustomFields);
                 desc.appendText("%s: %s", score, suggestion.getTitle());
             }
         }
@@ -365,7 +364,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    private Score scoreContent(ContentTitleMatchingFields subject, ContentTitleMatchingFields suggestion) {
+    private Score scoreContent(ContentTitleMatchingFields subject, Map<String, String> subjectCustomFields, ContentTitleMatchingFields suggestion, Map<String, String> suggestionCustomFields) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 
@@ -376,8 +375,8 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             if(suggestion.getPublisher().equals(Publisher.AE_NETWORKS)
                     || subject.getPublisher().equals(Publisher.AE_NETWORKS)
             ) {
-                String processedSubjectTitle = processTitle(subjectTitle);
-                String processedSuggestionTitle = processTitle(suggestionTitle);
+                String processedSubjectTitle = processTitle(subjectTitle, subjectCustomFields);
+                String processedSuggestionTitle = processTitle(suggestionTitle, suggestionCustomFields);
                 if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
                     subjectTitle = processedSubjectTitle;
                     suggestionTitle = processedSuggestionTitle;
@@ -526,7 +525,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     /**
      * Used for custom rules between txlogs and AE Networks
      */
-    private String processTitle(String title) {
+    private String processTitle(String title, Map<String, String> customFields) {
         Matcher seriesEpisodeMatcher = SERIES_AND_EPISODE_PATTERN.matcher(title);
         if (seriesEpisodeMatcher.find()) {
             title = seriesEpisodeMatcher.group(1);
@@ -552,8 +551,11 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             partNumber = partMatcher.group(1);
             title = title.trim().replaceAll(partMatcher.group(1), "").trim();
         }
-        //Removes all numbers
-        title = title.replaceAll("[\\d]", "").trim();
+        if(customFields.containsKey(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME)) {
+            String episodeNumber = customFields.get(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME);
+            //Removes episode number from title
+            title = title.replaceAll(episodeNumber, "").trim();
+        }
         //Adds 'part #'
         title  = title + " " + partNumber;
         //Removes more than one spaces

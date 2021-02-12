@@ -42,7 +42,13 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final Logger log = LoggerFactory.getLogger(AeTitleMatchingItemScorer.class);
 
     public static final String NAME = "A+E-Title";
+    private static final ImmutableSet<String> PREFIXES = ImmutableSet.of(
+            "film:", "new:", "live:"
+    );
     private static final Pattern TRAILING_YEAR_PATTERN = Pattern.compile("^(.*)\\(\\d{4}\\)$");
+    private static final Pattern GENERIC_TITLE_PATTERN = Pattern.compile("^(([Ss]eries)|([Ee]pisode)) \\d+$");
+    private static final Pattern SERIES_IN_TITLE_PATTERN = Pattern.compile("(series \\d+)");
+    private static final Pattern EPISODE_IN_TITLE_PATTERN = Pattern.compile("(episode \\d+)");
 
     private static final Joiner TITLE_PERMUTATION_JOINER = Joiner.on('-').skipNulls();
 
@@ -58,7 +64,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private static final String TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME = "txlog:episode_title";
     //AE Networks<->Txlog specific rules
     //Lowercase because the logic happens after converting content titles to lower case
-    private static final Pattern SERIES_AND_EPISODE_PATTERN = Pattern.compile(".*\\d+ - \\d+ -(.+)");
+    private static final Pattern SERIES_AND_EPISODE_PATTERN = Pattern.compile(".*\\d* - \\d* -(.+)");
     private static final Pattern THE_AT_THE_END_PATTERN = Pattern.compile("(,\\s+the$)");
     private static final Pattern PART_PATTERN = Pattern.compile("(part\\s*\\d+)");
 
@@ -328,6 +334,15 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     continue;
                 }
 
+                if (titles.size() == 1) {
+                    // Ignore cases where one of the permutations is just "Series X" or "Episode X" just in case these
+                    // could cause some false positives.
+                    Matcher genericTitlePatternMatcher = GENERIC_TITLE_PATTERN.matcher(Iterables.getOnlyElement(titles));
+                    if (genericTitlePatternMatcher.matches()) {
+                        continue;
+                    }
+                }
+
                 String concatenatedTitle = TITLE_PERMUTATION_JOINER.join(titles);
 
                 // Copy the existing item fields object with a new title as if it were the title of the item.
@@ -428,11 +443,13 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         String suggTitle = normalize(suggestionTitle);
 
         if (appearsToBeWithApostrophe(subjectTitle)) {
-            matches = Pattern.matches(subjectTitle, suggTitle);
+            String regexp = normalizeRegularExpression(subjectTitle);
+            matches = Pattern.matches(regexp, suggTitle);
         } else if (appearsToBeWithApostrophe(suggestionTitle)) {
-            matches = Pattern.matches(suggestionTitle, subjTitle);
+            String regexp = normalizeRegularExpression(suggestionTitle);
+            matches = Pattern.matches(regexp, subjTitle);
         } else {
-            matches = matchWithoutDashes(subjTitle, suggTitle) || subjTitle.equals(suggTitle);
+            matches = matchWithoutDashes(subjTitle, suggTitle) || subjTitle.equals(suggTitle) || (subjTitle.startsWith(suggTitle) || suggTitle.startsWith(subjTitle));
         }
 
         if (!matches) {
@@ -440,6 +457,35 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         } else {
             return scoreOnPerfectMatch;
         }
+    }
+
+    private String removeCommonPrefixes(String title) {
+        return removePrefixes(title, PREFIXES);
+    }
+
+    private String removePrefixes(String title, Set<String> prefixes) {
+        String remainingTitle = title;
+        boolean removedAtLeastOne;
+        do {
+            removedAtLeastOne = false;
+            for (String prefix : prefixes) {
+                if (remainingTitle.length() > prefix.length() && remainingTitle.startsWith(prefix)) {
+                    remainingTitle = remainingTitle.substring(prefix.length()).trim();
+                    removedAtLeastOne = true;
+                    break;
+                }
+            }
+        }
+        while (removedAtLeastOne);
+
+        return remainingTitle;
+    }
+
+    private String regularExpressionReplaceSpecialChars(String title) {
+        return applyCommonReplaceRules(title)
+                .replaceAll("[^A-Za-z0-9\\s']+", "-")
+                .replace(" ", "\\-")
+                .replaceAll("'\\\\-", "(\\\\w+|\\\\W*)\\-");
     }
 
     private Score partialTitleScore(String subjectTitle, String suggestionTitle) {
@@ -484,7 +530,12 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private String normalizeWithoutReplacing(String title) {
         String withoutSequencePrefix = removeSequencePrefix(title).trim();
         String expandedTitle = titleExpander.expand(withoutSequencePrefix).trim();
-        return StringUtils.stripAccents(expandedTitle);
+        String withoutCommonPrefixes = removeCommonPrefixes(expandedTitle).trim();
+        return StringUtils.stripAccents(withoutCommonPrefixes);
+    }
+
+    private String normalizeRegularExpression(String title) {
+        return regularExpressionReplaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title)));
     }
 
     private boolean appearsToBeWithApostrophe(String title) {
@@ -542,8 +593,20 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (theAtTheEndMatcher.find()) {
             title = String.format("the %s",title.trim().replaceAll(theAtTheEndMatcher.group(1), "").trim());
         }
-        //Removes ! and -
-        title = title.replaceAll("[!-]+", "");
+        //Removes Series #
+        Matcher seriesInTitleMatcher = SERIES_IN_TITLE_PATTERN.matcher(title);
+        if (seriesInTitleMatcher.find()) {
+            title = title.trim().replaceAll(seriesInTitleMatcher.group(1), "").trim();
+        }
+
+        //Removes Episode #
+        Matcher episodeInTitleMatcher = EPISODE_IN_TITLE_PATTERN.matcher(title);
+        if (episodeInTitleMatcher.find()) {
+            title = title.trim().replaceAll(episodeInTitleMatcher.group(1), "").trim();
+        }
+
+        //Removes special characters
+        title = title.replaceAll("[^a-z0-9 :]", "");
 
         //Checks if contains 'part #'
         Matcher partMatcher = PART_PATTERN.matcher(title);
@@ -552,13 +615,16 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             partNumber = partMatcher.group(1);
             title = title.trim().replaceAll(partMatcher.group(1), "").trim();
         }
+
         if(customFields.containsKey(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME)) {
             String episodeNumber = customFields.get(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME);
             //Removes episode number from title
             title = title.replaceAll(episodeNumber, "").trim();
         }
+
         //Adds 'part #'
         title  = title + " " + partNumber;
+
         //Removes more than one spaces
         title = title.replaceAll("\\s\\s+", " ");
         return title.trim();

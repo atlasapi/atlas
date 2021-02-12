@@ -61,6 +61,10 @@ public class AeTitleMatchingItemScorerTest {
     @Test
     public void testAeNetworksTxlogCustomRuleExamples() {
         assertTxlogAeScore("The Drone Wars 20", "Storage Wars 2 - 2 - Drone Wars 20, The", "23", scoreOnMatch);
+        assertTxlogAeScore("aliens", "new: aliens", "23", scoreOnMatch);
+        assertTxlogAeScore("weather", "weather episode 7", "23", scoreOnMatch);
+        assertTxlogAeScore("weather", "weather series 11", "3", scoreOnMatch);
+        assertTxlogAeScore("New: World's Deadliest Weather", "World's Deadliest Weather S1 - - Episode 7", "3", scoreOnMatch);
     }
 
     @Test

@@ -20,10 +20,6 @@ public class TieredBroadcaster {
             .put("63", "uktv.co.uk")
             .build();
 
-    private static final BiMap<String, String> aAndEBgidToPublisher = ImmutableBiMap.<String, String>builder()
-            .put("135", "aenetworks.co.uk")
-            .build();
-
     public static final String TXLOG_BROADCASTER_GROUP = "txlog:broadcaster_group";
 
     public static boolean isTierOne(@Nullable Content content) {
@@ -37,21 +33,6 @@ public class TieredBroadcaster {
 
         return (publisher != null && tierOneBroadcasterGroups.containsValue(publisher.key()))
                || (bgid != null && tierOneBroadcasterGroups.containsKey(bgid));
-    }
-
-    public static boolean isTierOneOrAAndE(@Nullable Content content) {
-
-        if (content == null) {
-            return false;
-        }
-
-        Publisher publisher = content.getPublisher();
-        String bgid = content.getCustomField(TXLOG_BROADCASTER_GROUP);
-
-        return (publisher != null && (tierOneBroadcasterGroups.containsValue(publisher.key())
-                    || aAndEBgidToPublisher.containsValue(publisher.key())))
-                || (bgid != null && (tierOneBroadcasterGroups.containsKey(bgid)
-                    || aAndEBgidToPublisher.containsKey(bgid)));
     }
 
     public static Optional<String> getSource(String bgid) {

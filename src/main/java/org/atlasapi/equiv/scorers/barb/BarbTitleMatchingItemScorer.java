@@ -91,14 +91,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             "highlights"
     );
 
-    private static final String AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME = "ae:series_title";
-    private static final String TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME = "txlog:episode_title";
-    //AE Networks<->Txlog specific rules
-    //Lowercase because the logic happens after converting content titles to lower case
-    private static final Pattern SERIES_AND_EPISODE_PATTERN = Pattern.compile(".*\\d+ - \\d+ -(.+)");
-    private static final Pattern THE_AT_THE_END_PATTERN = Pattern.compile("(,\\s+the$)");
-    private static final Pattern PART_PATTERN = Pattern.compile("(part\\s*\\d+)");
-
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
     private final Score scoreOnPerfectMatch;
     private final Score scoreOnPartialMatch;
@@ -254,25 +246,17 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (equivScore != scoreOnPerfectMatch) {
             // txlog titles can often contain brand or series information so score the txlog title
             // against these titles as well if applicable
-            Optional<Score> parentScore = scoreWithParentInformation(subject, suggestion, desc, false);
+            Optional<Score> parentScore = scoreWithParentInformation(subject, suggestion, desc);
             if (parentScore.isPresent() && parentScore.get().isRealScore()
                     && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
                 equivScore = parentScore.get();
-            }
-            if(equivScore != scoreOnPerfectMatch && (subject.getPublisher().key().equals(Publisher.AE_NETWORKS.key())
-                                                    || suggestion.getPublisher().key().equals(Publisher.AE_NETWORKS.key()))) {
-                Optional<Score> aeParentScore = scoreWithParentInformation(subject, suggestion, desc, true);
-                if (aeParentScore.isPresent() && aeParentScore.get().isRealScore()
-                        && (!equivScore.isRealScore() || aeParentScore.get().asDouble() > equivScore.asDouble())) {
-                    equivScore = aeParentScore.get();
-                }
             }
         }
         desc.finishStage();
         return equivScore;
     }
 
-    private Optional<Score> scoreWithParentInformation(Item subject, Item suggestion, ResultDescription desc, boolean useTxlogEpisodeTitle) {
+    private Optional<Score> scoreWithParentInformation(Item subject, Item suggestion, ResultDescription desc) {
         boolean singleTxlogPresent = TXLOG_PUBLISHERS.contains(subject.getPublisher())
                 // xor since we need the other publisher to be different and have a parent
                 ^ TXLOG_PUBLISHERS.contains(suggestion.getPublisher());
@@ -292,16 +276,13 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             nonTxlogItem = subject;
         }
 
-        String txlogTitle = null;
-        if(useTxlogEpisodeTitle) {
-            txlogTitle = txlogItem.getTitle();
-            String episodeTitle = txlogItem.getCustomField(TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME);
-            txlogItem.setTitle(episodeTitle);
-        }
-
         Optional<ContentTitleMatchingFields> nonTxlogParent = nonTxlogItem.getContainer() != null
                 ? topLevelContainerCache.getUnchecked(nonTxlogItem.getContainer().getUri())
                 : Optional.empty();
+
+        if (!nonTxlogParent.isPresent()) {
+            return Optional.empty();
+        }
 
         Optional<ContentTitleMatchingFields> nonTxlogSeries = Optional.empty();
 
@@ -315,22 +296,10 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         ContentTitleMatchingFields txlogItemFields = new ContentTitleMatchingFields(txlogItem);
         ContentTitleMatchingFields nonTxlogItemFields = new ContentTitleMatchingFields(nonTxlogItem);
 
-        if(useTxlogEpisodeTitle) {
-            txlogItem.setTitle(txlogTitle);
-        }
-
         Set<ContentTitleMatchingFields> nonTxlogAndParentFields = new HashSet<>(3);
         nonTxlogAndParentFields.add(nonTxlogItemFields);
-        nonTxlogParent.ifPresent(nonTxlogAndParentFields::add);
+        nonTxlogAndParentFields.add(nonTxlogParent.get());
         nonTxlogSeries.ifPresent(nonTxlogAndParentFields::add);
-        if (nonTxlogItem.getPublisher().equals(Publisher.AE_NETWORKS)) {
-            String seriesTitle = nonTxlogItem.getCustomField(AE_NETWORKS_SERIES_TITLE_CUSTOM_FIELD_NAME);
-            nonTxlogAndParentFields.add(nonTxlogItemFields.withTitle(seriesTitle));
-        }
-
-        if (nonTxlogAndParentFields.size() <= 1) {
-            return Optional.empty();
-        }
 
         Set<Set<ContentTitleMatchingFields>> nonTxlogFieldsPowerSet = Sets.powerSet(nonTxlogAndParentFields);
 
@@ -355,6 +324,12 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         for (Set<ContentTitleMatchingFields> nonTxlogFieldsSubset : nonTxlogFieldsPowerSet) {
             if (nonTxlogFieldsSubset.isEmpty()) {
                 continue;
+            }
+            if (nonTxlogFieldsSubset.size() == 1) {
+                ContentTitleMatchingFields onlyElement = Iterables.getOnlyElement(nonTxlogFieldsSubset);
+                if (onlyElement == nonTxlogItemFields) { //this was checked earlier for efficiency
+                    continue;
+                }
             }
             Collection<List<ContentTitleMatchingFields>> nonTxlogFieldsPermutations =
                     Collections2.permutations(nonTxlogFieldsSubset);
@@ -406,7 +381,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title so scored %s", score);
             } else {
-                score = scoreContent(subject, suggestion, desc, true);
+                score = scoreContent(subject, suggestion);
                 desc.appendText("%s: %s", score, suggestion.getTitle());
             }
         }
@@ -414,7 +389,7 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
 
-    private Score scoreContent(ContentTitleMatchingFields subject, ContentTitleMatchingFields suggestion, ResultDescription desc, boolean b) {
+    private Score scoreContent(ContentTitleMatchingFields subject, ContentTitleMatchingFields suggestion) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
 
@@ -427,15 +402,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             ) {
                 String processedSubjectTitle = processBbcTitle(subjectTitle);
                 String processedSuggestionTitle = processBbcTitle(suggestionTitle);
-                if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
-                    subjectTitle = processedSubjectTitle;
-                    suggestionTitle = processedSuggestionTitle;
-                }
-            } else if(suggestion.getPublisher().equals(Publisher.AE_NETWORKS)
-                    || subject.getPublisher().equals(Publisher.AE_NETWORKS)
-            ) {
-                String processedSubjectTitle = processAeTitle(subjectTitle);
-                String processedSuggestionTitle = processAeTitle(suggestionTitle);
                 if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
                     subjectTitle = processedSubjectTitle;
                     suggestionTitle = processedSuggestionTitle;
@@ -469,8 +435,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (subjectType == suggestionType) {
             subjectTitle = removePostfix(subjectTitle, subject.getYear());
             suggestionTitle = removePostfix(suggestionTitle, suggestion.getYear());
-            desc.appendText("Subject title: %s", subject.getTitle());
-            desc.appendText("Suggestion title: %s", suggestion.getTitle());
             return compareTitles(subjectTitle, suggestionTitle);
         }
 
@@ -676,40 +640,6 @@ public class BarbTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
         title = BBC_WEEKEND_NEWS_PATTERN.matcher(title).replaceFirst(BBC_WEEKEND_NEWS_REPLACEMENT);
         return title;
-    }
-
-    /**
-     * Used for custom rules between txlogs and AE Networks
-     */
-    private String processAeTitle(String title) {
-        Matcher seriesEpisodeMatcher = SERIES_AND_EPISODE_PATTERN.matcher(title);
-        if (seriesEpisodeMatcher.find()) {
-            title = seriesEpisodeMatcher.group(1);
-        }
-        //Removes # number
-        title = title.replaceAll("#\\s*\\w+", "");
-        //Removes (number)
-        title = title.replaceAll("\\(\\d+\\)", "");
-        //Removes <copy>
-        title = title.replaceAll("<copy>", "");
-        //Places the word 'the' at the start
-        Matcher theAtTheEndMatcher = THE_AT_THE_END_PATTERN.matcher(title);
-        if (theAtTheEndMatcher.find()) {
-            title = String.format("the %s",title.trim().replaceAll(theAtTheEndMatcher.group(1), "").trim());
-        }
-        title = title.replaceAll("[!-]+", "");
-
-        Matcher partMatcher = PART_PATTERN.matcher(title);
-        String partNumber = "";
-        if (partMatcher.find()) {
-            partNumber = partMatcher.group(1);
-            title = title.trim().replaceAll(partMatcher.group(1), "").trim();
-        }
-
-        title = title.replaceAll("[\\d]", "").trim();
-        title  = title + " " + partNumber;
-        title = title.replaceAll("\\s\\s+", " ");
-        return title.trim();
     }
 
     @Override

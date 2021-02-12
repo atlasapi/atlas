@@ -526,6 +526,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
      * Used for custom rules between txlogs and AE Networks
      */
     private String processTitle(String title, Map<String, String> customFields) {
+        title = title.replaceAll("\\s\\s+", " ");
         Matcher seriesEpisodeMatcher = SERIES_AND_EPISODE_PATTERN.matcher(title);
         if (seriesEpisodeMatcher.find()) {
             title = seriesEpisodeMatcher.group(1);

@@ -30,12 +30,6 @@ public class BroadcastMergerTest {
     }
 
     @Test
-    public void fromDateSameAsToFailsParsing() throws Exception {
-        exception.expect(IllegalArgumentException.class);
-        BroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z\"|\"2016-01-01T00:00:00Z\"");
-    }
-
-    @Test
     public void invalidDateFailsParsing() throws Exception {
         exception.expect(IllegalArgumentException.class);
         BroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z\"|\"2016-01-01T99:00:00Z\"");

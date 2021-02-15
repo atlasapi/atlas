@@ -236,7 +236,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 desc.startStage(
                         String.format(
                                 "Scoring suggestion episode title: %s (%s)",
-                                suggestion.getTitle(),
+                                suggestion.getCustomField(TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME),
                                 suggestion.getCanonicalUri()
                         )
                 );
@@ -426,7 +426,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         //return early if you can.
         if (subjectTitle.equals(suggestionTitle)) {
-            desc.appendText("%s: Subject original title: %s, Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subject.getTitle(), processedSubjectTitle, processedSuggestionTitle);
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subjectTitle, processedSubjectTitle, processedSuggestionTitle);
             return scoreOnPerfectMatch;
         }
 
@@ -437,7 +437,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             return compareTitles(subjectTitle, suggestionTitle, desc);
         }
 
-        desc.appendText("%s: Subject original title: %s, Subject processed title: %s, Suggestion processed title: %s", scoreOnMismatch, subject.getTitle(), processedSubjectTitle, processedSuggestionTitle);
+        desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnMismatch, subjectTitle, processedSubjectTitle, processedSuggestionTitle);
         return Score.nullScore();
     }
 
@@ -465,10 +465,10 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
 
         if (!matches) {
-            desc.appendText("%s: Subject original title: %s, Subject processed title: %s, Suggestion processed title: %s", scoreOnPartialMatch, subjectTitle, subjTitle, suggTitle);
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPartialMatch, subjectTitle, subjTitle, suggTitle);
             return partialTitleScore(subjectTitle, suggestionTitle);
         } else {
-            desc.appendText("%s: Subject original title: %s, Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subjectTitle, subjTitle, suggTitle);
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subjectTitle, subjTitle, suggTitle);
             return scoreOnPerfectMatch;
         }
     }

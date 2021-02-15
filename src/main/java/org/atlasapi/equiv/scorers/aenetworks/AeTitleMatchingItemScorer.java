@@ -426,7 +426,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         //return early if you can.
         if (subjectTitle.equals(suggestionTitle)) {
-            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subjectTitle, processedSubjectTitle, processedSuggestionTitle);
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, processedSubjectTitle, processedSuggestionTitle);
             return scoreOnPerfectMatch;
         }
 
@@ -437,7 +437,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             return compareTitles(subjectTitle, suggestionTitle, desc);
         }
 
-        desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnMismatch, subjectTitle, processedSubjectTitle, processedSuggestionTitle);
+        desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnMismatch, processedSubjectTitle, processedSuggestionTitle);
         return Score.nullScore();
     }
 
@@ -465,10 +465,10 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
 
         if (!matches) {
-            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPartialMatch, subjectTitle, subjTitle, suggTitle);
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPartialMatch, subjTitle, suggTitle);
             return partialTitleScore(subjectTitle, suggestionTitle);
         } else {
-            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subjectTitle, subjTitle, suggTitle);
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subjTitle, suggTitle);
             return scoreOnPerfectMatch;
         }
     }

@@ -65,14 +65,15 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     //AE Networks<->Txlog specific rules
     //Lowercase because the logic happens after converting content titles to lower case
     private static final Pattern SERIES_AND_EPISODE_PATTERN = Pattern.compile(".*\\d* - \\d* -(.+)");
-    private static final Pattern THE_AT_THE_END_PATTERN = Pattern.compile("(,\\s+the$)");
+    private static final Pattern THE_AT_THE_END_PATTERN = Pattern.compile("(,\\s+the)");
     private static final Pattern PART_PATTERN = Pattern.compile("(part\\s*\\d+)");
 
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
     private final Score scoreOnPerfectMatch;
     private final Score scoreOnPartialMatch;
     private final Score scoreOnMismatch;
-    @Nullable private final ContentResolver contentResolver;
+    @Nullable
+    private final ContentResolver contentResolver;
     private final LoadingCache<String, Optional<ContentTitleMatchingFields>> topLevelContainerCache;
     private final LoadingCache<String, Optional<ContentTitleMatchingFields>> seriesCache;
 
@@ -82,7 +83,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         SEQUENCE("((?:E|e)pisode)(?:.*)(\\d+)"),
         DEFAULT(".*");
 
-        private Pattern pattern;
+        private final Pattern pattern;
 
         TitleType(String pattern) {
             this.pattern = Pattern.compile(pattern);
@@ -175,7 +176,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         Maybe<Identified> resolved = contentResolver.findByCanonicalUris(
                 ImmutableSet.of(containerUri)
         ).getFirstValue();
-        if(resolved.hasValue()) {
+        if (resolved.hasValue()) {
             Container parent = (Container) resolved.requireValue();
             if (parent instanceof Series) { //this shouldn't be required but is being included as a sanity check
                 Series series = (Series) parent;
@@ -200,7 +201,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         Maybe<Identified> resolved = contentResolver.findByCanonicalUris(
                 ImmutableSet.of(uri)
         ).getFirstValue();
-        if(resolved.hasValue()) {
+        if (resolved.hasValue()) {
             Content parent = (Content) resolved.requireValue();
             return Optional.of(new ContentTitleMatchingFields(parent));
         }
@@ -208,13 +209,6 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     public Score score(Item subject, Item suggestion, ResultDescription desc) {
-        desc.startStage(
-                String.format(
-                        "Scoring suggestion: %s (%s)",
-                        suggestion.getTitle(),
-                        suggestion.getCanonicalUri()
-                )
-        );
         Score equivScore = scoreContent(
                 new ContentTitleMatchingFields(subject),
                 subject.getCustomFields(),
@@ -225,20 +219,35 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (equivScore != scoreOnPerfectMatch) {
             // txlog titles can often contain brand or series information so score the txlog title
             // against these titles as well if applicable
+            desc.startStage(
+                    String.format(
+                            "Scoring suggestion series title: %s (%s)",
+                            suggestion.getTitle(),
+                            suggestion.getCanonicalUri()
+                    )
+            );
             Optional<Score> parentScore = scoreWithParentInformation(subject, suggestion, desc, false);
             if (parentScore.isPresent() && parentScore.get().isRealScore()
                     && (!equivScore.isRealScore() || parentScore.get().asDouble() > equivScore.asDouble())) {
                 equivScore = parentScore.get();
             }
-            if(equivScore != scoreOnPerfectMatch) {
+            desc.finishStage();
+            if (equivScore != scoreOnPerfectMatch) {
+                desc.startStage(
+                        String.format(
+                                "Scoring suggestion episode title: %s (%s)",
+                                suggestion.getTitle(),
+                                suggestion.getCanonicalUri()
+                        )
+                );
                 Optional<Score> aeParentScore = scoreWithParentInformation(subject, suggestion, desc, true);
                 if (aeParentScore.isPresent() && aeParentScore.get().isRealScore()
                         && (!equivScore.isRealScore() || aeParentScore.get().asDouble() > equivScore.asDouble())) {
                     equivScore = aeParentScore.get();
                 }
+                desc.finishStage();
             }
         }
-        desc.finishStage();
         return equivScore;
     }
 
@@ -275,7 +284,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             }
         }
         ContentTitleMatchingFields txlogItemFields;
-        if(useTxlogEpisodeTitle) {
+        if (useTxlogEpisodeTitle) {
             Item txlogItemWithEpisodeTitle = txlogItem.copy();
             String episodeTitle = txlogItem.getCustomField(TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME);
             txlogItemWithEpisodeTitle.setTitle(episodeTitle);
@@ -371,27 +380,28 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             if (Strings.isNullOrEmpty(suggestion.getTitle())) {
                 desc.appendText("No Title so scored %s", score);
             } else {
-                score = scoreContent(subject, subjectCustomFields, suggestion, suggestionCustomFields);
-                desc.appendText("%s: %s", score, suggestion.getTitle());
+                score = processAndScoreContent(subject, subjectCustomFields, suggestion, suggestionCustomFields, desc);
             }
         }
         return score;
     }
 
 
-    private Score scoreContent(ContentTitleMatchingFields subject, Map<String, String> subjectCustomFields, ContentTitleMatchingFields suggestion, Map<String, String> suggestionCustomFields) {
+    private Score processAndScoreContent(ContentTitleMatchingFields subject, Map<String, String> subjectCustomFields, ContentTitleMatchingFields suggestion, Map<String, String> suggestionCustomFields, ResultDescription desc) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
+        String processedSubjectTitle = null;
+        String processedSuggestionTitle = null;
 
         //TxLog titles are size capped, so truncate everything if we are equiving to txlogs
         if (TXLOG_PUBLISHERS.contains(suggestion.getPublisher())
-            || (TXLOG_PUBLISHERS.contains(subject.getPublisher()))) {
+                || (TXLOG_PUBLISHERS.contains(subject.getPublisher()))) {
 
-            if(suggestion.getPublisher().equals(Publisher.AE_NETWORKS)
+            if (suggestion.getPublisher().equals(Publisher.AE_NETWORKS)
                     || subject.getPublisher().equals(Publisher.AE_NETWORKS)
             ) {
-                String processedSubjectTitle = processTitle(subjectTitle, subjectCustomFields);
-                String processedSuggestionTitle = processTitle(suggestionTitle, suggestionCustomFields);
+                processedSubjectTitle = processTitle(subjectTitle, subjectCustomFields);
+                processedSuggestionTitle = processTitle(suggestionTitle, suggestionCustomFields);
                 if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
                     subjectTitle = processedSubjectTitle;
                     suggestionTitle = processedSuggestionTitle;
@@ -416,6 +426,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         //return early if you can.
         if (subjectTitle.equals(suggestionTitle)) {
+            desc.appendText("%s: Subject original title: %s, Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subject.getTitle(), processedSubjectTitle, processedSuggestionTitle);
             return scoreOnPerfectMatch;
         }
 
@@ -423,9 +434,10 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
 
         if (subjectType == suggestionType) {
-            return compareTitles(subjectTitle, suggestionTitle);
+            return compareTitles(subjectTitle, suggestionTitle, desc);
         }
 
+        desc.appendText("%s: Subject original title: %s, Subject processed title: %s, Suggestion processed title: %s", scoreOnMismatch, subject.getTitle(), processedSubjectTitle, processedSuggestionTitle);
         return Score.nullScore();
     }
 
@@ -437,7 +449,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return suggestionTitle;
     }
 
-    private Score compareTitles(final String subjectTitle, final String suggestionTitle) {
+    private Score compareTitles(final String subjectTitle, final String suggestionTitle, ResultDescription desc) {
         boolean matches;
         String subjTitle = normalize(subjectTitle);
         String suggTitle = normalize(suggestionTitle);
@@ -453,8 +465,10 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
 
         if (!matches) {
+            desc.appendText("%s: Subject original title: %s, Subject processed title: %s, Suggestion processed title: %s", scoreOnPartialMatch, subjectTitle, subjTitle, suggTitle);
             return partialTitleScore(subjectTitle, suggestionTitle);
         } else {
+            desc.appendText("%s: Subject original title: %s, Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subjectTitle, subjTitle, suggTitle);
             return scoreOnPerfectMatch;
         }
     }
@@ -591,7 +605,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         //Places the word 'the' at the start
         Matcher theAtTheEndMatcher = THE_AT_THE_END_PATTERN.matcher(title);
         if (theAtTheEndMatcher.find()) {
-            title = String.format("the %s",title.trim().replaceAll(theAtTheEndMatcher.group(1), "").trim());
+            title = String.format("the %s", title.trim().replaceAll(theAtTheEndMatcher.group(1), "").trim());
         }
         //Removes Series #
         Matcher seriesInTitleMatcher = SERIES_IN_TITLE_PATTERN.matcher(title);
@@ -616,14 +630,14 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             title = title.trim().replaceAll(partMatcher.group(1), "").trim();
         }
 
-        if(customFields.containsKey(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME)) {
+        if (customFields.containsKey(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME)) {
             String episodeNumber = customFields.get(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME);
             //Removes episode number from title
             title = title.replaceAll(episodeNumber, "").trim();
         }
 
         //Adds 'part #'
-        title  = title + " " + partNumber;
+        title = title + " " + partNumber;
 
         //Removes more than one spaces
         title = title.replaceAll("\\s\\s+", " ");

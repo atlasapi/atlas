@@ -421,7 +421,7 @@
         <dependency>
             <groupId>org.atlasapi</groupId>
             <artifactId>atlas-model</artifactId>
-            <version>5.2-SNAPSHOT</version>
+            <version>${atlas.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>
@@ -448,7 +448,7 @@
         <dependency>
             <groupId>org.atlasapi</groupId>
             <artifactId>atlas-persistence</artifactId>
-            <version>5.2-SNAPSHOT</version>
+            <version>${atlas.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.google.guava</groupId>

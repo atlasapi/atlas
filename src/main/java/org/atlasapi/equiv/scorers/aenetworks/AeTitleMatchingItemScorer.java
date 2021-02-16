@@ -426,7 +426,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
         //return early if you can.
         if (subjectTitle.equals(suggestionTitle)) {
-            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, processedSubjectTitle, processedSuggestionTitle);
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, processedSuggestionTitle, processedSubjectTitle);
             return scoreOnPerfectMatch;
         }
 
@@ -437,7 +437,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             return compareTitles(subjectTitle, suggestionTitle, desc);
         }
 
-        desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnMismatch, processedSubjectTitle, processedSuggestionTitle);
+        desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnMismatch, processedSuggestionTitle, processedSubjectTitle);
         return Score.nullScore();
     }
 
@@ -465,10 +465,9 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
 
         if (!matches) {
-            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPartialMatch, subjTitle, suggTitle);
-            return partialTitleScore(subjectTitle, suggestionTitle);
+            return partialTitleScore(subjectTitle, suggestionTitle, desc);
         } else {
-            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, subjTitle, suggTitle);
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnPerfectMatch, suggTitle, subjTitle);
             return scoreOnPerfectMatch;
         }
     }
@@ -502,7 +501,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 .replaceAll("'\\\\-", "(\\\\w+|\\\\W*)\\-");
     }
 
-    private Score partialTitleScore(String subjectTitle, String suggestionTitle) {
+    private Score partialTitleScore(String subjectTitle, String suggestionTitle, ResultDescription desc) {
 
         String subjectTitleWithoutLeadingColons = removeLeadingColons(subjectTitle);
         String suggestionTitleWithoutLeadingColons = removeLeadingColons(suggestionTitle);
@@ -514,17 +513,22 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
             subjTitle = subjTitle.substring(0, subjTitle.indexOf(":"));
             suggTitle = suggTitle.substring(0, suggTitle.indexOf(":"));
-            return subjTitle.equals(suggTitle) ? scoreOnPartialMatch : scoreOnMismatch;
+            Score finalScore = subjTitle.equals(suggTitle) ? scoreOnPartialMatch : scoreOnMismatch;
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", finalScore, suggTitle, subjTitle);
+            return finalScore;
         } else if (subjTitle.contains(":") && subjTitle.length() > suggTitle.length()) {
-
             String subjSubstring = subjTitle.substring(0, subjTitle.indexOf(":"));
-            return subjSubstring.equals(suggTitle) ? scoreOnPartialMatch : scoreOnMismatch;
+            Score finalScore = subjSubstring.equals(suggTitle) ? scoreOnPartialMatch : scoreOnMismatch;
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", finalScore, suggTitle, subjTitle);
+            return finalScore;
         } else if (suggTitle.contains(":")) {
 
             String suggSubstring = suggTitle.substring(0, suggestionTitle.indexOf(":"));
-            return suggSubstring.equals(subjTitle) ? scoreOnPartialMatch : scoreOnMismatch;
+            Score finalScore = suggSubstring.equals(subjTitle) ? scoreOnPartialMatch : scoreOnMismatch;
+            desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", finalScore, suggTitle, subjTitle);
+            return finalScore;
         }
-
+        desc.appendText("%s: Subject processed title: %s, Suggestion processed title: %s", scoreOnMismatch, suggTitle, subjTitle);
         return scoreOnMismatch;
     }
 

@@ -115,7 +115,7 @@ public class SequenceItemScorer implements EquivalenceScorer<Item> {
     }
 
     private boolean childOfTopLevelSeries(Episode episode) {
-        return episode.getContainer().equals(episode.getSeriesRef());
+        return episode.getContainer() != null && episode.getContainer().equals(episode.getSeriesRef());
     }
     
     private boolean nonNullEpisodeNumbersEqual(Episode episode, Episode candidate) {

@@ -35,6 +35,7 @@ import static org.atlasapi.equiv.generators.barb.utils.BarbGeneratorUtils.*;
 
 public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements EquivalenceGenerator<Item> {
     private static final Logger log = LoggerFactory.getLogger(BarbTitleMatchingItemScorer.class);
+    private static final String TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME = "txlog:episode_title";
 
     private final ScheduleResolver scheduleResolver;
     private final Set<Publisher> supportedPublishers;
@@ -77,11 +78,6 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
 
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("A+E Broadcast Matching Item Equivalence Generator");
-
-        if (!TieredBroadcaster.isAAndE(subject)) {
-            desc.appendText("Item not from an allowed broadcaster, ignoring all broadcasts.");
-            return scores.build();
-        }
 
         Set<Publisher> validPublishers = Sets.difference(
                 supportedPublishers,
@@ -135,7 +131,7 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
             EquivToTelescopeComponent generatorComponent
     ) {
         desc.startStage(
-                "Finding matches for broadcast: " + String.format(
+                "Finding matches  A+E broadcast: " + String.format(
                         "%s [%s - %s]",
                         subjectBroadcast.getBroadcastOn(),
                         subjectBroadcast.getTransmissionTime(),
@@ -165,7 +161,7 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
             ListMultimap<Publisher, Item> publisherItems = filterScheduleByPublisher(candidateScheduleChannel);
             for (Publisher publisher : publisherItems.keySet()) {
                 desc.startStage(
-                        "Candidate schedule found for " + publisher.key()
+                        "Candidate schedule found for" + publisher.key()
                                 + " for " + candidateScheduleChannel.channel().getUri()
                 );
 
@@ -176,7 +172,22 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
                         nopDesc
                 );
                 if (candidateItemIndex < 0) {
-                    desc.appendText("Could not find any suitable candidate in the schedule");
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(String.format("Could not find any suitable candidate in the schedule - time mismatch. \nA+E transmission was between [%s - %s]",
+                            subjectBroadcast.getTransmissionTime(),
+                            subjectBroadcast.getTransmissionEndTime()
+                    ));
+                    for (Item candidate : candidateItemArray) {
+                        Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, nopDesc);
+                        sb.append(String.format("\nCandidate %s had a broadcast between [%s - %s], series title %s and episode title %s",
+                                candidate.getCanonicalUri(),
+                                candidateBroadcast.getTransmissionTime(),
+                                candidateBroadcast.getTransmissionEndTime(),
+                                candidate.getTitle(),
+                                candidate.getCustomField(TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME)
+                        ));
+                    }
+                    desc.appendText(sb.toString());
                     desc.finishStage();
                     continue;
                 }
@@ -185,10 +196,12 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
                 if (candidate.isActivelyPublished()) {
                     Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, nopDesc);
                     desc.appendText(
-                            "Found candidate %s with broadcast [%s - %s]",
+                            "Found candidate %s with broadcast [%s - %s], series title %s and episode title %s",
                             candidate.getCanonicalUri(),
                             candidateBroadcast.getTransmissionTime(),
-                            candidateBroadcast.getTransmissionEndTime()
+                            candidateBroadcast.getTransmissionEndTime(),
+                            candidate.getTitle(),
+                            candidate.getCustomField(TXLOG_EPISODE_TITLE_CUSTOM_FIELD_NAME)
                     );
                     if (candidateBroadcast.isActivelyPublished() && broadcastFilter.test(candidateBroadcast)) {
                         //we want the maximum score for this scorer to be scoreOnMatch, so we update the

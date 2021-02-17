@@ -64,7 +64,8 @@ public class AeTitleMatchingItemScorerTest {
         assertTxlogAeScore("aliens", "new: aliens", "23", scoreOnMatch);
         assertTxlogAeScore("weather", "weather episode 7", "23", scoreOnMatch);
         assertTxlogAeScore("weather", "weather series 11", "3", scoreOnMatch);
-        assertTxlogAeScore("New: World's Deadliest Weather", "World's Deadliest Weather S1 - - Episode 7", "3", scoreOnMatch);
+        assertTxlogAeScore("New: World's Deadliest Weather", "World's Deadliest Weather S1 - - Episode 7", "3", scoreOnPartialMatch);
+        assertTxlogAeScore("New: World's Deadliest Weather", "", "3", scoreOnMismatch);
     }
 
     @Test

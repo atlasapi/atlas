@@ -441,7 +441,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             Score finalScore = suggSubstring.equals(subjTitle) ? scoreOnPartialMatch : scoreOnMismatch;
             desc.appendText("%s: A+E processed title: %s, Txlog processed %s title: %s", finalScore, suggTitle, txlogTitleClarification, subjTitle);
             return finalScore;
-        } else if((subjectTitle.startsWith(suggestionTitle) && !suggestionTitle.isEmpty()) || (suggestionTitle.startsWith(subjectTitle) && !subjectTitle.isEmpty()))
+        } else if((subjTitle.startsWith(suggTitle) && !suggTitle.isEmpty()) || (suggTitle.startsWith(subjTitle) && !suggTitle.isEmpty()))
         {
             desc.appendText("%s: A+E processed title: %s, Txlog processed %s title: %s", scoreOnPartialMatch, suggTitle, txlogTitleClarification, subjTitle);
             return scoreOnPartialMatch;

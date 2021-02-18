@@ -197,13 +197,7 @@ public class BroadcastMerger {
         }
 
         public boolean contains(Interval interval) {
-            return this.interval.contains(interval)
-                    || isZeroDurationAtEndOfThisInterval(interval);
-        }
-
-        private boolean isZeroDurationAtEndOfThisInterval(Interval interval) {
-            return interval.toDurationMillis() == 0L
-                    && interval.getStart().equals(this.interval.getEnd());
+            return this.interval.contains(interval);
         }
 
         @Override

@@ -10,6 +10,7 @@ import org.atlasapi.input.BrandModelTransformer;
 import org.atlasapi.input.ClipModelTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.DelegatingModelTransformer;
+import org.atlasapi.input.ImageModelTransformer;
 import org.atlasapi.input.ItemModelTransformer;
 import org.atlasapi.input.SegmentModelTransformer;
 import org.atlasapi.input.SeriesModelTransformer;
@@ -178,7 +179,8 @@ public class QueryExecutorModule {
                 topicStore,
                 idCodec(),
                 clipTransformer(),
-                new SystemClock()
+                new SystemClock(),
+                ImageModelTransformer.create()
         );
     }
 
@@ -190,7 +192,8 @@ public class QueryExecutorModule {
                 idCodec(),
                 clipTransformer(),
                 new SystemClock(),
-                segmentModelTransformer()
+                segmentModelTransformer(),
+                ImageModelTransformer.create()
         );
     }
 
@@ -200,7 +203,8 @@ public class QueryExecutorModule {
                 topicStore,
                 idCodec(),
                 clipTransformer(),
-                new SystemClock()
+                new SystemClock(),
+                ImageModelTransformer.create()
         );
     }
 
@@ -211,7 +215,8 @@ public class QueryExecutorModule {
                 channelResolver,
                 idCodec(),
                 new SystemClock(),
-                segmentModelTransformer()
+                segmentModelTransformer(),
+                ImageModelTransformer.create()
         );
     }
 

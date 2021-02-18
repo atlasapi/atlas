@@ -21,8 +21,10 @@ public class BrandModelTransformer extends ContentModelTransformer<Playlist, Bra
 
 	public BrandModelTransformer(LookupEntryStore lookupStore, 
 			TopicStore topicStore, NumberToShortStringCodec idCodec, 
-			ClipModelTransformer clipsModelTransformer, Clock clock) {
-		super(lookupStore, topicStore, idCodec, clipsModelTransformer, clock);
+			ClipModelTransformer clipsModelTransformer, Clock clock,
+			ImageModelTransformer imageModelTransformer) {
+
+		super(lookupStore, topicStore, idCodec, clipsModelTransformer, clock, imageModelTransformer);
 		this.encodingTransformer = EncodingModelTransformer.create();
 		this.restrictionTransformer = RestrictionModelTransformer.create();
 	}

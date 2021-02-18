@@ -24,7 +24,7 @@ import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
 import org.atlasapi.input.ChannelGroupTransformer;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
-import org.atlasapi.input.ImageModelTranslator;
+import org.atlasapi.input.ImageModelTransformer;
 import org.atlasapi.input.PersonModelTransformer;
 import org.atlasapi.input.TopicModelTransformer;
 import org.atlasapi.media.channel.CachingChannelGroupStore;
@@ -240,7 +240,7 @@ public class QueryWebModule {
                 .withChannelTransformer(
                         ChannelModelTransformer.create(
                                 v4ChannelCodec(),
-                                ImageModelTranslator.create()
+                                ImageModelTransformer.create()
                         )
                 )
                 .withOutputter(channelModelWriter())
@@ -479,7 +479,7 @@ public class QueryWebModule {
                 applicationFetcher,
                 personStore,
                 new DefaultJacksonModelReader(),
-                new PersonModelTransformer(new SystemClock(), personStore),
+                new PersonModelTransformer(new SystemClock(), ImageModelTransformer.create(), personStore),
                 personModelOutputter()
         );
     }

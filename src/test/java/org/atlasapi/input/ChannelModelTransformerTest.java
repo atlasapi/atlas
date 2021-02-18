@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 public class ChannelModelTransformerTest {
 
     private NumberToShortStringCodec v4Codec = mock(NumberToShortStringCodec.class);
-    private ImageModelTranslator imageTranslator = mock(ImageModelTranslator.class);
+    private ImageModelTransformer imageTranslator = mock(ImageModelTransformer.class);
     private ChannelModelTransformer channelTransformer;
 
     @Before

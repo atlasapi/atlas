@@ -63,7 +63,8 @@ public class ItemModelTransformerTest {
                 idCodec,
                 clipModelTransformer,
                 clock,
-                segmentModelTransformer
+                segmentModelTransformer,
+                ImageModelTransformer.create()
         );
 
         simpleRestriction = getSimpleRestriction();

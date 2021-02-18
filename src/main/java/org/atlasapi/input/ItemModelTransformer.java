@@ -40,8 +40,11 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
 
     public ItemModelTransformer(LookupEntryStore lookupStore, TopicStore topicStore,
             ChannelResolver channelResolver, NumberToShortStringCodec idCodec,
-            ClipModelTransformer clipsModelTransformer, Clock clock, SegmentModelTransformer segmentModelTransformer) {
-        super(lookupStore, topicStore, idCodec, clipsModelTransformer, clock);
+            ClipModelTransformer clipsModelTransformer, Clock clock,
+            SegmentModelTransformer segmentModelTransformer,
+            ImageModelTransformer imageModelTransformer) {
+
+        super(lookupStore, topicStore, idCodec, clipsModelTransformer, clock, imageModelTransformer);
         this.broadcastTransformer = BroadcastModelTransformer.create(channelResolver);
         this.encodingTransformer = EncodingModelTransformer.create();
         this.restrictionTransformer = RestrictionModelTransformer.create();

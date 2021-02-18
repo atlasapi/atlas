@@ -17,13 +17,13 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class ImageModelTranslatorTest {
+public class ImageModelTransformerTest {
 
-    private ImageModelTranslator translator;
+    private ImageModelTransformer translator;
 
     @Before
     public void setUp() throws Exception {
-        this.translator = new ImageModelTranslator();
+        this.translator = new ImageModelTransformer();
     }
 
     @Test

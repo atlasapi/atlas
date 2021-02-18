@@ -2,27 +2,19 @@ package org.atlasapi.remotesite.barb.channels;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.base.Throwables;
+
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPClientConfig;
+
 import org.atlasapi.input.ChannelModelTransformer;
-import org.atlasapi.input.ImageModelTranslator;
+import org.atlasapi.input.ImageModelTransformer;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import sun.net.ftp.FtpClient;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
 
 @Configuration
 public class BarbChannelsModule {
@@ -49,7 +41,7 @@ public class BarbChannelsModule {
     public BarbChannelsModule() {
         modelTransformer = ChannelModelTransformer.create(
                 SubstitutionTableNumberCodec.lowerCaseOnly(),
-                ImageModelTranslator.create()
+                ImageModelTransformer.create()
         );
     }
 

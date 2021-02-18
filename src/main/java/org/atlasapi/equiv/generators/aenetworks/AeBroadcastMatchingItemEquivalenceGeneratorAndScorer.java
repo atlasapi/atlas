@@ -173,13 +173,13 @@ public class AeBroadcastMatchingItemEquivalenceGeneratorAndScorer implements Equ
                 );
                 if (candidateItemIndex < 0) {
                     StringBuilder sb = new StringBuilder();
-                    sb.append(String.format("Could not find any suitable candidate in the schedule - time mismatch. \nA+E transmission was between [%s - %s]",
+                    sb.append(String.format("Could not find any suitable candidate in the schedule - time mismatch. A+E transmission was between [%s - %s].",
                             subjectBroadcast.getTransmissionTime(),
                             subjectBroadcast.getTransmissionEndTime()
                     ));
                     for (Item candidate : candidateItemArray) {
                         Broadcast candidateBroadcast = getBroadcastFromScheduleItem(candidate, nopDesc);
-                        sb.append(String.format("\nCandidate %s had a broadcast between [%s - %s], series title %s and episode title %s",
+                        sb.append(String.format(" Candidate %s had a broadcast between [%s - %s], series title %s and episode title %s.",
                                 candidate.getCanonicalUri(),
                                 candidateBroadcast.getTransmissionTime(),
                                 candidateBroadcast.getTransmissionEndTime(),

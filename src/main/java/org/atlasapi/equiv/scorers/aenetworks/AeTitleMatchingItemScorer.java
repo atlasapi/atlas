@@ -2,11 +2,7 @@ package org.atlasapi.equiv.scorers.aenetworks;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.*;
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
 import org.apache.commons.lang3.StringUtils;
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
@@ -22,10 +18,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -155,6 +149,13 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         // txlog titles can often contain brand or series information so score the txlog title
         // against these titles as well if applicable
         Score equivScore = scoreOnMismatch;
+        desc.startStage(
+                String.format(
+                        "Scoring suggestion series title: %s (%s)",
+                        suggestion.getTitle(),
+                        suggestion.getCanonicalUri()
+                )
+        );
         Optional<Score> parentScore = scoreWithParentInformation(subject, suggestion, desc, false);
         if (parentScore.isPresent() && parentScore.get().isRealScore()) {
             equivScore = parentScore.get();
@@ -304,10 +305,47 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
 
     private Score processAndScoreContent(ContentTitleMatchingFields subject, Map<String, String> subjectCustomFields, ContentTitleMatchingFields suggestion, Map<String, String> suggestionCustomFields, String txlogTitleClarification, ResultDescription desc) {
+        List<String> titles = processTitle(subject, subjectCustomFields, suggestion, suggestionCustomFields, false);
+        String subjectTitleWithEpisodeNumber = titles.get(0);
+        String suggestionTitleWithEpisodeNumber = titles.get(1);
+
+        //return early if you can.
+        if (subjectTitleWithEpisodeNumber.equals(suggestionTitleWithEpisodeNumber)) {
+            desc.appendText("%s: A+E processed title: %s, Txlog processed %s title: %s", scoreOnPerfectMatch, suggestionTitleWithEpisodeNumber, txlogTitleClarification, subjectTitleWithEpisodeNumber);
+            return scoreOnPerfectMatch;
+        }
+
+        titles = processTitle(subject, subjectCustomFields, suggestion, suggestionCustomFields, true);
+        String subjectTitleWithoutEpisodeNumber = titles.get(0);
+        String suggestionTitleWithoutEpisodeNumber = titles.get(1);
+
+        //return early if you can.
+        if (subjectTitleWithoutEpisodeNumber.equals(suggestionTitleWithoutEpisodeNumber)) {
+            desc.appendText("%s: A+E processed title: %s, Txlog processed %s title: %s", scoreOnPerfectMatch, suggestionTitleWithoutEpisodeNumber, txlogTitleClarification, subjectTitleWithoutEpisodeNumber);
+            return scoreOnPerfectMatch;
+        }
+
+
+        TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
+        TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
+
+        if (subjectType == suggestionType) {
+            Score scoreWithEpisodeAndSeriesNumber = compareTitles(subjectTitleWithEpisodeNumber, suggestionTitleWithEpisodeNumber, txlogTitleClarification, desc);
+            if(scoreWithEpisodeAndSeriesNumber != scoreOnPerfectMatch) {
+                Score scoreWithoutEpisodeAndSeriesNumber = compareTitles(subjectTitleWithoutEpisodeNumber, suggestionTitleWithoutEpisodeNumber, txlogTitleClarification, desc);
+                return scoreWithEpisodeAndSeriesNumber.asDouble() > scoreWithoutEpisodeAndSeriesNumber.asDouble() ? scoreWithEpisodeAndSeriesNumber : scoreWithoutEpisodeAndSeriesNumber;
+            }
+            return scoreWithEpisodeAndSeriesNumber;
+        }
+
+        return Score.nullScore();
+    }
+
+    private ArrayList<String> processTitle(ContentTitleMatchingFields subject, Map<String, String> subjectCustomFields, ContentTitleMatchingFields suggestion, Map<String, String> suggestionCustomFields, boolean removeEpisodeNumber) {
         String subjectTitle = subject.getTitle().trim().toLowerCase();
         String suggestionTitle = suggestion.getTitle().trim().toLowerCase();
-        String processedSubjectTitle = null;
-        String processedSuggestionTitle = null;
+        String processedSubjectTitle;
+        String processedSuggestionTitle;
 
         //TxLog titles are size capped, so truncate everything if we are equiving to txlogs
         if (TXLOG_PUBLISHERS.contains(suggestion.getPublisher())
@@ -316,8 +354,8 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             if (suggestion.getPublisher().equals(Publisher.AE_NETWORKS)
                     || subject.getPublisher().equals(Publisher.AE_NETWORKS)
             ) {
-                processedSubjectTitle = processTitle(subjectTitle, subjectCustomFields);
-                processedSuggestionTitle = processTitle(suggestionTitle, suggestionCustomFields);
+                processedSubjectTitle = processTitle(subjectTitle, subjectCustomFields, removeEpisodeNumber);
+                processedSuggestionTitle = processTitle(suggestionTitle, suggestionCustomFields, removeEpisodeNumber);
                 if (!processedSubjectTitle.equals(subjectTitle) || !processedSuggestionTitle.equals(suggestionTitle)) {
                     subjectTitle = processedSubjectTitle;
                     suggestionTitle = processedSuggestionTitle;
@@ -339,22 +377,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (TXLOG_PUBLISHERS.contains(subject.getPublisher())) {
             subjectTitle = removeArbitraryTrailingYear(subjectTitle);
         }
-
-        //return early if you can.
-        if (subjectTitle.equals(suggestionTitle)) {
-            desc.appendText("%s: A+E processed title: %s, Txlog processed %s title: %s", scoreOnPerfectMatch, processedSuggestionTitle, txlogTitleClarification, processedSubjectTitle);
-            return scoreOnPerfectMatch;
-        }
-
-        TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
-        TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
-
-        if (subjectType == suggestionType) {
-            return compareTitles(subjectTitle, suggestionTitle, txlogTitleClarification, desc);
-        }
-
-        desc.appendText("%s: A+E processed title: %s, Txlog processed %s title: %s", scoreOnMismatch, processedSuggestionTitle, txlogTitleClarification, processedSubjectTitle);
-        return Score.nullScore();
+        return new ArrayList<>(Arrays.asList(subjectTitle, suggestionTitle));
     }
 
     private String removeArbitraryTrailingYear(String suggestionTitle) {
@@ -512,7 +535,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
     /**
      * Used for custom rules between txlogs and AE Networks
      */
-    private String processTitle(String title, Map<String, String> customFields) {
+    private String processTitle(String title, Map<String, String> customFields, boolean removeEpisodeNumber) {
         title = title.replaceAll("\\s\\s+", " ");
         Matcher seriesEpisodeMatcher = SERIES_AND_EPISODE_PATTERN.matcher(title);
         if (seriesEpisodeMatcher.find()) {
@@ -529,6 +552,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
         if (theAtTheEndMatcher.find()) {
             title = String.format("the %s", title.trim().replaceAll(theAtTheEndMatcher.group(1), "").trim());
         }
+
         //Removes Series #
         Matcher seriesInTitleMatcher = SERIES_IN_TITLE_PATTERN.matcher(title);
         if (seriesInTitleMatcher.find()) {
@@ -541,6 +565,7 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             title = title.trim().replaceAll(episodeInTitleMatcher.group(1), "").trim();
         }
 
+
         //Removes special characters
         title = title.replaceAll("[^a-z0-9 :]", "");
 
@@ -551,12 +576,14 @@ public class AeTitleMatchingItemScorer implements EquivalenceScorer<Item> {
             partNumber = partMatcher.group(1);
             title = title.trim().replaceAll(partMatcher.group(1), "").trim();
         }
-
-        if (customFields.containsKey(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME)) {
-            String episodeNumber = customFields.get(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME);
-            //Removes episode number from title
-            title = title.replaceAll(episodeNumber, "").trim();
+        if(removeEpisodeNumber) {
+            if (customFields.containsKey(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME)) {
+                String episodeNumber = customFields.get(AE_NETWORKS_EPISODE_NUMBER_FIELD_NAME);
+                //Removes episode number from title
+                title = title.replaceAll(episodeNumber, "").trim();
+            }
         }
+
 
         //Adds 'part #'
         title = title + " " + partNumber;

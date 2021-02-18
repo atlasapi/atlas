@@ -66,6 +66,7 @@ public class AeTitleMatchingItemScorerTest {
         assertTxlogAeScore("weather", "weather series 11", "3", scoreOnMatch);
         assertTxlogAeScore("New: World's Deadliest Weather", "World's Deadliest Weather S1 - - Episode 7", "3", scoreOnPartialMatch);
         assertTxlogAeScore("New: World's Deadliest Weather", "", "3", scoreOnMismatch);
+        assertTxlogAeScore("New: The Drone Wars", "Storage Wars 2 - 2 - Drone Wars 24, The", "24", scoreOnMatch);
     }
 
     @Test
@@ -82,6 +83,7 @@ public class AeTitleMatchingItemScorerTest {
         assertTxlogAeScore("A New Baby Born And Love All Around! - Part Two", "A New Baby Born and Love All Around Part 2", "24", scoreOnMatch);
         assertTxlogAeScore("The Drone Wars", "Storage Wars 2 - 2 - Drone Wars 24, The", "24", scoreOnMatch);
         assertTxlogAeScore("Senior Centre Showdown", "Storage Wars 1 - 1 - Senior Center Showdown", "24", scoreOnMatch);
+        assertTxlogAeScore("New: 300 Spartans: The Last Stand", "300 Spartans: The Last Stand", "0", scoreOnMatch);
     }
 
     private void assertTxlogAeScore(

@@ -45,76 +45,8 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.STANDARD_TOP_LEVEL_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.WIKIPEDIA_CONTAINER;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_AMAZON_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_X_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BBC_REGIONAL_TXLOGS_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BBC_TO_TXLOGS_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.IMDB_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ITEM_SEARCH;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ITEM_SEQUENCE;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.RT_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.RT_UPCOMING_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STANDARD_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STRICT_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_TO_BBC_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_WITH_SERIES_SEQUENCE_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.WIKIPEDIA_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.YOUVIEW_ITEM;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
-import static org.atlasapi.media.entity.Publisher.AMC_EBS;
-import static org.atlasapi.media.entity.Publisher.BARB_CENSUS;
-import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
-import static org.atlasapi.media.entity.Publisher.BARB_NLE;
-import static org.atlasapi.media.entity.Publisher.BARB_OVERRIDES;
-import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
-import static org.atlasapi.media.entity.Publisher.BARB_X_MASTER;
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
-import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
-import static org.atlasapi.media.entity.Publisher.BETTY;
-import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
-import static org.atlasapi.media.entity.Publisher.BT_VOD;
-import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
-import static org.atlasapi.media.entity.Publisher.C4_PRESS;
-import static org.atlasapi.media.entity.Publisher.C5_DATA_SUBMISSION;
-import static org.atlasapi.media.entity.Publisher.FACEBOOK;
-import static org.atlasapi.media.entity.Publisher.FIVE;
-import static org.atlasapi.media.entity.Publisher.IMDB;
-import static org.atlasapi.media.entity.Publisher.ITUNES;
-import static org.atlasapi.media.entity.Publisher.ITV_CPS;
-import static org.atlasapi.media.entity.Publisher.JUSTWATCH;
-import static org.atlasapi.media.entity.Publisher.LAYER3_TXLOGS;
-import static org.atlasapi.media.entity.Publisher.LOVEFILM;
-import static org.atlasapi.media.entity.Publisher.NETFLIX;
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES_UPCOMING;
-import static org.atlasapi.media.entity.Publisher.ROVI_EN_GB;
-import static org.atlasapi.media.entity.Publisher.ROVI_EN_US;
-import static org.atlasapi.media.entity.Publisher.RTE;
-import static org.atlasapi.media.entity.Publisher.TALK_TALK;
-import static org.atlasapi.media.entity.Publisher.UKTV;
-import static org.atlasapi.media.entity.Publisher.VIACOM_18_DATA_SUBMISSION;
-import static org.atlasapi.media.entity.Publisher.VIMN_DATA_SUBMISSION;
-import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.*;
+import static org.atlasapi.media.entity.Publisher.*;
 
 /**
  * This class contains the source configuration for equivalence. When the equivalence executor
@@ -165,6 +97,7 @@ public class UpdaterConfigurationRegistry {
                 makeBarbMasterConfiguration(), //CDMF
                 makeBarbTransmissionConfiguration(),
                 makeLayer3TxlogsConfiguration(),
+                makeAeConfiguration(),
                 makeItvCpsConfiguration(),
                 makeNitroConfiguration(),
                 makeC4PmlsdConfiguration(),
@@ -1202,6 +1135,33 @@ public class UpdaterConfigurationRegistry {
                         ImmutableMap.of(
                                 TXLOGS_TO_BBC_ITEM, ImmutableSet.of(BBC_NITRO),
                                 BBC_REGIONAL_TXLOGS_ITEM, ImmutableSet.of(LAYER3_TXLOGS)
+                        ),
+                        STANDARD_ITEM_HANDLER,
+                        STANDARD_ITEM_MESSENGER
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        ImmutableMap.of(
+                                NOP_CONTAINER, ImmutableSet.of()
+                        ),
+                        NOP_CONTAINER_HANDLER,
+                        NOP_CONTAINER_MESSENGER
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeAeConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(AE_NETWORKS)
+                .withItemEquivalenceUpdater(
+                        ImmutableMap.of(
+                                AE_TO_TXLOGS_ITEM, ImmutableSet.of(BARB_TRANSMISSIONS)
                         ),
                         STANDARD_ITEM_HANDLER,
                         STANDARD_ITEM_MESSENGER

@@ -24,6 +24,7 @@ public class ExpandingTitleTransformer {
                     .put("7", "seven")
                     .put("8", "eight")
                     .put("9", "nine")
+                    .put("center", "centre")
                     .build());
 
 

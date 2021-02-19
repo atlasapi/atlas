@@ -19,13 +19,10 @@ import org.atlasapi.equiv.update.updaters.providers.item.VodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.WikipediaItemUpdateProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.aenetworks.AeItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.amazon.AmazonToAmazonItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BarbXItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BbcRegionalTxlogItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.BbcTxlogsItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.barb.TxlogsItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.barb.*;
 import org.atlasapi.equiv.utils.imdb.ImdbEquivUtils;
 import org.atlasapi.media.entity.Item;
 
@@ -91,6 +88,9 @@ public enum ItemEquivalenceUpdaterType {
     ),
     TXLOGS_TO_BBC_ITEM(
             BbcTxlogsItemUpdaterProvider.create(true)
+    ),
+    AE_TO_TXLOGS_ITEM(
+            AeItemUpdaterProvider.create()
     ),
     WIKIPEDIA_ITEM(
             WikipediaItemUpdateProvider.create()

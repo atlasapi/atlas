@@ -3,7 +3,7 @@ package org.atlasapi.remotesite.barb.channels;
 import java.util.Set;
 
 import org.atlasapi.input.ChannelModelTransformer;
-import org.atlasapi.input.ImageModelTranslator;
+import org.atlasapi.input.ImageModelTransformer;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 
@@ -27,7 +27,7 @@ public class BarbStringToChannelTransformerTest {
 
         modelTransformer = ChannelModelTransformer.create(
                 SubstitutionTableNumberCodec.lowerCaseOnly(),
-                mock(ImageModelTranslator.class)
+                mock(ImageModelTransformer.class)
         );
         barbTransformer = BarbStringToChannelTransformer.create(modelTransformer);
     }

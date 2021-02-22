@@ -3,6 +3,7 @@ package org.atlasapi.input;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Described;
@@ -27,7 +28,6 @@ import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.Clock;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -35,8 +35,11 @@ import org.joda.time.DateTime;
 
 public abstract class DescribedModelTransformer<F extends Description,T extends Described> extends IdentifiedModelTransformer<F, T> {
 
-    public DescribedModelTransformer(Clock clock) {
+    private final ImageModelTransformer imageModelTransformer;
+
+    public DescribedModelTransformer(Clock clock, ImageModelTransformer imageModelTransformer) {
         super(clock);
+        this.imageModelTransformer = imageModelTransformer;
     }
 
     @Override
@@ -121,22 +124,9 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         if (images == null || images.isEmpty()) {
             return ImmutableList.of();
         }
-        return Collections2.transform(
-                images,
-                input -> {
-                    org.atlasapi.media.entity.Image transformedImage = new org.atlasapi.media.entity.Image(
-                            input.getUri()
-                    );
-
-                    transformedImage.setHeight(input.getHeight());
-                    transformedImage.setWidth(input.getWidth());
-
-                    if (input.getType() != null) {
-                        transformedImage.setType(ImageType.valueOf(input.getImageType().toUpperCase()));
-                    }
-                    return transformedImage;
-                }
-        );
+        return images.stream()
+                .map(imageModelTransformer::transform)
+                .collect(Collectors.toSet());
     }
 
     private Iterable<RelatedLink> relatedLinks(

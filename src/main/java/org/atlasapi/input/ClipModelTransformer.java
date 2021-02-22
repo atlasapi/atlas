@@ -11,8 +11,10 @@ import org.joda.time.DateTime;
 
 public class ClipModelTransformer extends ItemModelTransformer  {
     public ClipModelTransformer(LookupEntryStore lookupStore, TopicStore topicStore, 
-            ChannelResolver channelResolver, NumberToShortStringCodec idCodec, Clock clock, SegmentModelTransformer segmentModelTransformer) {
-        super(lookupStore, topicStore, channelResolver, idCodec, null, clock, segmentModelTransformer);
+            ChannelResolver channelResolver, NumberToShortStringCodec idCodec, Clock clock,
+            SegmentModelTransformer segmentModelTransformer, ImageModelTransformer imageModelTransformer) {
+
+        super(lookupStore, topicStore, channelResolver, idCodec, null, clock, segmentModelTransformer, imageModelTransformer);
     }
 
     @Override

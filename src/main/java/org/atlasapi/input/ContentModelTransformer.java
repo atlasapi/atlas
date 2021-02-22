@@ -85,8 +85,10 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
     };
 
     public ContentModelTransformer(LookupEntryStore lookupStore, TopicStore topicStore, 
-            NumberToShortStringCodec idCodec, ClipModelTransformer clipsModelTransformer, Clock clock) {
-        super(clock);
+            NumberToShortStringCodec idCodec, ClipModelTransformer clipsModelTransformer,
+            Clock clock, ImageModelTransformer imageModelTransformer) {
+
+        super(clock, imageModelTransformer);
         this.lookupStore = lookupStore;
         this.topicStore = topicStore;
         this.clipsModelTransformer = clipsModelTransformer;

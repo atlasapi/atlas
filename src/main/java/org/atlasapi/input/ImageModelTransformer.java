@@ -5,12 +5,14 @@ import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageAspectRatio;
 import org.atlasapi.media.entity.ImageColor;
 import org.atlasapi.media.entity.ImageTheme;
+import org.atlasapi.media.entity.ImageType;
+
 import org.joda.time.DateTime;
 
-public class ImageModelTranslator implements ModelTransformer<org.atlasapi.media.entity.simple.Image, Image> {
+public class ImageModelTransformer implements ModelTransformer<org.atlasapi.media.entity.simple.Image, Image> {
 
-    public static ImageModelTranslator create() {
-        return new ImageModelTranslator();
+    public static ImageModelTransformer create() {
+        return new ImageModelTransformer();
     }
 
     @Override
@@ -38,6 +40,9 @@ public class ImageModelTranslator implements ModelTransformer<org.atlasapi.media
         }
         if (simple.getMimeType() != null) {
             complex.withMimeType(MimeType.fromString(simple.getMimeType()));
+        }
+        if (simple.getType() != null) {
+            complex.withType(ImageType.valueOf(simple.getImageType().toUpperCase()));
         }
         if (simple.getAvailabilityStart() != null) {
             complex.withAvailabilityStart(new DateTime(simple.getAvailabilityStart()));

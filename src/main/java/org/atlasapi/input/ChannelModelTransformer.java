@@ -29,11 +29,11 @@ import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 public class ChannelModelTransformer implements ModelTransformer<Channel, org.atlasapi.media.channel.Channel> {
 
     private final NumberToShortStringCodec v4Codec;
-    private final ImageModelTranslator imageTranslator;
+    private final ImageModelTransformer imageTranslator;
 
     private ChannelModelTransformer(
             NumberToShortStringCodec v4Codec,
-            ImageModelTranslator imageTranslator
+            ImageModelTransformer imageTranslator
     ) {
         this.v4Codec = checkNotNull(v4Codec);
         this.imageTranslator = checkNotNull(imageTranslator);
@@ -41,7 +41,7 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
 
     public static ChannelModelTransformer create(
             NumberToShortStringCodec v4Codec,
-            ImageModelTranslator imageTranslator
+            ImageModelTransformer imageTranslator
     ) {
         return new ChannelModelTransformer(v4Codec, imageTranslator);
     }

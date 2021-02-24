@@ -1,4 +1,4 @@
-package org.atlasapi.input;
+    package org.atlasapi.input;
 
 import com.metabroadcast.common.media.MimeType;
 import org.atlasapi.media.entity.Image;
@@ -41,8 +41,8 @@ public class ImageModelTransformer implements ModelTransformer<org.atlasapi.medi
         if (simple.getMimeType() != null) {
             complex.withMimeType(MimeType.fromString(simple.getMimeType()));
         }
-        if (simple.getType() != null) {
-            complex.withType(ImageType.valueOf(simple.getImageType().toUpperCase()));
+        if (simple.getImageType() != null) {
+            complex.withType(ImageType.valueOf(simple.getType().toUpperCase()));
         }
         if (simple.getAvailabilityStart() != null) {
             complex.withAvailabilityStart(new DateTime(simple.getAvailabilityStart()));

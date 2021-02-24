@@ -42,7 +42,7 @@ public class ImageModelTransformer implements ModelTransformer<org.atlasapi.medi
             complex.withMimeType(MimeType.fromString(simple.getMimeType()));
         }
         if (simple.getImageType() != null) {
-            complex.withType(ImageType.valueOf(simple.getType().toUpperCase()));
+            complex.withType(ImageType.valueOf(simple.getImageType().toUpperCase()));
         }
         if (simple.getAvailabilityStart() != null) {
             complex.withAvailabilityStart(new DateTime(simple.getAvailabilityStart()));

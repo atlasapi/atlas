@@ -23,6 +23,7 @@ import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
 import org.atlasapi.equiv.messengers.EquivalenceResultMessenger;
 import org.atlasapi.equiv.results.persistence.FileEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
+import org.atlasapi.equiv.results.persistence.S3EquivalenceResultStore;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceResultUpdater;
 import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
@@ -249,7 +250,7 @@ public class EquivModule {
     @Bean
     public RecentEquivalenceResultStore equivalenceResultStore() {
         return new RecentEquivalenceResultStore(
-                new FileEquivalenceResultStore(new File(equivResultsDirectory))
+                new S3EquivalenceResultStore(new File(equivResultsDirectory))
         );
     }
 

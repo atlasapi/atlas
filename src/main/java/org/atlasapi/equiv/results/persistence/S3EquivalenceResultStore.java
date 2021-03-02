@@ -40,8 +40,17 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
             EquivalenceResults<T> results) {
         StoredEquivalenceResults storedEquivalenceResults = translator.toStoredEquivalenceResults(results);
         String filename = filenameFor(results.subject().getCanonicalUri());
-        String filePath = directoryFor(filename) + "/" + filename;
-        s3Processor.uploadFile(filePath, new File(filename));
+        try {
+            File tempFile = File.createTempFile(filename, null);
+            ObjectOutputStream os = new ObjectOutputStream(
+                    new FileOutputStream(tempFile));
+            os.writeObject(storedEquivalenceResults);
+            os.close();
+            String filePath = directoryFor(filename) + "/" + filename;
+            s3Processor.uploadFile(filePath, tempFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         return storedEquivalenceResults;
     }
@@ -88,7 +97,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
         int firstDir = hashcode & mask;
         int secondDir = (hashcode >> 8) & mask;
 
-        File firstPath = new File(s3Processor.getS3Bucket(), String.format("%03d", firstDir));
+        File firstPath = new File(String.format("%03d", firstDir));
         File secondPath = new File(firstPath, String.format("%03d", secondDir));
 
         if (!secondPath.isDirectory()) {

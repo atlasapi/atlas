@@ -57,7 +57,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
 
     @Override
     public StoredEquivalenceResults forId(String canonicalUri) {
-        String filename = filenameFor(canonicalUri);
+        String filename = filenameFor(canonicalUri) + ".html";
         String filePath = directoryFor(filename) + "/" + filename;
 
         Optional<StoredEquivalenceResults> resultInHashedDirectory = s3Processor.getStoredEquivalenceResults(filePath);

@@ -21,6 +21,7 @@ import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
 import org.atlasapi.equiv.messengers.EquivalenceResultMessenger;
+import org.atlasapi.equiv.results.persistence.CombinedEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.FileEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.S3EquivalenceResultStore;
@@ -254,7 +255,7 @@ public class EquivModule {
     @Bean
     public RecentEquivalenceResultStore equivalenceResultStore() {
         return new RecentEquivalenceResultStore(
-                new S3EquivalenceResultStore(new File(equivResultsDirectory), s3Access, s3Secret, equivS3Bucket)
+                new CombinedEquivalenceResultStore(new File(equivResultsDirectory), s3Access, s3Secret, equivS3Bucket)
         );
     }
 

@@ -18,11 +18,11 @@ import java.util.List;
  */
 public class CombinedEquivalenceResultStore implements EquivalenceResultStore {
 
-    private StoredEquivalenceResultsTranslator translator = new StoredEquivalenceResultsTranslator();
+    private final StoredEquivalenceResultsTranslator translator = new StoredEquivalenceResultsTranslator();
     private final File baseDirectory;
-    private S3EquivalenceResultStore s3EquivalenceResultStore;
+    private final S3EquivalenceResultStore s3EquivalenceResultStore;
 
-    public CombinedEquivalenceResultStore(File directory) {
+    public CombinedEquivalenceResultStore(File directory, String s3Access, String s3Secret, String s3Bucket) {
         if(!directory.isDirectory()) {
             throw new IllegalArgumentException("Must be a directory");
         }
@@ -30,7 +30,7 @@ public class CombinedEquivalenceResultStore implements EquivalenceResultStore {
             throw new IllegalArgumentException("Directory does not exist");
         }
         this.baseDirectory = directory;
-//        this.s3EquivalenceResultStore = new S3EquivalenceResultStore(directory);
+        this.s3EquivalenceResultStore = new S3EquivalenceResultStore(directory, s3Access, s3Secret, s3Bucket);
     }
     
     @Override
@@ -49,7 +49,7 @@ public class CombinedEquivalenceResultStore implements EquivalenceResultStore {
         } catch (IOException e) {
             Throwables.propagate(e);
         }
-        
+
         return storedEquivalenceResults;
     }
 

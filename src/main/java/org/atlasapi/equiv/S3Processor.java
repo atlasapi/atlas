@@ -20,13 +20,11 @@ public class S3Processor {
     private static final Logger log = LoggerFactory.getLogger(S3Processor.class);
 
 
-    private final String s3BucketDownload;
-    private final String s3BucketUpload;
+    private final String s3Bucket;
     private final AmazonS3Client s3Client;
 
-    private S3Processor(String s3Access, String s3Secret, String s3BucketDownload, String s3BucketUpload) {
-        this.s3BucketDownload = s3BucketDownload;
-        this.s3BucketUpload = s3BucketUpload;
+    private S3Processor(String s3Access, String s3Secret, String s3Bucket) {
+        this.s3Bucket = s3Bucket;
         this.s3Client = new AmazonS3Client(
                 new BasicAWSCredentials(
                         s3Access,
@@ -34,18 +32,18 @@ public class S3Processor {
                 ));
     }
 
-    public static S3Processor create(String s3Access, String s3Secret, String s3BucketDownload, String s3BucketUpload) {
-        return new S3Processor(s3Access, s3Secret, s3BucketDownload, s3BucketUpload);
+    public static S3Processor create(String s3Access, String s3Secret, String s3Bucket) {
+        return new S3Processor(s3Access, s3Secret, s3Bucket);
     }
 
-    public String getS3BucketUpload() {
-        return s3BucketUpload;
+    public String getS3Bucket() {
+        return s3Bucket;
     }
 
     public Optional<StoredEquivalenceResults> getStoredEquivalenceResults(String filePath) {
         S3Object s3object;
         try {
-            s3object = s3Client.getObject(s3BucketDownload, filePath);
+            s3object = s3Client.getObject(s3Bucket, filePath);
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -66,7 +64,7 @@ public class S3Processor {
     }
 
     public void uploadFile(String key, File file) {
-        log.info("Uploading file {} to S3 bucket {}", key, this.s3BucketUpload);
-        s3Client.putObject(this.s3BucketUpload, key, file);
+        log.info("Uploading file {} to S3 bucket {}", key, this.s3Bucket);
+        s3Client.putObject(this.s3Bucket, key, file);
     }
 }

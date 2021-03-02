@@ -24,7 +24,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
     private final File baseDirectory;
     private final S3Processor s3Processor;
 
-    public S3EquivalenceResultStore(File directory, String s3Access, String s3Secret, String s3BucketDownload, String s3BucketUpload) {
+    public S3EquivalenceResultStore(File directory, String s3Access, String s3Secret, String s3Bucket) {
         if(!directory.isDirectory()) {
             throw new IllegalArgumentException("Must be a directory");
         }
@@ -32,7 +32,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
             throw new IllegalArgumentException("Directory does not exist");
         }
         this.baseDirectory = directory;
-        this.s3Processor = S3Processor.create(s3Access, s3Secret, s3BucketDownload, s3BucketUpload);
+        this.s3Processor = S3Processor.create(s3Access, s3Secret, s3Bucket);
     }
     
     @Override
@@ -88,7 +88,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
         int firstDir = hashcode & mask;
         int secondDir = (hashcode >> 8) & mask;
 
-        File firstPath = new File(s3Processor.getS3BucketUpload(), String.format("%03d", firstDir));
+        File firstPath = new File(s3Processor.getS3Bucket(), String.format("%03d", firstDir));
         File secondPath = new File(firstPath, String.format("%03d", secondDir));
 
         if (!secondPath.isDirectory()) {

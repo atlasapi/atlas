@@ -68,8 +68,7 @@ public class EquivModule {
 
     @Value("${s3.access}") private String s3Access;
     @Value("${s3.secret}") private String s3Secret;
-    @Value("${equiv.s3.bucket.download}") private String s3BucketDownload;
-    @Value("${equiv.s3.bucket.upload}") private String s3BucketUpload;
+    @Value("${equiv.s3.bucket}") private String equivS3Bucket;
 
     @Autowired private ScheduleResolver scheduleResolver;
     @Autowired @Qualifier("EquivalenceSearchResolver") private SearchResolver owlSearchResolver;
@@ -255,7 +254,7 @@ public class EquivModule {
     @Bean
     public RecentEquivalenceResultStore equivalenceResultStore() {
         return new RecentEquivalenceResultStore(
-                new S3EquivalenceResultStore(new File(equivResultsDirectory), s3Access, s3Secret, s3BucketDownload, s3BucketUpload)
+                new S3EquivalenceResultStore(new File(equivResultsDirectory), s3Access, s3Secret, equivS3Bucket)
         );
     }
 

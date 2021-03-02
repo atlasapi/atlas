@@ -295,8 +295,7 @@ CMD java \
     -Drte.feed.url="$RTE_FEED_URL" \
     -Ds3.access="$S3_ACCESS" \
     -Ds3.secret="$S3_SECRET" \
-    -Dequiv.s3.bucket.download="$EQUIV_S3_BUCKET_DOWNLOAD" \
-    -Dequiv.s3.bucket.upload="$EQUIV_S3_BUCKET_UPLOAD" \
+    -Dequiv.s3.bucket="$EQUIV_S3_BUCKET" \
     -Dschedule.repopulator.bbc.scheduled="$SCHEDULE_REPOPULATOR_BBC_SCHEDULED" \
     -Dschedule.repopulator.c4.scheduled="$SCHEDULE_REPOPULATOR_C4_SCHEDULED" \
     -Dschedule.repopulator.full.scheduled="$SCHEDULE_REPOPULATOR_FULL_SCHEDULED" \

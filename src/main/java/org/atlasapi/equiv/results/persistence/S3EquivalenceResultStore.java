@@ -24,7 +24,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
     private final File baseDirectory;
     private final S3Processor s3Processor;
 
-    public S3EquivalenceResultStore(File directory) {
+    public S3EquivalenceResultStore(File directory, String s3Access, String s3Secret, String s3BucketDownload, String s3BucketUpload) {
         if(!directory.isDirectory()) {
             throw new IllegalArgumentException("Must be a directory");
         }
@@ -32,7 +32,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
             throw new IllegalArgumentException("Directory does not exist");
         }
         this.baseDirectory = directory;
-        this.s3Processor = S3Processor.create();
+        this.s3Processor = S3Processor.create(s3Access, s3Secret, s3BucketDownload, s3BucketUpload);
     }
     
     @Override

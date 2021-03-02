@@ -30,7 +30,7 @@ public class CombinedEquivalenceResultStore implements EquivalenceResultStore {
             throw new IllegalArgumentException("Directory does not exist");
         }
         this.baseDirectory = directory;
-        this.s3EquivalenceResultStore = new S3EquivalenceResultStore(directory);
+//        this.s3EquivalenceResultStore = new S3EquivalenceResultStore(directory);
     }
     
     @Override

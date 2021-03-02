@@ -1,24 +1,18 @@
 package org.atlasapi.equiv;
 
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import org.atlasapi.equiv.results.persistence.StoredEquivalenceResult;
 import org.atlasapi.equiv.results.persistence.StoredEquivalenceResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.text.ParseException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class S3Processor {
@@ -26,20 +20,22 @@ public class S3Processor {
     private static final Logger log = LoggerFactory.getLogger(S3Processor.class);
 
 
-    private final AmazonS3Client s3Client;
     private final String s3BucketDownload;
     private final String s3BucketUpload;
-    private final AwsConfiguration awsConfiguration;
+    private final AmazonS3Client s3Client;
 
-    private S3Processor() {
-        this.awsConfiguration = AwsConfiguration.create();
-        this.s3Client = awsConfiguration.getS3Client();
-        this.s3BucketDownload = awsConfiguration.getS3BucketDownload();
-        this.s3BucketUpload = awsConfiguration.getS3BucketUpload();
+    private S3Processor(String s3Access, String s3Secret, String s3BucketDownload, String s3BucketUpload) {
+        this.s3BucketDownload = s3BucketDownload;
+        this.s3BucketUpload = s3BucketUpload;
+        this.s3Client = new AmazonS3Client(
+                new BasicAWSCredentials(
+                        s3Access,
+                        s3Secret
+                ));
     }
 
-    public static S3Processor create() {
-        return new S3Processor();
+    public static S3Processor create(String s3Access, String s3Secret, String s3BucketDownload, String s3BucketUpload) {
+        return new S3Processor(s3Access, s3Secret, s3BucketDownload, s3BucketUpload);
     }
 
     public String getS3BucketUpload() {

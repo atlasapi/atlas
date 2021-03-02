@@ -39,7 +39,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
     public <T extends Content> StoredEquivalenceResults store(
             EquivalenceResults<T> results) {
         StoredEquivalenceResults storedEquivalenceResults = translator.toStoredEquivalenceResults(results);
-        String filename = filenameFor(results.subject().getCanonicalUri());
+        String filename = filenameFor(results.subject().getCanonicalUri()) + ".html";
         try {
             File tempFile = File.createTempFile(filename, null);
             ObjectOutputStream os = new ObjectOutputStream(

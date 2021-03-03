@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.Optional;
+import java.util.zip.GZIPInputStream;
 
 public class S3Processor {
 
@@ -50,8 +51,9 @@ public class S3Processor {
         S3ObjectInputStream s3InputStream = s3object.getObjectContent();
 
 
-        try(ObjectInputStream is = new ObjectInputStream(s3InputStream)) {
-            Object readObject = is.readObject();
+        try(GZIPInputStream gzipInputStream = new GZIPInputStream(s3InputStream);
+                ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream)) {
+            Object readObject = objectInputStream.readObject();
             try {
                 return Optional.of((StoredEquivalenceResults) readObject);
             } catch (ClassCastException e) { //Stored object might be the old result object

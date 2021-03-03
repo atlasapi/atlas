@@ -9,6 +9,9 @@ import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.media.entity.Content;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 /**
@@ -96,6 +99,21 @@ public class CombinedEquivalenceResultStore implements EquivalenceResultStore {
             }
             
         }));
+    }
+
+    private StoredEquivalenceResults moveFileFromEfsToS3(String filename) {
+        Optional<StoredEquivalenceResults> resultInHashedDirectory = resultFor(new File(directoryFor(filename), filename));
+        if (resultInHashedDirectory.isPresent()) {
+            s3EquivalenceResultStore.moveResultsToS3(resultInHashedDirectory.get(), filename);
+            return resultInHashedDirectory.get();
+        }
+
+        Optional<StoredEquivalenceResults> resultInBaseDirectory = resultFor(new File(baseDirectory, filename));
+        if (resultInBaseDirectory.isPresent()) {
+            s3EquivalenceResultStore.moveResultsToS3(resultInBaseDirectory.get(), filename);
+            return resultInBaseDirectory.get();
+        }
+        return null;
     }
 
     private String filenameFor(String canonicalUri) {

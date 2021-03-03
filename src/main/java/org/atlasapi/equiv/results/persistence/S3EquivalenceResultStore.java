@@ -1,10 +1,8 @@
 package org.atlasapi.equiv.results.persistence;
 
 import com.google.common.base.Function;
-import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.sun.istack.Nullable;
 import org.atlasapi.equiv.S3Processor;
 import org.atlasapi.equiv.results.EquivalenceResults;
 import org.atlasapi.media.entity.Content;
@@ -12,6 +10,7 @@ import org.atlasapi.media.entity.Content;
 import java.io.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Filesystem-based store for equivalence results. New files will be stored in a
@@ -39,13 +38,14 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
     public <T extends Content> StoredEquivalenceResults store(
             EquivalenceResults<T> results) {
         StoredEquivalenceResults storedEquivalenceResults = translator.toStoredEquivalenceResults(results);
-        String filename = filenameFor(results.subject().getCanonicalUri()) + ".html";
+        String filename = filenameFor(results.subject().getCanonicalUri()) + ".html.gz";
         try {
             File tempFile = File.createTempFile(filename, null);
-            ObjectOutputStream os = new ObjectOutputStream(
-                    new FileOutputStream(tempFile));
-            os.writeObject(storedEquivalenceResults);
-            os.close();
+            try (FileOutputStream fos = new FileOutputStream(tempFile);
+                 GZIPOutputStream gos = new GZIPOutputStream(fos);
+                 ObjectOutputStream os = new ObjectOutputStream(gos)) {
+                os.writeObject(storedEquivalenceResults);
+            }
             String filePath = directoryFor(filename) + "/" + filename;
             s3Processor.uploadFile(filePath, tempFile);
         } catch (IOException e) {
@@ -57,7 +57,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
 
     @Override
     public StoredEquivalenceResults forId(String canonicalUri) {
-        String filename = filenameFor(canonicalUri) + ".html";
+        String filename = filenameFor(canonicalUri) + ".html.gz";
         String filePath = directoryFor(filename) + "/" + filename;
 
         Optional<StoredEquivalenceResults> resultInHashedDirectory = s3Processor.getStoredEquivalenceResults(filePath);
@@ -84,6 +84,23 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
 
     private String filenameFor(String canonicalUri) {
         return canonicalUri.replace('/', '-');
+    }
+
+    public StoredEquivalenceResults moveResultsToS3(StoredEquivalenceResults storedEquivalenceResults, String filename) {
+        filename = filename + ".html";
+        try {
+            File tempFile = File.createTempFile(filename, null);
+            try (ObjectOutputStream os = new ObjectOutputStream(
+                    new FileOutputStream(tempFile))) {
+                os.writeObject(storedEquivalenceResults);
+            }
+            String filePath = directoryFor(filename) + "/" + filename;
+            s3Processor.uploadFile(filePath, tempFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return storedEquivalenceResults;
     }
 
     /**

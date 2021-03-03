@@ -48,6 +48,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
             }
             String filePath = directoryFor(filename) + "/" + filename;
             s3Processor.uploadFile(filePath, tempFile);
+            tempFile.deleteOnExit();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,15 +88,17 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
     }
 
     public StoredEquivalenceResults moveResultsToS3(StoredEquivalenceResults storedEquivalenceResults, String filename) {
-        filename = filename + ".html";
+        filename = filename + ".html.gz";
         try {
             File tempFile = File.createTempFile(filename, null);
-            try (ObjectOutputStream os = new ObjectOutputStream(
-                    new FileOutputStream(tempFile))) {
+            try (FileOutputStream fos = new FileOutputStream(tempFile);
+                 GZIPOutputStream gos = new GZIPOutputStream(fos);
+                 ObjectOutputStream os = new ObjectOutputStream(gos)) {
                 os.writeObject(storedEquivalenceResults);
             }
             String filePath = directoryFor(filename) + "/" + filename;
             s3Processor.uploadFile(filePath, tempFile);
+            tempFile.deleteOnExit();
         } catch (IOException e) {
             e.printStackTrace();
         }

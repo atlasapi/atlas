@@ -47,6 +47,10 @@ public class CombinedEquivalenceResultStore implements EquivalenceResultStore {
             os.writeObject(storedEquivalenceResults);
             os.close();
             s3EquivalenceResultStore.store(results);
+            Files.walk(Paths.get("/data/equiv-results/100/100"))
+                    .filter(Files::isRegularFile)
+                    .map(Path::getFileName)
+                    .forEach(x -> moveFileFromEfsToS3(x.toString()));
         } catch (FileNotFoundException e) {
             Throwables.propagate(e);
         } catch (IOException e) {

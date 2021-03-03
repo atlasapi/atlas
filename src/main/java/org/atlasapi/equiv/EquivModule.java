@@ -255,7 +255,7 @@ public class EquivModule {
     @Bean
     public RecentEquivalenceResultStore equivalenceResultStore() {
         return new RecentEquivalenceResultStore(
-                new S3EquivalenceResultStore(new File(equivResultsDirectory), s3Access, s3Secret, equivS3Bucket)
+                new CombinedEquivalenceResultStore(new File(equivResultsDirectory), s3Access, s3Secret, equivS3Bucket)
         );
     }
 

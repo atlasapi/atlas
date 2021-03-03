@@ -11,6 +11,7 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.BlackoutRestriction;
 import org.atlasapi.media.entity.Broadcast;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -32,8 +33,8 @@ public class BroadcastModelTransformer {
 
         Broadcast complex = new Broadcast(
                 resolveChannel(simple),
-                new DateTime(simple.getTransmissionTime()),
-                new DateTime(simple.getTransmissionEndTime())
+                new DateTime(simple.getTransmissionTime(), DateTimeZone.UTC),
+                new DateTime(simple.getTransmissionEndTime(), DateTimeZone.UTC)
         )
                 .withId(simple.getId());
         

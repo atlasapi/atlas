@@ -38,7 +38,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
     public <T extends Content> StoredEquivalenceResults store(
             EquivalenceResults<T> results) {
         StoredEquivalenceResults storedEquivalenceResults = translator.toStoredEquivalenceResults(results);
-        String filename = filenameFor(results.subject().getCanonicalUri()) + ".html.gz";
+        String filename = filenameFor(results.subject().getCanonicalUri()) + ".gz";
         try {
             File tempFile = File.createTempFile(filename, null);
             try (FileOutputStream fos = new FileOutputStream(tempFile);
@@ -46,8 +46,7 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
                  ObjectOutputStream os = new ObjectOutputStream(gos)) {
                 os.writeObject(storedEquivalenceResults);
             }
-            String filePath = directoryFor(filename) + "/" + filename;
-            s3Processor.uploadFile(filePath, tempFile);
+            s3Processor.uploadFile(filename, tempFile);
             tempFile.deleteOnExit();
         } catch (IOException e) {
             e.printStackTrace();
@@ -58,17 +57,10 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
 
     @Override
     public StoredEquivalenceResults forId(String canonicalUri) {
-        String filename = filenameFor(canonicalUri) + ".html.gz";
-        String filePath = directoryFor(filename) + "/" + filename;
+        String filename = filenameFor(canonicalUri) + ".gz";
 
-        Optional<StoredEquivalenceResults> resultInHashedDirectory = s3Processor.getStoredEquivalenceResults(filePath);
-        if (resultInHashedDirectory.isPresent()) {
-            return resultInHashedDirectory.get();
-        }
-
-        filePath = baseDirectory + "/" + filename;
-        Optional<StoredEquivalenceResults> resultInBaseDirectory = s3Processor.getStoredEquivalenceResults(filePath);
-        return resultInBaseDirectory.orElse(null);
+        Optional<StoredEquivalenceResults> resultInHashedDirectory = s3Processor.getStoredEquivalenceResults(filename);
+        return resultInHashedDirectory.orElse(null);
     }
 
     @Override
@@ -79,52 +71,11 @@ public class S3EquivalenceResultStore implements EquivalenceResultStore {
             public StoredEquivalenceResults apply(String input) {
                 return forId(input);
             }
-            
+
         }));
     }
 
     private String filenameFor(String canonicalUri) {
         return canonicalUri.replace('/', '-');
     }
-
-    public StoredEquivalenceResults moveResultsToS3(StoredEquivalenceResults storedEquivalenceResults, String filename) {
-        filename = filename + ".html.gz";
-        try {
-            File tempFile = File.createTempFile(filename, null);
-            try (FileOutputStream fos = new FileOutputStream(tempFile);
-                 GZIPOutputStream gos = new GZIPOutputStream(fos);
-                 ObjectOutputStream os = new ObjectOutputStream(gos)) {
-                os.writeObject(storedEquivalenceResults);
-            }
-            String filePath = directoryFor(filename) + "/" + filename;
-            s3Processor.uploadFile(filePath, tempFile);
-            tempFile.deleteOnExit();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return storedEquivalenceResults;
-    }
-
-    /**
-     * Create a hashed directory for the given filename, creating if necessary
-     */
-    private File directoryFor(String filename) {
-
-        // Inspired by http://michaelandrews.typepad.com/the_technical_times/2009/10/creating-a-hashed-directory-structure.html
-        int hashcode = filename.hashCode();
-        int mask = 255;
-        int firstDir = hashcode & mask;
-        int secondDir = (hashcode >> 8) & mask;
-
-        File firstPath = new File(String.format("%03d", firstDir));
-        File secondPath = new File(firstPath, String.format("%03d", secondDir));
-
-        if (!secondPath.isDirectory()) {
-            secondPath.mkdirs();
-        }
-
-        return secondPath;
-    }
-
 }

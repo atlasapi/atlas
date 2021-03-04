@@ -47,10 +47,6 @@ public class CombinedEquivalenceResultStore implements EquivalenceResultStore {
             os.writeObject(storedEquivalenceResults);
             os.close();
             s3EquivalenceResultStore.store(results);
-            Files.walk(Paths.get("/data/equiv-results/100/100"))
-                    .filter(Files::isRegularFile)
-                    .map(Path::getFileName)
-                    .forEach(x -> moveFileFromEfsToS3(x.toString()));
         } catch (FileNotFoundException e) {
             Throwables.propagate(e);
         } catch (IOException e) {
@@ -103,21 +99,6 @@ public class CombinedEquivalenceResultStore implements EquivalenceResultStore {
             }
             
         }));
-    }
-
-    private StoredEquivalenceResults moveFileFromEfsToS3(String filename) {
-        Optional<StoredEquivalenceResults> resultInHashedDirectory = resultFor(new File(directoryFor(filename), filename));
-        if (resultInHashedDirectory.isPresent()) {
-            s3EquivalenceResultStore.moveResultsToS3(resultInHashedDirectory.get(), filename);
-            return resultInHashedDirectory.get();
-        }
-
-        Optional<StoredEquivalenceResults> resultInBaseDirectory = resultFor(new File(baseDirectory, filename));
-        if (resultInBaseDirectory.isPresent()) {
-            s3EquivalenceResultStore.moveResultsToS3(resultInBaseDirectory.get(), filename);
-            return resultInBaseDirectory.get();
-        }
-        return null;
     }
 
     private String filenameFor(String canonicalUri) {

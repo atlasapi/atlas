@@ -9,30 +9,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Certificate;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.CrewMember;
+import org.atlasapi.media.entity.*;
 import org.atlasapi.media.entity.CrewMember.Role;
-import org.atlasapi.media.entity.Encoding;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Film;
-import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.ImageAspectRatio;
-import org.atlasapi.media.entity.ImageColor;
-import org.atlasapi.media.entity.ImageType;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.RevenueContract;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.RelatedLink;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 
 import com.metabroadcast.common.currency.Price;
@@ -69,6 +48,10 @@ public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
     private static final String URL_SUFFIX_TO_REMOVE = "ref=atv_feed_catalog";
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
+    private static final String AMAZON_ICON_URL = "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-video-square-logo.jpeg";
+    private static final String AMAZON_PRIME_ICON_URL = "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-prime-video-square-logo.jpeg";
+    private static final String AMAZON_VIDEO_PROVIDER = "amazon-video";
+    private static final String AMAZON_PRIME_VIDEO_PROVIDER = "amazon-prime-video";
 
     //because the YV code requires dates in order to pick up which ondemands to generate, but amazon sends nothing.
     private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse(
@@ -236,7 +219,9 @@ public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
             hdLocations.add(createLocation(
                     RevenueContract.PAY_TO_BUY,
                     source.getUnboxHdPurchasePrice(),
-                    source.getUnboxHdPurchaseUrl()
+                    source.getUnboxHdPurchaseUrl(),
+                    AMAZON_VIDEO_PROVIDER,
+                    AMAZON_ICON_URL
             ));
             if (Boolean.TRUE.equals(source.isTrident())) { //available through subscription
                 hdLocations.add(createSubLocation(source.getUnboxHdPurchaseUrl()));
@@ -247,7 +232,9 @@ public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
             hdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,
                     source.getUnboxHdRentalPrice(),
-                    source.getUnboxHdRentalUrl()
+                    source.getUnboxHdRentalUrl(),
+                    AMAZON_VIDEO_PROVIDER,
+                    AMAZON_ICON_URL
             ));
             if (Boolean.TRUE.equals(source.isTrident())) {
                 hdLocations.add(createSubLocation(source.getUnboxHdRentalUrl()));
@@ -259,7 +246,9 @@ public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
             sdLocations.add(createLocation(
                     RevenueContract.PAY_TO_BUY,
                     source.getUnboxSdPurchasePrice(),
-                    source.getUnboxSdPurchaseUrl()
+                    source.getUnboxSdPurchaseUrl(),
+                    AMAZON_VIDEO_PROVIDER,
+                    AMAZON_ICON_URL
             ));
             if (Boolean.TRUE.equals(source.isTrident())) {
                 sdLocations.add(createSubLocation(source.getUnboxSdPurchaseUrl()));
@@ -270,7 +259,9 @@ public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
             sdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,
                     source.getUnboxSdRentalPrice(),
-                    source.getUnboxSdRentalUrl()
+                    source.getUnboxSdRentalUrl(),
+                    AMAZON_VIDEO_PROVIDER,
+                    AMAZON_ICON_URL
             ));
             if (Boolean.TRUE.equals(source.isTrident())) {
                 sdLocations.add(createSubLocation(source.getUnboxSdRentalUrl()));
@@ -357,18 +348,19 @@ public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
     }
 
     private Location createLocation(RevenueContract revenueContract,
-            @Nullable String price, String url) {
+            @Nullable String price, String url, String providerName, String iconUrl) {
         String cleanedUri = cleanUri(url);
 
         Location location = new Location();
         location.setPolicy(generatePolicy(revenueContract, price));
         location.setUri(cleanedUri);
         location.setCanonicalUri(createCannonicalUri(cleanedUri, revenueContract));
+        location.setProvider(new Provider(providerName, iconUrl));
         return location;
     }
 
     private Location createSubLocation(String url) {
-        return createLocation(RevenueContract.SUBSCRIPTION, null, url);
+        return createLocation(RevenueContract.SUBSCRIPTION, null, url, AMAZON_PRIME_VIDEO_PROVIDER, AMAZON_PRIME_ICON_URL);
     }
 
     /**

@@ -8,31 +8,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Currency;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.CrewMember;
-import org.atlasapi.media.entity.Encoding;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Film;
-import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.ImageAspectRatio;
-import org.atlasapi.media.entity.ImageType;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Policy;
+import org.atlasapi.media.entity.*;
 import org.atlasapi.media.entity.Policy.RevenueContract;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -249,6 +229,51 @@ public class AmazonContentExtractorTest {
         assertEquals(RevenueContract.PAY_TO_RENT, policy.getRevenueContract());
         assertEquals(new Price(Currency.getInstance("GBP"), 9.99), policy.getPrice());
         assertEquals(ImmutableSet.of(Countries.GB), policy.getAvailableCountries());
+    }
+
+    @Test
+    public void testProviderInformationSubscription() {
+        AmazonItem content = AmazonItem.builder()
+                .withIsTrident(true)
+                .withUnboxSdRentalPrice("9.99")
+                .withUnboxSdRentalUrl("http://www.amazon.co.uk/gp/product/B00EV5ROP4/INSERT_TAG_HERE/ref=atv_feed_catalog/")
+                .build();
+
+        Set<Version> versions = new AmazonContentExtractor().generateVersions(content);
+        Set<Location> locations = versions.iterator().next().getManifestedAs().iterator().next().getAvailableAt();
+        for (Location location : locations) {
+            Provider provider = location.getProvider();
+            if(location.getCanonicalUri().contains("PAY_TO_RENT")) {
+                assertEquals(provider.getName(), "amazon-video");
+                assertEquals(provider.getIconUrl(), "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-video-square-logo.jpeg");
+            } else if(location.getCanonicalUri().contains("SUBSCRIPTION")) {
+                assertEquals(provider.getName(), "amazon-prime-video");
+                assertEquals(provider.getIconUrl(), "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-prime-video-square-logo.jpeg");
+            }
+        }
+        assertEquals(locations.size(), 2);
+    }
+
+    @Test
+    public void testProviderInformationNoSubscription() {
+        AmazonItem content = AmazonItem.builder()
+                .withUnboxHdRentalPrice("9.99")
+                .withUnboxHdRentalUrl("http://www.amazon.co.uk/gp/product/B00EV5ROP4/INSERT_TAG_HERE/ref=atv_feed_catalog/")
+                .build();
+
+        Set<Version> versions = new AmazonContentExtractor().generateVersions(content);
+        Set<Location> locations = versions.iterator().next().getManifestedAs().iterator().next().getAvailableAt();
+        for (Location location : locations) {
+            Provider provider = location.getProvider();
+            if(location.getCanonicalUri().contains("PAY_TO_RENT")) {
+                assertEquals(provider.getName(), "amazon-video");
+                assertEquals(provider.getIconUrl(), "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-video-square-logo.jpeg");
+            } else if(location.getCanonicalUri().contains("SUBSCRIPTION")) {
+                assertEquals(provider.getName(), "amazon-prime-video");
+                assertEquals(provider.getIconUrl(), "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-prime-video-square-logo.jpeg");
+            }
+        }
+        assertEquals(locations.size(), 1);
     }
     
     @Test

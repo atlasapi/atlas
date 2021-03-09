@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.atlasapi.media.entity.*;
 import org.atlasapi.media.entity.CrewMember.Role;
 import org.atlasapi.media.entity.Policy.RevenueContract;
@@ -198,7 +199,8 @@ public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
         return film;
     }
 
-    private Set<Version> generateVersions(AmazonItem source) {
+    @VisibleForTesting
+    public Set<Version> generateVersions(AmazonItem source) {
         //There are 4 sources of information about the actual quality
         //1. does the title contain a UHD tag?
         //2. does the seriesTitle contain a UHD tag?

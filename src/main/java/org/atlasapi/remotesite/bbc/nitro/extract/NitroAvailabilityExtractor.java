@@ -23,6 +23,7 @@ import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Network;
 import org.atlasapi.media.entity.Policy.Platform;
+import org.atlasapi.media.entity.Provider;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
 
@@ -63,6 +64,8 @@ public class NitroAvailabilityExtractor {
     private static final int SD_BITRATE = 1_500_000;
 
     private static final String VIDEO_MEDIA_TYPE = "Video";
+    private static final String BBC_PROVIDER_NAME = "bbc-iplayer";
+    private static final String BBC_PROVIDER_ICON_URL = "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/bbc-iplayer-square-logo.jpeg";
 
     private static final Predicate<Availability> IS_HD = input -> input.getMediaSet().contains("iptv-hd");
 
@@ -308,6 +311,7 @@ public class NitroAvailabilityExtractor {
         location.setTransportType(TransportType.LINK);
         location.setPolicy(policy(availability, mediaSet, platform, network, mediaType));
         location.setAvailable(!REVOKED.equals(availability.getStatus()));
+        location.setProvider(new Provider(BBC_PROVIDER_NAME, BBC_PROVIDER_ICON_URL));
 
         return location;
     }

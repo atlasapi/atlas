@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.amazon;
 
+import static org.atlasapi.remotesite.amazon.AmazonContentExtractor.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -244,11 +245,11 @@ public class AmazonContentExtractorTest {
         for (Location location : locations) {
             Provider provider = location.getProvider();
             if(location.getCanonicalUri().contains("PAY_TO_RENT")) {
-                assertEquals(provider.getName(), "amazon-video");
-                assertEquals(provider.getIconUrl(), "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-video-square-logo.jpeg");
+                assertEquals(provider.getName(), AMAZON_VIDEO_PROVIDER);
+                assertEquals(provider.getIconUrl(), AMAZON_ICON_URL);
             } else if(location.getCanonicalUri().contains("SUBSCRIPTION")) {
-                assertEquals(provider.getName(), "amazon-prime-video");
-                assertEquals(provider.getIconUrl(), "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-prime-video-square-logo.jpeg");
+                assertEquals(provider.getName(), AMAZON_PRIME_VIDEO_PROVIDER);
+                assertEquals(provider.getIconUrl(), AMAZON_PRIME_ICON_URL);
             }
         }
         assertEquals(locations.size(), 2);
@@ -266,11 +267,11 @@ public class AmazonContentExtractorTest {
         for (Location location : locations) {
             Provider provider = location.getProvider();
             if(location.getCanonicalUri().contains("PAY_TO_RENT")) {
-                assertEquals(provider.getName(), "amazon-video");
-                assertEquals(provider.getIconUrl(), "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-video-square-logo.jpeg");
+                assertEquals(provider.getName(), AMAZON_VIDEO_PROVIDER);
+                assertEquals(provider.getIconUrl(), AMAZON_ICON_URL);
             } else if(location.getCanonicalUri().contains("SUBSCRIPTION")) {
-                assertEquals(provider.getName(), "amazon-prime-video");
-                assertEquals(provider.getIconUrl(), "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-prime-video-square-logo.jpeg");
+                assertEquals(provider.getName(), AMAZON_PRIME_VIDEO_PROVIDER);
+                assertEquals(provider.getIconUrl(), AMAZON_PRIME_ICON_URL);
             }
         }
         assertEquals(locations.size(), 1);

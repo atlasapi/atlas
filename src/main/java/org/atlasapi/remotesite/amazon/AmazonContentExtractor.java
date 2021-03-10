@@ -37,6 +37,11 @@ import static org.atlasapi.remotesite.amazon.ContentType.TVSEASON;
 public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
         Iterable<Content>> {
 
+    public static final String AMAZON_ICON_URL = "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-video-square-logo.jpeg";
+    public static final String AMAZON_PRIME_ICON_URL = "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-prime-video-square-logo.jpeg";
+    public static final String AMAZON_VIDEO_PROVIDER = "amazon-video";
+    public static final String AMAZON_PRIME_VIDEO_PROVIDER = "amazon-prime-video";
+
     private static final Logger log = LoggerFactory.getLogger(AmazonContentExtractor.class);
 
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
@@ -49,10 +54,6 @@ public class AmazonContentExtractor implements ContentExtractor<AmazonItem,
     private static final String URL_SUFFIX_TO_REMOVE = "ref=atv_feed_catalog";
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
-    private static final String AMAZON_ICON_URL = "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-video-square-logo.jpeg";
-    private static final String AMAZON_PRIME_ICON_URL = "https://images.metabroadcast.com/?source=http://images.atlas.metabroadcast.com/mb-hosted-logos/amazon-prime-video-square-logo.jpeg";
-    private static final String AMAZON_VIDEO_PROVIDER = "amazon-video";
-    private static final String AMAZON_PRIME_VIDEO_PROVIDER = "amazon-prime-video";
 
     //because the YV code requires dates in order to pick up which ondemands to generate, but amazon sends nothing.
     private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse(

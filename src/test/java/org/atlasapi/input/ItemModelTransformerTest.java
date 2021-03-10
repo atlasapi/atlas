@@ -24,6 +24,7 @@ import com.metabroadcast.common.time.Clock;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import org.joda.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,6 +113,14 @@ public class ItemModelTransformerTest {
         assertThat(complex.getVersions().size(), is(1));
         Version version = complex.getVersions().iterator().next();
         assertThat(version.getDuration(), is (2));
+    }
+
+    @Test
+    public void testSetsItemLevelDuration() {
+        simpleItem.setDuration(Duration.standardMinutes(60).getMillis());
+        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
+
+        assertEquals((long) simpleItem.getDuration(), complex.getDuration().getMillis());
     }
 
     @Test(expected = IllegalArgumentException.class)

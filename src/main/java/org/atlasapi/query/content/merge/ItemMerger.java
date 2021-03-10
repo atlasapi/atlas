@@ -53,6 +53,8 @@ public class ItemMerger {
         }
         existing.setParentRef(update.getContainer());
 
+        existing.setDuration(update.getDuration());
+
         if (existing instanceof Song && update instanceof Song) {
             return songMerger.mergeSongs((Song) existing, (Song) update);
         }
